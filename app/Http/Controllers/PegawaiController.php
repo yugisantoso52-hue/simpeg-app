@@ -1,0 +1,270 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Exports\DukExport;
+use App\Exports\PegawaiTemplateExport;
+use App\Imports\PegawaiImport;
+use App\Http\Requests\Pegawai\StorePegawaiRequest;
+use App\Http\Requests\Pegawai\UpdatePegawaiRequest;
+use App\Models\Golongan;
+use App\Models\Jabatan;
+use App\Models\Pegawai;
+use App\Models\UnitKerja;
+use App\Services\PegawaiService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use Maatwebsite\Excel\Facades\Excel;
+use Pdf;
+
+class PegawaiController extends Controller
+{
+    use AuthorizesRequests;
+
+    private PegawaiService $pegawaiService;
+
+    public function __construct(PegawaiService $pegawaiService)
+    {
+        $this->pegawaiService = $pegawaiService;
+    }
+
+    public function index(Request $request)
+    {
+        $search = $request->get('search');
+        $pegawai = $this->pegawaiService->search($search);
+        $statistics = $this->pegawaiService->getStatistics();
+
+        return view('pegawai.index', compact(
+            'pegawai',
+            'statistics',
+            'search'
+        ));
+    }
+
+    public function duk(Request $request)
+    {
+        $search = $request->get('search');
+        $query = Pegawai::with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%");
+            });
+        }
+
+        $pegawais = $query->get()->sort(function($a, $b) {
+            $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'HONORER' => 3];
+            $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 4;
+            $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 4;
+            if ($jenisA !== $jenisB) return $jenisA <=> $jenisB;
+
+            $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
+            $golB = $b->golongan->urutan ?? $b->golongan_id ?? 0;
+            if ($golA !== $golB) return $golB <=> $golA;
+
+            $tmtPangkatA = $a->tmt_pangkat_terakhir ? $a->tmt_pangkat_terakhir->timestamp : 0;
+            $tmtPangkatB = $b->tmt_pangkat_terakhir ? $b->tmt_pangkat_terakhir->timestamp : 0;
+            if ($tmtPangkatA !== $tmtPangkatB) return $tmtPangkatA <=> $tmtPangkatB;
+
+            $tglLahirA = $a->tanggal_lahir ? $a->tanggal_lahir->timestamp : 0;
+            $tglLahirB = $b->tanggal_lahir ? $b->tanggal_lahir->timestamp : 0;
+            return $tglLahirA <=> $tglLahirB;
+        });
+
+        $statistics = $this->pegawaiService->getStatistics();
+
+        return view('pegawai.duk', compact('pegawais', 'statistics', 'search'));
+    }
+
+    public function create()
+    {
+        return view('pegawai.create', [
+            'unitKerja' => UnitKerja::orderBy('nama_unit')->get(),
+            'jabatan'   => Jabatan::orderBy('nama_jabatan')->get(),
+            'golongan'  => Golongan::orderBy('nama_golongan')->get(),
+        ]);
+    }
+
+    public function store(StorePegawaiRequest $request)
+    {
+        DB::transaction(function () use ($request) {
+            $files = [
+                'foto'                     => $request->file('foto'),
+                'file_sk_pertama'          => $request->file('file_sk_pertama'),
+                'file_sk_pangkat_terakhir' => $request->file('file_sk_pangkat_terakhir'),
+                'file_sk_kgb_terakhir'     => $request->file('file_sk_kgb_terakhir'),
+                'pendidikan_ijazah'        => $request->file('pendidikan_ijazah'),
+                'diklat_sertifikat'        => $request->file('diklat_sertifikat'),
+            ];
+
+            $this->pegawaiService->createPegawai(
+                $request->validated(),
+                $files
+            );
+        });
+
+        return redirect()
+            ->route('pegawai.index')
+            ->with('success', 'Data pegawai berhasil ditambahkan.');
+    }
+
+    public function show(int $id)
+    {
+        $pegawai = $this->pegawaiService->find($id);
+
+        // OTORISASI POLICY: Cek izin melihat detail data
+        $this->authorize('view', $pegawai);
+
+        return view('pegawai.show', compact('pegawai'));
+    }
+
+    public function edit(int $id)
+    {
+        $pegawai = $this->pegawaiService->find($id);
+
+        // OTORISASI POLICY: Cek izin edit data
+        $this->authorize('update', $pegawai);
+
+        return view('pegawai.edit', [
+            'pegawai'   => $pegawai,
+            'unitKerja' => UnitKerja::orderBy('nama_unit')->get(),
+            'jabatan'   => Jabatan::orderBy('nama_jabatan')->get(),
+            'golongan'  => Golongan::orderBy('nama_golongan')->get(),
+        ]);
+    }
+
+    public function update(UpdatePegawaiRequest $request, int $id)
+    {
+        $pegawai = $this->pegawaiService->find($id);
+
+        // OTORISASI POLICY: Cek izin update data
+        $this->authorize('update', $pegawai);
+
+        $files = [
+            'foto'                     => $request->file('foto'),
+            'file_sk_pertama'          => $request->file('file_sk_pertama'),
+            'file_sk_pangkat_terakhir' => $request->file('file_sk_pangkat_terakhir'),
+            'file_sk_kgb_terakhir'     => $request->file('file_sk_kgb_terakhir'),
+            'pendidikan_ijazah'        => $request->file('pendidikan_ijazah'),
+            'diklat_sertifikat'        => $request->file('diklat_sertifikat'),
+        ];
+
+        $this->pegawaiService->updatePegawai(
+            $id,
+            $request->validated(),
+            $files
+        );
+
+        // Pengarahan halaman berdasarkan Role
+        if (auth()->user()->hasRole('pegawai')) {
+            return redirect()
+                ->route('pegawai.show', $id)
+                ->with('success', 'Data pribadi Anda berhasil diperbarui.');
+        }
+
+        return redirect()
+            ->route('pegawai.index')
+            ->with('success', 'Data pegawai berhasil diperbarui.');
+    }
+
+    public function destroy(int $id)
+    {
+        $pegawai = $this->pegawaiService->find($id);
+
+        // OTORISASI POLICY: Cek izin hapus data
+        $this->authorize('delete', $pegawai);
+
+        $this->pegawaiService->deletePegawai($id);
+
+        return redirect()
+            ->route('pegawai.index')
+            ->with('success', 'Data pegawai berhasil dihapus.');
+    }
+
+    /**
+     * Unduh Template Excel Impor Pegawai
+     */
+    public function downloadTemplate()
+    {
+        return Excel::download(new PegawaiTemplateExport, 'template_import_pegawai.xlsx');
+    }
+
+    /**
+     * Proses Impor Masal Data Pegawai dari Excel
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:10240',
+        ]);
+
+        try {
+            Excel::import(new PegawaiImport, $request->file('file'));
+            
+            Cache::forget('pegawai_statistics');
+
+            return redirect()->route('pegawai.index')->with('success', 'Data pegawai berhasil diimpor secara masal!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengimpor data: ' . $e->getMessage());
+        }
+    }
+
+    public function exportDukPdf(Request $request)
+    {
+        $search = $request->get('search');
+        $query = Pegawai::with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%");
+            });
+        }
+
+        $pegawais = $query->get()->sort(function($a, $b) {
+            $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'HONORER' => 3];
+            $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 4;
+            $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 4;
+            if ($jenisA !== $jenisB) return $jenisA <=> $jenisB;
+
+            $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
+            $golB = $b->golongan->urutan ?? $b->golongan_id ?? 0;
+            if ($golA !== $golB) return $golB <=> $golA;
+
+            $tmtPangkatA = $a->tmt_pangkat_terakhir ? $a->tmt_pangkat_terakhir->timestamp : 0;
+            $tmtPangkatB = $b->tmt_pangkat_terakhir ? $b->tmt_pangkat_terakhir->timestamp : 0;
+            if ($tmtPangkatA !== $tmtPangkatB) return $tmtPangkatA <=> $tmtPangkatB;
+
+            $tglLahirA = $a->tanggal_lahir ? $a->tanggal_lahir->timestamp : 0;
+            $tglLahirB = $b->tanggal_lahir ? $b->tanggal_lahir->timestamp : 0;
+            return $tglLahirA <=> $tglLahirB;
+        });
+
+        $pdf = Pdf::loadView('exports.pdf.duk', compact('pegawais'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('DUK_Pegawai_' . date('Y-m-d') . '.pdf');
+    }
+
+    public function exportDukExcel()
+    {
+        return Excel::download(new DukExport, 'DUK_Pegawai_' . date('Y-m-d') . '.xlsx');
+    }
+
+    public function exportProfilPdf(int $id)
+    {
+        $pegawai = $this->pegawaiService->find($id);
+
+        // OTORISASI POLICY: Cek izin mengunduh PDF profil
+        $this->authorize('view', $pegawai);
+
+        $pdf = Pdf::loadView('exports.pdf.profil_pegawai', compact('pegawai'))
+            ->setPaper('a4', 'portrait');
+
+        $namaClean = str_replace([' ', '/', '\\'], '_', $pegawai->nama_lengkap ?? $pegawai->nama);
+        return $pdf->download('Profil_Pegawai_' . $namaClean . '_' . date('Ymd') . '.pdf');
+    }
+}

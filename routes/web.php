@@ -1,0 +1,134 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PegawaiController;
+use App\Http\Controllers\UnitKerjaController;
+use App\Http\Controllers\JabatanController;
+use App\Http\Controllers\GolonganController;
+use App\Http\Controllers\RiwayatPendidikanController;
+use App\Http\Controllers\RiwayatJabatanController;
+use App\Http\Controllers\RiwayatPangkatController;
+use App\Http\Controllers\RiwayatDiklatController;
+use App\Http\Controllers\MutasiPegawaiController;
+use App\Http\Controllers\KgbController;
+use App\Http\Controllers\KpController;
+use App\Http\Controllers\SatyalancanaController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ReportController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes - SIMPEG Enterprise (Production Ready)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+// AUTHENTICATED USERS (Semua User Login)
+Route::middleware(['auth'])->group(function () {
+
+    /* Dashboard & Profile Akun User */
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    /* Notifications & Document Preview */
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
+    Route::get('/notifications/{id}/read', [NotificationController::class, 'readAndRedirect'])->name('notifications.readAndRedirect');
+    Route::get('/document-preview/{path}', [ReportController::class, 'streamPrivateFile'])->where('path', '.*')->name('document.preview');
+
+    // ======================================================================
+    // ROUTE PEGAWAI BIASA (Akses Data Diri Sendiri)
+    // ======================================================================
+    Route::middleware(['role:pegawai'])->group(function () {
+        Route::get('/my-profile', function() {
+            $user = auth()->user();
+            if (!$user->pegawai_id) {
+                return redirect()->route('dashboard')->with('error', 'Akun Anda belum terhubung dengan data pegawai.');
+            }
+            return redirect()->route('pegawai.show', $user->pegawai_id);
+        })->name('pegawai.my-profile');
+    });
+
+    // ======================================================================
+    // ROUTE EDIT & UPDATE PEGAWAI (DIAMANKAN LEWAAT PEGAWAIPOLICY)
+    // ======================================================================
+    Route::middleware(['role:admin,pegawai'])->group(function () {
+        Route::get('/pegawai/{pegawai}/edit', [PegawaiController::class, 'edit'])->name('pegawai.edit');
+        Route::put('/pegawai/{pegawai}', [PegawaiController::class, 'update'])->name('pegawai.update');
+    });
+
+    // ======================================================================
+    // ADMIN KEPEGAWAIAN (FULL WRITE & MANAGEMENT ACCESS)
+    // ======================================================================
+    Route::middleware(['role:admin'])->group(function () {
+
+        Route::resource('unit-kerja', UnitKerjaController::class)->parameters(['unit-kerja' => 'unit_kerja']);
+        Route::resource('jabatan', JabatanController::class)->parameters(['jabatan' => 'jabatan']);
+        Route::resource('golongan', GolonganController::class)->parameters(['golongan' => 'golongan']);
+
+        // Mutasi
+        Route::resource('mutasi-pegawai', MutasiPegawaiController::class)->parameters(['mutasi-pegawai' => 'mutasi_pegawai']);
+        Route::get('/pegawai-mutasi/{id}', [MutasiPegawaiController::class, 'getPegawai'])->name('pegawai-mutasi');
+
+        // KGB & KP & Satyalancana
+        Route::get('/kgb', [KgbController::class, 'index'])->name('kgb.index');
+        Route::post('/kgb/proses/{id}', [KgbController::class, 'proses'])->name('kgb.proses');
+
+        Route::get('/kenaikan-pangkat', [KpController::class, 'index'])->name('kp.index');
+        Route::post('/kenaikan-pangkat/proses/{id}', [KpController::class, 'proses'])->name('kp.proses');
+
+        Route::get('/satyalancana', [SatyalancanaController::class, 'index'])->name('satyalancana.index');
+
+        // Impor & Template
+        Route::get('/pegawai/template', [PegawaiController::class, 'downloadTemplate'])->name('pegawai.template');
+        Route::post('/pegawai/import', [PegawaiController::class, 'import'])->name('pegawai.import');
+
+        // Tambah & Hapus Pegawai (Khusus Admin)
+        Route::get('/pegawai/create', [PegawaiController::class, 'create'])->name('pegawai.create');
+        Route::post('/pegawai', [PegawaiController::class, 'store'])->name('pegawai.store');
+        Route::delete('/pegawai/{pegawai}', [PegawaiController::class, 'destroy'])->name('pegawai.destroy');
+
+        // CRUD Riwayat
+        Route::resource('riwayat-pendidikan', RiwayatPendidikanController::class)->except(['index', 'show']);
+        Route::resource('riwayat-jabatan', RiwayatJabatanController::class)->except(['index', 'show']);
+        Route::resource('riwayat-pangkat', RiwayatPangkatController::class)->except(['index', 'show']);
+        Route::resource('riwayat-diklat', RiwayatDiklatController::class)->except(['index', 'show']);
+    });
+
+    // ======================================================================
+    // ADMIN, PIMPINAN & PEGAWAI (READ ACCESS / PROTECTED BY POLICY)
+    // ======================================================================
+    Route::middleware(['role:admin,pimpinan,pegawai'])->group(function () {
+        Route::get('/pegawai/{pegawai}', [PegawaiController::class, 'show'])->name('pegawai.show');
+        Route::get('/pegawai/{id}/download-pdf', [PegawaiController::class, 'exportProfilPdf'])->name('pegawai.download-pdf');
+    });
+
+    // ======================================================================
+    // KHUSUS ADMIN & PIMPINAN (MONITORING & REPORTS)
+    // ======================================================================
+    Route::middleware(['role:admin,pimpinan'])->group(function () {
+
+        Route::get('/pegawai', [PegawaiController::class, 'index'])->name('pegawai.index');
+        Route::get('/duk', [PegawaiController::class, 'duk'])->name('duk.index');
+        Route::get('/reports/duk/pdf', [PegawaiController::class, 'exportDukPdf'])->name('reports.duk.pdf');
+        Route::get('/reports/duk/excel', [PegawaiController::class, 'exportDukExcel'])->name('reports.duk.excel');
+
+        /* Read-Only Riwayat List */
+        Route::get('/riwayat-pendidikan', [RiwayatPendidikanController::class, 'index'])->name('riwayat-pendidikan.index');
+        Route::get('/riwayat-jabatan', [RiwayatJabatanController::class, 'index'])->name('riwayat-jabatan.index');
+        Route::get('/riwayat-pangkat', [RiwayatPangkatController::class, 'index'])->name('riwayat-pangkat.index');
+        Route::get('/riwayat-diklat', [RiwayatDiklatController::class, 'index'])->name('riwayat-diklat.index');
+
+        Route::get('/reports/kgb/{id}/pdf', [ReportController::class, 'exportKgbPdf'])->name('reports.kgb.pdf');
+    });
+});
+
+require __DIR__ . '/auth.php';

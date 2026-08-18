@@ -1,0 +1,75 @@
+<?php
+
+namespace App\Services;
+
+use App\Repositories\Contracts\DashboardRepositoryInterface;
+use Illuminate\Support\Facades\Cache;
+
+class DashboardService
+{
+    protected DashboardRepositoryInterface $dashboardRepository;
+
+    /**
+     * Dependency Injection DashboardRepository
+     */
+    public function __construct(DashboardRepositoryInterface $dashboardRepository) 
+    {
+        $this->dashboardRepository = $dashboardRepository;
+    }
+
+    /**
+     * Statistik Dashboard (Cache 10 Menit)
+     */
+    public function statistics(): array
+    {
+        return Cache::remember('dashboard_statistics', now()->addMinutes(10), function () {
+            return $this->dashboardRepository->getStatistics();
+        });
+    }
+
+    /**
+     * Grafik Golongan (Cache 10 Menit)
+     */
+    public function grafikGolongan()
+    {
+        return Cache::remember('dashboard_grafik_golongan', now()->addMinutes(10), function () {
+            return $this->dashboardRepository->getPegawaiPerGolongan();
+        });
+    }
+
+    /**
+     * Grafik Pendidikan (Cache 10 Menit)
+     */
+    public function grafikPendidikan()
+    {
+        return Cache::remember('dashboard_grafik_pendidikan', now()->addMinutes(10), function () {
+            return $this->dashboardRepository->getPegawaiPerPendidikan();
+        });
+    }
+
+    /**
+     * Grafik Unit Kerja (Cache 10 Menit)
+     */
+    public function grafikUnit()
+    {
+        return Cache::remember('dashboard_grafik_unit', now()->addMinutes(10), function () {
+            return $this->dashboardRepository->getPegawaiPerUnit();
+        });
+    }
+
+    /**
+     * Pegawai Baru (Real-time)
+     */
+    public function pegawaiBaru(int $limit = 5)
+    {
+        return $this->dashboardRepository->getPegawaiBaru($limit);
+    }
+
+    /**
+     * Reminder KGB, KP, Satyalancana, dan Pensiun (Real-time)
+     */
+    public function reminder(): array
+    {
+        return $this->dashboardRepository->getReminder();
+    }
+}
