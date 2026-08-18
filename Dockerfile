@@ -1,22 +1,73 @@
-FROM php:8.3-fpm
+FROM php:8.2-fpm
 
-# Install dependensi sistem & ekstensi PHP
+# Install dependensi sistem dan ekstensi PHP yang dibutuhkan (termasuk libzip untuk phpspreadsheet)
 RUN apt-get update && apt-get install -y \
-    libpng-dev libjpeg-dev libfreetype6-dev zip unzip git nginx \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql gd
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    nginx \
+    supervisor \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip opcache \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Set working directory
 WORKDIR /var/www
 
-COPY . .
+# Copy source code aplikasi
+COPY . /var/www
 
-RUN composer install --no-dev --optimize-autoloader
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+# Install dependensi PHP tanpa dev
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Set permission storage dan bootstrap/cache
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+# Konfigurasi Nginx
+RUN echo 'server {\n\
+    listen 80;\n\
+    index index.php index.html;\n\
+    root /var/www/public;\n\
+    client_max_body_size 64M;\n\
+    location / {\n\
+        try_files $uri $uri/ /index.php?$query_string;\n\
+    }\n\
+    location ~ \.php$ {\n\
+        fastcgi_pass 127.0.0.1:9000;\n\
+        fastcgi_index index.php;\n\
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n\
+        include fastcgi_params;\n\
+    }\n\
+}' > /etc/nginx/sites-available/default
+
+# Konfigurasi Supervisor & Startup Command
+RUN echo '[supervisord]\n\
+nodaemon=true\n\
+\n\
+[program:php-fpm]\n\
+command=php-fpm\n\
+autostart=true\n\
+autorestart=true\n\
+\n\
+[program:nginx]\n\
+command=nginx -g "daemon off;"\n\
+autostart=true\n\
+autorestart=true\n\
+\n\
+[program:startup]\n\
+command=/bin/sh -c "php /var/www/artisan config:clear && php /var/www/artisan migrate:fresh --seed --force && php /var/www/artisan storage:link"\n\
+autostart=true\n\
+autorestart=false\n\
+startretries=1\n' > /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 80
 
-# Jalankan Otomatis Migration & Seeder saat server menyala
-CMD php artisan migrate:fresh --seed --force && php artisan config:cache && service nginx start && php-fpm
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
