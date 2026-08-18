@@ -1,6 +1,6 @@
 FROM php:8.3-fpm
 
-# Install dependensi sistem dan ekstensi PHP yang dibutuhkan (termasuk libzip untuk phpspreadsheet)
+# Install dependensi sistem, ekstensi PHP, dan Node.js untuk Vite
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y \
     nginx \
     supervisor \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip opcache \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
@@ -24,8 +26,11 @@ WORKDIR /var/www
 # Copy source code aplikasi
 COPY . /var/www
 
-# Install dependensi PHP tanpa dev
+# Install dependensi PHP
 RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Install NPM dan Build Vite (Untuk CSS & JavaScript)
+RUN npm install && npm run build
 
 # Set permission storage dan bootstrap/cache
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
@@ -48,7 +53,7 @@ RUN echo 'server {\n\
     }\n\
 }' > /etc/nginx/sites-available/default
 
-# Konfigurasi Supervisor & Startup Command
+# Konfigurasi Supervisor & Startup Command yang Aman (Tanpa Reset Database)
 RUN echo '[supervisord]\n\
 nodaemon=true\n\
 \n\
@@ -63,7 +68,7 @@ autostart=true\n\
 autorestart=true\n\
 \n\
 [program:startup]\n\
-command=/bin/sh -c "php /var/www/artisan config:clear && php /var/www/artisan migrate:fresh --seed --force && php /var/www/artisan storage:link"\n\
+command=/bin/sh -c "php /var/www/artisan config:clear && php /var/www/artisan storage:link"\n\
 autostart=true\n\
 autorestart=false\n\
 startretries=1\n' > /etc/supervisor/conf.d/supervisord.conf
