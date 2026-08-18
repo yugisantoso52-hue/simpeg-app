@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.3-fpm
 
 # Install dependensi sistem dan ekstensi PHP yang dibutuhkan (termasuk libzip untuk phpspreadsheet)
 RUN apt-get update && apt-get install -y \
