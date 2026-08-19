@@ -137,7 +137,7 @@
                                         <td class="px-3 py-3 text-center border-r border-slate-100 whitespace-nowrap">
                                             <div>{{ $tmtSk1 }}</div>
                                             @if(!empty($row->file_sk_pertama))
-                                                <a href="{{ asset('storage/' . $row->file_sk_pertama) }}" target="_blank" 
+                                                <a href="{{ route('document.preview', ['path' => $row->file_sk_pertama]) }}" target="_blank" 
                                                    class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline mt-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
                                                     📄 Lihat SK
                                                 </a>
@@ -151,7 +151,7 @@
                                             <div>Terakhir: {{ $tmtPangkatLama }}</div>
                                             <div class="font-bold text-blue-600">Kedepan: {{ $tmtPangkatDepan }}</div>
                                             @if(!empty($row->file_sk_pangkat_terakhir))
-                                                <a href="{{ asset('storage/' . $row->file_sk_pangkat_terakhir) }}" target="_blank" 
+                                                <a href="{{ route('document.preview', ['path' => $row->file_sk_pangkat_terakhir]) }}" target="_blank" 
                                                    class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline mt-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
                                                     📄 Lihat SK
                                                 </a>
@@ -165,7 +165,7 @@
                                             <div>Terakhir: {{ $tmtKgbLama }}</div>
                                             <div class="font-bold text-blue-600">Kedepan: {{ $tmtKgbDepan }}</div>
                                             @if(!empty($row->file_sk_kgb_terakhir))
-                                                <a href="{{ asset('storage/' . $row->file_sk_kgb_terakhir) }}" target="_blank" 
+                                                <a href="{{ route('document.preview', ['path' => $row->file_sk_kgb_terakhir]) }}" target="_blank" 
                                                    class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline mt-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
                                                     📄 Lihat SK
                                                 </a>

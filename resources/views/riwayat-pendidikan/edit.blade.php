@@ -68,7 +68,7 @@
                         <label class="block mb-1 font-medium">File Ijazah (Kosongkan jika tidak diganti)</label>
                         @if($data->ijazah)
                             <div class="mb-2">
-                                <a href="{{ asset('storage/'.$data->ijazah) }}" target="_blank" class="text-blue-600 hover:underline inline-flex items-center gap-1 font-medium">
+                                <a href="{{ route('document.preview', ['path' => $data->ijazah]) }}" target="_blank" class="text-blue-600 hover:underline inline-flex items-center gap-1 font-medium">
                                     📂 Lihat File Saat Ini
                                 </a>
                             </div>

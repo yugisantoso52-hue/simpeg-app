@@ -50,6 +50,6 @@ class RiwayatDiklat extends Model
 
     public function getFileSertifikatUrlAttribute(): ?string
     {
-        return $this->file_sertifikat ? Storage::url($this->file_sertifikat) : null;
+        return $this->file_sertifikat ? route('document.preview', ['path' => $this->file_sertifikat]) : null;
     }
 }

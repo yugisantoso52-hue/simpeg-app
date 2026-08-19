@@ -97,7 +97,7 @@
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     @if($row->ijazah)
-                                        <a href="{{ asset('storage/'.$row->ijazah) }}" target="_blank" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs">
+                                        <a href="{{ route('document.preview', ['path' => $row->ijazah]) }}" target="_blank" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs">
                                             📄 Lihat
                                         </a>
                                     @else

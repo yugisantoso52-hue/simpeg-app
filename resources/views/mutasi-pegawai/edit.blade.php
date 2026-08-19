@@ -149,7 +149,7 @@
                         @if($mutasi->file_sk)
 
                             <div class="mb-2">
-                                <a href="{{ asset('storage/'.$mutasi->file_sk) }}"
+                                <a href="{{ route('document.preview', ['path' => $mutasi->file_sk]) }}"
                                    target="_blank"
                                    class="text-blue-600">
                                     Lihat File SK

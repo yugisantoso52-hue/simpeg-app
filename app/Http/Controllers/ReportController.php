@@ -102,13 +102,19 @@ class ReportController extends Controller
         if (!file_exists($targetPath)) {
             $targetPath = storage_path('app/public' . DIRECTORY_SEPARATOR . $relativePath);
             if (!file_exists($targetPath)) {
-                abort(404, 'Dokumen tidak ditemukan.');
+                if ($request->expectsJson() || $request->is('api/*')) {
+                    abort(404, 'Dokumen tidak ditemukan.');
+                }
+                return redirect()->back()->with('error', 'Dokumen/file fisik tidak ditemukan di server.');
             }
         }
 
         $realTarget = realpath($targetPath);
         if ($realTarget === false) {
-            abort(404, 'Dokumen tidak ditemukan.');
+            if ($request->expectsJson() || $request->is('api/*')) {
+                abort(404, 'Dokumen tidak ditemukan.');
+            }
+            return redirect()->back()->with('error', 'Dokumen/file fisik tidak ditemukan di server.');
         }
 
         // 3. Containment Check: Pastikan file berada di dalam storage root yang diizinkan

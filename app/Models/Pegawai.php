@@ -201,21 +201,21 @@ class Pegawai extends Model
     protected function fileSkPertamaUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->file_sk_pertama ? asset('storage/' . $this->file_sk_pertama) : null
+            get: fn () => $this->file_sk_pertama ? route('document.preview', ['path' => $this->file_sk_pertama]) : null
         );
     }
 
     protected function fileSkPangkatTerakhirUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->file_sk_pangkat_terakhir ? asset('storage/' . $this->file_sk_pangkat_terakhir) : null
+            get: fn () => $this->file_sk_pangkat_terakhir ? route('document.preview', ['path' => $this->file_sk_pangkat_terakhir]) : null
         );
     }
 
     protected function fileSkKgbTerakhirUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->file_sk_kgb_terakhir ? asset('storage/' . $this->file_sk_kgb_terakhir) : null
+            get: fn () => $this->file_sk_kgb_terakhir ? route('document.preview', ['path' => $this->file_sk_kgb_terakhir]) : null
         );
     }
 

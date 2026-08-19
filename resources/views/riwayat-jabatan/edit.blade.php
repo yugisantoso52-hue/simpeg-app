@@ -330,7 +330,7 @@
                                         </div>
 
                                         <a
-                                            href="{{ asset('storage/'.$data->file_sk) }}"
+                                            href="{{ route('document.preview', ['path' => $data->file_sk]) }}"
                                             target="_blank"
                                             class="inline-flex items-center
                                                    px-4 py-2

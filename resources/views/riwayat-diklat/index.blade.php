@@ -127,7 +127,7 @@
 
                                 <td class="px-4 py-3 text-center whitespace-nowrap">
                                     @if($row->file_sertifikat)
-                                        <a href="{{ asset('storage/'.$row->file_sertifikat) }}" target="_blank"
+                                        <a href="{{ route('document.preview', ['path' => $row->file_sertifikat]) }}" target="_blank"
                                            class="inline-flex items-center rounded-md bg-sky-100 px-2.5 py-1 text-xs font-medium text-sky-700 hover:bg-sky-200 transition">
                                             📄 Lihat
                                         </a>

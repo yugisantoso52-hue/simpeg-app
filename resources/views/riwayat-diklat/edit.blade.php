@@ -326,13 +326,13 @@
                             @if(in_array($ext,['jpg','jpeg','png','webp']))
 
                                 <img
-                                    src="{{ asset('storage/'.$data->file_sertifikat) }}"
+                                    src="{{ route('document.preview', ['path' => $data->file_sertifikat]) }}"
                                     class="rounded-lg border max-h-72">
 
                             @elseif($ext=='pdf')
 
                                 <iframe
-                                    src="{{ asset('storage/'.$data->file_sertifikat) }}"
+                                    src="{{ route('document.preview', ['path' => $data->file_sertifikat]) }}"
                                     class="w-full h-[500px] rounded-lg border"></iframe>
 
                             @endif

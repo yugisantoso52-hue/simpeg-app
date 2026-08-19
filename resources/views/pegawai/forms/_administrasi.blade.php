@@ -32,7 +32,7 @@
             <x-enterprise.form-group label="Upload SK Pertama (PDF/Gambar)">
                 <x-enterprise.file-upload name="file_sk_pertama" accept=".pdf,.jpg,.jpeg,.png"/>
                 @if(isset($pegawai->file_sk_pertama) && $pegawai->file_sk_pertama)
-                    <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ asset('storage/'.$pegawai->file_sk_pertama) }}" target="_blank" class="text-blue-600 underline">Lihat Dokumen</a></p>
+                    <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ route('document.preview', ['path' => $pegawai->file_sk_pertama]) }}" target="_blank" class="text-blue-600 underline">Lihat Dokumen</a></p>
                 @endif
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
@@ -50,7 +50,7 @@
             <x-enterprise.form-group label="Upload SK Pangkat Terakhir (PDF/Gambar)">
                 <x-enterprise.file-upload name="file_sk_pangkat_terakhir" accept=".pdf,.jpg,.jpeg,.png"/>
                 @if(isset($pegawai->file_sk_pangkat_terakhir) && $pegawai->file_sk_pangkat_terakhir)
-                    <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ asset('storage/'.$pegawai->file_sk_pangkat_terakhir) }}" target="_blank" class="text-blue-600 underline">Lihat Dokumen</a></p>
+                    <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ route('document.preview', ['path' => $pegawai->file_sk_pangkat_terakhir]) }}" target="_blank" class="text-blue-600 underline">Lihat Dokumen</a></p>
                 @endif
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
@@ -68,7 +68,7 @@
             <x-enterprise.form-group label="Upload SK KGB Terakhir (PDF/Gambar)">
                 <x-enterprise.file-upload name="file_sk_kgb_terakhir" accept=".pdf,.jpg,.jpeg,.png"/>
                 @if(isset($pegawai->file_sk_kgb_terakhir) && $pegawai->file_sk_kgb_terakhir)
-                    <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ asset('storage/'.$pegawai->file_sk_kgb_terakhir) }}" target="_blank" class="text-blue-600 underline">Lihat Dokumen</a></p>
+                    <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ route('document.preview', ['path' => $pegawai->file_sk_kgb_terakhir]) }}" target="_blank" class="text-blue-600 underline">Lihat Dokumen</a></p>
                 @endif
             </x-enterprise.form-group>
         </x-enterprise.forms.field>

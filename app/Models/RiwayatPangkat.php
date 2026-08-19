@@ -43,6 +43,6 @@ class RiwayatPangkat extends Model
      */
     public function getFileSkUrlAttribute(): ?string
     {
-        return $this->file_sk ? Storage::url($this->file_sk) : null;
+        return $this->file_sk ? route('document.preview', ['path' => $this->file_sk]) : null;
     }
 }

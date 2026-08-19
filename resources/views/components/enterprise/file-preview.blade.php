@@ -49,7 +49,7 @@
             <div class="flex gap-2">
 
                 <a
-                    href="{{ asset('storage/'.$file) }}"
+                    href="{{ route('document.preview', ['path' => $file]) }}"
                     target="_blank"
                     class="rounded-lg bg-blue-600 px-3 py-2 text-white hover:bg-blue-700">
 
@@ -58,7 +58,7 @@
                 </a>
 
                 <a
-                    href="{{ asset('storage/'.$file) }}"
+                    href="{{ route('document.preview', ['path' => $file]) }}"
                     download
                     class="rounded-lg bg-gray-700 px-3 py-2 text-white hover:bg-gray-800">
 
