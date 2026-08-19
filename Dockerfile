@@ -17,6 +17,12 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Konfigurasi custom php.ini untuk batas upload & eksekusi aman
+RUN echo 'upload_max_filesize = 20M\n\
+post_max_size = 25M\n\
+memory_limit = 256M\n\
+max_execution_time = 300' > /usr/local/etc/php/conf.d/uploads.ini
+
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -41,7 +47,7 @@ RUN echo 'server {\n\
     listen 80;\n\
     index index.php index.html;\n\
     root /var/www/public;\n\
-    client_max_body_size 64M;\n\
+    client_max_body_size 25M;\n\
     location / {\n\
         try_files $uri $uri/ /index.php?$query_string;\n\
     }\n\

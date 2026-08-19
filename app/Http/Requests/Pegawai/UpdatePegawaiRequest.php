@@ -59,10 +59,10 @@ class UpdatePegawaiRequest extends FormRequest
             'tmt_pangkat_terakhir' => 'nullable|date',
             'tmt_kgb_terakhir'     => 'nullable|date',
             'status_pegawai'       => 'nullable|in:Aktif,Non Aktif,Pensiun',
-            'foto'                 => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'file_sk_pertama'          => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'file_sk_pangkat_terakhir' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'file_sk_kgb_terakhir'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'foto'                 => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
+            'file_sk_pertama'          => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'file_sk_pangkat_terakhir' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'file_sk_kgb_terakhir'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'gol_darah'            => 'nullable|in:A,B,AB,O',
             'tinggi_badan'         => 'nullable|integer|min:0',
             'berat_badan'          => 'nullable|integer|min:0',
@@ -74,7 +74,7 @@ class UpdatePegawaiRequest extends FormRequest
             'pendidikan.fakultas'            => 'nullable|string|max:150',
             'pendidikan.jurusan'             => 'nullable|string|max:150',
             'pendidikan.tahun_lulus'         => 'nullable|integer|digits:4',
-            'pendidikan_ijazah'              => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'pendidikan_ijazah'              => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
 
             // Validasi Input Array Riwayat Diklat & File
             'diklat'                         => 'nullable|array',
@@ -86,7 +86,7 @@ class UpdatePegawaiRequest extends FormRequest
             'diklat.tanggal_selesai'         => 'nullable|date',
             'diklat.status'                  => 'nullable|string|max:50',
             'diklat.keterangan'              => 'nullable|string',
-            'diklat_sertifikat'              => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'diklat_sertifikat'              => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ];
     }
 

@@ -30,4 +30,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        $exceptions->render(function (\Illuminate\Http\Exceptions\PostTooLargeException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Ukuran berkas yang diunggah melebihi batas maksimal (maksimal 25MB).'
+                ], 413);
+            }
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Ukuran berkas yang Anda unggah melebihi batas maksimal (maksimal total unggahan 25MB).');
+        });
     })->create();

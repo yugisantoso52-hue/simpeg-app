@@ -24,6 +24,18 @@
     <div class="py-6">
         <div class="mx-auto max-w-7xl space-y-6">
 
+            @if(session('error'))
+                <x-enterprise.alert type="error" title="Terjadi Kesalahan">
+                    {{ session('error') }}
+                </x-enterprise.alert>
+            @endif
+
+            @if(session('success'))
+                <x-enterprise.alert type="success" title="Sukses">
+                    {{ session('success') }}
+                </x-enterprise.alert>
+            @endif
+
             @if($errors->any())
                 <x-enterprise.alert type="error" title="Terjadi Kesalahan">
                     <ul class="list-disc list-inside space-y-1">
@@ -60,4 +72,24 @@
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            if (form) {
+                const fileInputs = form.querySelectorAll('input[type="file"]');
+                fileInputs.forEach(input => {
+                    input.addEventListener('change', function () {
+                        if (this.files && this.files[0]) {
+                            const file = this.files[0];
+                            const maxSize = 10 * 1024 * 1024; // 10MB
+                            if (file.size > maxSize) {
+                                alert(`Ukuran berkas "${file.name}" (${(file.size / (1024 * 1024)).toFixed(2)} MB) melebihi batas maksimal 10 MB. Silakan pilih berkas yang lebih kecil.`);
+                                this.value = ''; // Reset file input
+                            }
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 </x-app-layout>
