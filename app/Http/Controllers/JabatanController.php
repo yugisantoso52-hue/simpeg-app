@@ -65,10 +65,17 @@ class JabatanController extends Controller
 
     public function destroy($id)
     {
-        Jabatan::destroy($id);
+        try {
+            $model = Jabatan::findOrFail($id);
+            $model->delete();
 
-        return redirect()
-            ->route('jabatan.index')
-            ->with('success','Data berhasil dihapus');
+            return redirect()
+                ->route('jabatan.index')
+                ->with('success', 'Data Jabatan berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('jabatan.index')
+                ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
     }
 }

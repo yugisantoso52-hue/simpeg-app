@@ -76,10 +76,17 @@ class GolonganController extends Controller
 
     public function destroy($id)
     {
-        Golongan::destroy($id);
+        try {
+            $model = Golongan::findOrFail($id);
+            $model->delete();
 
-        return redirect()
-            ->route('golongan.index')
-            ->with('success', 'Data berhasil dihapus');
+            return redirect()
+                ->route('golongan.index')
+                ->with('success', 'Data Golongan berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('golongan.index')
+                ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
     }
 }

@@ -16,33 +16,40 @@ class DukExport implements FromCollection, WithMapping, WithHeadings, ShouldAuto
     protected $no = 1;
     protected $pegawais;
 
-    public function __construct()
+    public function __construct(?string $search = null)
     {
-        // Pengurutan Bertingkat Resmi BKN: Jenis Pegawai -> Golongan (Desc) -> TMT Pangkat (Asc) -> Tanggal Lahir (Asc)
-        $this->pegawais = Pegawai::with(['golongan', 'unitKerja', 'jabatan'])
-            ->get()
-            ->sort(function($a, $b) {
-                // 1. Prioritas Jenis Pegawai (PNS -> PPPK -> Honorer)
-                $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'HONORER' => 3];
-                $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 4;
-                $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 4;
-                if ($jenisA !== $jenisB) return $jenisA <=> $jenisB;
+        $query = Pegawai::with(['golongan', 'unitKerja', 'jabatan']);
 
-                // 2. Tingkat Golongan/Pangkat (Tertinggi ke Terendah)
-                $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
-                $golB = $b->golongan->urutan ?? $b->golongan_id ?? 0;
-                if ($golA !== $golB) return $golB <=> $golA;
-
-                // 3. TMT Pangkat Terakhir (Yang lebih lama menjabat naik ke atas)
-                $tmtPangkatA = $a->tmt_pangkat_terakhir ? $a->tmt_pangkat_terakhir->timestamp : 0;
-                $tmtPangkatB = $b->tmt_pangkat_terakhir ? $b->tmt_pangkat_terakhir->timestamp : 0;
-                if ($tmtPangkatA !== $tmtPangkatB) return $tmtPangkatA <=> $tmtPangkatB;
-
-                // 4. Usia / Tanggal Lahir (Yang lebih tua di atas)
-                $tglLahirA = $a->tanggal_lahir ? $a->tanggal_lahir->timestamp : 0;
-                $tglLahirB = $b->tanggal_lahir ? $b->tanggal_lahir->timestamp : 0;
-                return $tglLahirA <=> $tglLahirB;
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%");
             });
+        }
+
+        // Pengurutan Bertingkat Resmi BKN: Jenis Pegawai -> Golongan (Desc) -> TMT Pangkat (Asc) -> Tanggal Lahir (Asc)
+        $this->pegawais = $query->get()->sort(function($a, $b) {
+            // 1. Prioritas Jenis Pegawai (PNS -> PPPK -> Honorer)
+            $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'HONORER' => 3];
+            $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 4;
+            $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 4;
+            if ($jenisA !== $jenisB) return $jenisA <=> $jenisB;
+
+            // 2. Tingkat Golongan/Pangkat (Tertinggi ke Terendah)
+            $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
+            $golB = $b->golongan->urutan ?? $b->golongan_id ?? 0;
+            if ($golA !== $golB) return $golB <=> $golA;
+
+            // 3. TMT Pangkat Terakhir (Yang lebih lama menjabat naik ke atas)
+            $tmtPangkatA = $a->tmt_pangkat_terakhir ? $a->tmt_pangkat_terakhir->timestamp : 0;
+            $tmtPangkatB = $b->tmt_pangkat_terakhir ? $b->tmt_pangkat_terakhir->timestamp : 0;
+            if ($tmtPangkatA !== $tmtPangkatB) return $tmtPangkatA <=> $tmtPangkatB;
+
+            // 4. Usia / Tanggal Lahir (Yang lebih tua di atas)
+            $tglLahirA = $a->tanggal_lahir ? $a->tanggal_lahir->timestamp : 0;
+            $tglLahirB = $b->tanggal_lahir ? $b->tanggal_lahir->timestamp : 0;
+            return $tglLahirA <=> $tglLahirB;
+        });
     }
 
     public function collection()

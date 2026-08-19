@@ -76,6 +76,22 @@ class Pegawai extends Model
                 }
             }
         });
+
+        static::saved(function (Pegawai $pegawai) {
+            \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_golongan');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_pendidikan');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_unit');
+            \Illuminate\Support\Facades\Cache::forget('pegawai_statistics');
+        });
+
+        static::deleted(function (Pegawai $pegawai) {
+            \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_golongan');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_pendidikan');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_unit');
+            \Illuminate\Support\Facades\Cache::forget('pegawai_statistics');
+        });
     }
 
     /* --- RELATIONSHIPS --- */

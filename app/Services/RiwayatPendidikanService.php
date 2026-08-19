@@ -21,7 +21,9 @@ class RiwayatPendidikanService
 
     public function pegawai()
     {
-        return Pegawai::orderBy('nama')->get();
+        return Pegawai::orderByRaw("CASE WHEN status_pegawai = 'Aktif' THEN 0 ELSE 1 END")
+            ->orderBy('nama')
+            ->get();
     }
 
     public function find($id)

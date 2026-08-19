@@ -31,7 +31,7 @@ class MutasiPegawaiController extends Controller
 
     public function create()
     {
-        $pegawai = Pegawai::orderBy('nama')->get();
+        $pegawai = Pegawai::orderByRaw("CASE WHEN status_pegawai = 'Aktif' THEN 0 ELSE 1 END")->orderBy('nama')->get();
         $unitKerja = UnitKerja::orderBy('nama_unit')->get();
         $jabatan = Jabatan::orderBy('nama_jabatan')->get();
 
@@ -89,7 +89,7 @@ class MutasiPegawaiController extends Controller
     public function edit(string $id)
     {
         $mutasi = MutasiPegawai::findOrFail($id);
-        $pegawai = Pegawai::orderBy('nama')->get();
+        $pegawai = Pegawai::orderByRaw("CASE WHEN status_pegawai = 'Aktif' THEN 0 ELSE 1 END")->orderBy('nama')->get();
         $unitKerja = UnitKerja::orderBy('nama_unit')->get();
         $jabatan = Jabatan::orderBy('nama_jabatan')->get();
 

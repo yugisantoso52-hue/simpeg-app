@@ -480,10 +480,50 @@ class PegawaiService
             // Hapus akun user pegawai jika ada
             User::where('pegawai_id', $pegawai->id)->delete();
 
-            RiwayatJabatan::where('pegawai_id', $pegawai->id)->delete();
-            RiwayatPangkat::where('pegawai_id', $pegawai->id)->delete();
+            // Hapus berkas ijazah di riwayat pendidikan
+            $riwayatPendidikan = RiwayatPendidikan::where('pegawai_id', $pegawai->id)->get();
+            foreach ($riwayatPendidikan as $rp) {
+                if ($rp->ijazah) {
+                    $this->deleteSK($rp->ijazah);
+                }
+            }
             RiwayatPendidikan::where('pegawai_id', $pegawai->id)->delete();
+
+            // Hapus berkas sertifikat di riwayat diklat
+            $riwayatDiklat = RiwayatDiklat::where('pegawai_id', $pegawai->id)->get();
+            foreach ($riwayatDiklat as $rd) {
+                if ($rd->file_sertifikat) {
+                    $this->deleteSK($rd->file_sertifikat);
+                }
+            }
             RiwayatDiklat::where('pegawai_id', $pegawai->id)->delete();
+
+            // Hapus berkas SK di riwayat pangkat
+            $riwayatPangkat = RiwayatPangkat::where('pegawai_id', $pegawai->id)->get();
+            foreach ($riwayatPangkat as $rp) {
+                if ($rp->file_sk) {
+                    $this->deleteSK($rp->file_sk);
+                }
+            }
+            RiwayatPangkat::where('pegawai_id', $pegawai->id)->delete();
+
+            // Hapus berkas SK di riwayat jabatan
+            $riwayatJabatan = RiwayatJabatan::where('pegawai_id', $pegawai->id)->get();
+            foreach ($riwayatJabatan as $rj) {
+                if ($rj->file_sk) {
+                    $this->deleteSK($rj->file_sk);
+                }
+            }
+            RiwayatJabatan::where('pegawai_id', $pegawai->id)->delete();
+
+            // Hapus berkas SK dan data mutasi jika ada
+            $mutasi = \App\Models\MutasiPegawai::where('pegawai_id', $pegawai->id)->get();
+            foreach ($mutasi as $m) {
+                if ($m->file_sk) {
+                    $this->deleteSK($m->file_sk);
+                }
+            }
+            \App\Models\MutasiPegawai::where('pegawai_id', $pegawai->id)->delete();
 
             return $this->pegawaiRepository->delete($pegawai->id);
         });

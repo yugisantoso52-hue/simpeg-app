@@ -249,9 +249,10 @@ class PegawaiController extends Controller
         return $pdf->download('DUK_Pegawai_' . date('Y-m-d') . '.pdf');
     }
 
-    public function exportDukExcel()
+    public function exportDukExcel(Request $request)
     {
-        return Excel::download(new DukExport, 'DUK_Pegawai_' . date('Y-m-d') . '.xlsx');
+        $search = $request->get('search');
+        return Excel::download(new DukExport($search), 'DUK_Pegawai_' . date('Y-m-d') . '.xlsx');
     }
 
     public function exportProfilPdf(int $id)

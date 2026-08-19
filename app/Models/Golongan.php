@@ -18,6 +18,15 @@ class Golongan extends Model
         'keterangan'
     ];
 
+    protected static function booted()
+    {
+        static::deleting(function ($model) {
+            if ($model->pegawai()->where('status_pegawai', 'Aktif')->exists()) {
+                throw new \Exception("Golongan ini sedang digunakan oleh pegawai aktif.");
+            }
+        });
+    }
+
     /**
      * Relasi ke model Pegawai (One-to-Many)
      */
