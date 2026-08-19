@@ -8,6 +8,20 @@
     <div class="py-6">
         <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
 
+            {{-- Flash Message Error --}}
+            @if(session('error'))
+                <x-enterprise.alert type="error" title="Terjadi Kesalahan">
+                    {{ session('error') }}
+                </x-enterprise.alert>
+            @endif
+
+            {{-- Flash Message Success --}}
+            @if(session('success'))
+                <x-enterprise.alert type="success" title="Sukses">
+                    {{ session('success') }}
+                </x-enterprise.alert>
+            @endif
+
             {{-- Card Utama DUK --}}
             <x-enterprise.card>
                 <div class="p-6">
@@ -136,7 +150,7 @@
                                         {{-- TMT SK 1 + Link SK --}}
                                         <td class="px-3 py-3 text-center border-r border-slate-100 whitespace-nowrap">
                                             <div>{{ $tmtSk1 }}</div>
-                                            @if(!empty($row->file_sk_pertama))
+                                            @if(!empty($row->file_sk_pertama) && trim($row->file_sk_pertama) !== '')
                                                 <a href="{{ route('document.preview', ['path' => $row->file_sk_pertama]) }}" target="_blank" 
                                                    class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline mt-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
                                                     📄 Lihat SK
@@ -150,7 +164,7 @@
                                         <td class="px-3 py-3 text-center border-r border-slate-100 whitespace-nowrap">
                                             <div>Terakhir: {{ $tmtPangkatLama }}</div>
                                             <div class="font-bold text-blue-600">Kedepan: {{ $tmtPangkatDepan }}</div>
-                                            @if(!empty($row->file_sk_pangkat_terakhir))
+                                            @if(!empty($row->file_sk_pangkat_terakhir) && trim($row->file_sk_pangkat_terakhir) !== '')
                                                 <a href="{{ route('document.preview', ['path' => $row->file_sk_pangkat_terakhir]) }}" target="_blank" 
                                                    class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline mt-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
                                                     📄 Lihat SK
@@ -164,7 +178,7 @@
                                         <td class="px-3 py-3 text-center border-r border-slate-100 whitespace-nowrap">
                                             <div>Terakhir: {{ $tmtKgbLama }}</div>
                                             <div class="font-bold text-blue-600">Kedepan: {{ $tmtKgbDepan }}</div>
-                                            @if(!empty($row->file_sk_kgb_terakhir))
+                                            @if(!empty($row->file_sk_kgb_terakhir) && trim($row->file_sk_kgb_terakhir) !== '')
                                                 <a href="{{ route('document.preview', ['path' => $row->file_sk_kgb_terakhir]) }}" target="_blank" 
                                                    class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline mt-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
                                                     📄 Lihat SK

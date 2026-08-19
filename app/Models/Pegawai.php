@@ -192,7 +192,17 @@ class Pegawai extends Model
     protected function fotoUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->foto ? asset('storage/' . $this->foto) : asset('images/default-user.png')
+            get: function () {
+                if ($this->foto) {
+                    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($this->foto)) {
+                        return asset('storage/' . $this->foto);
+                    }
+                    if (\Illuminate\Support\Facades\Storage::disk('local')->exists($this->foto)) {
+                        return route('document.preview', ['path' => $this->foto]);
+                    }
+                }
+                return 'https://ui-avatars.com/api/?name=' . urlencode($this->nama_lengkap ?? $this->nama) . '&color=7F9CF5&background=EBF4FF';
+            }
         );
     }
 
