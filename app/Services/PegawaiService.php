@@ -175,18 +175,6 @@ class PegawaiService
             $data['berat_badan'] = $data['berat_badan'] ?? 0;
             $data['status_pegawai'] = $data['status_pegawai'] ?? 'Aktif';
 
-            $pendidikanInput = $data['pendidikan'] ?? null;
-            $diklatInput     = $data['diklat'] ?? null;
-
-            if (is_array($pendidikanInput)) {
-                $data['pendidikan'] = $pendidikanInput['jenjang'] ?? $pendidikanInput['institusi'] ?? null;
-            } elseif (is_string($pendidikanInput)) {
-                $data['pendidikan'] = $pendidikanInput;
-            } else {
-                unset($data['pendidikan']);
-            }
-            unset($data['diklat']);
-
             // 1. Simpan data pegawai utama
             $pegawai = $this->pegawaiRepository->create($data);
 
@@ -209,81 +197,104 @@ class PegawaiService
                 ]);
             }
 
-            // 3. Simpan Riwayat Pendidikan awal
-            if (is_array($pendidikanInput) && (!empty($pendidikanInput['jenjang']) || !empty($pendidikanInput['institusi']))) {
-                $fileIjazah = null;
-                if (!empty($files['pendidikan_ijazah'])) {
-                    $fileIjazah = $files['pendidikan_ijazah']->store('ijazah', 'local');
+            // 3. Simpan Riwayat Pendidikan
+            if (isset($data['riwayat_pendidikan']) && is_array($data['riwayat_pendidikan'])) {
+                foreach ($data['riwayat_pendidikan'] as $index => $row) {
+                    if (empty($row['jenjang']) && empty($row['institusi'])) {
+                        continue;
+                    }
+                    $fileIjazah = null;
+                    if (isset($files['riwayat_pendidikan'][$index]['ijazah'])) {
+                        $fileIjazah = $files['riwayat_pendidikan'][$index]['ijazah']->store('ijazah', 'local');
+                    }
+                    $pegawai->riwayatPendidikan()->create([
+                        'jenjang'     => $row['jenjang'] ?? 'S1',
+                        'institusi'   => $row['institusi'] ?? 'Universitas / Sekolah',
+                        'fakultas'    => $row['fakultas'] ?? null,
+                        'jurusan'     => $row['jurusan'] ?? null,
+                        'tahun_lulus' => !empty($row['tahun_lulus']) ? (int)$row['tahun_lulus'] : null,
+                        'ijazah'      => $fileIjazah,
+                    ]);
                 }
-
-                $pegawai->riwayatPendidikan()->create([
-                    'jenjang'     => $pendidikanInput['jenjang'] ?? 'S1',
-                    'institusi'   => $pendidikanInput['institusi'] ?? 'Universitas / Sekolah',
-                    'fakultas'    => $pendidikanInput['fakultas'] ?? null,
-                    'jurusan'     => $pendidikanInput['jurusan'] ?? null,
-                    'tahun_lulus' => !empty($pendidikanInput['tahun_lulus']) ? (int)$pendidikanInput['tahun_lulus'] : null,
-                    'ijazah'      => $fileIjazah,
-                ]);
-            } elseif (!empty($pegawai->pendidikan)) {
-                $pegawai->riwayatPendidikan()->create([
-                    'jenjang'   => $pegawai->pendidikan,
-                    'institusi' => 'Universitas / Sekolah',
-                ]);
             }
 
-            // 4. Simpan Riwayat Diklat awal
-            if (!empty($diklatInput['nama_diklat'])) {
-                $fileSertifikat = null;
-                if (!empty($files['diklat_sertifikat'])) {
-                    $fileSertifikat = $files['diklat_sertifikat']->store('sertifikat_diklat', 'local');
+            // 4. Simpan Riwayat Diklat
+            if (isset($data['riwayat_diklat']) && is_array($data['riwayat_diklat'])) {
+                foreach ($data['riwayat_diklat'] as $index => $row) {
+                    if (empty($row['nama_diklat'])) {
+                        continue;
+                    }
+                    $fileSertifikat = null;
+                    if (isset($files['riwayat_diklat'][$index]['file_sertifikat'])) {
+                        $fileSertifikat = $files['riwayat_diklat'][$index]['file_sertifikat']->store('sertifikat_diklat', 'local');
+                    }
+                    $tanggalMulai   = !empty($row['tanggal_mulai']) ? $row['tanggal_mulai'] : date('Y-m-d');
+                    $tanggalSelesai = !empty($row['tanggal_selesai']) ? $row['tanggal_selesai'] : $tanggalMulai;
+                    $tahunDiklat    = Carbon::parse($tanggalMulai)->year;
+
+                    $pegawai->riwayatDiklat()->create([
+                        'nama_diklat'      => $row['nama_diklat'],
+                        'jenis_diklat'     => $row['jenis_diklat'] ?? null,
+                        'penyelenggara'    => $row['penyelenggara'] ?? null,
+                        'nomor_sertifikat' => $row['nomor_sertifikat'] ?? null,
+                        'tanggal_mulai'    => $tanggalMulai,
+                        'tanggal_selesai'  => $tanggalSelesai,
+                        'tahun'            => $tahunDiklat,
+                        'status'           => $row['status'] ?? 'Aktif',
+                        'keterangan'       => $row['keterangan'] ?? null,
+                        'file_sertifikat'  => $fileSertifikat,
+                    ]);
                 }
-
-                $tanggalMulai   = !empty($diklatInput['tanggal_mulai']) ? $diklatInput['tanggal_mulai'] : date('Y-m-d');
-                $tanggalSelesai = !empty($diklatInput['tanggal_selesai']) ? $diklatInput['tanggal_selesai'] : $tanggalMulai;
-                $tahunDiklat    = Carbon::parse($tanggalMulai)->year;
-
-                $pegawai->riwayatDiklat()->create([
-                    'nama_diklat'      => $diklatInput['nama_diklat'],
-                    'jenis_diklat'     => $diklatInput['jenis_diklat'] ?? null,
-                    'penyelenggara'    => $diklatInput['penyelenggara'] ?? null,
-                    'nomor_sertifikat' => $diklatInput['nomor_sertifikat'] ?? null,
-                    'tanggal_mulai'    => $tanggalMulai,
-                    'tanggal_selesai'  => $tanggalSelesai,
-                    'tahun'            => $tahunDiklat,
-                    'status'           => $diklatInput['status'] ?? 'Aktif',
-                    'keterangan'       => $diklatInput['keterangan'] ?? null,
-                    'file_sertifikat'  => $fileSertifikat,
-                ]);
             }
 
-            // 5. Buat Riwayat Jabatan Awal
-            if ($pegawai->jabatan_id && $pegawai->unit_kerja_id) {
-                RiwayatJabatan::create([
-                    'pegawai_id'    => $pegawai->id,
-                    'jabatan_id'    => $pegawai->jabatan_id,
-                    'unit_kerja_id' => $pegawai->unit_kerja_id,
-                    'tmt_jabatan'   => $pegawai->tanggal_masuk ?? now(),
-                    'nomor_sk'      => $data['nomor_sk_pertama'] ?? null,
-                    'tanggal_sk'    => $data['tanggal_sk_pertama'] ?? null,
-                    'file_sk'       => $pegawai->file_sk_pertama ?? null,
-                    'keterangan'    => 'Riwayat awal saat pegawai dibuat',
-                    'status'        => 'Aktif'
-                ]);
+            // 5. Simpan Riwayat Jabatan
+            if (isset($data['riwayat_jabatan']) && is_array($data['riwayat_jabatan'])) {
+                foreach ($data['riwayat_jabatan'] as $index => $row) {
+                    if (empty($row['jabatan_id']) || empty($row['unit_kerja_id'])) {
+                        continue;
+                    }
+                    $fileSk = null;
+                    if (isset($files['riwayat_jabatan'][$index]['file_sk'])) {
+                        $fileSk = $files['riwayat_jabatan'][$index]['file_sk']->store('sk_jabatan', 'local');
+                    }
+                    $pegawai->riwayatJabatan()->create([
+                        'jabatan_id'    => $row['jabatan_id'],
+                        'unit_kerja_id' => $row['unit_kerja_id'],
+                        'eselon'        => $row['eselon'] ?? null,
+                        'tmt_jabatan'   => $row['tmt_jabatan'] ?? now(),
+                        'nomor_sk'      => $row['nomor_sk'] ?? null,
+                        'tanggal_sk'    => $row['tanggal_sk'] ?? null,
+                        'status'        => $row['status'] ?? 'riwayat',
+                        'file_sk'       => $fileSk,
+                        'keterangan'    => $row['keterangan'] ?? 'Input dari form tambah pegawai',
+                    ]);
+                }
             }
 
-            // 6. Buat Riwayat Pangkat Awal
-            if ($pegawai->golongan_id) {
-                RiwayatPangkat::create([
-                    'pegawai_id'  => $pegawai->id,
-                    'golongan_id' => $pegawai->golongan_id,
-                    'tmt'         => $pegawai->tmt_pangkat_terakhir ?? now(),
-                    'nomor_sk'    => $data['nomor_sk_pangkat_terakhir'] ?? null,
-                    'tanggal_sk'  => $data['tanggal_sk_pangkat_terakhir'] ?? null,
-                    'file_sk'     => $pegawai->file_sk_pangkat_terakhir ?? null,
-                    'keterangan'  => 'Riwayat awal saat pegawai dibuat',
-                    'status'      => 'aktif'
-                ]);
+            // 6. Simpan Riwayat Pangkat
+            if (isset($data['riwayat_pangkat']) && is_array($data['riwayat_pangkat'])) {
+                foreach ($data['riwayat_pangkat'] as $index => $row) {
+                    if (empty($row['golongan_id'])) {
+                        continue;
+                    }
+                    $fileSk = null;
+                    if (isset($files['riwayat_pangkat'][$index]['file_sk'])) {
+                        $fileSk = $files['riwayat_pangkat'][$index]['file_sk']->store('sk_pangkat', 'local');
+                    }
+                    $pegawai->riwayatPangkat()->create([
+                        'golongan_id' => $row['golongan_id'],
+                        'tmt'         => $row['tmt'] ?? now(),
+                        'nomor_sk'    => $row['nomor_sk'] ?? null,
+                        'tanggal_sk'  => $row['tanggal_sk'] ?? null,
+                        'status'      => $row['status'] ?? 'riwayat',
+                        'file_sk'     => $fileSk,
+                        'keterangan'  => $row['keterangan'] ?? 'Input dari form tambah pegawai',
+                    ]);
+                }
             }
+
+            // 7. Sinkronisasikan data ke pegawai utama
+            $this->syncPegawaiFromHistories($pegawai);
 
             return $pegawai;
         });
@@ -332,19 +343,6 @@ class PegawaiService
             $data['satyalancana_terakhir'] = $satyalancana['terakhir'];
             $data['satyalancana_berikutnya'] = $satyalancana['berikutnya'];
 
-            // Ambil data riwayat pendidikan & diklat dari input Edit
-            $pendidikanInput = $data['pendidikan'] ?? null;
-            $diklatInput     = $data['diklat'] ?? null;
-
-            if (is_array($pendidikanInput)) {
-                $data['pendidikan'] = $pendidikanInput['jenjang'] ?? $pendidikanInput['institusi'] ?? null;
-            } elseif (is_string($pendidikanInput)) {
-                $data['pendidikan'] = $pendidikanInput;
-            } else {
-                unset($data['pendidikan']);
-            }
-            unset($data['diklat']);
-
             // Update tabel pegawai utama
             $pegawaiUpdated = $this->pegawaiRepository->update($pegawai->id, $data);
 
@@ -356,134 +354,147 @@ class PegawaiService
                 ]);
             }
 
-            // 1. UPDATE / SIMPAN RIWAYAT PENDIDIKAN SAAT EDIT
-            if (is_array($pendidikanInput) && (!empty($pendidikanInput['jenjang']) || !empty($pendidikanInput['institusi']))) {
+            // 1. UPDATE / SIMPAN RIWAYAT PENDIDIKAN
+            $existingPendidikanIds = $pegawai->riwayatPendidikan()->pluck('id')->toArray();
+            $incomingPendidikan = $data['riwayat_pendidikan'] ?? [];
+            $incomingPendidikanIds = collect($incomingPendidikan)->pluck('id')->filter()->toArray();
+            $pegawai->riwayatPendidikan()->whereIn('id', array_diff($existingPendidikanIds, $incomingPendidikanIds))->delete();
+            foreach ($incomingPendidikan as $index => $row) {
+                if (empty($row['jenjang']) && empty($row['institusi'])) {
+                    continue;
+                }
                 $fileIjazah = null;
-                if (!empty($files['pendidikan_ijazah'])) {
-                    $fileIjazah = $files['pendidikan_ijazah']->store('ijazah', 'local');
+                if (isset($files['riwayat_pendidikan'][$index]['ijazah'])) {
+                    $fileIjazah = $files['riwayat_pendidikan'][$index]['ijazah']->store('ijazah', 'local');
                 }
-
-                $pendidikanPayload = [
-                    'jenjang'     => $pendidikanInput['jenjang'] ?? 'S1',
-                    'institusi'   => $pendidikanInput['institusi'] ?? 'Universitas / Sekolah',
-                    'fakultas'    => $pendidikanInput['fakultas'] ?? null,
-                    'jurusan'     => $pendidikanInput['jurusan'] ?? null,
-                    'tahun_lulus' => !empty($pendidikanInput['tahun_lulus']) ? (int)$pendidikanInput['tahun_lulus'] : null,
+                
+                $payload = [
+                    'jenjang'     => $row['jenjang'] ?? 'S1',
+                    'institusi'   => $row['institusi'] ?? 'Universitas / Sekolah',
+                    'fakultas'    => $row['fakultas'] ?? null,
+                    'jurusan'     => $row['jurusan'] ?? null,
+                    'tahun_lulus' => !empty($row['tahun_lulus']) ? (int)$row['tahun_lulus'] : null,
                 ];
-
                 if ($fileIjazah) {
-                    $pendidikanPayload['ijazah'] = $fileIjazah;
+                    $payload['ijazah'] = $fileIjazah;
                 }
 
-                $riwayatPendidikanExist = $pegawai->riwayatPendidikan()->first();
-                if ($riwayatPendidikanExist) {
-                    $riwayatPendidikanExist->update($pendidikanPayload);
+                if (!empty($row['id'])) {
+                    $pegawai->riwayatPendidikan()->where('id', $row['id'])->update($payload);
                 } else {
-                    $pegawai->riwayatPendidikan()->create($pendidikanPayload);
-                }
-            } elseif (!empty($pegawaiUpdated->pendidikan)) {
-                $riwayatPendidikanExist = $pegawai->riwayatPendidikan()->first();
-                if ($riwayatPendidikanExist) {
-                    $riwayatPendidikanExist->update(['jenjang' => $pegawaiUpdated->pendidikan]);
-                } else {
-                    $pegawai->riwayatPendidikan()->create([
-                        'jenjang'   => $pegawaiUpdated->pendidikan,
-                        'institusi' => 'Universitas / Sekolah',
-                    ]);
+                    $pegawai->riwayatPendidikan()->create($payload);
                 }
             }
 
-            // 2. UPDATE / SIMPAN RIWAYAT DIKLAT SAAT EDIT
-            if (!empty($diklatInput['nama_diklat'])) {
-                $fileSertifikat = null;
-                if (!empty($files['diklat_sertifikat'])) {
-                    $fileSertifikat = $files['diklat_sertifikat']->store('sertifikat_diklat', 'local');
+            // 2. UPDATE / SIMPAN RIWAYAT DIKLAT
+            $existingDiklatIds = $pegawai->riwayatDiklat()->pluck('id')->toArray();
+            $incomingDiklat = $data['riwayat_diklat'] ?? [];
+            $incomingDiklatIds = collect($incomingDiklat)->pluck('id')->filter()->toArray();
+            $pegawai->riwayatDiklat()->whereIn('id', array_diff($existingDiklatIds, $incomingDiklatIds))->delete();
+            foreach ($incomingDiklat as $index => $row) {
+                if (empty($row['nama_diklat'])) {
+                    continue;
                 }
-
-                $tanggalMulai   = !empty($diklatInput['tanggal_mulai']) ? $diklatInput['tanggal_mulai'] : date('Y-m-d');
-                $tanggalSelesai = !empty($diklatInput['tanggal_selesai']) ? $diklatInput['tanggal_selesai'] : $tanggalMulai;
+                $fileSertifikat = null;
+                if (isset($files['riwayat_diklat'][$index]['file_sertifikat'])) {
+                    $fileSertifikat = $files['riwayat_diklat'][$index]['file_sertifikat']->store('sertifikat_diklat', 'local');
+                }
+                $tanggalMulai   = !empty($row['tanggal_mulai']) ? $row['tanggal_mulai'] : date('Y-m-d');
+                $tanggalSelesai = !empty($row['tanggal_selesai']) ? $row['tanggal_selesai'] : $tanggalMulai;
                 $tahunDiklat    = Carbon::parse($tanggalMulai)->year;
 
-                $diklatPayload = [
-                    'nama_diklat'      => $diklatInput['nama_diklat'],
-                    'jenis_diklat'     => $diklatInput['jenis_diklat'] ?? null,
-                    'penyelenggara'    => $diklatInput['penyelenggara'] ?? null,
-                    'nomor_sertifikat' => $diklatInput['nomor_sertifikat'] ?? null,
+                $payload = [
+                    'nama_diklat'      => $row['nama_diklat'],
+                    'jenis_diklat'     => $row['jenis_diklat'] ?? null,
+                    'penyelenggara'    => $row['penyelenggara'] ?? null,
+                    'nomor_sertifikat' => $row['nomor_sertifikat'] ?? null,
                     'tanggal_mulai'    => $tanggalMulai,
                     'tanggal_selesai'  => $tanggalSelesai,
                     'tahun'            => $tahunDiklat,
-                    'status'           => $diklatInput['status'] ?? 'Aktif',
-                    'keterangan'       => $diklatInput['keterangan'] ?? null,
+                    'status'           => $row['status'] ?? 'Aktif',
+                    'keterangan'       => $row['keterangan'] ?? null,
                 ];
-
                 if ($fileSertifikat) {
-                    $diklatPayload['file_sertifikat'] = $fileSertifikat;
+                    $payload['file_sertifikat'] = $fileSertifikat;
                 }
 
-                $riwayatDiklatExist = $pegawai->riwayatDiklat()->first();
-                if ($riwayatDiklatExist) {
-                    $riwayatDiklatExist->update($diklatPayload);
+                if (!empty($row['id'])) {
+                    $pegawai->riwayatDiklat()->where('id', $row['id'])->update($payload);
                 } else {
-                    $pegawai->riwayatDiklat()->create($diklatPayload);
+                    $pegawai->riwayatDiklat()->create($payload);
                 }
             }
 
-            // 3. SINKRONKAN RIWAYAT JABATAN SAAT EDIT PEGAWAI
-            if ($pegawaiUpdated->jabatan_id && $pegawaiUpdated->unit_kerja_id) {
-                $riwayatJabatanExist = RiwayatJabatan::where('pegawai_id', $pegawaiUpdated->id)
-                    ->whereIn('status', ['aktif', 'Aktif'])
-                    ->first();
-                if ($riwayatJabatanExist) {
-                    $riwayatJabatanExist->update([
-                        'jabatan_id'    => $pegawaiUpdated->jabatan_id,
-                        'unit_kerja_id' => $pegawaiUpdated->unit_kerja_id,
-                        'nomor_sk'      => $data['nomor_sk_pertama'] ?? $riwayatJabatanExist->nomor_sk,
-                        'tanggal_sk'    => $data['tanggal_sk_pertama'] ?? $riwayatJabatanExist->tanggal_sk,
-                        'file_sk'       => $pegawaiUpdated->file_sk_pertama ?? $riwayatJabatanExist->file_sk,
-                        'status'        => 'Aktif',
-                    ]);
+            // 3. UPDATE / SIMPAN RIWAYAT JABATAN
+            $existingJabatanIds = $pegawai->riwayatJabatan()->pluck('id')->toArray();
+            $incomingJabatan = $data['riwayat_jabatan'] ?? [];
+            $incomingJabatanIds = collect($incomingJabatan)->pluck('id')->filter()->toArray();
+            $pegawai->riwayatJabatan()->whereIn('id', array_diff($existingJabatanIds, $incomingJabatanIds))->delete();
+            foreach ($incomingJabatan as $index => $row) {
+                if (empty($row['jabatan_id']) || empty($row['unit_kerja_id'])) {
+                    continue;
+                }
+                $fileSk = null;
+                if (isset($files['riwayat_jabatan'][$index]['file_sk'])) {
+                    $fileSk = $files['riwayat_jabatan'][$index]['file_sk']->store('sk_jabatan', 'local');
+                }
+
+                $payload = [
+                    'jabatan_id'    => $row['jabatan_id'],
+                    'unit_kerja_id' => $row['unit_kerja_id'],
+                    'eselon'        => $row['eselon'] ?? null,
+                    'tmt_jabatan'   => $row['tmt_jabatan'] ?? now(),
+                    'nomor_sk'      => $row['nomor_sk'] ?? null,
+                    'tanggal_sk'    => $row['tanggal_sk'] ?? null,
+                    'status'        => $row['status'] ?? 'riwayat',
+                    'keterangan'    => $row['keterangan'] ?? 'Update dari form edit pegawai',
+                ];
+                if ($fileSk) {
+                    $payload['file_sk'] = $fileSk;
+                }
+
+                if (!empty($row['id'])) {
+                    $pegawai->riwayatJabatan()->where('id', $row['id'])->update($payload);
                 } else {
-                    RiwayatJabatan::create([
-                        'pegawai_id'    => $pegawaiUpdated->id,
-                        'jabatan_id'    => $pegawaiUpdated->jabatan_id,
-                        'unit_kerja_id' => $pegawaiUpdated->unit_kerja_id,
-                        'tmt_jabatan'   => $pegawaiUpdated->tanggal_masuk ?? now(),
-                        'nomor_sk'      => $data['nomor_sk_pertama'] ?? null,
-                        'tanggal_sk'    => $data['tanggal_sk_pertama'] ?? null,
-                        'file_sk'       => $pegawaiUpdated->file_sk_pertama ?? null,
-                        'keterangan'    => 'Riwayat jabatan disinkronkan saat edit pegawai',
-                        'status'        => 'Aktif'
-                    ]);
+                    $pegawai->riwayatJabatan()->create($payload);
                 }
             }
 
-            // 4. SINKRONKAN RIWAYAT PANGKAT SAAT EDIT PEGAWAI
-            if ($pegawaiUpdated->golongan_id) {
-                $riwayatPangkatExist = RiwayatPangkat::where('pegawai_id', $pegawaiUpdated->id)
-                    ->whereIn('status', ['aktif', 'Aktif'])
-                    ->first();
-                if ($riwayatPangkatExist) {
-                    $riwayatPangkatExist->update([
-                        'golongan_id' => $pegawaiUpdated->golongan_id,
-                        'tmt'         => $pegawaiUpdated->tmt_pangkat_terakhir ?? now(),
-                        'nomor_sk'    => $data['nomor_sk_pangkat_terakhir'] ?? $riwayatPangkatExist->nomor_sk,
-                        'tanggal_sk'  => $data['tanggal_sk_pangkat_terakhir'] ?? $riwayatPangkatExist->tanggal_sk,
-                        'file_sk'     => $pegawaiUpdated->file_sk_pangkat_terakhir ?? $riwayatPangkatExist->file_sk,
-                        'status'      => 'aktif',
-                    ]);
+            // 4. UPDATE / SIMPAN RIWAYAT PANGKAT
+            $existingPangkatIds = $pegawai->riwayatPangkat()->pluck('id')->toArray();
+            $incomingPangkat = $data['riwayat_pangkat'] ?? [];
+            $incomingPangkatIds = collect($incomingPangkat)->pluck('id')->filter()->toArray();
+            $pegawai->riwayatPangkat()->whereIn('id', array_diff($existingPangkatIds, $incomingPangkatIds))->delete();
+            foreach ($incomingPangkat as $index => $row) {
+                if (empty($row['golongan_id'])) {
+                    continue;
+                }
+                $fileSk = null;
+                if (isset($files['riwayat_pangkat'][$index]['file_sk'])) {
+                    $fileSk = $files['riwayat_pangkat'][$index]['file_sk']->store('sk_pangkat', 'local');
+                }
+
+                $payload = [
+                    'golongan_id' => $row['golongan_id'],
+                    'tmt'         => $row['tmt'] ?? now(),
+                    'nomor_sk'    => $row['nomor_sk'] ?? null,
+                    'tanggal_sk'  => $row['tanggal_sk'] ?? null,
+                    'status'      => $row['status'] ?? 'riwayat',
+                    'keterangan'  => $row['keterangan'] ?? 'Update dari form edit pegawai',
+                ];
+                if ($fileSk) {
+                    $payload['file_sk'] = $fileSk;
+                }
+
+                if (!empty($row['id'])) {
+                    $pegawai->riwayatPangkat()->where('id', $row['id'])->update($payload);
                 } else {
-                    RiwayatPangkat::create([
-                        'pegawai_id'  => $pegawaiUpdated->id,
-                        'golongan_id' => $pegawaiUpdated->golongan_id,
-                        'tmt'         => $pegawaiUpdated->tmt_pangkat_terakhir ?? now(),
-                        'nomor_sk'    => $data['nomor_sk_pangkat_terakhir'] ?? null,
-                        'tanggal_sk'  => $data['tanggal_sk_pangkat_terakhir'] ?? null,
-                        'file_sk'     => $pegawaiUpdated->file_sk_pangkat_terakhir ?? null,
-                        'keterangan'  => 'Riwayat pangkat disinkronkan saat edit pegawai',
-                        'status'      => 'aktif',
-                    ]);
+                    $pegawai->riwayatPangkat()->create($payload);
                 }
             }
+
+            // 5. Sinkronisasikan data ke pegawai utama
+            $this->syncPegawaiFromHistories($pegawaiUpdated);
 
             return $pegawaiUpdated;
         });
@@ -554,5 +565,71 @@ class PegawaiService
     public function getStatistics(): array
     {
         return $this->pegawaiRepository->getStatistics();
+    }
+
+    public function syncPegawaiFromHistories(Pegawai $pegawai): void
+    {
+        // 1. Sinkronisasi Jabatan Terakhir
+        $activeJabatan = $pegawai->riwayatJabatan()
+            ->whereIn('status', ['aktif', 'Aktif'])
+            ->first();
+        if (!$activeJabatan) {
+            $activeJabatan = $pegawai->riwayatJabatan()
+                ->orderBy('tmt_jabatan', 'desc')
+                ->first();
+        }
+
+        if ($activeJabatan) {
+            $pegawai->jabatan_id = $activeJabatan->jabatan_id;
+            $pegawai->unit_kerja_id = $activeJabatan->unit_kerja_id;
+            if ($activeJabatan->status === 'aktif' || $activeJabatan->status === 'Aktif') {
+                $pegawai->file_sk_pertama = $activeJabatan->file_sk;
+            }
+        }
+
+        // 2. Sinkronisasi Pangkat Terakhir
+        $activePangkat = $pegawai->riwayatPangkat()
+            ->whereIn('status', ['aktif', 'Aktif'])
+            ->first();
+        if (!$activePangkat) {
+            $activePangkat = $pegawai->riwayatPangkat()
+                ->orderBy('tmt', 'desc')
+                ->first();
+        }
+
+        if ($activePangkat) {
+            $pegawai->golongan_id = $activePangkat->golongan_id;
+            $pegawai->tmt_pangkat_terakhir = $activePangkat->tmt;
+            if ($activePangkat->status === 'aktif' || $activePangkat->status === 'Aktif') {
+                $pegawai->file_sk_pangkat_terakhir = $activePangkat->file_sk;
+            }
+        }
+
+        // 3. Sinkronisasi Pendidikan Terakhir (Kualifikasi Tertinggi)
+        $jenjangOrder = [
+            'SD' => 1,
+            'SMP' => 2,
+            'SMA' => 3,
+            'D3' => 4,
+            'S1' => 5,
+            'S2' => 6,
+            'S3' => 7,
+            'PROFESOR' => 8,
+            'PROF' => 8,
+        ];
+        
+        $highestPendidikan = $pegawai->riwayatPendidikan()
+            ->get()
+            ->sortByDesc(function ($item) use ($jenjangOrder) {
+                $key = strtoupper($item->jenjang ?? '');
+                return $jenjangOrder[$key] ?? 0;
+            })
+            ->first();
+
+        if ($highestPendidikan) {
+            $pegawai->pendidikan = $highestPendidikan->jenjang;
+        }
+
+        $pegawai->save();
     }
 }

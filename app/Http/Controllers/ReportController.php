@@ -102,7 +102,7 @@ class ReportController extends Controller
         if (!file_exists($targetPath)) {
             $targetPath = storage_path('app/public' . DIRECTORY_SEPARATOR . $relativePath);
             if (!file_exists($targetPath)) {
-                if ($request->expectsJson() || $request->is('api/*')) {
+                if ($request->expectsJson() || $request->is('api/*') || !$request->headers->has('referer')) {
                     abort(404, 'Dokumen tidak ditemukan.');
                 }
                 return redirect()->back()->with('error', 'Berkas fisik belum diunggah atau tidak ditemukan di server. Silakan edit dan unggah ulang berkas.');
@@ -111,7 +111,7 @@ class ReportController extends Controller
 
         $realTarget = realpath($targetPath);
         if ($realTarget === false) {
-            if ($request->expectsJson() || $request->is('api/*')) {
+            if ($request->expectsJson() || $request->is('api/*') || !$request->headers->has('referer')) {
                 abort(404, 'Dokumen tidak ditemukan.');
             }
             return redirect()->back()->with('error', 'Berkas fisik belum diunggah atau tidak ditemukan di server. Silakan edit dan unggah ulang berkas.');

@@ -58,7 +58,9 @@
                         @include('pegawai.forms._administrasi')
                         @include('pegawai.forms._fisik')
                         
-                        {{-- Include Form Riwayat Pendidikan & Diklat --}}
+                        {{-- Include Form Riwayat Pendidikan, Diklat, Pangkat & Jabatan --}}
+                        @include('pegawai.forms._pangkat')
+                        @include('pegawai.forms._jabatan')
                         @include('pegawai.forms._pendidikan')
                         @include('pegawai.forms._diklat')
 

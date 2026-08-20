@@ -13,6 +13,7 @@ class RiwayatJabatan extends Model
         'pegawai_id',
         'jabatan_id',
         'unit_kerja_id',
+        'eselon',
         'nomor_sk',
         'tanggal_sk',
         'tmt_jabatan',

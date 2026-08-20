@@ -91,18 +91,9 @@ class PegawaiController extends Controller
     public function store(StorePegawaiRequest $request)
     {
         DB::transaction(function () use ($request) {
-            $files = [
-                'foto'                     => $request->file('foto'),
-                'file_sk_pertama'          => $request->file('file_sk_pertama'),
-                'file_sk_pangkat_terakhir' => $request->file('file_sk_pangkat_terakhir'),
-                'file_sk_kgb_terakhir'     => $request->file('file_sk_kgb_terakhir'),
-                'pendidikan_ijazah'        => $request->file('pendidikan_ijazah'),
-                'diklat_sertifikat'        => $request->file('diklat_sertifikat'),
-            ];
-
             $this->pegawaiService->createPegawai(
                 $request->validated(),
-                $files
+                $request->allFiles()
             );
         });
 
@@ -143,19 +134,10 @@ class PegawaiController extends Controller
         // OTORISASI POLICY: Cek izin update data
         $this->authorize('update', $pegawai);
 
-        $files = [
-            'foto'                     => $request->file('foto'),
-            'file_sk_pertama'          => $request->file('file_sk_pertama'),
-            'file_sk_pangkat_terakhir' => $request->file('file_sk_pangkat_terakhir'),
-            'file_sk_kgb_terakhir'     => $request->file('file_sk_kgb_terakhir'),
-            'pendidikan_ijazah'        => $request->file('pendidikan_ijazah'),
-            'diklat_sertifikat'        => $request->file('diklat_sertifikat'),
-        ];
-
         $this->pegawaiService->updatePegawai(
             $id,
             $request->validated(),
-            $files
+            $request->allFiles()
         );
 
         // Pengarahan halaman berdasarkan Role
