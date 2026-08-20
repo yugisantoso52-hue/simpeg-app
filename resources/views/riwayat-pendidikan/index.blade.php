@@ -31,6 +31,21 @@
                 </div>
             @endif
 
+            {{-- Flash Alert Error --}}
+            @if(session('error'))
+                <div class="rounded-xl border border-red-200 bg-red-50 p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <span class="font-medium text-red-700">{{ session('error') }}</span>
+                        </div>
+                        <button onclick="this.parentElement.parentElement.remove()" class="text-red-700 hover:text-red-900">✕</button>
+                    </div>
+                </div>
+            @endif
+
             {{-- Validation Errors --}}
             @if ($errors->any())
                 <div class="rounded-xl border border-red-200 bg-red-50 p-4">
@@ -77,7 +92,7 @@
                                     {{ ($data->currentPage()-1) * $data->perPage() + $loop->iteration }}
                                 </td>
                                 <td class="px-4 py-3">
-                                    <div class="font-semibold text-slate-800">{{ $row->pegawai->nama ?? '-' }}</div>
+                                    <div class="font-semibold text-slate-800">{{ $row->pegawai->nama_lengkap ?? $row->pegawai->nama ?? '-' }}</div>
                                     <div class="text-xs text-slate-500">{{ $row->pegawai->nip ?? '' }}</div>
                                 </td>
                                 <td class="px-4 py-3 font-medium text-slate-700">
@@ -96,8 +111,8 @@
                                     {{ $row->tahun_lulus }}
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    @if($row->ijazah)
-                                        <a href="{{ route('document.preview', ['path' => $row->ijazah]) }}" target="_blank" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs">
+                                    @if($row->ijazah_url)
+                                        <a href="{{ $row->ijazah_url }}" target="_blank" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs">
                                             📄 Lihat
                                         </a>
                                     @else

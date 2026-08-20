@@ -27,6 +27,13 @@
                 </div>
             @endif
 
+            @if(session('error'))
+                <div id="error-alert" class="mb-5 rounded-lg border border-red-300 bg-red-50 px-5 py-4 text-red-700 flex items-center justify-between">
+                    <span>{{ session('error') }}</span>
+                    <button type="button" class="text-red-700 font-bold hover:text-red-900" onclick="this.parentElement.remove()">×</button>
+                </div>
+            @endif
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
                 <div class="bg-white rounded-xl shadow p-5 border hover:shadow-lg transition">
                     <div class="text-sm text-gray-500">Total Diklat</div>
@@ -98,7 +105,7 @@
                                 </td>
 
                                 <td class="px-4 py-3">
-                                    <div class="font-semibold text-gray-800">{{ $row->pegawai->nama ?? '-' }}</div>
+                                    <div class="font-semibold text-gray-800">{{ $row->pegawai->nama_lengkap ?? $row->pegawai->nama ?? '-' }}</div>
                                     <div class="text-xs text-gray-500">{{ $row->pegawai->nip ?? '-' }}</div>
                                 </td>
 
@@ -126,8 +133,8 @@
                                 </td>
 
                                 <td class="px-4 py-3 text-center whitespace-nowrap">
-                                    @if($row->file_sertifikat)
-                                        <a href="{{ route('document.preview', ['path' => $row->file_sertifikat]) }}" target="_blank"
+                                    @if($row->file_sertifikat_url)
+                                        <a href="{{ $row->file_sertifikat_url }}" target="_blank"
                                            class="inline-flex items-center rounded-md bg-sky-100 px-2.5 py-1 text-xs font-medium text-sky-700 hover:bg-sky-200 transition">
                                             📄 Lihat
                                         </a>

@@ -32,6 +32,8 @@ class RiwayatPendidikan extends Model
      */
     public function getIjazahUrlAttribute(): ?string
     {
-        return $this->ijazah ? route('document.preview', ['path' => $this->ijazah]) : null;
+        return (!empty($this->ijazah) && $this->ijazah !== '-') 
+            ? route('document.preview', ['path' => $this->ijazah]) 
+            : null;
     }
 }

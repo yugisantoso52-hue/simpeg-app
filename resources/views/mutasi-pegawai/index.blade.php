@@ -16,6 +16,13 @@
                     </div>
                 @endif
 
+                @if(session('error'))
+                    <div class="mb-4 p-4 bg-red-100 border border-red-200 text-red-700 rounded-lg flex items-center justify-between">
+                        <span>{{ session('error') }}</span>
+                        <button type="button" class="text-red-700 font-bold hover:text-red-900" onclick="this.parentElement.remove()">×</button>
+                    </div>
+                @endif
+
                 <div class="mb-4">
                     <a href="{{ route('mutasi-pegawai.create') }}"
                        class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
@@ -46,7 +53,7 @@
                                 </td>
 
                                 <td class="px-4 py-3 font-semibold text-gray-800">
-                                    {{ $row->pegawai->nama ?? '-' }}
+                                    {{ $row->pegawai->nama_lengkap ?? $row->pegawai->nama ?? '-' }}
                                 </td>
 
                                 <td class="px-4 py-3">

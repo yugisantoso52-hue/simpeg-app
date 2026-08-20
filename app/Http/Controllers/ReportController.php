@@ -105,7 +105,7 @@ class ReportController extends Controller
                 if ($request->expectsJson() || $request->is('api/*')) {
                     abort(404, 'Dokumen tidak ditemukan.');
                 }
-                return redirect()->back()->with('error', 'Dokumen/file fisik tidak ditemukan di server.');
+                return redirect()->back()->with('error', 'Berkas fisik belum diunggah atau tidak ditemukan di server. Silakan edit dan unggah ulang berkas.');
             }
         }
 
@@ -114,7 +114,7 @@ class ReportController extends Controller
             if ($request->expectsJson() || $request->is('api/*')) {
                 abort(404, 'Dokumen tidak ditemukan.');
             }
-            return redirect()->back()->with('error', 'Dokumen/file fisik tidak ditemukan di server.');
+            return redirect()->back()->with('error', 'Berkas fisik belum diunggah atau tidak ditemukan di server. Silakan edit dan unggah ulang berkas.');
         }
 
         // 3. Containment Check: Pastikan file berada di dalam storage root yang diizinkan
