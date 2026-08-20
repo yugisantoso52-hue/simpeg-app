@@ -184,9 +184,19 @@ class PegawaiController extends Controller
         ]);
 
         try {
-            Excel::import(new PegawaiImport, $request->file('file'));
+            // Increase timeouts & memory limit for mass import execution
+            ini_set('max_execution_time', 300);
+            set_time_limit(300);
+            ini_set('memory_limit', '512M');
+
+            DB::transaction(function () use ($request) {
+                Pegawai::withoutEvents(function () use ($request) {
+                    Excel::import(new PegawaiImport, $request->file('file'));
+                });
+            });
             
-            Cache::forget('pegawai_statistics');
+            // Clean up cache once at the end
+            Cache::flush();
 
             return redirect()->route('pegawai.index')->with('success', 'Data pegawai berhasil diimpor secara masal!');
         } catch (\Exception $e) {

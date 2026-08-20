@@ -12,24 +12,69 @@ use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
-class PegawaiImport implements ToModel, WithHeadingRow, SkipsEmptyRows
+class PegawaiImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithChunkReading
 {
+    private array $unitKerjas = [];
+    private array $jabatans = [];
+    private array $golongans = [];
+
+    public function __construct()
+    {
+        // Preload Master Data to prevent N+1 database lookups in loop
+        
+        // 1. Unit Kerja
+        UnitKerja::all()->each(function ($item) {
+            $this->unitKerjas[(int)$item->id] = (int)$item->id;
+            $this->unitKerjas[strtolower(trim($item->nama_unit))] = (int)$item->id;
+            if (!empty($item->kode_unit)) {
+                $this->unitKerjas[strtolower(trim($item->kode_unit))] = (int)$item->id;
+            }
+        });
+
+        // 2. Jabatan
+        Jabatan::all()->each(function ($item) {
+            $this->jabatans[(int)$item->id] = (int)$item->id;
+            $this->jabatans[strtolower(trim($item->nama_jabatan))] = (int)$item->id;
+            if (!empty($item->kode_jabatan)) {
+                $this->jabatans[strtolower(trim($item->kode_jabatan))] = (int)$item->id;
+            }
+        });
+
+        // 3. Golongan
+        Golongan::all()->each(function ($item) {
+            $this->golongans[(int)$item->id] = (int)$item->id;
+            $this->golongans[strtolower(trim($item->nama_golongan))] = (int)$item->id;
+            if (!empty($item->nama_pangkat)) {
+                $this->golongans[strtolower(trim($item->nama_pangkat))] = (int)$item->id;
+            }
+        });
+    }
+
     public function model(array $row)
     {
         // 1. Ambil NIP & Nama Lengkap (Mendukung berbagai kemungkinan nama kolom header Excel)
         $nip  = trim((string)($row['nip'] ?? $row[0] ?? ''));
         $nama = trim((string)($row['nama_lengkap'] ?? $row['nama'] ?? $row['nama_pegawai'] ?? ''));
 
-        // Jika NIP atau Nama kosong (baris kosong di bawah Excel), lewati secara aman
-        if (empty($nip) || empty($nama)) {
+        // Jika NIP dan Nama kosong (baris kosong di bawah Excel), lewati secara aman
+        if (empty($nip) && empty($nama)) {
             return null;
+        }
+
+        // Validasi input wajib
+        if (empty($nip)) {
+            throw new \Exception("NIP tidak boleh kosong pada salah satu baris data.");
+        }
+        if (empty($nama)) {
+            throw new \Exception("Nama Lengkap tidak boleh kosong untuk NIP: " . $nip);
         }
 
         $nik = !empty($row['nik']) ? trim((string)$row['nik']) : null;
 
-        // Pembacaan Tanggal Aman (Mendukung format DD/MM/YYYY, YYYY-MM-DD, DD-Mon-YY, maupun Serial Excel)
+        // Pembacaan Tanggal Aman
         $tanggalLahir = $this->parseDateSafe($row['tanggal_lahir_yyyy_mm_dd'] ?? $row['tanggal_lahir'] ?? null);
         $tanggalMasuk = $this->parseDateSafe($row['tanggal_masuk_yyyy_mm_dd'] ?? $row['tanggal_masuk'] ?? null);
         $tmtSkPertama = $this->parseDateSafe($row['tmt_sk_pertama_yyyy_mm_dd'] ?? $row['tmt_sk_pertama'] ?? null);
@@ -55,7 +100,7 @@ class PegawaiImport implements ToModel, WithHeadingRow, SkipsEmptyRows
             }
         }
 
-        // Resolusi Cerdas Unit Kerja, Jabatan, & Golongan (Mendukung ID maupun Nama/Kode)
+        // Resolusi Cerdas Unit Kerja, Jabatan, & Golongan dari cache memori
         $unitKerjaRaw = $row['id_unit_kerja'] ?? $row['unit_kerja_id'] ?? $row['unit_kerja'] ?? $row['nama_unit'] ?? $row['unit'] ?? null;
         $jabatanRaw   = $row['id_jabatan'] ?? $row['jabatan_id'] ?? $row['jabatan'] ?? $row['nama_jabatan'] ?? null;
         $golonganRaw  = $row['id_golongan'] ?? $row['golongan_id'] ?? $row['golongan'] ?? $row['nama_golongan'] ?? $row['pangkat'] ?? $row['nama_pangkat'] ?? null;
@@ -147,41 +192,65 @@ class PegawaiImport implements ToModel, WithHeadingRow, SkipsEmptyRows
     {
         if (empty($val)) return null;
         $val = trim((string)$val);
-        if (is_numeric($val) && UnitKerja::where('id', (int)$val)->exists()) {
+        if (is_numeric($val) && isset($this->unitKerjas[(int)$val])) {
             return (int)$val;
         }
-        return UnitKerja::where('nama_unit', 'like', "%{$val}%")
-            ->orWhere('kode_unit', 'like', "%{$val}%")
-            ->value('id');
+
+        $key = strtolower($val);
+        if (isset($this->unitKerjas[$key])) {
+            return $this->unitKerjas[$key];
+        }
+
+        foreach ($this->unitKerjas as $name => $id) {
+            if (is_string($name) && str_contains($name, $key)) {
+                return $id;
+            }
+        }
+        return null;
     }
 
     private function resolveJabatanId($val): ?int
     {
         if (empty($val)) return null;
         $val = trim((string)$val);
-        if (is_numeric($val) && Jabatan::where('id', (int)$val)->exists()) {
+        if (is_numeric($val) && isset($this->jabatans[(int)$val])) {
             return (int)$val;
         }
-        return Jabatan::where('nama_jabatan', 'like', "%{$val}%")
-            ->orWhere('kode_jabatan', 'like', "%{$val}%")
-            ->value('id');
+
+        $key = strtolower($val);
+        if (isset($this->jabatans[$key])) {
+            return $this->jabatans[$key];
+        }
+
+        foreach ($this->jabatans as $name => $id) {
+            if (is_string($name) && str_contains($name, $key)) {
+                return $id;
+            }
+        }
+        return null;
     }
 
     private function resolveGolonganId($val): ?int
     {
         if (empty($val)) return null;
         $val = trim((string)$val);
-        if (is_numeric($val) && Golongan::where('id', (int)$val)->exists()) {
+        if (is_numeric($val) && isset($this->golongans[(int)$val])) {
             return (int)$val;
         }
-        return Golongan::where('nama_golongan', 'like', "%{$val}%")
-            ->orWhere('nama_pangkat', 'like', "%{$val}%")
-            ->value('id');
+
+        $key = strtolower($val);
+        if (isset($this->golongans[$key])) {
+            return $this->golongans[$key];
+        }
+
+        foreach ($this->golongans as $name => $id) {
+            if (is_string($name) && str_contains($name, $key)) {
+                return $id;
+            }
+        }
+        return null;
     }
 
-    /**
-     * Parse tanggal dari Excel secara aman
-     */
     private function parseDateSafe($value)
     {
         if (empty($value)) {
@@ -197,5 +266,10 @@ class PegawaiImport implements ToModel, WithHeadingRow, SkipsEmptyRows
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    public function chunkSize(): int
+    {
+        return 100;
     }
 }
