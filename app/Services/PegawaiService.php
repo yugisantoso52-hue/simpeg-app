@@ -559,64 +559,56 @@ class PegawaiService
     public function bulkDeletePegawai(array $ids): int
     {
         return DB::transaction(function () use ($ids) {
-            $count = 0;
-            Pegawai::withoutEvents(function () use ($ids, &$count) {
-                foreach ($ids as $id) {
-                    $pegawai = $this->pegawaiRepository->find($id);
-                    if ($pegawai) {
-                        $this->deleteFoto($pegawai->foto);
-                        $this->deleteSK($pegawai->file_sk_pertama);
-                        $this->deleteSK($pegawai->file_sk_pangkat_terakhir);
-                        $this->deleteSK($pegawai->file_sk_kgb_terakhir);
+            // 1. Ambil daftar path file yang perlu dihapus dalam satu query batch
+            $publicFiles = [];
+            $privateFiles = [];
 
-                        User::where('pegawai_id', $pegawai->id)->delete();
+            // Foto pegawai (selalu di public disk)
+            $photos = Pegawai::whereIn('id', $ids)->pluck('foto')->filter()->toArray();
+            foreach ($photos as $photo) {
+                $publicFiles[] = $photo;
+            }
 
-                        $riwayatPendidikan = RiwayatPendidikan::where('pegawai_id', $pegawai->id)->get();
-                        foreach ($riwayatPendidikan as $rp) {
-                            if ($rp->ijazah) {
-                                $this->deleteSK($rp->ijazah);
-                            }
-                        }
-                        RiwayatPendidikan::where('pegawai_id', $pegawai->id)->delete();
+            // Kumpulkan file lainnya (SK, Ijazah, Sertifikat)
+            $otherFiles = array_merge(
+                Pegawai::whereIn('id', $ids)->pluck('file_sk_pertama')->filter()->toArray(),
+                Pegawai::whereIn('id', $ids)->pluck('file_sk_pangkat_terakhir')->filter()->toArray(),
+                Pegawai::whereIn('id', $ids)->pluck('file_sk_kgb_terakhir')->filter()->toArray(),
+                RiwayatPendidikan::whereIn('pegawai_id', $ids)->pluck('ijazah')->filter()->toArray(),
+                RiwayatJabatan::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray(),
+                RiwayatPangkat::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray(),
+                RiwayatDiklat::whereIn('pegawai_id', $ids)->pluck('file_sertifikat')->filter()->toArray(),
+                \App\Models\MutasiPegawai::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray()
+            );
 
-                        $riwayatDiklat = RiwayatDiklat::where('pegawai_id', $pegawai->id)->get();
-                        foreach ($riwayatDiklat as $rd) {
-                            if ($rd->file_sertifikat) {
-                                $this->deleteSK($rd->file_sertifikat);
-                            }
-                        }
-                        RiwayatDiklat::where('pegawai_id', $pegawai->id)->delete();
-
-                        $riwayatPangkat = RiwayatPangkat::where('pegawai_id', $pegawai->id)->get();
-                        foreach ($riwayatPangkat as $rp) {
-                            if ($rp->file_sk) {
-                                $this->deleteSK($rp->file_sk);
-                            }
-                        }
-                        RiwayatPangkat::where('pegawai_id', $pegawai->id)->delete();
-
-                        $riwayatJabatan = RiwayatJabatan::where('pegawai_id', $pegawai->id)->get();
-                        foreach ($riwayatJabatan as $rj) {
-                            if ($rj->file_sk) {
-                                $this->deleteSK($rj->file_sk);
-                            }
-                        }
-                        RiwayatJabatan::where('pegawai_id', $pegawai->id)->delete();
-
-                        $mutasi = \App\Models\MutasiPegawai::where('pegawai_id', $pegawai->id)->get();
-                        foreach ($mutasi as $m) {
-                            if ($m->file_sk) {
-                                $this->deleteSK($m->file_sk);
-                            }
-                        }
-                        \App\Models\MutasiPegawai::where('pegawai_id', $pegawai->id)->delete();
-
-                        $this->pegawaiRepository->delete($pegawai->id);
-                        $count++;
-                    }
+            // Pisahkan berdasarkan keberadaan disk (local vs public)
+            foreach ($otherFiles as $file) {
+                if (Storage::disk('local')->exists($file)) {
+                    $privateFiles[] = $file;
+                } elseif (Storage::disk('public')->exists($file)) {
+                    $publicFiles[] = $file;
                 }
-            });
+            }
 
+            // Hapus berkas sekaligus menggunakan batch delete
+            if (!empty($publicFiles)) {
+                Storage::disk('public')->delete($publicFiles);
+            }
+            if (!empty($privateFiles)) {
+                Storage::disk('local')->delete($privateFiles);
+            }
+
+            // 2. Hapus data relasi dan pegawai dengan query langsung (bulk database delete)
+            User::whereIn('pegawai_id', $ids)->delete();
+            RiwayatPendidikan::whereIn('pegawai_id', $ids)->delete();
+            RiwayatJabatan::whereIn('pegawai_id', $ids)->delete();
+            RiwayatPangkat::whereIn('pegawai_id', $ids)->delete();
+            RiwayatDiklat::whereIn('pegawai_id', $ids)->delete();
+            \App\Models\MutasiPegawai::whereIn('pegawai_id', $ids)->delete();
+
+            $count = Pegawai::whereIn('id', $ids)->delete();
+
+            // 3. Reset cache sekali saja di akhir
             \Illuminate\Support\Facades\Cache::flush();
 
             return $count;
