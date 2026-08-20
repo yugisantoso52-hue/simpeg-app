@@ -58,6 +58,10 @@ class UpdatePegawaiRequest extends FormRequest
             'tmt_sk_pertama'       => 'nullable|date',
             'tmt_pangkat_terakhir' => 'nullable|date',
             'tmt_kgb_terakhir'     => 'nullable|date',
+            'nomor_sk_pertama'           => 'nullable|string|max:100',
+            'tanggal_sk_pertama'         => 'nullable|date',
+            'nomor_sk_pangkat_terakhir'   => 'nullable|string|max:100',
+            'tanggal_sk_pangkat_terakhir' => 'nullable|date',
             'status_pegawai'       => 'nullable|in:Aktif,Non Aktif,Pensiun',
             'foto'                 => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
             'file_sk_pertama'          => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
@@ -103,6 +107,10 @@ class UpdatePegawaiRequest extends FormRequest
             'foto'              => 'Foto Pegawai',
             'pendidikan_ijazah' => 'File Ijazah Pendidikan',
             'diklat_sertifikat' => 'File Sertifikat Diklat',
+            'nomor_sk_pertama'           => 'Nomor SK Pertama',
+            'tanggal_sk_pertama'         => 'Tanggal SK Pertama',
+            'nomor_sk_pangkat_terakhir'   => 'Nomor SK Pangkat Terakhir',
+            'tanggal_sk_pangkat_terakhir' => 'Tanggal SK Pangkat Terakhir',
         ];
     }
 

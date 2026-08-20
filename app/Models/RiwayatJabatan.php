@@ -21,6 +21,11 @@ class RiwayatJabatan extends Model
         'file_sk'
     ];
 
+    protected $casts = [
+        'tanggal_sk' => 'date',
+        'tmt_jabatan' => 'date',
+    ];
+
     public function pegawai()
     {
         return $this->belongsTo(Pegawai::class, 'pegawai_id');
@@ -34,5 +39,13 @@ class RiwayatJabatan extends Model
     public function unitKerja()
     {
         return $this->belongsTo(UnitKerja::class, 'unit_kerja_id');
+    }
+
+    /**
+     * Accessor URL File SK Digital
+     */
+    public function getFileSkUrlAttribute(): ?string
+    {
+        return $this->file_sk ? route('document.preview', ['path' => $this->file_sk]) : null;
     }
 }

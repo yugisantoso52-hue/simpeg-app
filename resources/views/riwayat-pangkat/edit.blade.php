@@ -193,6 +193,21 @@
 
                             </div>
 
+                            {{-- Tanggal SK --}}
+                            <div>
+                                <label class="block font-semibold mb-2">
+                                    Tanggal SK
+                                </label>
+                                <input
+                                    type="date"
+                                    name="tanggal_sk"
+                                    value="{{ old('tanggal_sk', $data->tanggal_sk ? \Carbon\Carbon::parse($data->tanggal_sk)->format('Y-m-d') : '') }}"
+                                    class="w-full rounded-lg border px-4 py-2 @error('tanggal_sk') border-red-500 @else border-gray-300 @enderror">
+                                @error('tanggal_sk')
+                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
                         </div>
 
                         {{-- ================================================= --}}

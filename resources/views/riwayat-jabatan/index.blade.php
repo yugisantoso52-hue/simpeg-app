@@ -101,8 +101,8 @@
                                     </x-enterprise.badge>
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    @if($row->file_sk)
-                                        <a href="{{ route('document.preview', ['path' => $row->file_sk]) }}" target="_blank" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs">
+                                    @if($row->file_sk_url)
+                                        <a href="{{ $row->file_sk_url }}" target="_blank" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs">
                                             📄 Lihat SK
                                         </a>
                                     @else

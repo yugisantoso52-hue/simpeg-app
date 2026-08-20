@@ -64,6 +64,7 @@
                                 <th class="px-4 py-3 text-left">Golongan</th>
                                 <th class="px-4 py-3 text-center">TMT Pangkat</th>
                                 <th class="px-4 py-3 text-left">Nomor SK</th>
+                                <th class="px-4 py-3 text-center">Tanggal SK</th>
                                 <th class="px-4 py-3 text-center">Status</th>
                                 <th class="px-4 py-3 text-center">File SK</th>
                                 <th class="w-44 px-4 py-3 text-center">Aksi</th>
@@ -94,14 +95,17 @@
                                     {{ $row->tmt ? \Carbon\Carbon::parse($row->tmt)->format('d-m-Y') : '-' }}
                                 </td>
                                 <td class="px-4 py-3 text-slate-700 font-medium">{{ $row->nomor_sk ?? '-' }}</td>
+                                <td class="px-4 py-3 text-center text-slate-700 font-mono">
+                                    {{ $row->tanggal_sk ? \Carbon\Carbon::parse($row->tanggal_sk)->format('d-m-Y') : '-' }}
+                                </td>
                                 <td class="px-4 py-3 text-center">
                                     <x-enterprise.badge color="{{ strtolower($row->status) == 'aktif' ? 'green' : 'red' }}">
                                         {{ strtolower($row->status) == 'aktif' ? 'Aktif' : 'Tidak Aktif' }}
                                     </x-enterprise.badge>
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    @if($row->file_sk)
-                                        <a href="{{ route('document.preview', ['path' => $row->file_sk]) }}" target="_blank" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs">
+                                    @if($row->file_sk_url)
+                                        <a href="{{ $row->file_sk_url }}" target="_blank" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs">
                                             📄 Lihat SK
                                         </a>
                                     @else

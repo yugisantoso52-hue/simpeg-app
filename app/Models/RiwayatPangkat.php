@@ -17,6 +17,7 @@ class RiwayatPangkat extends Model
         'golongan_id',
         'tmt',
         'nomor_sk',
+        'tanggal_sk',
         'file_sk',
         'status',
         'tanggal_berakhir',
@@ -25,6 +26,7 @@ class RiwayatPangkat extends Model
 
     protected $casts = [
         'tmt' => 'date',
+        'tanggal_sk' => 'date',
         'tanggal_berakhir' => 'date',
     ];
 

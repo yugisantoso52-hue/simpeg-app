@@ -18,6 +18,7 @@ class UpdateRiwayatPangkatRequest extends FormRequest
             'golongan_id'      => 'required|exists:golongan,id',
             'tmt'              => 'nullable|date',
             'nomor_sk'         => 'nullable|string|max:100',
+            'tanggal_sk'       => 'nullable|date',
             'status'           => 'nullable|in:aktif,nonaktif',
             'tanggal_berakhir' => 'nullable|date',
             'keterangan'       => 'nullable|string|max:255',
@@ -32,6 +33,7 @@ class UpdateRiwayatPangkatRequest extends FormRequest
             'golongan_id' => 'Golongan',
             'tmt'         => 'TMT Pangkat',
             'nomor_sk'    => 'Nomor SK',
+            'tanggal_sk'  => 'Tanggal SK',
             'file_sk'     => 'File SK Pangkat',
         ];
     }

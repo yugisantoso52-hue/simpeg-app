@@ -263,8 +263,11 @@ class PegawaiService
                     'jabatan_id'    => $pegawai->jabatan_id,
                     'unit_kerja_id' => $pegawai->unit_kerja_id,
                     'tmt_jabatan'   => $pegawai->tanggal_masuk ?? now(),
+                    'nomor_sk'      => $data['nomor_sk_pertama'] ?? null,
+                    'tanggal_sk'    => $data['tanggal_sk_pertama'] ?? null,
+                    'file_sk'       => $pegawai->file_sk_pertama ?? null,
                     'keterangan'    => 'Riwayat awal saat pegawai dibuat',
-                    'status'        => 'aktif'
+                    'status'        => 'Aktif'
                 ]);
             }
 
@@ -274,6 +277,9 @@ class PegawaiService
                     'pegawai_id'  => $pegawai->id,
                     'golongan_id' => $pegawai->golongan_id,
                     'tmt'         => $pegawai->tmt_pangkat_terakhir ?? now(),
+                    'nomor_sk'    => $data['nomor_sk_pangkat_terakhir'] ?? null,
+                    'tanggal_sk'  => $data['tanggal_sk_pangkat_terakhir'] ?? null,
+                    'file_sk'     => $pegawai->file_sk_pangkat_terakhir ?? null,
                     'keterangan'  => 'Riwayat awal saat pegawai dibuat',
                     'status'      => 'aktif'
                 ]);
@@ -424,12 +430,17 @@ class PegawaiService
 
             // 3. SINKRONKAN RIWAYAT JABATAN SAAT EDIT PEGAWAI
             if ($pegawaiUpdated->jabatan_id && $pegawaiUpdated->unit_kerja_id) {
-                $riwayatJabatanExist = RiwayatJabatan::where('pegawai_id', $pegawaiUpdated->id)->first();
+                $riwayatJabatanExist = RiwayatJabatan::where('pegawai_id', $pegawaiUpdated->id)
+                    ->whereIn('status', ['aktif', 'Aktif'])
+                    ->first();
                 if ($riwayatJabatanExist) {
                     $riwayatJabatanExist->update([
                         'jabatan_id'    => $pegawaiUpdated->jabatan_id,
                         'unit_kerja_id' => $pegawaiUpdated->unit_kerja_id,
-                        'status'        => 'aktif',
+                        'nomor_sk'      => $data['nomor_sk_pertama'] ?? $riwayatJabatanExist->nomor_sk,
+                        'tanggal_sk'    => $data['tanggal_sk_pertama'] ?? $riwayatJabatanExist->tanggal_sk,
+                        'file_sk'       => $pegawaiUpdated->file_sk_pertama ?? $riwayatJabatanExist->file_sk,
+                        'status'        => 'Aktif',
                     ]);
                 } else {
                     RiwayatJabatan::create([
@@ -437,19 +448,27 @@ class PegawaiService
                         'jabatan_id'    => $pegawaiUpdated->jabatan_id,
                         'unit_kerja_id' => $pegawaiUpdated->unit_kerja_id,
                         'tmt_jabatan'   => $pegawaiUpdated->tanggal_masuk ?? now(),
+                        'nomor_sk'      => $data['nomor_sk_pertama'] ?? null,
+                        'tanggal_sk'    => $data['tanggal_sk_pertama'] ?? null,
+                        'file_sk'       => $pegawaiUpdated->file_sk_pertama ?? null,
                         'keterangan'    => 'Riwayat jabatan disinkronkan saat edit pegawai',
-                        'status'        => 'aktif'
+                        'status'        => 'Aktif'
                     ]);
                 }
             }
 
             // 4. SINKRONKAN RIWAYAT PANGKAT SAAT EDIT PEGAWAI
             if ($pegawaiUpdated->golongan_id) {
-                $riwayatPangkatExist = RiwayatPangkat::where('pegawai_id', $pegawaiUpdated->id)->first();
+                $riwayatPangkatExist = RiwayatPangkat::where('pegawai_id', $pegawaiUpdated->id)
+                    ->whereIn('status', ['aktif', 'Aktif'])
+                    ->first();
                 if ($riwayatPangkatExist) {
                     $riwayatPangkatExist->update([
                         'golongan_id' => $pegawaiUpdated->golongan_id,
                         'tmt'         => $pegawaiUpdated->tmt_pangkat_terakhir ?? now(),
+                        'nomor_sk'    => $data['nomor_sk_pangkat_terakhir'] ?? $riwayatPangkatExist->nomor_sk,
+                        'tanggal_sk'  => $data['tanggal_sk_pangkat_terakhir'] ?? $riwayatPangkatExist->tanggal_sk,
+                        'file_sk'     => $pegawaiUpdated->file_sk_pangkat_terakhir ?? $riwayatPangkatExist->file_sk,
                         'status'      => 'aktif',
                     ]);
                 } else {
@@ -457,6 +476,9 @@ class PegawaiService
                         'pegawai_id'  => $pegawaiUpdated->id,
                         'golongan_id' => $pegawaiUpdated->golongan_id,
                         'tmt'         => $pegawaiUpdated->tmt_pangkat_terakhir ?? now(),
+                        'nomor_sk'    => $data['nomor_sk_pangkat_terakhir'] ?? null,
+                        'tanggal_sk'  => $data['tanggal_sk_pangkat_terakhir'] ?? null,
+                        'file_sk'     => $pegawaiUpdated->file_sk_pangkat_terakhir ?? null,
                         'keterangan'  => 'Riwayat pangkat disinkronkan saat edit pegawai',
                         'status'      => 'aktif',
                     ]);
