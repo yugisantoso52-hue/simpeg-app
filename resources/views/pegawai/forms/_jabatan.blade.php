@@ -10,9 +10,8 @@
         <table class="min-w-full divide-y divide-gray-200 text-sm" id="jabatan-table">
             <thead class="bg-gray-50 text-gray-700 font-medium">
                 <tr>
-                    <th class="px-3 py-2 text-left w-1/5">Jabatan</th>
-                    <th class="px-3 py-2 text-left w-1/5">Unit Kerja</th>
-                    <th class="px-3 py-2 text-center w-24">Eselon</th>
+                    <th class="px-3 py-2 text-left w-1/4">Jabatan</th>
+                    <th class="px-3 py-2 text-left w-1/4">Unit Kerja</th>
                     <th class="px-3 py-2 text-center w-36">TMT Jabatan</th>
                     <th class="px-3 py-2 text-left">Nomor SK</th>
                     <th class="px-3 py-2 text-center w-36">Tanggal SK</th>
@@ -43,9 +42,6 @@
                                     <option value="{{ $u->id }}" @selected($rj->unit_kerja_id == $u->id)>{{ $u->nama_unit }}</option>
                                 @endforeach
                             </select>
-                        </td>
-                        <td class="px-3 py-2">
-                            <input type="text" name="riwayat_jabatan[{{ $index }}][eselon]" value="{{ $rj->eselon }}" class="w-full border rounded px-2 py-1 text-xs text-center" placeholder="Eselon">
                         </td>
                         <td class="px-3 py-2">
                             <input type="date" name="riwayat_jabatan[{{ $index }}][tmt_jabatan]" value="{{ $rj->tmt_jabatan ? \Carbon\Carbon::parse($rj->tmt_jabatan)->format('Y-m-d') : '' }}" class="w-full border rounded px-2 py-1 text-xs text-center" required>
@@ -91,9 +87,6 @@
                                     <option value="{{ $u->id }}">{{ $u->nama_unit }}</option>
                                 @endforeach
                             </select>
-                        </td>
-                        <td class="px-3 py-2">
-                            <input type="text" name="riwayat_jabatan[0][eselon]" class="w-full border rounded px-2 py-1 text-xs text-center" placeholder="Eselon">
                         </td>
                         <td class="px-3 py-2">
                             <input type="date" name="riwayat_jabatan[0][tmt_jabatan]" class="w-full border rounded px-2 py-1 text-xs text-center" required>
@@ -148,17 +141,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 <td class="px-3 py-2">
                     <select name="riwayat_jabatan[\${newIndex}][jabatan_id]" class="w-full border rounded px-2 py-1 text-xs" required>
                         <option value="">-- Pilih Jabatan --</option>
-                        ${jabatanOptions}
+                        \${jabatanOptions}
                     </select>
                 </td>
                 <td class="px-3 py-2">
                     <select name="riwayat_jabatan[\${newIndex}][unit_kerja_id]" class="w-full border rounded px-2 py-1 text-xs" required>
                         <option value="">-- Pilih Unit Kerja --</option>
-                        ${unitOptions}
+                        \${unitOptions}
                     </select>
-                </td>
-                <td class="px-3 py-2">
-                    <input type="text" name="riwayat_jabatan[\${newIndex}][eselon]" class="w-full border rounded px-2 py-1 text-xs text-center" placeholder="Eselon">
                 </td>
                 <td class="px-3 py-2">
                     <input type="date" name="riwayat_jabatan[\${newIndex}][tmt_jabatan]" class="w-full border rounded px-2 py-1 text-xs text-center" required>

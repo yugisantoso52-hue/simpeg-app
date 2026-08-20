@@ -258,7 +258,6 @@ class PegawaiService
                     $pegawai->riwayatJabatan()->create([
                         'jabatan_id'    => $row['jabatan_id'],
                         'unit_kerja_id' => $row['unit_kerja_id'],
-                        'eselon'        => $row['eselon'] ?? null,
                         'tmt_jabatan'   => $row['tmt_jabatan'] ?? now(),
                         'nomor_sk'      => $row['nomor_sk'] ?? null,
                         'tanggal_sk'    => $row['tanggal_sk'] ?? null,
@@ -438,7 +437,6 @@ class PegawaiService
                 $payload = [
                     'jabatan_id'    => $row['jabatan_id'],
                     'unit_kerja_id' => $row['unit_kerja_id'],
-                    'eselon'        => $row['eselon'] ?? null,
                     'tmt_jabatan'   => $row['tmt_jabatan'] ?? now(),
                     'nomor_sk'      => $row['nomor_sk'] ?? null,
                     'tanggal_sk'    => $row['tanggal_sk'] ?? null,

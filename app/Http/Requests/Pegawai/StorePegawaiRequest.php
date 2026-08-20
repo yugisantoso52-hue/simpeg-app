@@ -84,7 +84,6 @@ class StorePegawaiRequest extends FormRequest
             'riwayat_jabatan.*.id'                     => 'nullable|integer',
             'riwayat_jabatan.*.jabatan_id'             => 'required|exists:jabatan,id',
             'riwayat_jabatan.*.unit_kerja_id'          => 'required|exists:unit_kerja,id',
-            'riwayat_jabatan.*.eselon'                 => 'nullable|string|max:50',
             'riwayat_jabatan.*.tmt_jabatan'            => 'required|date',
             'riwayat_jabatan.*.nomor_sk'               => 'nullable|string|max:100',
             'riwayat_jabatan.*.tanggal_sk'             => 'nullable|date',
