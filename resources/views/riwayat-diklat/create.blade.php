@@ -91,7 +91,7 @@
 
                                                 {{ $p->nip }}
                                                 -
-                                                {{ $p->nama }}
+                                                {{ $p->nama_lengkap ?? $p->nama }}
 
                                             </option>
 

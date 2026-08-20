@@ -23,7 +23,7 @@
                         <select name="pegawai_id" class="w-full border rounded px-3 py-2" required>
                             @foreach($pegawai as $p)
                                 <option value="{{ $p->id }}" {{ $data->pegawai_id == $p->id ? 'selected' : '' }}>
-                                    {{ $p->nip }} - {{ $p->nama }}
+                                    {{ $p->nip }} - {{ $p->nama_lengkap ?? $p->nama }}
                                 </option>
                             @endforeach
                         </select>

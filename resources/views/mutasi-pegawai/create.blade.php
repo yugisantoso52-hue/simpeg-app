@@ -34,7 +34,7 @@
                             @foreach($pegawai as $p)
 
                                 <option value="{{ $p->id }}">
-                                    {{ $p->nip }} - {{ $p->nama }}
+                                    {{ $p->nip }} - {{ $p->nama_lengkap ?? $p->nama }}
                                 </option>
 
                             @endforeach

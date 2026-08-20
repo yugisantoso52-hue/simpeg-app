@@ -19,7 +19,7 @@
                         <option value="">-- Pilih Pegawai --</option>
                         @foreach($pegawai as $p)
                             <option value="{{ $p->id }}" {{ old('pegawai_id') == $p->id ? 'selected' : '' }}>
-                                {{ $p->nip }} - {{ $p->nama }}
+                                {{ $p->nip }} - {{ $p->nama_lengkap ?? $p->nama }}
                             </option>
                         @endforeach
                     </select>

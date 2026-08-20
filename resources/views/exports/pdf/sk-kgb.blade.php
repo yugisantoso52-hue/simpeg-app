@@ -42,7 +42,7 @@
     <tr>
         <td style="width: 30%;">1. Nama</td>
         <td style="width: 3%;">:</td>
-        <td><strong>{{ $kgb->pegawai->nama }}</strong></td>
+        <td><strong>{{ $kgb->pegawai->nama_lengkap ?? $kgb->pegawai->nama }}</strong></td>
     </tr>
     <tr>
         <td>2. N I P</td>

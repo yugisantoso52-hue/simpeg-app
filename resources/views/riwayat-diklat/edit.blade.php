@@ -76,7 +76,7 @@
                                                 value="{{ $item->id }}"
                                                 {{ old('pegawai_id',$data->pegawai_id)==$item->id ? 'selected' : '' }}>
 
-                                                {{ $item->nip }} - {{ $item->nama }}
+                                                {{ $item->nip }} - {{ $item->nama_lengkap ?? $item->nama }}
 
                                             </option>
 

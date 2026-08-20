@@ -31,7 +31,7 @@
                                 <option value="{{ $p->id }}"
                                     {{ $mutasi->pegawai_id == $p->id ? 'selected' : '' }}>
 
-                                    {{ $p->nip }} - {{ $p->nama }}
+                                    {{ $p->nip }} - {{ $p->nama_lengkap ?? $p->nama }}
 
                                 </option>
 
