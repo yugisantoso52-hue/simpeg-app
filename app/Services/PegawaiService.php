@@ -230,7 +230,6 @@ class PegawaiService
                     }
                     $tanggalMulai   = !empty($row['tanggal_mulai']) ? $row['tanggal_mulai'] : date('Y-m-d');
                     $tanggalSelesai = !empty($row['tanggal_selesai']) ? $row['tanggal_selesai'] : $tanggalMulai;
-                    $tahunDiklat    = Carbon::parse($tanggalMulai)->year;
 
                     $pegawai->riwayatDiklat()->create([
                         'nama_diklat'      => $row['nama_diklat'],
@@ -239,7 +238,6 @@ class PegawaiService
                         'nomor_sertifikat' => $row['nomor_sertifikat'] ?? null,
                         'tanggal_mulai'    => $tanggalMulai,
                         'tanggal_selesai'  => $tanggalSelesai,
-                        'tahun'            => $tahunDiklat,
                         'status'           => $row['status'] ?? 'Aktif',
                         'keterangan'       => $row['keterangan'] ?? null,
                         'file_sertifikat'  => $fileSertifikat,
@@ -401,7 +399,6 @@ class PegawaiService
                 }
                 $tanggalMulai   = !empty($row['tanggal_mulai']) ? $row['tanggal_mulai'] : date('Y-m-d');
                 $tanggalSelesai = !empty($row['tanggal_selesai']) ? $row['tanggal_selesai'] : $tanggalMulai;
-                $tahunDiklat    = Carbon::parse($tanggalMulai)->year;
 
                 $payload = [
                     'nama_diklat'      => $row['nama_diklat'],
@@ -410,7 +407,6 @@ class PegawaiService
                     'nomor_sertifikat' => $row['nomor_sertifikat'] ?? null,
                     'tanggal_mulai'    => $tanggalMulai,
                     'tanggal_selesai'  => $tanggalSelesai,
-                    'tahun'            => $tahunDiklat,
                     'status'           => $row['status'] ?? 'Aktif',
                     'keterangan'       => $row['keterangan'] ?? null,
                 ];
