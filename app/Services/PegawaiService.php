@@ -556,6 +556,73 @@ class PegawaiService
         });
     }
 
+    public function bulkDeletePegawai(array $ids): int
+    {
+        return DB::transaction(function () use ($ids) {
+            $count = 0;
+            Pegawai::withoutEvents(function () use ($ids, &$count) {
+                foreach ($ids as $id) {
+                    $pegawai = $this->pegawaiRepository->find($id);
+                    if ($pegawai) {
+                        $this->deleteFoto($pegawai->foto);
+                        $this->deleteSK($pegawai->file_sk_pertama);
+                        $this->deleteSK($pegawai->file_sk_pangkat_terakhir);
+                        $this->deleteSK($pegawai->file_sk_kgb_terakhir);
+
+                        User::where('pegawai_id', $pegawai->id)->delete();
+
+                        $riwayatPendidikan = RiwayatPendidikan::where('pegawai_id', $pegawai->id)->get();
+                        foreach ($riwayatPendidikan as $rp) {
+                            if ($rp->ijazah) {
+                                $this->deleteSK($rp->ijazah);
+                            }
+                        }
+                        RiwayatPendidikan::where('pegawai_id', $pegawai->id)->delete();
+
+                        $riwayatDiklat = RiwayatDiklat::where('pegawai_id', $pegawai->id)->get();
+                        foreach ($riwayatDiklat as $rd) {
+                            if ($rd->file_sertifikat) {
+                                $this->deleteSK($rd->file_sertifikat);
+                            }
+                        }
+                        RiwayatDiklat::where('pegawai_id', $pegawai->id)->delete();
+
+                        $riwayatPangkat = RiwayatPangkat::where('pegawai_id', $pegawai->id)->get();
+                        foreach ($riwayatPangkat as $rp) {
+                            if ($rp->file_sk) {
+                                $this->deleteSK($rp->file_sk);
+                            }
+                        }
+                        RiwayatPangkat::where('pegawai_id', $pegawai->id)->delete();
+
+                        $riwayatJabatan = RiwayatJabatan::where('pegawai_id', $pegawai->id)->get();
+                        foreach ($riwayatJabatan as $rj) {
+                            if ($rj->file_sk) {
+                                $this->deleteSK($rj->file_sk);
+                            }
+                        }
+                        RiwayatJabatan::where('pegawai_id', $pegawai->id)->delete();
+
+                        $mutasi = \App\Models\MutasiPegawai::where('pegawai_id', $pegawai->id)->get();
+                        foreach ($mutasi as $m) {
+                            if ($m->file_sk) {
+                                $this->deleteSK($m->file_sk);
+                            }
+                        }
+                        \App\Models\MutasiPegawai::where('pegawai_id', $pegawai->id)->delete();
+
+                        $this->pegawaiRepository->delete($pegawai->id);
+                        $count++;
+                    }
+                }
+            });
+
+            \Illuminate\Support\Facades\Cache::flush();
+
+            return $count;
+        });
+    }
+
     public function getStatistics(): array
     {
         return $this->pegawaiRepository->getStatistics();

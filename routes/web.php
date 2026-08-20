@@ -94,6 +94,7 @@ Route::middleware(['auth'])->group(function () {
         // Tambah & Hapus Pegawai (Khusus Admin)
         Route::get('/pegawai/create', [PegawaiController::class, 'create'])->name('pegawai.create');
         Route::post('/pegawai', [PegawaiController::class, 'store'])->name('pegawai.store');
+        Route::post('/pegawai/bulk-delete', [PegawaiController::class, 'bulkDelete'])->name('pegawai.bulk-delete');
         Route::delete('/pegawai/{pegawai}', [PegawaiController::class, 'destroy'])->name('pegawai.destroy');
 
         // CRUD Riwayat

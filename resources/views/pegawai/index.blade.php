@@ -64,6 +64,24 @@
                                 </svg>
                             </a>
 
+                            {{-- Tombol Hapus Massal --}}
+                            <div id="bulk-actions-wrapper" class="hidden items-center space-x-2 bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg shadow-sm">
+                                <span id="bulk-counter" class="text-xs font-semibold text-red-700">0 terpilih</span>
+                                <button type="button" 
+                                        id="btn-bulk-delete" 
+                                        class="inline-flex items-center gap-1.5 rounded bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow hover:bg-red-700 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                    <span>Hapus Terpilih</span>
+                                </button>
+                            </div>
+
+                            {{-- Form Hapus Massal Tersembunyi --}}
+                            <form id="bulk-delete-form" action="{{ route('pegawai.bulk-delete') }}" method="POST" class="hidden">
+                                @csrf
+                            </form>
+
                             {{-- Tombol Impor Excel --}}
                             <button @click="openImportModal = true"
                                     type="button"
@@ -88,6 +106,9 @@
                         <x-enterprise.data-table>
                             <x-slot name="head">
                                 <tr>
+                                    <th class="w-12 px-4 py-3 text-center">
+                                        <input type="checkbox" id="check-all" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                    </th>
                                     <th class="w-12 px-4 py-3 text-center">No</th>
                                     <th class="w-16 px-4 py-3 text-center">Foto</th>
                                     <th class="px-4 py-3 text-left">NIP</th>
@@ -102,6 +123,9 @@
 
                             @forelse($pegawai as $row)
                                 <tr class="hover:bg-slate-50 transition">
+                                    <td class="px-4 py-3 text-center">
+                                        <input type="checkbox" name="pegawai_ids[]" value="{{ $row->id }}" class="pegawai-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                    </td>
                                     <td class="px-4 py-3 text-center font-medium text-slate-600">
                                         {{ ($pegawai->currentPage()-1)*$pegawai->perPage()+$loop->iteration }}
                                     </td>
@@ -173,7 +197,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9">
+                                    <td colspan="10">
                                         <x-enterprise.empty-state
                                             title="Belum ada data pegawai"
                                             description="Silakan tambahkan data pegawai terlebih dahulu."
@@ -235,6 +259,74 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Bulk delete functionality
+            const checkAll = document.getElementById('check-all');
+            const checkboxes = document.querySelectorAll('.pegawai-checkbox');
+            const wrapper = document.getElementById('bulk-actions-wrapper');
+            const counter = document.getElementById('bulk-counter');
+            const btnBulkDelete = document.getElementById('btn-bulk-delete');
+            const bulkForm = document.getElementById('bulk-delete-form');
+
+            function updateBulkDeleteUI() {
+                const checkedCheckboxes = document.querySelectorAll('.pegawai-checkbox:checked');
+                const checkedCount = checkedCheckboxes.length;
+
+                if (checkedCount > 0) {
+                    wrapper.classList.remove('hidden');
+                    wrapper.classList.add('flex');
+                    counter.textContent = `${checkedCount} terpilih`;
+                } else {
+                    wrapper.classList.add('hidden');
+                    wrapper.classList.remove('flex');
+                }
+            }
+
+            if (checkAll) {
+                checkAll.addEventListener('change', function () {
+                    checkboxes.forEach(cb => {
+                        cb.checked = checkAll.checked;
+                    });
+                    updateBulkDeleteUI();
+                });
+            }
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', function () {
+                    const allChecked = document.querySelectorAll('.pegawai-checkbox:checked').length === checkboxes.length;
+                    if (checkAll) {
+                        checkAll.checked = allChecked;
+                    }
+                    updateBulkDeleteUI();
+                });
+            });
+
+            if (btnBulkDelete && bulkForm) {
+                btnBulkDelete.addEventListener('click', function () {
+                    const checkedCheckboxes = document.querySelectorAll('.pegawai-checkbox:checked');
+                    const count = checkedCheckboxes.length;
+                    
+                    if (count === 0) return;
+
+                    if (confirm(`Apakah Anda yakin ingin menghapus ${count} pegawai terpilih beserta seluruh data riwayatnya?`)) {
+                        // Clear existing hidden inputs in bulk form except csrf
+                        const csrfToken = bulkForm.querySelector('input[name="_token"]').cloneNode(true);
+                        bulkForm.innerHTML = '';
+                        bulkForm.appendChild(csrfToken);
+
+                        // Append checked IDs
+                        checkedCheckboxes.forEach(cb => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'pegawai_ids[]';
+                            input.value = cb.value;
+                            bulkForm.appendChild(input);
+                        });
+
+                        bulkForm.submit();
+                    }
+                });
+            }
+
             const fileInput = document.querySelector('input[name="file"]');
             if (fileInput) {
                 fileInput.addEventListener('change', function () {

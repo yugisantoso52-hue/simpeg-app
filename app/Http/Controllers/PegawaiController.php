@@ -166,6 +166,27 @@ class PegawaiController extends Controller
             ->with('success', 'Data pegawai berhasil dihapus.');
     }
 
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'pegawai_ids' => 'required|array',
+            'pegawai_ids.*' => 'required|integer|exists:pegawai,id',
+        ]);
+
+        $ids = $request->input('pegawai_ids');
+
+        foreach ($ids as $id) {
+            $pegawai = $this->pegawaiService->find($id);
+            $this->authorize('delete', $pegawai);
+        }
+
+        $count = $this->pegawaiService->bulkDeletePegawai($ids);
+
+        return redirect()
+            ->route('pegawai.index')
+            ->with('success', "Berhasil menghapus {$count} data pegawai secara massal.");
+    }
+
     /**
      * Unduh Template Excel Impor Pegawai
      */
