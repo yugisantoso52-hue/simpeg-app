@@ -4,8 +4,8 @@
 
     <x-enterprise.forms.row cols="3">
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="Unit Kerja" required>
-                <x-enterprise.select name="unit_kerja_id" required>
+            <x-enterprise.form-group label="Unit Kerja">
+                <x-enterprise.select name="unit_kerja_id">
                     <option value="">Pilih Unit Kerja</option>
                     @foreach($unitKerja as $item)
                         <option value="{{ $item->id }}" @selected(old('unit_kerja_id', $pegawai->unit_kerja_id ?? '')==$item->id)>
@@ -17,8 +17,8 @@
         </x-enterprise.forms.field>
 
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="Jabatan" required>
-                <x-enterprise.select name="jabatan_id" required>
+            <x-enterprise.form-group label="Jabatan">
+                <x-enterprise.select name="jabatan_id">
                     <option value="">Pilih Jabatan</option>
                     @foreach($jabatan as $item)
                         <option value="{{ $item->id }}" @selected(old('jabatan_id', $pegawai->jabatan_id ?? '')==$item->id)>
@@ -30,8 +30,8 @@
         </x-enterprise.forms.field>
 
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="Golongan" required>
-                <x-enterprise.select name="golongan_id" required>
+            <x-enterprise.form-group label="Golongan">
+                <x-enterprise.select name="golongan_id">
                     <option value="">Pilih Golongan</option>
                     @foreach($golongan as $item)
                         <option value="{{ $item->id }}" @selected(old('golongan_id', $pegawai->golongan_id ?? '')==$item->id)>

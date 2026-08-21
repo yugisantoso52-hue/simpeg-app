@@ -28,7 +28,7 @@
                     <tr class="jabatan-row" data-index="{{ $index }}">
                         <input type="hidden" name="riwayat_jabatan[{{ $index }}][id]" value="{{ $rj->id }}">
                         <td class="px-3 py-2">
-                            <select name="riwayat_jabatan[{{ $index }}][jabatan_id]" class="w-full border rounded px-2 py-1 text-xs" required>
+                            <select name="riwayat_jabatan[{{ $index }}][jabatan_id]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="">-- Pilih Jabatan --</option>
                                 @foreach($jabatan as $j)
                                     <option value="{{ $j->id }}" @selected($rj->jabatan_id == $j->id)>{{ $j->nama_jabatan }}</option>
@@ -36,7 +36,7 @@
                             </select>
                         </td>
                         <td class="px-3 py-2">
-                            <select name="riwayat_jabatan[{{ $index }}][unit_kerja_id]" class="w-full border rounded px-2 py-1 text-xs" required>
+                            <select name="riwayat_jabatan[{{ $index }}][unit_kerja_id]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="">-- Pilih Unit Kerja --</option>
                                 @foreach($unitKerja as $u)
                                     <option value="{{ $u->id }}" @selected($rj->unit_kerja_id == $u->id)>{{ $u->nama_unit }}</option>
@@ -44,7 +44,7 @@
                             </select>
                         </td>
                         <td class="px-3 py-2">
-                            <input type="date" name="riwayat_jabatan[{{ $index }}][tmt_jabatan]" value="{{ $rj->tmt_jabatan ? \Carbon\Carbon::parse($rj->tmt_jabatan)->format('Y-m-d') : '' }}" class="w-full border rounded px-2 py-1 text-xs text-center" required>
+                            <input type="date" name="riwayat_jabatan[{{ $index }}][tmt_jabatan]" value="{{ $rj->tmt_jabatan ? \Carbon\Carbon::parse($rj->tmt_jabatan)->format('Y-m-d') : '' }}" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2">
                             <input type="text" name="riwayat_jabatan[{{ $index }}][nomor_sk]" value="{{ $rj->nomor_sk }}" class="w-full border rounded px-2 py-1 text-xs">
@@ -53,9 +53,9 @@
                             <input type="date" name="riwayat_jabatan[{{ $index }}][tanggal_sk]" value="{{ $rj->tanggal_sk ? \Carbon\Carbon::parse($rj->tanggal_sk)->format('Y-m-d') : '' }}" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2">
-                            <select name="riwayat_jabatan[{{ $index }}][status]" class="w-full border rounded px-2 py-1 text-xs" required>
-                                <option value="aktif" @selected(strtolower($rj->status) == 'aktif')>Aktif</option>
-                                <option value="riwayat" @selected(strtolower($rj->status) == 'riwayat')>Riwayat</option>
+                            <select name="riwayat_jabatan[{{ $index }}][status]" class="w-full border rounded px-2 py-1 text-xs">
+                                <option value="aktif" @selected(strtolower($rj->status ?? '') == 'aktif')>Aktif</option>
+                                <option value="riwayat" @selected(strtolower($rj->status ?? '') == 'riwayat' || strtolower($rj->status ?? '') == 'nonaktif' || strtolower($rj->status ?? '') == 'tidak aktif')>Riwayat</option>
                             </select>
                         </td>
                         <td class="px-3 py-2 text-xs">
@@ -73,7 +73,7 @@
                 @empty
                     <tr class="jabatan-row" data-index="0">
                         <td class="px-3 py-2">
-                            <select name="riwayat_jabatan[0][jabatan_id]" class="w-full border rounded px-2 py-1 text-xs" required>
+                            <select name="riwayat_jabatan[0][jabatan_id]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="">-- Pilih Jabatan --</option>
                                 @foreach($jabatan as $j)
                                     <option value="{{ $j->id }}">{{ $j->nama_jabatan }}</option>
@@ -81,7 +81,7 @@
                             </select>
                         </td>
                         <td class="px-3 py-2">
-                            <select name="riwayat_jabatan[0][unit_kerja_id]" class="w-full border rounded px-2 py-1 text-xs" required>
+                            <select name="riwayat_jabatan[0][unit_kerja_id]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="">-- Pilih Unit Kerja --</option>
                                 @foreach($unitKerja as $u)
                                     <option value="{{ $u->id }}">{{ $u->nama_unit }}</option>
@@ -89,7 +89,7 @@
                             </select>
                         </td>
                         <td class="px-3 py-2">
-                            <input type="date" name="riwayat_jabatan[0][tmt_jabatan]" class="w-full border rounded px-2 py-1 text-xs text-center" required>
+                            <input type="date" name="riwayat_jabatan[0][tmt_jabatan]" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2">
                             <input type="text" name="riwayat_jabatan[0][nomor_sk]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nomor SK">
@@ -98,7 +98,7 @@
                             <input type="date" name="riwayat_jabatan[0][tanggal_sk]" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2">
-                            <select name="riwayat_jabatan[0][status]" class="w-full border rounded px-2 py-1 text-xs" required>
+                            <select name="riwayat_jabatan[0][status]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="aktif">Aktif</option>
                                 <option value="riwayat">Riwayat</option>
                             </select>
@@ -139,19 +139,19 @@ document.addEventListener('DOMContentLoaded', function () {
             tr.setAttribute('data-index', newIndex);
             tr.innerHTML = `
                 <td class="px-3 py-2">
-                    <select name="riwayat_jabatan[\${newIndex}][jabatan_id]" class="w-full border rounded px-2 py-1 text-xs" required>
+                    <select name="riwayat_jabatan[\${newIndex}][jabatan_id]" class="w-full border rounded px-2 py-1 text-xs">
                         <option value="">-- Pilih Jabatan --</option>
                         \${jabatanOptions}
                     </select>
                 </td>
                 <td class="px-3 py-2">
-                    <select name="riwayat_jabatan[\${newIndex}][unit_kerja_id]" class="w-full border rounded px-2 py-1 text-xs" required>
+                    <select name="riwayat_jabatan[\${newIndex}][unit_kerja_id]" class="w-full border rounded px-2 py-1 text-xs">
                         <option value="">-- Pilih Unit Kerja --</option>
                         \${unitOptions}
                     </select>
                 </td>
                 <td class="px-3 py-2">
-                    <input type="date" name="riwayat_jabatan[\${newIndex}][tmt_jabatan]" class="w-full border rounded px-2 py-1 text-xs text-center" required>
+                    <input type="date" name="riwayat_jabatan[\${newIndex}][tmt_jabatan]" class="w-full border rounded px-2 py-1 text-xs text-center">
                 </td>
                 <td class="px-3 py-2">
                     <input type="text" name="riwayat_jabatan[\${newIndex}][nomor_sk]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nomor SK">
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <input type="date" name="riwayat_jabatan[\${newIndex}][tanggal_sk]" class="w-full border rounded px-2 py-1 text-xs text-center">
                 </td>
                 <td class="px-3 py-2">
-                    <select name="riwayat_jabatan[\${newIndex}][status]" class="w-full border rounded px-2 py-1 text-xs" required>
+                    <select name="riwayat_jabatan[\${newIndex}][status]" class="w-full border rounded px-2 py-1 text-xs">
                         <option value="aktif">Aktif</option>
                         <option value="riwayat">Riwayat</option>
                     </select>
@@ -178,10 +178,8 @@ document.addEventListener('DOMContentLoaded', function () {
         tbody.addEventListener('click', function (e) {
             if (e.target.classList.contains('remove-jabatan-btn')) {
                 const row = e.target.closest('.jabatan-row');
-                if (tbody.querySelectorAll('.jabatan-row').length > 1) {
+                if (row) {
                     row.remove();
-                } else {
-                    alert('Minimal harus menyertakan satu baris riwayat.');
                 }
             }
         });

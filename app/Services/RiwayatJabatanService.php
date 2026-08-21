@@ -114,10 +114,19 @@ class RiwayatJabatanService
             $riwayat = $this->repository->createRiwayat($data);
 
             // 2. Sinkronisasi data ke tabel pegawai
-            Pegawai::where('id', $data['pegawai_id'])->update([
-                'jabatan_id'    => $data['jabatan_id'],
-                'unit_kerja_id' => $data['unit_kerja_id'],
-            ]);
+            $updatePegawai = [
+                'jabatan_id'         => $data['jabatan_id'],
+                'unit_kerja_id'      => $data['unit_kerja_id'],
+                'nomor_sk_pertama'   => $data['nomor_sk'] ?? null,
+                'tanggal_sk_pertama' => $data['tanggal_sk'] ?? null,
+            ];
+            if (!empty($data['tmt_jabatan'])) {
+                $updatePegawai['tmt_sk_pertama'] = $data['tmt_jabatan'];
+            }
+            if (!empty($riwayat->file_sk)) {
+                $updatePegawai['file_sk_pertama'] = $riwayat->file_sk;
+            }
+            Pegawai::where('id', $data['pegawai_id'])->update($updatePegawai);
 
             return $riwayat;
 
@@ -175,10 +184,19 @@ class RiwayatJabatanService
             );
 
             // 3. Sinkronisasi data ke tabel pegawai
-            Pegawai::where('id', $riwayatUpdated->pegawai_id)->update([
-                'jabatan_id'    => $riwayatUpdated->jabatan_id,
-                'unit_kerja_id' => $riwayatUpdated->unit_kerja_id,
-            ]);
+            $updatePegawai = [
+                'jabatan_id'         => $riwayatUpdated->jabatan_id,
+                'unit_kerja_id'      => $riwayatUpdated->unit_kerja_id,
+                'nomor_sk_pertama'   => $riwayatUpdated->nomor_sk ?? null,
+                'tanggal_sk_pertama' => $riwayatUpdated->tanggal_sk ?? null,
+            ];
+            if (!empty($riwayatUpdated->tmt_jabatan)) {
+                $updatePegawai['tmt_sk_pertama'] = $riwayatUpdated->tmt_jabatan;
+            }
+            if (!empty($riwayatUpdated->file_sk)) {
+                $updatePegawai['file_sk_pertama'] = $riwayatUpdated->file_sk;
+            }
+            Pegawai::where('id', $riwayatUpdated->pegawai_id)->update($updatePegawai);
 
             return $riwayatUpdated;
 
@@ -223,14 +241,24 @@ class RiwayatJabatanService
             if ($jabatanTerbaru) {
                 $jabatanTerbaru->update(['status' => 'Aktif']);
 
-                Pegawai::where('id', $pegawaiId)->update([
-                    'jabatan_id'    => $jabatanTerbaru->jabatan_id,
-                    'unit_kerja_id' => $jabatanTerbaru->unit_kerja_id,
-                ]);
+                $updatePegawai = [
+                    'jabatan_id'         => $jabatanTerbaru->jabatan_id,
+                    'unit_kerja_id'      => $jabatanTerbaru->unit_kerja_id,
+                    'nomor_sk_pertama'   => $jabatanTerbaru->nomor_sk ?? null,
+                    'tanggal_sk_pertama' => $jabatanTerbaru->tanggal_sk ?? null,
+                    'file_sk_pertama'    => $jabatanTerbaru->file_sk ?? null,
+                ];
+                if (!empty($jabatanTerbaru->tmt_jabatan)) {
+                    $updatePegawai['tmt_sk_pertama'] = $jabatanTerbaru->tmt_jabatan;
+                }
+                Pegawai::where('id', $pegawaiId)->update($updatePegawai);
             } else {
                 Pegawai::where('id', $pegawaiId)->update([
-                    'jabatan_id'    => null,
-                    'unit_kerja_id' => null,
+                    'jabatan_id'         => null,
+                    'unit_kerja_id'      => null,
+                    'nomor_sk_pertama'   => null,
+                    'tanggal_sk_pertama' => null,
+                    'file_sk_pertama'    => null,
                 ]);
             }
 

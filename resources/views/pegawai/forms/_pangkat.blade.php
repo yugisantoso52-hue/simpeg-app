@@ -27,7 +27,7 @@
                     <tr class="pangkat-row" data-index="{{ $index }}">
                         <input type="hidden" name="riwayat_pangkat[{{ $index }}][id]" value="{{ $rp->id }}">
                         <td class="px-3 py-2">
-                            <select name="riwayat_pangkat[{{ $index }}][golongan_id]" class="w-full border rounded px-2 py-1 text-xs" required>
+                            <select name="riwayat_pangkat[{{ $index }}][golongan_id]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="">-- Pilih Golongan --</option>
                                 @foreach($golongan as $g)
                                     <option value="{{ $g->id }}" @selected($rp->golongan_id == $g->id)>{{ $g->nama_golongan }} - {{ $g->nama_pangkat }}</option>
@@ -35,7 +35,7 @@
                             </select>
                         </td>
                         <td class="px-3 py-2">
-                            <input type="date" name="riwayat_pangkat[{{ $index }}][tmt]" value="{{ $rp->tmt ? \Carbon\Carbon::parse($rp->tmt)->format('Y-m-d') : '' }}" class="w-full border rounded px-2 py-1 text-xs text-center" required>
+                            <input type="date" name="riwayat_pangkat[{{ $index }}][tmt]" value="{{ $rp->tmt ? \Carbon\Carbon::parse($rp->tmt)->format('Y-m-d') : '' }}" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2">
                             <input type="text" name="riwayat_pangkat[{{ $index }}][nomor_sk]" value="{{ $rp->nomor_sk }}" class="w-full border rounded px-2 py-1 text-xs">
@@ -44,9 +44,9 @@
                             <input type="date" name="riwayat_pangkat[{{ $index }}][tanggal_sk]" value="{{ $rp->tanggal_sk ? \Carbon\Carbon::parse($rp->tanggal_sk)->format('Y-m-d') : '' }}" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2">
-                            <select name="riwayat_pangkat[{{ $index }}][status]" class="w-full border rounded px-2 py-1 text-xs" required>
-                                <option value="aktif" @selected(strtolower($rp->status) == 'aktif')>Aktif</option>
-                                <option value="riwayat" @selected(strtolower($rp->status) == 'riwayat')>Riwayat</option>
+                            <select name="riwayat_pangkat[{{ $index }}][status]" class="w-full border rounded px-2 py-1 text-xs">
+                                <option value="aktif" @selected(strtolower($rp->status ?? '') == 'aktif')>Aktif</option>
+                                <option value="riwayat" @selected(strtolower($rp->status ?? '') == 'riwayat' || strtolower($rp->status ?? '') == 'nonaktif')>Riwayat</option>
                             </select>
                         </td>
                         <td class="px-3 py-2 text-xs">
@@ -64,7 +64,7 @@
                 @empty
                     <tr class="pangkat-row" data-index="0">
                         <td class="px-3 py-2">
-                            <select name="riwayat_pangkat[0][golongan_id]" class="w-full border rounded px-2 py-1 text-xs" required>
+                            <select name="riwayat_pangkat[0][golongan_id]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="">-- Pilih Golongan --</option>
                                 @foreach($golongan as $g)
                                     <option value="{{ $g->id }}">{{ $g->nama_golongan }} - {{ $g->nama_pangkat }}</option>
@@ -72,7 +72,7 @@
                             </select>
                         </td>
                         <td class="px-3 py-2">
-                            <input type="date" name="riwayat_pangkat[0][tmt]" class="w-full border rounded px-2 py-1 text-xs text-center" required>
+                            <input type="date" name="riwayat_pangkat[0][tmt]" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2">
                             <input type="text" name="riwayat_pangkat[0][nomor_sk]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nomor SK">
@@ -81,7 +81,7 @@
                             <input type="date" name="riwayat_pangkat[0][tanggal_sk]" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2">
-                            <select name="riwayat_pangkat[0][status]" class="w-full border rounded px-2 py-1 text-xs" required>
+                            <select name="riwayat_pangkat[0][status]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="aktif">Aktif</option>
                                 <option value="riwayat">Riwayat</option>
                             </select>
@@ -121,13 +121,13 @@ document.addEventListener('DOMContentLoaded', function () {
             tr.setAttribute('data-index', newIndex);
             tr.innerHTML = `
                 <td class="px-3 py-2">
-                    <select name="riwayat_pangkat[\${newIndex}][golongan_id]" class="w-full border rounded px-2 py-1 text-xs" required>
+                    <select name="riwayat_pangkat[\${newIndex}][golongan_id]" class="w-full border rounded px-2 py-1 text-xs">
                         <option value="">-- Pilih Golongan --</option>
                         ${golonganOptions}
                     </select>
                 </td>
                 <td class="px-3 py-2">
-                    <input type="date" name="riwayat_pangkat[\${newIndex}][tmt]" class="w-full border rounded px-2 py-1 text-xs text-center" required>
+                    <input type="date" name="riwayat_pangkat[\${newIndex}][tmt]" class="w-full border rounded px-2 py-1 text-xs text-center">
                 </td>
                 <td class="px-3 py-2">
                     <input type="text" name="riwayat_pangkat[\${newIndex}][nomor_sk]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nomor SK">
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <input type="date" name="riwayat_pangkat[\${newIndex}][tanggal_sk]" class="w-full border rounded px-2 py-1 text-xs text-center">
                 </td>
                 <td class="px-3 py-2">
-                    <select name="riwayat_pangkat[\${newIndex}][status]" class="w-full border rounded px-2 py-1 text-xs" required>
+                    <select name="riwayat_pangkat[\${newIndex}][status]" class="w-full border rounded px-2 py-1 text-xs">
                         <option value="aktif">Aktif</option>
                         <option value="riwayat">Riwayat</option>
                     </select>
@@ -154,10 +154,8 @@ document.addEventListener('DOMContentLoaded', function () {
         tbody.addEventListener('click', function (e) {
             if (e.target.classList.contains('remove-pangkat-btn')) {
                 const row = e.target.closest('.pangkat-row');
-                if (tbody.querySelectorAll('.pangkat-row').length > 1) {
+                if (row) {
                     row.remove();
-                } else {
-                    alert('Minimal harus menyertakan satu baris riwayat.');
                 }
             }
         });

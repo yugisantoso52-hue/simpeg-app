@@ -257,6 +257,14 @@ class PegawaiService
 
             // 5. Simpan Riwayat Jabatan
             if (isset($data['riwayat_jabatan']) && is_array($data['riwayat_jabatan'])) {
+                $activeIndices = [];
+                foreach ($data['riwayat_jabatan'] as $index => $row) {
+                    if (!empty($row['jabatan_id']) && !empty($row['unit_kerja_id']) && in_array(strtolower($row['status'] ?? ''), ['aktif'])) {
+                        $activeIndices[] = $index;
+                    }
+                }
+                $lastActiveIndex = !empty($activeIndices) ? end($activeIndices) : null;
+
                 foreach ($data['riwayat_jabatan'] as $index => $row) {
                     if (empty($row['jabatan_id']) || empty($row['unit_kerja_id'])) {
                         continue;
@@ -265,13 +273,14 @@ class PegawaiService
                     if (isset($files['riwayat_jabatan'][$index]['file_sk'])) {
                         $fileSk = $files['riwayat_jabatan'][$index]['file_sk']->store('sk_jabatan', 'local');
                     }
+                    $status = ($lastActiveIndex !== null && $index === $lastActiveIndex) ? 'aktif' : 'nonaktif';
                     $pegawai->riwayatJabatan()->create([
                         'jabatan_id'    => $row['jabatan_id'],
                         'unit_kerja_id' => $row['unit_kerja_id'],
-                        'tmt_jabatan'   => $row['tmt_jabatan'] ?? now(),
+                        'tmt_jabatan'   => !empty($row['tmt_jabatan']) ? $row['tmt_jabatan'] : now(),
                         'nomor_sk'      => $row['nomor_sk'] ?? null,
                         'tanggal_sk'    => $row['tanggal_sk'] ?? null,
-                        'status'        => $row['status'] ?? 'riwayat',
+                        'status'        => $status,
                         'file_sk'       => $fileSk,
                         'keterangan'    => $row['keterangan'] ?? 'Input dari form tambah pegawai',
                     ]);
@@ -280,6 +289,14 @@ class PegawaiService
 
             // 6. Simpan Riwayat Pangkat
             if (isset($data['riwayat_pangkat']) && is_array($data['riwayat_pangkat'])) {
+                $activeIndices = [];
+                foreach ($data['riwayat_pangkat'] as $index => $row) {
+                    if (!empty($row['golongan_id']) && in_array(strtolower($row['status'] ?? ''), ['aktif'])) {
+                        $activeIndices[] = $index;
+                    }
+                }
+                $lastActiveIndex = !empty($activeIndices) ? end($activeIndices) : null;
+
                 foreach ($data['riwayat_pangkat'] as $index => $row) {
                     if (empty($row['golongan_id'])) {
                         continue;
@@ -288,12 +305,13 @@ class PegawaiService
                     if (isset($files['riwayat_pangkat'][$index]['file_sk'])) {
                         $fileSk = $files['riwayat_pangkat'][$index]['file_sk']->store('sk_pangkat', 'local');
                     }
+                    $status = ($lastActiveIndex !== null && $index === $lastActiveIndex) ? 'aktif' : 'nonaktif';
                     $pegawai->riwayatPangkat()->create([
                         'golongan_id' => $row['golongan_id'],
-                        'tmt'         => $row['tmt'] ?? now(),
+                        'tmt'         => !empty($row['tmt']) ? $row['tmt'] : now(),
                         'nomor_sk'    => $row['nomor_sk'] ?? null,
                         'tanggal_sk'  => $row['tanggal_sk'] ?? null,
-                        'status'      => $row['status'] ?? 'riwayat',
+                        'status'      => $status,
                         'file_sk'     => $fileSk,
                         'keterangan'  => $row['keterangan'] ?? 'Input dari form tambah pegawai',
                     ]);
@@ -464,6 +482,15 @@ class PegawaiService
             $incomingJabatan = $data['riwayat_jabatan'] ?? [];
             $incomingJabatanIds = collect($incomingJabatan)->pluck('id')->filter()->toArray();
             $pegawai->riwayatJabatan()->whereIn('id', array_diff($existingJabatanIds, $incomingJabatanIds))->delete();
+            
+            $activeJabatanIndices = [];
+            foreach ($incomingJabatan as $index => $row) {
+                if (!empty($row['jabatan_id']) && !empty($row['unit_kerja_id']) && in_array(strtolower($row['status'] ?? ''), ['aktif'])) {
+                    $activeJabatanIndices[] = $index;
+                }
+            }
+            $lastActiveJabatanIndex = !empty($activeJabatanIndices) ? end($activeJabatanIndices) : null;
+
             foreach ($incomingJabatan as $index => $row) {
                 if (empty($row['jabatan_id']) || empty($row['unit_kerja_id'])) {
                     continue;
@@ -473,13 +500,15 @@ class PegawaiService
                     $fileSk = $files['riwayat_jabatan'][$index]['file_sk']->store('sk_jabatan', 'local');
                 }
 
+                $status = ($lastActiveJabatanIndex !== null && $index === $lastActiveJabatanIndex) ? 'aktif' : 'nonaktif';
+
                 $payload = [
                     'jabatan_id'    => $row['jabatan_id'],
                     'unit_kerja_id' => $row['unit_kerja_id'],
-                    'tmt_jabatan'   => $row['tmt_jabatan'] ?? now(),
+                    'tmt_jabatan'   => !empty($row['tmt_jabatan']) ? $row['tmt_jabatan'] : now(),
                     'nomor_sk'      => $row['nomor_sk'] ?? null,
                     'tanggal_sk'    => $row['tanggal_sk'] ?? null,
-                    'status'        => $row['status'] ?? 'riwayat',
+                    'status'        => $status,
                     'keterangan'    => $row['keterangan'] ?? 'Update dari form edit pegawai',
                 ];
                 if ($fileSk) {
@@ -498,6 +527,15 @@ class PegawaiService
             $incomingPangkat = $data['riwayat_pangkat'] ?? [];
             $incomingPangkatIds = collect($incomingPangkat)->pluck('id')->filter()->toArray();
             $pegawai->riwayatPangkat()->whereIn('id', array_diff($existingPangkatIds, $incomingPangkatIds))->delete();
+
+            $activePangkatIndices = [];
+            foreach ($incomingPangkat as $index => $row) {
+                if (!empty($row['golongan_id']) && in_array(strtolower($row['status'] ?? ''), ['aktif'])) {
+                    $activePangkatIndices[] = $index;
+                }
+            }
+            $lastActivePangkatIndex = !empty($activePangkatIndices) ? end($activePangkatIndices) : null;
+
             foreach ($incomingPangkat as $index => $row) {
                 if (empty($row['golongan_id'])) {
                     continue;
@@ -507,12 +545,14 @@ class PegawaiService
                     $fileSk = $files['riwayat_pangkat'][$index]['file_sk']->store('sk_pangkat', 'local');
                 }
 
+                $status = ($lastActivePangkatIndex !== null && $index === $lastActivePangkatIndex) ? 'aktif' : 'nonaktif';
+
                 $payload = [
                     'golongan_id' => $row['golongan_id'],
-                    'tmt'         => $row['tmt'] ?? now(),
+                    'tmt'         => !empty($row['tmt']) ? $row['tmt'] : now(),
                     'nomor_sk'    => $row['nomor_sk'] ?? null,
                     'tanggal_sk'  => $row['tanggal_sk'] ?? null,
-                    'status'      => $row['status'] ?? 'riwayat',
+                    'status'      => $status,
                     'keterangan'  => $row['keterangan'] ?? 'Update dari form edit pegawai',
                 ];
                 if ($fileSk) {
@@ -665,35 +705,69 @@ class PegawaiService
         $activeJabatan = $pegawai->riwayatJabatan()
             ->whereIn('status', ['aktif', 'Aktif'])
             ->first();
-        if (!$activeJabatan) {
-            $activeJabatan = $pegawai->riwayatJabatan()
-                ->orderBy('tmt_jabatan', 'desc')
-                ->first();
-        }
 
         if ($activeJabatan) {
             $pegawai->jabatan_id = $activeJabatan->jabatan_id;
             $pegawai->unit_kerja_id = $activeJabatan->unit_kerja_id;
-            if ($activeJabatan->status === 'aktif' || $activeJabatan->status === 'Aktif') {
+            if (!empty($activeJabatan->nomor_sk)) {
+                $pegawai->nomor_sk_pertama = $activeJabatan->nomor_sk;
+            }
+            if (!empty($activeJabatan->tanggal_sk)) {
+                $pegawai->tanggal_sk_pertama = $activeJabatan->tanggal_sk;
+            }
+            if (!empty($activeJabatan->file_sk)) {
                 $pegawai->file_sk_pertama = $activeJabatan->file_sk;
             }
+            if (!empty($activeJabatan->tmt_jabatan) && empty($pegawai->tmt_sk_pertama)) {
+                $pegawai->tmt_sk_pertama = $activeJabatan->tmt_jabatan;
+            }
+        } elseif ($pegawai->jabatan_id && $pegawai->unit_kerja_id) {
+            // Sinkronisasi balik: jika data induk ada tetapi belum ada riwayat aktif, buatkan riwayat aktif
+            $pegawai->riwayatJabatan()->create([
+                'jabatan_id'    => $pegawai->jabatan_id,
+                'unit_kerja_id' => $pegawai->unit_kerja_id,
+                'tmt_jabatan'   => $pegawai->tmt_sk_pertama ?? $pegawai->tanggal_masuk ?? now(),
+                'nomor_sk'      => $pegawai->nomor_sk_pertama,
+                'tanggal_sk'    => $pegawai->tanggal_sk_pertama,
+                'file_sk'       => $pegawai->file_sk_pertama,
+                'status'        => 'Aktif',
+                'keterangan'    => 'Sinkronisasi otomatis dari data utama pegawai',
+            ]);
         }
 
         // 2. Sinkronisasi Pangkat Terakhir
         $activePangkat = $pegawai->riwayatPangkat()
             ->whereIn('status', ['aktif', 'Aktif'])
             ->first();
-        if (!$activePangkat) {
-            $activePangkat = $pegawai->riwayatPangkat()
-                ->orderBy('tmt', 'desc')
-                ->first();
-        }
 
         if ($activePangkat) {
             $pegawai->golongan_id = $activePangkat->golongan_id;
             $pegawai->tmt_pangkat_terakhir = $activePangkat->tmt;
-            if ($activePangkat->status === 'aktif' || $activePangkat->status === 'Aktif') {
+            if (!empty($activePangkat->nomor_sk)) {
+                $pegawai->nomor_sk_pangkat_terakhir = $activePangkat->nomor_sk;
+            }
+            if (!empty($activePangkat->tanggal_sk)) {
+                $pegawai->tanggal_sk_pangkat_terakhir = $activePangkat->tanggal_sk;
+            }
+            if (!empty($activePangkat->file_sk)) {
                 $pegawai->file_sk_pangkat_terakhir = $activePangkat->file_sk;
+            }
+            if (!empty($activePangkat->tmt)) {
+                $pegawai->kp_berikutnya = Carbon::parse($activePangkat->tmt)->addYears(4)->toDateString();
+            }
+        } elseif ($pegawai->golongan_id) {
+            // Sinkronisasi balik: jika data induk ada tetapi belum ada riwayat aktif, buatkan riwayat aktif
+            $pegawai->riwayatPangkat()->create([
+                'golongan_id' => $pegawai->golongan_id,
+                'tmt'         => $pegawai->tmt_pangkat_terakhir ?? now(),
+                'nomor_sk'    => $pegawai->nomor_sk_pangkat_terakhir,
+                'tanggal_sk'  => $pegawai->tanggal_sk_pangkat_terakhir,
+                'file_sk'     => $pegawai->file_sk_pangkat_terakhir,
+                'status'      => 'aktif',
+                'keterangan'  => 'Sinkronisasi otomatis dari data utama pegawai',
+            ]);
+            if (!empty($pegawai->tmt_pangkat_terakhir)) {
+                $pegawai->kp_berikutnya = Carbon::parse($pegawai->tmt_pangkat_terakhir)->addYears(4)->toDateString();
             }
         }
 
@@ -718,7 +792,7 @@ class PegawaiService
             })
             ->first();
 
-        if ($highestPendidikan) {
+        if ($highestPendidikan && !empty($highestPendidikan->jenjang)) {
             $pegawai->pendidikan = $highestPendidikan->jenjang;
         }
 

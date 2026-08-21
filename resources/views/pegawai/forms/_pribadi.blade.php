@@ -10,8 +10,8 @@
         </x-enterprise.forms.field>
 
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="NIK" required>
-                <x-enterprise.input name="nik" :value="old('nik', $pegawai->nik ?? '')" required />
+            <x-enterprise.form-group label="NIK">
+                <x-enterprise.input name="nik" :value="old('nik', $pegawai->nik ?? '')" />
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
 
@@ -36,8 +36,8 @@
         </x-enterprise.forms.field>
 
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="Jenis Kelamin" required>
-                <x-enterprise.select name="jenis_kelamin" required>
+            <x-enterprise.form-group label="Jenis Kelamin">
+                <x-enterprise.select name="jenis_kelamin">
                     <option value="">Pilih Jenis Kelamin</option>
                     <option value="L" @selected(old('jenis_kelamin', $pegawai->jenis_kelamin ?? '')=='L')>Laki-laki</option>
                     <option value="P" @selected(old('jenis_kelamin', $pegawai->jenis_kelamin ?? '')=='P')>Perempuan</option>

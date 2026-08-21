@@ -29,7 +29,7 @@
                     <tr class="diklat-row" data-index="{{ $index }}">
                         <input type="hidden" name="riwayat_diklat[{{ $index }}][id]" value="{{ $rd->id }}">
                         <td class="px-3 py-2">
-                            <input type="text" name="riwayat_diklat[{{ $index }}][nama_diklat]" value="{{ $rd->nama_diklat }}" class="w-full border rounded px-2 py-1 text-xs" required>
+                            <input type="text" name="riwayat_diklat[{{ $index }}][nama_diklat]" value="{{ $rd->nama_diklat }}" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nama Diklat/Pelatihan">
                         </td>
                         <td class="px-3 py-2">
                             <input type="text" name="riwayat_diklat[{{ $index }}][penyelenggara]" value="{{ $rd->penyelenggara }}" class="w-full border rounded px-2 py-1 text-xs">
@@ -38,16 +38,16 @@
                             <input type="text" name="riwayat_diklat[{{ $index }}][jenis_diklat]" value="{{ $rd->jenis_diklat }}" class="w-full border rounded px-2 py-1 text-xs">
                         </td>
                         <td class="px-3 py-2">
-                            <input type="date" name="riwayat_diklat[{{ $index }}][tanggal_mulai]" value="{{ $rd->tanggal_mulai ? \Carbon\Carbon::parse($rd->tanggal_mulai)->format('Y-m-d') : '' }}" class="w-full border rounded px-2 py-1 text-xs text-center" required>
+                            <input type="date" name="riwayat_diklat[{{ $index }}][tanggal_mulai]" value="{{ $rd->tanggal_mulai ? \Carbon\Carbon::parse($rd->tanggal_mulai)->format('Y-m-d') : '' }}" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2">
-                            <input type="date" name="riwayat_diklat[{{ $index }}][tanggal_selesai]" value="{{ $rd->tanggal_selesai ? \Carbon\Carbon::parse($rd->tanggal_selesai)->format('Y-m-d') : '' }}" class="w-full border rounded px-2 py-1 text-xs text-center" required>
+                            <input type="date" name="riwayat_diklat[{{ $index }}][tanggal_selesai]" value="{{ $rd->tanggal_selesai ? \Carbon\Carbon::parse($rd->tanggal_selesai)->format('Y-m-d') : '' }}" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2">
                             <input type="number" name="riwayat_diklat[{{ $index }}][jumlah_jam]" value="{{ $rd->jumlah_jam }}" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2">
-                            <select name="riwayat_diklat[{{ $index }}][status]" class="w-full border rounded px-2 py-1 text-xs" required>
+                            <select name="riwayat_diklat[{{ $index }}][status]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="Aktif" @selected($rd->status == 'Aktif')>Aktif</option>
                                 <option value="Tidak Aktif" @selected($rd->status == 'Tidak Aktif')>Tidak Aktif</option>
                             </select>
@@ -67,7 +67,7 @@
                 @empty
                     <tr class="diklat-row" data-index="0">
                         <td class="px-3 py-2">
-                            <input type="text" name="riwayat_diklat[0][nama_diklat]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nama Diklat/Pelatihan" required>
+                            <input type="text" name="riwayat_diklat[0][nama_diklat]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nama Diklat/Pelatihan">
                         </td>
                         <td class="px-3 py-2">
                             <input type="text" name="riwayat_diklat[0][penyelenggara]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Penyelenggara">
@@ -76,16 +76,16 @@
                             <input type="text" name="riwayat_diklat[0][jenis_diklat]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Jenis">
                         </td>
                         <td class="px-3 py-2">
-                            <input type="date" name="riwayat_diklat[0][tanggal_mulai]" class="w-full border rounded px-2 py-1 text-xs text-center" required>
+                            <input type="date" name="riwayat_diklat[0][tanggal_mulai]" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2">
-                            <input type="date" name="riwayat_diklat[0][tanggal_selesai]" class="w-full border rounded px-2 py-1 text-xs text-center" required>
+                            <input type="date" name="riwayat_diklat[0][tanggal_selesai]" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2">
                             <input type="number" name="riwayat_diklat[0][jumlah_jam]" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2">
-                            <select name="riwayat_diklat[0][status]" class="w-full border rounded px-2 py-1 text-xs" required>
+                            <select name="riwayat_diklat[0][status]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="Aktif">Aktif</option>
                                 <option value="Tidak Aktif">Tidak Aktif</option>
                             </select>
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function () {
             tr.setAttribute('data-index', newIndex);
             tr.innerHTML = `
                 <td class="px-3 py-2">
-                    <input type="text" name="riwayat_diklat[\${newIndex}][nama_diklat]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nama Diklat/Pelatihan" required>
+                    <input type="text" name="riwayat_diklat[\${newIndex}][nama_diklat]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nama Diklat/Pelatihan">
                 </td>
                 <td class="px-3 py-2">
                     <input type="text" name="riwayat_diklat[\${newIndex}][penyelenggara]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Penyelenggara">
@@ -133,16 +133,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     <input type="text" name="riwayat_diklat[\${newIndex}][jenis_diklat]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Jenis">
                 </td>
                 <td class="px-3 py-2">
-                    <input type="date" name="riwayat_diklat[\${newIndex}][tanggal_mulai]" class="w-full border rounded px-2 py-1 text-xs text-center" required>
+                    <input type="date" name="riwayat_diklat[\${newIndex}][tanggal_mulai]" class="w-full border rounded px-2 py-1 text-xs text-center">
                 </td>
                 <td class="px-3 py-2">
-                    <input type="date" name="riwayat_diklat[\${newIndex}][tanggal_selesai]" class="w-full border rounded px-2 py-1 text-xs text-center" required>
+                    <input type="date" name="riwayat_diklat[\${newIndex}][tanggal_selesai]" class="w-full border rounded px-2 py-1 text-xs text-center">
                 </td>
                 <td class="px-3 py-2">
                     <input type="number" name="riwayat_diklat[\${newIndex}][jumlah_jam]" class="w-full border rounded px-2 py-1 text-xs text-center">
                 </td>
                 <td class="px-3 py-2">
-                    <select name="riwayat_diklat[\${newIndex}][status]" class="w-full border rounded px-2 py-1 text-xs" required>
+                    <select name="riwayat_diklat[\${newIndex}][status]" class="w-full border rounded px-2 py-1 text-xs">
                         <option value="Aktif">Aktif</option>
                         <option value="Tidak Aktif">Tidak Aktif</option>
                     </select>
@@ -160,10 +160,8 @@ document.addEventListener('DOMContentLoaded', function () {
         tbody.addEventListener('click', function (e) {
             if (e.target.classList.contains('remove-diklat-btn')) {
                 const row = e.target.closest('.diklat-row');
-                if (tbody.querySelectorAll('.diklat-row').length > 1) {
+                if (row) {
                     row.remove();
-                } else {
-                    alert('Minimal harus menyertakan satu baris riwayat.');
                 }
             }
         });

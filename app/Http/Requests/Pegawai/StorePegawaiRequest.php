@@ -14,16 +14,18 @@ class StorePegawaiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Disesuaikan agar menerima 'nama_lengkap' atau 'nama'
+            // Wajib (Required): Hanya NIP dan Nama Lengkap / Nama
             'nip'                  => 'required|string|max:50|unique:pegawai,nip',
             'nama'                 => 'required|string|max:150',
             'nama_lengkap'         => 'nullable|string|max:150',
-            'nik'                  => 'required|string|max:30',
+
+            // Opsional (Nullable): Seluruh kolom identitas & kontak
+            'nik'                  => 'nullable|string|max:30',
             'gelar_depan'          => 'nullable|string|max:20',
             'gelar_belakang'       => 'nullable|string|max:20',
             'tempat_lahir'         => 'nullable|string|max:100',
             'tanggal_lahir'        => 'nullable|date',
-            'jenis_kelamin'        => 'required|in:L,P',
+            'jenis_kelamin'        => 'nullable|in:L,P',
             'agama'                => 'nullable|string|max:30',
             'pendidikan'           => 'nullable|string|max:100',
             'email'                => 'nullable|email|max:100',
@@ -37,11 +39,12 @@ class StorePegawaiRequest extends FormRequest
             'nama_pasangan'        => 'nullable|string|max:150',
             'jumlah_anak'          => 'nullable|integer|min:0',
             
-            // Relasi Utama
-            'unit_kerja_id'        => 'required|exists:unit_kerja,id',
-            'jabatan_id'           => 'required|exists:jabatan,id',
-            'golongan_id'          => 'required|exists:golongan,id',
+            // Relasi Utama (Opsional saat pengisian parsial)
+            'unit_kerja_id'        => 'nullable|exists:unit_kerja,id',
+            'jabatan_id'           => 'nullable|exists:jabatan,id',
+            'golongan_id'          => 'nullable|exists:golongan,id',
             
+            // Tanggal, SK & Dokumen
             'tanggal_masuk'        => 'nullable|date',
             'tmt_sk_pertama'       => 'nullable|date',
             'tmt_pangkat_terakhir' => 'nullable|date',
@@ -51,56 +54,61 @@ class StorePegawaiRequest extends FormRequest
             'nomor_sk_pangkat_terakhir'   => 'nullable|string|max:100',
             'tanggal_sk_pangkat_terakhir' => 'nullable|date',
             'status_pegawai'           => 'nullable|in:Aktif,Non Aktif,Pensiun',
-            'foto'                     => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
+            
+            // Upload Berkas (Opsional)
+            'foto'                     => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'file_sk_pertama'          => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'file_sk_pangkat_terakhir' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'file_sk_kgb_terakhir'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            
+            // Data Fisik
             'gol_darah'            => 'nullable|in:A,B,AB,O',
             'tinggi_badan'         => 'nullable|integer|min:0',
             'berat_badan'          => 'nullable|integer|min:0',
 
-            // Validasi Input Multi-Riwayat Pendidikan
+            // Validasi Input Multi-Riwayat Pendidikan (Opsional)
             'riwayat_pendidikan'                       => 'nullable|array',
             'riwayat_pendidikan.*.id'                  => 'nullable|integer',
-            'riwayat_pendidikan.*.jenjang'             => 'required_with:riwayat_pendidikan.*.institusi|string|max:50',
-            'riwayat_pendidikan.*.institusi'           => 'required_with:riwayat_pendidikan.*.jenjang|string|max:255',
+            'riwayat_pendidikan.*.jenjang'             => 'nullable|string|max:50',
+            'riwayat_pendidikan.*.institusi'           => 'nullable|string|max:255',
             'riwayat_pendidikan.*.fakultas'            => 'nullable|string|max:150',
             'riwayat_pendidikan.*.jurusan'             => 'nullable|string|max:150',
             'riwayat_pendidikan.*.tahun_lulus'         => 'nullable|integer',
-            'riwayat_pendidikan.*.ijazah'              => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'riwayat_pendidikan.*.ijazah'              => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
 
-            // Validasi Input Multi-Riwayat Pangkat
+            // Validasi Input Multi-Riwayat Pangkat (Opsional)
             'riwayat_pangkat'                          => 'nullable|array',
             'riwayat_pangkat.*.id'                     => 'nullable|integer',
-            'riwayat_pangkat.*.golongan_id'            => 'required|exists:golongan,id',
-            'riwayat_pangkat.*.tmt'                    => 'required|date',
+            'riwayat_pangkat.*.golongan_id'            => 'nullable|exists:golongan,id',
+            'riwayat_pangkat.*.tmt'                    => 'nullable|date',
             'riwayat_pangkat.*.nomor_sk'               => 'nullable|string|max:100',
             'riwayat_pangkat.*.tanggal_sk'             => 'nullable|date',
-            'riwayat_pangkat.*.status'                 => 'required|in:aktif,riwayat,Aktif',
-            'riwayat_pangkat.*.file_sk'                => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'riwayat_pangkat.*.status'                 => 'nullable|string|max:50',
+            'riwayat_pangkat.*.file_sk'                => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
 
-            // Validasi Input Multi-Riwayat Jabatan
+            // Validasi Input Multi-Riwayat Jabatan (Opsional)
             'riwayat_jabatan'                          => 'nullable|array',
             'riwayat_jabatan.*.id'                     => 'nullable|integer',
-            'riwayat_jabatan.*.jabatan_id'             => 'required|exists:jabatan,id',
-            'riwayat_jabatan.*.unit_kerja_id'          => 'required|exists:unit_kerja,id',
-            'riwayat_jabatan.*.tmt_jabatan'            => 'required|date',
+            'riwayat_jabatan.*.jabatan_id'             => 'nullable|exists:jabatan,id',
+            'riwayat_jabatan.*.unit_kerja_id'          => 'nullable|exists:unit_kerja,id',
+            'riwayat_jabatan.*.tmt_jabatan'            => 'nullable|date',
             'riwayat_jabatan.*.nomor_sk'               => 'nullable|string|max:100',
             'riwayat_jabatan.*.tanggal_sk'             => 'nullable|date',
-            'riwayat_jabatan.*.status'                 => 'required|in:aktif,riwayat,Aktif',
-            'riwayat_jabatan.*.file_sk'                => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'riwayat_jabatan.*.status'                 => 'nullable|string|max:50',
+            'riwayat_jabatan.*.file_sk'                => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
 
-            // Validasi Input Multi-Riwayat Diklat
+            // Validasi Input Multi-Riwayat Diklat (Opsional)
             'riwayat_diklat'                           => 'nullable|array',
             'riwayat_diklat.*.id'                      => 'nullable|integer',
-            'riwayat_diklat.*.nama_diklat'             => 'required|string|max:255',
-            'riwayat_diklat.*.penyelenggara'           => 'nullable|string|max:255',
+            'riwayat_diklat.*.nama_diklat'             => 'nullable|string|max:255',
+            'riwayat_diklat.*.penyelenggara'          => 'nullable|string|max:255',
             'riwayat_diklat.*.jenis_diklat'            => 'nullable|string|max:100',
-            'riwayat_diklat.*.tanggal_mulai'           => 'required|date',
-            'riwayat_diklat.*.tanggal_selesai'         => 'required|date',
+            'riwayat_diklat.*.tanggal_mulai'           => 'nullable|date',
+            'riwayat_diklat.*.tanggal_selesai'         => 'nullable|date',
             'riwayat_diklat.*.jumlah_jam'              => 'nullable|integer|min:0',
-            'riwayat_diklat.*.status'                  => 'required|string|max:50',
-            'riwayat_diklat.*.file_sertifikat'         => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'riwayat_diklat.*.status'                  => 'nullable|string|max:50',
+            'riwayat_diklat.*.keterangan'              => 'nullable|string',
+            'riwayat_diklat.*.file_sertifikat'         => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ];
     }
 
@@ -142,8 +150,8 @@ class StorePegawaiRequest extends FormRequest
         return [
             'nip.required'           => 'NIP wajib diisi.',
             'nip.unique'             => 'NIP sudah terdaftar.',
-            'unit_kerja_id.required' => 'Unit Kerja wajib dipilih.',
-            'jabatan_id.required'    => 'Jabatan wajib dipilih.',
+            'nama.required'          => 'Nama Lengkap wajib diisi.',
+            'nama_lengkap.required'  => 'Nama Lengkap wajib diisi.',
         ];
     }
 }

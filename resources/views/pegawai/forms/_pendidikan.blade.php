@@ -27,14 +27,15 @@
                     <tr class="pendidikan-row" data-index="{{ $index }}">
                         <input type="hidden" name="riwayat_pendidikan[{{ $index }}][id]" value="{{ $rp->id }}">
                         <td class="px-3 py-2">
-                            <select name="riwayat_pendidikan[{{ $index }}][jenjang]" class="w-full border rounded px-2 py-1 text-xs" required>
+                            <select name="riwayat_pendidikan[{{ $index }}][jenjang]" class="w-full border rounded px-2 py-1 text-xs">
+                                <option value="">-- Pilih --</option>
                                 @foreach(['SD', 'SMP', 'SMA', 'D3', 'S1', 'S2', 'S3', 'Profesor'] as $j)
                                     <option value="{{ $j }}" @selected($rp->jenjang == $j)>{{ $j }}</option>
                                 @endforeach
                             </select>
                         </td>
                         <td class="px-3 py-2">
-                            <input type="text" name="riwayat_pendidikan[{{ $index }}][institusi]" value="{{ $rp->institusi }}" class="w-full border rounded px-2 py-1 text-xs" required>
+                            <input type="text" name="riwayat_pendidikan[{{ $index }}][institusi]" value="{{ $rp->institusi }}" class="w-full border rounded px-2 py-1 text-xs">
                         </td>
                         <td class="px-3 py-2">
                             <input type="text" name="riwayat_pendidikan[{{ $index }}][fakultas]" value="{{ $rp->fakultas }}" class="w-full border rounded px-2 py-1 text-xs">
@@ -60,7 +61,7 @@
                 @empty
                     <tr class="pendidikan-row" data-index="0">
                         <td class="px-3 py-2">
-                            <select name="riwayat_pendidikan[0][jenjang]" class="w-full border rounded px-2 py-1 text-xs" required>
+                            <select name="riwayat_pendidikan[0][jenjang]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="">-- Pilih --</option>
                                 @foreach(['SD', 'SMP', 'SMA', 'D3', 'S1', 'S2', 'S3', 'Profesor'] as $j)
                                     <option value="{{ $j }}">{{ $j }}</option>
@@ -68,7 +69,7 @@
                             </select>
                         </td>
                         <td class="px-3 py-2">
-                            <input type="text" name="riwayat_pendidikan[0][institusi]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nama Sekolah/Univ" required>
+                            <input type="text" name="riwayat_pendidikan[0][institusi]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nama Sekolah/Univ">
                         </td>
                         <td class="px-3 py-2">
                             <input type="text" name="riwayat_pendidikan[0][fakultas]" class="w-full border rounded px-2 py-1 text-xs">
@@ -113,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
             tr.setAttribute('data-index', newIndex);
             tr.innerHTML = `
                 <td class="px-3 py-2">
-                    <select name="riwayat_pendidikan[\${newIndex}][jenjang]" class="w-full border rounded px-2 py-1 text-xs" required>
+                    <select name="riwayat_pendidikan[\${newIndex}][jenjang]" class="w-full border rounded px-2 py-1 text-xs">
                         <option value="">-- Pilih --</option>
                         <option value="SD">SD</option>
                         <option value="SMP">SMP</option>
@@ -126,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     </select>
                 </td>
                 <td class="px-3 py-2">
-                    <input type="text" name="riwayat_pendidikan[\${newIndex}][institusi]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nama Sekolah/Univ" required>
+                    <input type="text" name="riwayat_pendidikan[\${newIndex}][institusi]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nama Sekolah/Univ">
                 </td>
                 <td class="px-3 py-2">
                     <input type="text" name="riwayat_pendidikan[\${newIndex}][fakultas]" class="w-full border rounded px-2 py-1 text-xs">
@@ -150,10 +151,8 @@ document.addEventListener('DOMContentLoaded', function () {
         tbody.addEventListener('click', function (e) {
             if (e.target.classList.contains('remove-pendidikan-btn')) {
                 const row = e.target.closest('.pendidikan-row');
-                if (tbody.querySelectorAll('.pendidikan-row').length > 1) {
+                if (row) {
                     row.remove();
-                } else {
-                    alert('Minimal harus menyertakan satu baris riwayat.');
                 }
             }
         });

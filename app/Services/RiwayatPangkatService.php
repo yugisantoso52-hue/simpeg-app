@@ -99,10 +99,15 @@ class RiwayatPangkatService
 
             // 3. Update data pangkat aktif terbaru di tabel Pegawai (Gunakan null-check Carbon)
             $updatePegawai = [
-                'golongan_id'          => $data['golongan_id'],
-                'tmt_pangkat_terakhir' => $data['tmt'] ?? null,
-                'kp_berikutnya'        => !empty($data['tmt']) ? Carbon::parse($data['tmt'])->addYears(4) : null,
+                'golongan_id'                 => $data['golongan_id'],
+                'tmt_pangkat_terakhir'        => $data['tmt'] ?? null,
+                'nomor_sk_pangkat_terakhir'   => $data['nomor_sk'] ?? null,
+                'tanggal_sk_pangkat_terakhir' => $data['tanggal_sk'] ?? null,
+                'kp_berikutnya'               => !empty($data['tmt']) ? Carbon::parse($data['tmt'])->addYears(4) : null,
             ];
+            if (!empty($riwayat->file_sk)) {
+                $updatePegawai['file_sk_pangkat_terakhir'] = $riwayat->file_sk;
+            }
             Pegawai::where('id', $data['pegawai_id'])->update($updatePegawai);
 
             return $riwayat;
@@ -156,10 +161,15 @@ class RiwayatPangkatService
                 : null;
 
             $updatePegawai = [
-                'golongan_id'          => $riwayatUpdated->golongan_id,
-                'tmt_pangkat_terakhir' => $riwayatUpdated->tmt,
-                'kp_berikutnya'        => $kpBerikutnya,
+                'golongan_id'                 => $riwayatUpdated->golongan_id,
+                'tmt_pangkat_terakhir'        => $riwayatUpdated->tmt,
+                'nomor_sk_pangkat_terakhir'   => $riwayatUpdated->nomor_sk ?? null,
+                'tanggal_sk_pangkat_terakhir' => $riwayatUpdated->tanggal_sk ?? null,
+                'kp_berikutnya'               => $kpBerikutnya,
             ];
+            if (!empty($riwayatUpdated->file_sk)) {
+                $updatePegawai['file_sk_pangkat_terakhir'] = $riwayatUpdated->file_sk;
+            }
             Pegawai::where('id', $riwayatUpdated->pegawai_id)->update($updatePegawai);
 
             return $riwayatUpdated;
@@ -199,17 +209,24 @@ class RiwayatPangkatService
                     ? Carbon::parse($pangkatTerbaru->tmt)->addYears(4) 
                     : null;
 
-                Pegawai::where('id', $pegawaiId)->update([
-                    'golongan_id'          => $pangkatTerbaru->golongan_id,
-                    'tmt_pangkat_terakhir' => $pangkatTerbaru->tmt,
-                    'kp_berikutnya'        => $kpBerikutnya,
-                ]);
+                $updatePegawai = [
+                    'golongan_id'                 => $pangkatTerbaru->golongan_id,
+                    'tmt_pangkat_terakhir'        => $pangkatTerbaru->tmt,
+                    'nomor_sk_pangkat_terakhir'   => $pangkatTerbaru->nomor_sk ?? null,
+                    'tanggal_sk_pangkat_terakhir' => $pangkatTerbaru->tanggal_sk ?? null,
+                    'file_sk_pangkat_terakhir'    => $pangkatTerbaru->file_sk ?? null,
+                    'kp_berikutnya'               => $kpBerikutnya,
+                ];
+                Pegawai::where('id', $pegawaiId)->update($updatePegawai);
             } else {
                 // Jika tidak ada riwayat pangkat sama sekali, kosongkan di tabel pegawai
                 Pegawai::where('id', $pegawaiId)->update([
-                    'golongan_id'          => null,
-                    'tmt_pangkat_terakhir' => null,
-                    'kp_berikutnya'        => null,
+                    'golongan_id'                 => null,
+                    'tmt_pangkat_terakhir'        => null,
+                    'nomor_sk_pangkat_terakhir'   => null,
+                    'tanggal_sk_pangkat_terakhir' => null,
+                    'file_sk_pangkat_terakhir'    => null,
+                    'kp_berikutnya'               => null,
                 ]);
             }
 

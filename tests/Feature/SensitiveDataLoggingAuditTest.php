@@ -126,7 +126,7 @@ class SensitiveDataLoggingAuditTest extends TestCase
         $response = $this->actingAs($this->adminUser)
             ->post('/pegawai', []);
 
-        $response->assertSessionHasErrors(['nip', 'unit_kerja_id', 'jabatan_id']);
+        $response->assertSessionHasErrors(['nip', 'nama']);
         $content = session('errors')->getBag('default')->first('nip');
 
         $this->assertStringNotContainsString('Exception', $content);

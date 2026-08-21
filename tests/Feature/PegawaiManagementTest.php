@@ -168,7 +168,7 @@ class PegawaiManagementTest extends TestCase
         $response = $this->actingAs($this->adminUser)
             ->post('/pegawai', $payload);
 
-        $response->assertSessionHasErrors(['nip', 'unit_kerja_id', 'jabatan_id']);
+        $response->assertSessionHasErrors(['nip']);
     }
 
     /**
