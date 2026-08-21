@@ -220,15 +220,10 @@ class Pegawai extends Model
     {
         return Attribute::make(
             get: function () {
-                if ($this->foto) {
-                    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($this->foto)) {
-                        return asset('storage/' . $this->foto);
-                    }
-                    if (\Illuminate\Support\Facades\Storage::disk('local')->exists($this->foto)) {
-                        return route('document.preview', ['path' => $this->foto]);
-                    }
+                if ($this->foto && $this->id) {
+                    return route('pegawai.foto', $this->id);
                 }
-                return 'https://ui-avatars.com/api/?name=' . urlencode($this->nama_lengkap ?? $this->nama) . '&color=7F9CF5&background=EBF4FF';
+                return 'https://ui-avatars.com/api/?name=' . urlencode($this->nama_lengkap ?? $this->nama ?? 'User') . '&color=7F9CF5&background=EBF4FF';
             }
         );
     }

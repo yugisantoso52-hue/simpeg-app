@@ -112,10 +112,10 @@
     <x-enterprise.forms.row cols="1">
         <x-enterprise.forms.field>
             <x-enterprise.form-group label="Foto Pegawai">
-                @if(isset($pegawai->foto) && $pegawai->foto)
+                @if(isset($pegawai) && $pegawai->foto)
                     <div class="mb-2">
-                        <img src="{{ asset('storage/'.$pegawai->foto) }}" width="100" class="rounded border shadow-sm">
-                        <span class="text-xs text-gray-500">Foto saat ini</span>
+                        <img src="{{ $pegawai->foto_url }}" width="100" class="rounded border shadow-sm h-28 w-24 object-cover">
+                        <span class="text-xs text-gray-500 block mt-1">Foto saat ini</span>
                     </div>
                 @endif
                 <x-enterprise.file-upload name="foto" accept="image/*"/>

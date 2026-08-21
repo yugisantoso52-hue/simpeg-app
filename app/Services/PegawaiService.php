@@ -39,8 +39,13 @@ class PegawaiService
      */
     private function deleteFoto(?string $foto): void
     {
-        if ($foto && Storage::disk('public')->exists($foto)) {
-            Storage::disk('public')->delete($foto);
+        if ($foto) {
+            if (Storage::disk('public')->exists($foto)) {
+                Storage::disk('public')->delete($foto);
+            }
+            if (Storage::disk('local')->exists($foto)) {
+                Storage::disk('local')->delete($foto);
+            }
         }
     }
 

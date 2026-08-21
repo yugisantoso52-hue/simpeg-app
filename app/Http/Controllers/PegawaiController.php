@@ -284,4 +284,44 @@ class PegawaiController extends Controller
         $namaClean = str_replace([' ', '/', '\\'], '_', $pegawai->nama_lengkap ?? $pegawai->nama);
         return $pdf->download('Profil_Pegawai_' . $namaClean . '_' . date('Ymd') . '.pdf');
     }
+
+    /**
+     * Stream / Tampilkan Foto Pegawai secara aman & reliabel tanpa bergantung pada symlink
+     */
+    public function foto(Pegawai $pegawai)
+    {
+        if ($pegawai->foto) {
+            $cleanPath = ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $pegawai->foto), DIRECTORY_SEPARATOR);
+
+            // 1. Cek via Storage disk public (kompatibel dengan Storage::fake & real storage)
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($cleanPath)) {
+                return response()->file(\Illuminate\Support\Facades\Storage::disk('public')->path($cleanPath));
+            }
+
+            // 2. Cek via Storage disk local
+            if (\Illuminate\Support\Facades\Storage::disk('local')->exists($cleanPath)) {
+                return response()->file(\Illuminate\Support\Facades\Storage::disk('local')->path($cleanPath));
+            }
+
+            // 3. Fallback direct file checks
+            $publicPath = storage_path('app/public' . DIRECTORY_SEPARATOR . $cleanPath);
+            if (file_exists($publicPath) && is_file($publicPath)) {
+                return response()->file($publicPath);
+            }
+
+            $privatePath = storage_path('app/private' . DIRECTORY_SEPARATOR . $cleanPath);
+            if (file_exists($privatePath) && is_file($privatePath)) {
+                return response()->file($privatePath);
+            }
+
+            $publicStoragePath = public_path('storage' . DIRECTORY_SEPARATOR . $cleanPath);
+            if (file_exists($publicStoragePath) && is_file($publicStoragePath)) {
+                return response()->file($publicStoragePath);
+            }
+        }
+
+        // Fallback jika file fisik tidak ditemukan atau belum ada foto
+        $avatarUrl = 'https://ui-avatars.com/api/?name=' . urlencode($pegawai->nama_lengkap ?? $pegawai->nama ?? 'User') . '&color=7F9CF5&background=EBF4FF';
+        return redirect()->away($avatarUrl);
+    }
 }
