@@ -45,15 +45,62 @@ class LoginRequest extends FormRequest
         $cleanNip = preg_replace('/[^0-9]/', '', (string)$this->input('login'));
         $rawInput = $this->input('login');
 
-        // 1. Cari User
+        // 1. Cari Pegawai terlebih dahulu jika input adalah NIP (numeric)
+        $pegawai = null;
+        if (!empty($cleanNip)) {
+            $pegawai = \App\Models\Pegawai::whereRaw("REPLACE(REPLACE(nip, ' ', ''), CHAR(39), '') = ?", [$cleanNip])->first();
+        }
+
+        // 2. Jika pegawai ditemukan, pastikan akun User-nya ada dan tersinkronisasi (On-the-Fly Sync)
+        if ($pegawai) {
+            $rolePegawai = \App\Models\Role::where('name', 'pegawai')->first();
+            $emailTemp = $pegawai->nip . '@staff.unri.ac.id';
+
+            $user = \App\Models\User::where('pegawai_id', $pegawai->id)
+                ->orWhere('email', $emailTemp)
+                ->first();
+
+            $dob = '19900101';
+            if ($pegawai->tanggal_lahir) {
+                try {
+                    $dob = \Carbon\Carbon::parse($pegawai->tanggal_lahir)->format('Ymd');
+                } catch (\Exception $e) {
+                    $dob = '19900101';
+                }
+            }
+
+            if ($user) {
+                // Update jika data pegawai berubah
+                $user->name = $pegawai->nama;
+                $user->email = $emailTemp;
+                $user->pegawai_id = $pegawai->id;
+                $user->role_id = $user->role_id ?? ($rolePegawai->id ?? 2);
+                if ($user->must_change_password) {
+                    $user->password = \Illuminate\Support\Facades\Hash::make($dob);
+                }
+                $user->save();
+            } else {
+                // Buat user baru secara otomatis
+                \App\Models\User::create([
+                    'name'                 => $pegawai->nama,
+                    'email'                => $emailTemp,
+                    'password'             => \Illuminate\Support\Facades\Hash::make($dob),
+                    'role_id'              => $rolePegawai->id ?? 2,
+                    'pegawai_id'           => $pegawai->id,
+                    'must_change_password' => true,
+                ]);
+            }
+        }
+
+        // 3. Cari User untuk proses login
         $user = \App\Models\User::where('email', $rawInput)
             ->orWhere('email', $cleanNip . '@staff.unri.ac.id')
-            ->orWhereHas('pegawai', function ($q) use ($cleanNip) {
-                $q->whereRaw("REPLACE(REPLACE(nip, ' ', ''), \"'\", '') = ?", [$cleanNip]);
+            ->when($pegawai, function ($query) use ($pegawai) {
+                $query->orWhere('pegawai_id', $pegawai->id);
             })
             ->first();
 
-        // 2. Verifikasi Kredensial
+        // 4. Verifikasi Kredensial
         if (!$user || !\Illuminate\Support\Facades\Hash::check($this->input('password'), $user->password)) {
             \Illuminate\Support\Facades\RateLimiter::hit($this->throttleKey());
 
