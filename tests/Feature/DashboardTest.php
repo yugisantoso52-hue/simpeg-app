@@ -54,7 +54,8 @@ class DashboardTest extends TestCase
             ->get('/dashboard');
 
         $response->assertStatus(200);
-        $response->assertSee('Dashboard SIKAP');
+        $response->assertSee('Dashboard');
+        $response->assertSee('SISTEM INFORMASI KEPEGAWAIAN (SIKAP)');
         $response->assertSee('Total Pegawai');
     }
 

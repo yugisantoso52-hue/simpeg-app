@@ -11,15 +11,18 @@
 
             <!-- Teks Kop Surat -->
             <div class="text-gray-800 leading-tight">
+                <h1 class="text-lg sm:text-xl font-black tracking-wide text-gray-900 uppercase mb-1">
+                    SISTEM INFORMASI KEPEGAWAIAN (SIKAP)
+                </h1>
                 <h2 class="text-xs sm:text-sm font-semibold tracking-wider text-gray-700 uppercase">
                     KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI
                 </h2>
-                <h1 class="text-sm sm:text-base font-bold tracking-widest text-gray-800 uppercase my-0.5">
+                <h3 class="text-sm sm:text-base font-bold tracking-widest text-gray-800 uppercase my-0.5">
                     UNIVERSITAS RIAU
-                </h1>
-                <h3 class="text-base sm:text-lg font-black tracking-wide text-gray-900 uppercase">
-                    FAKULTAS KEPERAWATAN
                 </h3>
+                <h4 class="text-base sm:text-lg font-black tracking-wide text-gray-900 uppercase">
+                    FAKULTAS KEPERAWATAN
+                </h4>
                 <p class="text-[11px] sm:text-xs text-gray-600 mt-1">
                     Kampus Bina Widya Gedung Health Studies Complex Km.12,5 Simpang Baru 28293
                 </p>
