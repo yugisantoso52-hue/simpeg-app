@@ -42,31 +42,28 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $login = preg_replace('/[^0-9]/', '', $this->input('login')); // NIP bersih jika input angka
-        $rawLogin = $this->input('login');
+        $cleanNip = preg_replace('/[^0-9]/', '', (string)$this->input('login'));
+        $rawInput = $this->input('login');
 
-        $user = \App\Models\User::where(function ($query) use ($login, $rawLogin) {
-            if (!empty($login)) {
-                // Cari via relasi pegawai
-                $query->whereHas('pegawai', function ($q) use ($login) {
-                    $q->where('nip', $login);
-                })
-                // Atau via email internal {nip}@staff.unri.ac.id
-                ->orWhere('email', $login . '@staff.unri.ac.id');
-            }
-            // Atau pencarian via email asli yang diinput user
-            $query->orWhere('email', $rawLogin);
-        })->first();
+        // 1. Cari User
+        $user = \App\Models\User::where('email', $rawInput)
+            ->orWhere('email', $cleanNip . '@staff.unri.ac.id')
+            ->orWhereHas('pegawai', function ($q) use ($cleanNip) {
+                $q->whereRaw("REPLACE(REPLACE(nip, ' ', ''), \"'\", '') = ?", [$cleanNip]);
+            })
+            ->first();
 
-        if (!$user || ! Auth::attempt(['email' => $user->email, 'password' => $this->input('password')], $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        // 2. Verifikasi Kredensial
+        if (!$user || !\Illuminate\Support\Facades\Hash::check($this->input('password'), $user->password)) {
+            \Illuminate\Support\Facades\RateLimiter::hit($this->throttleKey());
 
-            throw ValidationException::withMessages([
+            throw \Illuminate\Validation\ValidationException::withMessages([
                 'login' => trans('auth.failed'),
             ]);
         }
 
-        RateLimiter::clear($this->throttleKey());
+        \Illuminate\Support\Facades\Auth::login($user, $this->boolean('remember'));
+        \Illuminate\Support\Facades\RateLimiter::clear($this->throttleKey());
     }
 
     /**
