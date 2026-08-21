@@ -152,11 +152,40 @@ class Pegawai extends Model
     protected function namaLengkap(): Attribute
     {
         return Attribute::make(
-            get: fn () => trim(
-                ($this->gelar_depan ? $this->gelar_depan . ' ' : '') .
-                $this->nama .
-                ($this->gelar_belakang ? ', ' . $this->gelar_belakang : '')
-            )
+            get: function () {
+                $gelarDepan = trim((string)($this->gelar_depan ?? ''));
+                if ($gelarDepan !== '') {
+                    // Pastikan gelar depan diakhiri tanda titik (.)
+                    if (!str_ends_with($gelarDepan, '.')) {
+                        $gelarDepan .= '.';
+                    }
+                    $gelarDepan .= ' ';
+                }
+
+                $namaUtama = trim((string)($this->nama ?? ''));
+
+                // Jika nama utama sudah diawali dengan gelar depan, bersihkan agar tidak duplikat
+                if ($gelarDepan !== '') {
+                    $prefixWithoutDot = trim(rtrim($gelarDepan, '. '));
+                    $prefixWithDot = trim($gelarDepan);
+                    if (str_starts_with($namaUtama, $prefixWithDot)) {
+                        $namaUtama = trim(substr($namaUtama, strlen($prefixWithDot)));
+                    } elseif (str_starts_with($namaUtama, $prefixWithoutDot)) {
+                        $namaUtama = trim(substr($namaUtama, strlen($prefixWithoutDot)));
+                    }
+                }
+
+                $gelarBelakang = trim((string)($this->gelar_belakang ?? ''));
+                if ($gelarBelakang !== '') {
+                    if (str_contains($namaUtama, $gelarBelakang)) {
+                        $namaUtama = str_replace([', ' . $gelarBelakang, ',' . $gelarBelakang, $gelarBelakang], '', $namaUtama);
+                        $namaUtama = trim($namaUtama, " \t\n\r\0\x0B,");
+                    }
+                    $gelarBelakang = ', ' . $gelarBelakang;
+                }
+
+                return trim($gelarDepan . $namaUtama . $gelarBelakang);
+            }
         );
     }
 

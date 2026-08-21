@@ -47,22 +47,7 @@
                         
                         <div class="mt-4 text-center w-full">
                             <h3 class="text-lg font-bold text-gray-900 leading-snug">
-                                @php
-                                    $namaUtama = $pegawai->nama_lengkap ?? $pegawai->nama ?? '';
-                                    $gelarDepan = trim($pegawai->gelar_depan ?? '');
-                                    $gelarBelakang = trim($pegawai->gelar_belakang ?? '');
-
-                                    if ($gelarDepan && str_starts_with($namaUtama, $gelarDepan)) {
-                                        $namaUtama = trim(substr($namaUtama, strlen($gelarDepan)));
-                                    }
-
-                                    if ($gelarBelakang && str_contains($namaUtama, $gelarBelakang)) {
-                                        $namaUtama = str_replace([', ' . $gelarBelakang, ',' . $gelarBelakang, $gelarBelakang], '', $namaUtama);
-                                        $namaUtama = trim($namaUtama, " \t\n\r\0\x0B,");
-                                    }
-                                @endphp
-
-                                {{ trim(($gelarDepan ? $gelarDepan . ' ' : '') . $namaUtama . ($gelarBelakang ? ', ' . $gelarBelakang : '')) }}
+                                {{ $pegawai->nama_lengkap }}
                             </h3>
                             <p class="text-sm text-gray-500 font-mono mt-1">NIP: {{ $pegawai->nip ?? '-' }}</p>
 
