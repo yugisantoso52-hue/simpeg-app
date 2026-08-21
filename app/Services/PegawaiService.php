@@ -179,7 +179,7 @@ class PegawaiService
             $data['status_pegawai'] = $data['status_pegawai'] ?? 'Aktif';
 
             // 1. Simpan data pegawai utama
-            $pegawai = $this->pegawaiRepository->create($data);
+            $pegawai = $this->pegawaiRepository->create($this->filterPegawaiColumns($data));
 
             // 2. OTOMATISASI: Buat Akun User Login untuk Pegawai Baru (NIP Tanpa Spasi)
             $rolePegawai = Role::where('name', 'pegawai')->first();
@@ -373,7 +373,7 @@ class PegawaiService
             $data['satyalancana_berikutnya'] = $satyalancana['berikutnya'];
 
             // Update tabel pegawai utama
-            $pegawaiUpdated = $this->pegawaiRepository->update($pegawai->id, $data);
+            $pegawaiUpdated = $this->pegawaiRepository->update($pegawai->id, $this->filterPegawaiColumns($data));
 
             if ($oldNip !== $pegawaiUpdated->nip) {
                 $user = User::where('pegawai_id', $pegawaiUpdated->id)->first();
@@ -701,24 +701,26 @@ class PegawaiService
 
     public function syncPegawaiFromHistories(Pegawai $pegawai): void
     {
-        // 1. Sinkronisasi Jabatan Terakhir
+            // 1. Sinkronisasi Jabatan Terakhir
         $activeJabatan = $pegawai->riwayatJabatan()
             ->whereIn('status', ['aktif', 'Aktif'])
             ->first();
 
+        $columns = $this->getPegawaiColumns();
+
         if ($activeJabatan) {
             $pegawai->jabatan_id = $activeJabatan->jabatan_id;
             $pegawai->unit_kerja_id = $activeJabatan->unit_kerja_id;
-            if (!empty($activeJabatan->nomor_sk)) {
+            if (!empty($activeJabatan->nomor_sk) && $this->hasPegawaiColumn('nomor_sk_pertama', $columns)) {
                 $pegawai->nomor_sk_pertama = $activeJabatan->nomor_sk;
             }
-            if (!empty($activeJabatan->tanggal_sk)) {
+            if (!empty($activeJabatan->tanggal_sk) && $this->hasPegawaiColumn('tanggal_sk_pertama', $columns)) {
                 $pegawai->tanggal_sk_pertama = $activeJabatan->tanggal_sk;
             }
-            if (!empty($activeJabatan->file_sk)) {
+            if (!empty($activeJabatan->file_sk) && $this->hasPegawaiColumn('file_sk_pertama', $columns)) {
                 $pegawai->file_sk_pertama = $activeJabatan->file_sk;
             }
-            if (!empty($activeJabatan->tmt_jabatan) && empty($pegawai->tmt_sk_pertama)) {
+            if (!empty($activeJabatan->tmt_jabatan) && empty($pegawai->tmt_sk_pertama) && $this->hasPegawaiColumn('tmt_sk_pertama', $columns)) {
                 $pegawai->tmt_sk_pertama = $activeJabatan->tmt_jabatan;
             }
         } elseif ($pegawai->jabatan_id && $pegawai->unit_kerja_id) {
@@ -727,10 +729,10 @@ class PegawaiService
                 'jabatan_id'    => $pegawai->jabatan_id,
                 'unit_kerja_id' => $pegawai->unit_kerja_id,
                 'tmt_jabatan'   => $pegawai->tmt_sk_pertama ?? $pegawai->tanggal_masuk ?? now(),
-                'nomor_sk'      => $pegawai->nomor_sk_pertama,
-                'tanggal_sk'    => $pegawai->tanggal_sk_pertama,
-                'file_sk'       => $pegawai->file_sk_pertama,
-                'status'        => 'Aktif',
+                'nomor_sk'      => $pegawai->nomor_sk_pertama ?? null,
+                'tanggal_sk'    => $pegawai->tanggal_sk_pertama ?? null,
+                'file_sk'       => $pegawai->file_sk_pertama ?? null,
+                'status'        => 'aktif',
                 'keterangan'    => 'Sinkronisasi otomatis dari data utama pegawai',
             ]);
         }
@@ -743,13 +745,13 @@ class PegawaiService
         if ($activePangkat) {
             $pegawai->golongan_id = $activePangkat->golongan_id;
             $pegawai->tmt_pangkat_terakhir = $activePangkat->tmt;
-            if (!empty($activePangkat->nomor_sk)) {
+            if (!empty($activePangkat->nomor_sk) && $this->hasPegawaiColumn('nomor_sk_pangkat_terakhir', $columns)) {
                 $pegawai->nomor_sk_pangkat_terakhir = $activePangkat->nomor_sk;
             }
-            if (!empty($activePangkat->tanggal_sk)) {
+            if (!empty($activePangkat->tanggal_sk) && $this->hasPegawaiColumn('tanggal_sk_pangkat_terakhir', $columns)) {
                 $pegawai->tanggal_sk_pangkat_terakhir = $activePangkat->tanggal_sk;
             }
-            if (!empty($activePangkat->file_sk)) {
+            if (!empty($activePangkat->file_sk) && $this->hasPegawaiColumn('file_sk_pangkat_terakhir', $columns)) {
                 $pegawai->file_sk_pangkat_terakhir = $activePangkat->file_sk;
             }
             if (!empty($activePangkat->tmt)) {
@@ -760,9 +762,9 @@ class PegawaiService
             $pegawai->riwayatPangkat()->create([
                 'golongan_id' => $pegawai->golongan_id,
                 'tmt'         => $pegawai->tmt_pangkat_terakhir ?? now(),
-                'nomor_sk'    => $pegawai->nomor_sk_pangkat_terakhir,
-                'tanggal_sk'  => $pegawai->tanggal_sk_pangkat_terakhir,
-                'file_sk'     => $pegawai->file_sk_pangkat_terakhir,
+                'nomor_sk'    => $pegawai->nomor_sk_pangkat_terakhir ?? null,
+                'tanggal_sk'  => $pegawai->tanggal_sk_pangkat_terakhir ?? null,
+                'file_sk'     => $pegawai->file_sk_pangkat_terakhir ?? null,
                 'status'      => 'aktif',
                 'keterangan'  => 'Sinkronisasi otomatis dari data utama pegawai',
             ]);
@@ -797,5 +799,39 @@ class PegawaiService
         }
 
         $pegawai->save();
+    }
+
+    /**
+     * Filter payload ke kolom yang benar-benar ada di tabel database
+     */
+    protected function filterPegawaiColumns(array $data): array
+    {
+        $columns = $this->getPegawaiColumns();
+
+        if (!empty($columns)) {
+            return array_filter($data, function ($key) use ($columns) {
+                return in_array($key, $columns, true);
+            }, ARRAY_FILTER_USE_KEY);
+        }
+
+        return $data;
+    }
+
+    protected function getPegawaiColumns(): array
+    {
+        static $pegawaiColumns = null;
+        if ($pegawaiColumns === null) {
+            try {
+                $pegawaiColumns = \Illuminate\Support\Facades\Schema::getColumnListing('pegawai');
+            } catch (\Throwable $e) {
+                $pegawaiColumns = [];
+            }
+        }
+        return $pegawaiColumns;
+    }
+
+    protected function hasPegawaiColumn(string $column, array $columns): bool
+    {
+        return empty($columns) || in_array($column, $columns, true);
     }
 }

@@ -74,7 +74,7 @@ autostart=true\n\
 autorestart=true\n\
 \n\
 [program:startup]\n\
-command=/bin/sh -c "php /var/www/artisan config:clear && php /var/www/artisan storage:link --force"\n\
+command=/bin/sh -c "php /var/www/artisan migrate --force && php /var/www/artisan config:clear && php /var/www/artisan storage:link --force"\n\
 autostart=true\n\
 autorestart=false\n\
 startretries=1\n' > /etc/supervisor/conf.d/supervisord.conf

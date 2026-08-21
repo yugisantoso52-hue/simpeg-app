@@ -12,10 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pegawai', function (Blueprint $table) {
-            $table->string('nomor_sk_pertama', 100)->nullable()->after('file_sk_pertama');
-            $table->date('tanggal_sk_pertama')->nullable()->after('nomor_sk_pertama');
-            $table->string('nomor_sk_pangkat_terakhir', 100)->nullable()->after('file_sk_pangkat_terakhir');
-            $table->date('tanggal_sk_pangkat_terakhir')->nullable()->after('nomor_sk_pangkat_terakhir');
+            if (!Schema::hasColumn('pegawai', 'nomor_sk_pertama')) {
+                $table->string('nomor_sk_pertama', 100)->nullable()->after('file_sk_pertama');
+            }
+            if (!Schema::hasColumn('pegawai', 'tanggal_sk_pertama')) {
+                $table->date('tanggal_sk_pertama')->nullable()->after('nomor_sk_pertama');
+            }
+            if (!Schema::hasColumn('pegawai', 'nomor_sk_pangkat_terakhir')) {
+                $table->string('nomor_sk_pangkat_terakhir', 100)->nullable()->after('file_sk_pangkat_terakhir');
+            }
+            if (!Schema::hasColumn('pegawai', 'tanggal_sk_pangkat_terakhir')) {
+                $table->date('tanggal_sk_pangkat_terakhir')->nullable()->after('nomor_sk_pangkat_terakhir');
+            }
         });
     }
 
