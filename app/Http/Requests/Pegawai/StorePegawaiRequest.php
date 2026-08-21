@@ -16,8 +16,8 @@ class StorePegawaiRequest extends FormRequest
         return [
             // Disesuaikan agar menerima 'nama_lengkap' atau 'nama'
             'nip'                  => 'required|string|max:50|unique:pegawai,nip',
-            'nama_lengkap'         => 'required|string|max:150', 
             'nama'                 => 'required|string|max:150',
+            'nama_lengkap'         => 'nullable|string|max:150',
             'nik'                  => 'required|string|max:30',
             'gelar_depan'          => 'nullable|string|max:20',
             'gelar_belakang'       => 'nullable|string|max:20',
@@ -106,9 +106,13 @@ class StorePegawaiRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if ($this->has('nama_lengkap') && !$this->has('nama')) {
+        if ($this->filled('nama_lengkap') && !$this->filled('nama')) {
             $this->merge([
                 'nama' => $this->input('nama_lengkap'),
+            ]);
+        } elseif ($this->filled('nama') && !$this->filled('nama_lengkap')) {
+            $this->merge([
+                'nama_lengkap' => $this->input('nama'),
             ]);
         }
     }
