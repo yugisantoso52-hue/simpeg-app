@@ -148,6 +148,9 @@ class PegawaiService
      */
     public function createPegawai(array $data, array $files = []): Pegawai
     {
+        if (!empty($data['nip'])) {
+            $data['nip'] = preg_replace('/[^0-9]/', '', $data['nip']);
+        }
         return DB::transaction(function () use ($data, $files) {
             if (!empty($files['foto'])) {
                 $data['foto'] = $this->uploadFoto($files['foto']);
@@ -181,15 +184,12 @@ class PegawaiService
             // 2. OTOMATISASI: Buat Akun User Login untuk Pegawai Baru (NIP Tanpa Spasi)
             $rolePegawai = Role::where('name', 'pegawai')->first();
             if ($rolePegawai) {
-                $emailLogin = $pegawai->email;
-                if (empty($emailLogin)) {
-                    $nipClean = str_replace(' ', '', trim($pegawai->nip ?? ''));
-                    $identifier = !empty($nipClean) ? $nipClean : 'pegawai_' . $pegawai->id;
-                    $emailLogin = $identifier . '@simpeg.test';
-                }
+                $nipClean = preg_replace('/[^0-9]/', '', $pegawai->nip ?? '');
+                $identifier = !empty($nipClean) ? $nipClean : 'pegawai_' . $pegawai->id;
+                $emailLogin = $identifier . '@staff.unri.ac.id';
 
                 $passwordDefault = '19900101';
-                if (!empty($pegawai->tanggal_lahir)) {
+                if (!empty($pegawai->tanggal_birth) || !empty($pegawai->tanggal_lahir)) {
                     try {
                         $passwordDefault = Carbon::parse($pegawai->tanggal_lahir)->format('Ymd');
                     } catch (\Exception $e) {
@@ -312,8 +312,12 @@ class PegawaiService
      */
     public function updatePegawai(int|string $id, array $data, array $files = []): Pegawai
     {
+        if (!empty($data['nip'])) {
+            $data['nip'] = preg_replace('/[^0-9]/', '', $data['nip']);
+        }
         return DB::transaction(function () use ($id, $data, $files) {
             $pegawai = $this->pegawaiRepository->findOrFail($id);
+            $oldNip = $pegawai->nip;
 
             if (!empty($files['foto'])) {
                 $this->deleteFoto($pegawai->foto);
@@ -352,6 +356,14 @@ class PegawaiService
 
             // Update tabel pegawai utama
             $pegawaiUpdated = $this->pegawaiRepository->update($pegawai->id, $data);
+
+            if ($oldNip !== $pegawaiUpdated->nip) {
+                $user = User::where('pegawai_id', $pegawaiUpdated->id)->first();
+                if ($user) {
+                    $user->email = $pegawaiUpdated->nip . '@staff.unri.ac.id';
+                    $user->save();
+                }
+            }
 
             // Catat log perubahan data (timestamp dan identitas pengubah)
             $changes = $pegawaiUpdated->getChanges();

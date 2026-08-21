@@ -58,15 +58,13 @@ class PegawaiImport implements ToCollection, WithHeadingRow, SkipsEmptyRows
         $rolePegawai = Role::where('name', 'pegawai')->first();
         $rolePegawaiId = $rolePegawai ? $rolePegawai->id : null;
 
-        // 2. Pre-generate default hashed password once
-        $defaultHashedPassword = Hash::make('password123');
-
         $pegawaiToUpsert = [];
         $validRows = [];
 
         // Loop 1: Parse and validate all rows, collect Pegawai records
         foreach ($rows as $row) {
-            $nip  = trim((string)($row['nip'] ?? $row[0] ?? ''));
+            $nipRaw  = $row['nip'] ?? $row[0] ?? '';
+            $nip     = preg_replace('/[^0-9]/', '', (string)$nipRaw);
             $nama = trim((string)($row['nama_lengkap'] ?? $row['nama'] ?? $row['nama_pegawai'] ?? ''));
 
             if (empty($nip) && empty($nama)) {
@@ -153,6 +151,7 @@ class PegawaiImport implements ToCollection, WithHeadingRow, SkipsEmptyRows
                 'tanggal_masuk'=> $tanggalMasuk,
                 'tmt_pangkat'  => $tmtPangkat,
                 'pendidikan'   => !empty($row['pendidikan']) ? trim($row['pendidikan']) : null,
+                'tanggal_lahir'=> $tanggalLahir,
             ];
         }
 
@@ -210,21 +209,30 @@ class PegawaiImport implements ToCollection, WithHeadingRow, SkipsEmptyRows
             $tanggalMasuk = $row['tanggal_masuk'];
             $tmtPangkat = $row['tmt_pangkat'];
             $pendidikan = $row['pendidikan'];
+            $tanggalLahir = $row['tanggal_lahir'];
 
             // A. User creation
             if ($rolePegawaiId) {
-                $nipClean = str_replace(' ', '', trim($nip));
-                $emailLogin = $nipClean . '@simpeg.test';
+                $emailLogin = $nip . '@staff.unri.ac.id';
 
                 if (!isset($existingEmails[strtolower($emailLogin)])) {
+                    $dob = '19900101';
+                    if (!empty($tanggalLahir)) {
+                        try {
+                            $dob = Carbon::parse($tanggalLahir)->format('Ymd');
+                        } catch (\Exception $e) {
+                            $dob = '19900101';
+                        }
+                    }
                     $usersToInsert[] = [
-                        'name'       => $nama,
-                        'email'      => $emailLogin,
-                        'password'   => $defaultHashedPassword,
-                        'role_id'    => $rolePegawaiId,
-                        'pegawai_id' => $pegawaiId,
-                        'created_at' => now(),
-                        'updated_at' => now(),
+                        'name'                 => $nama,
+                        'email'                => $emailLogin,
+                        'password'             => Hash::make($dob),
+                        'role_id'              => $rolePegawaiId,
+                        'pegawai_id'           => $pegawaiId,
+                        'must_change_password' => true,
+                        'created_at'           => now(),
+                        'updated_at'           => now(),
                     ];
                     $existingEmails[strtolower($emailLogin)] = true;
                 }
