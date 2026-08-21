@@ -64,7 +64,7 @@
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
                 <div class="flex items-center space-x-2 border-b border-gray-100 pb-3 mb-4">
                     <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                    <h3 class="text-lg font-bold text-gray-800">Pusat Reminder Transaksi Kepegawaian (3 Bulan ke Depan)</h3>
+                    <h3 class="text-lg font-bold text-gray-800">Pusat Reminder Transaksi Kepegawaian</h3>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -73,7 +73,10 @@
                     <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 flex flex-col justify-between">
                         <div>
                             <h4 class="font-semibold text-amber-800 flex justify-between items-center mb-2">
-                                <span>Gaji Berkala (KGB)</span>
+                                <div>
+                                    <span>Gaji Berkala (KGB)</span>
+                                    <span class="block text-[10px] text-amber-600 font-normal">3 Bulan ke Depan</span>
+                                </div>
                                 <span class="bg-amber-200 text-amber-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ count($reminder['kgb'] ?? []) }}</span>
                             </h4>
                             @if(isset($reminder['kgb']) && count($reminder['kgb']) > 0)
@@ -95,7 +98,10 @@
                     <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex flex-col justify-between">
                         <div>
                             <h4 class="font-semibold text-emerald-800 flex justify-between items-center mb-2">
-                                <span>Kenaikan Pangkat (KP)</span>
+                                <div>
+                                    <span>Kenaikan Pangkat (KP)</span>
+                                    <span class="block text-[10px] text-emerald-600 font-normal">3 Bulan ke Depan</span>
+                                </div>
                                 <span class="bg-emerald-200 text-emerald-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ count($reminder['kp'] ?? []) }}</span>
                             </h4>
                             @if(isset($reminder['kp']) && count($reminder['kp']) > 0)
@@ -117,7 +123,10 @@
                     <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 flex flex-col justify-between">
                         <div>
                             <h4 class="font-semibold text-indigo-800 flex justify-between items-center mb-2">
-                                <span>Satyalancana</span>
+                                <div>
+                                    <span>Satyalancana</span>
+                                    <span class="block text-[10px] text-indigo-600 font-normal">3 Bulan ke Depan</span>
+                                </div>
                                 <span class="bg-indigo-200 text-indigo-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ count($reminder['satyalancana'] ?? []) }}</span>
                             </h4>
                             @if(isset($reminder['satyalancana']) && count($reminder['satyalancana']) > 0)
@@ -139,7 +148,10 @@
                     <div class="bg-rose-50 border border-rose-200 rounded-lg p-4 flex flex-col justify-between">
                         <div>
                             <h4 class="font-semibold text-rose-800 flex justify-between items-center mb-2">
-                                <span>Masa Pensiun (BUP 58)</span>
+                                <div>
+                                    <span>Masa Pensiun (BUP 58)</span>
+                                    <span class="block text-[10px] text-rose-600 font-semibold">1 Tahun ke Depan</span>
+                                </div>
                                 <span class="bg-rose-200 text-rose-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ count($reminder['pensiun'] ?? []) }}</span>
                             </h4>
                             @if(isset($reminder['pensiun']) && count($reminder['pensiun']) > 0)

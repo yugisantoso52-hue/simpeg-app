@@ -87,20 +87,18 @@ class DashboardRepository implements DashboardRepositoryInterface
     }
 
     /**
-     * Mengambil Data Pengingat (Reminder) Jatuh Tempo H-3 Bulan
-     */
-    /**
-     * Mengambil Data Pengingat (Reminder) Jatuh Tempo H-3 Bulan
+     * Mengambil Data Pengingat (Reminder) Jatuh Tempo (KGB, KP, Satyalancana: H-3 Bulan; Pensiun: H-1 Tahun)
      */
     public function getReminder(): array
     {
         $hariIni    = Carbon::now()->startOfDay()->toDateTimeString();
         $hariTarget = Carbon::now()->addMonths(3)->endOfDay()->toDateTimeString();
 
-        $tahunLahirTargetMin  = Carbon::now()->subYears(58)->startOfDay()->toDateTimeString(); 
-        $tahunLahirTargetMaks = Carbon::now()->subYears(58)->addMonths(3)->endOfDay()->toDateTimeString();
+        // Khusus Masa Pensiun (BUP 58 Tahun): Radar 1 Tahun ke Depan
+        $tahunLahirPensiunMin  = Carbon::now()->subYears(58)->startOfDay()->toDateTimeString(); 
+        $tahunLahirPensiunMaks = Carbon::now()->subYears(58)->addYear()->endOfDay()->toDateTimeString();
 
-        // 1. KGB (Filter SQL Direct)
+        // 1. KGB (Filter SQL Direct - 3 Bulan ke Depan)
         $kgb = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])
             ->where('status_pegawai', 'Aktif')
             ->whereBetween('kgb_berikutnya', [$hariIni, $hariTarget])
@@ -112,7 +110,7 @@ class DashboardRepository implements DashboardRepositoryInterface
                 return $pegawai;
             });
 
-        // 2. Kenaikan Pangkat (KP - Filter SQL Direct)
+        // 2. Kenaikan Pangkat (KP - Filter SQL Direct - 3 Bulan ke Depan)
         $kp = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])
             ->where('status_pegawai', 'Aktif')
             ->whereBetween('kp_berikutnya', [$hariIni, $hariTarget])
@@ -124,11 +122,11 @@ class DashboardRepository implements DashboardRepositoryInterface
                 return $pegawai;
             });
 
-        // 3. Pensiun (BUP 58 Tahun - Filter SQL Direct)
+        // 3. Pensiun (BUP 58 Tahun - Filter SQL Direct - 1 Tahun ke Depan)
         $pensiun = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])
             ->where('status_pegawai', 'Aktif')
             ->whereNotNull('tanggal_lahir')
-            ->whereBetween('tanggal_lahir', [$tahunLahirTargetMin, $tahunLahirTargetMaks])
+            ->whereBetween('tanggal_lahir', [$tahunLahirPensiunMin, $tahunLahirPensiunMaks])
             ->orderBy('tanggal_lahir', 'asc')
             ->take(20)
             ->get()

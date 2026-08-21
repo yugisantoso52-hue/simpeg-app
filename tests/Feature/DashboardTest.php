@@ -166,6 +166,49 @@ class DashboardTest extends TestCase
         $this->assertFalse($reminder['kgb']->contains('nama', 'Pegawai Before Today'));
     }
 
+    /**
+     * TEST MASA PENSIUN (BUP 58) — RADAR 1 TAHUN (INCLUDED)
+     */
+    public function test_pensiun_reminder_radar_1_year_included(): void
+    {
+        // Pegawai yang akan berusia 58 tahun dalam 6 bulan ke depan
+        $tglLahir = Carbon::now()->subYears(58)->addMonths(6)->toDateString();
+
+        Pegawai::create([
+            'nip'            => '196808211990011001',
+            'nama'           => 'Pegawai Pensiun 6 Bulan',
+            'status_pegawai' => 'Aktif',
+            'tanggal_lahir'  => $tglLahir,
+        ]);
+
+        $repo = app(DashboardRepositoryInterface::class);
+        $reminder = $repo->getReminder();
+
+        $this->assertNotEmpty($reminder['pensiun']);
+        $this->assertTrue($reminder['pensiun']->contains('nama', 'Pegawai Pensiun 6 Bulan'));
+    }
+
+    /**
+     * TEST MASA PENSIUN (BUP 58) — DI LUAR RADAR 1 TAHUN (EXCLUDED)
+     */
+    public function test_pensiun_reminder_radar_beyond_1_year_excluded(): void
+    {
+        // Pegawai yang baru berusia 58 tahun dalam 18 bulan ke depan
+        $tglLahir = Carbon::now()->subYears(58)->addMonths(18)->toDateString();
+
+        Pegawai::create([
+            'nip'            => '196808211990011002',
+            'nama'           => 'Pegawai Pensiun Jauh',
+            'status_pegawai' => 'Aktif',
+            'tanggal_lahir'  => $tglLahir,
+        ]);
+
+        $repo = app(DashboardRepositoryInterface::class);
+        $reminder = $repo->getReminder();
+
+        $this->assertFalse($reminder['pensiun']->contains('nama', 'Pegawai Pensiun Jauh'));
+    }
+
     public function test_guest_is_redirected_to_login_for_dashboard(): void
     {
         $this->get('/dashboard')->assertRedirect('/login');

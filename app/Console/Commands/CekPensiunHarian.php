@@ -12,12 +12,12 @@ use Illuminate\Support\Facades\Log;
 class CekPensiunHarian extends Command
 {
     protected $signature = 'simpeg:cek-pensiun';
-    protected $description = 'Memeriksa pegawai memasuki Batas Usia Pensiun (BUP 58, 60, 65, 70) dalam radar 3 bulan ke depan';
+    protected $description = 'Memeriksa pegawai memasuki Batas Usia Pensiun (BUP 58, 60, 65, 70) dalam radar 1 tahun ke depan';
 
     public function handle()
     {
         $hariIni = Carbon::today();
-        $batasH3Bulan = Carbon::today()->addMonths(3);
+        $batasH1Tahun = Carbon::today()->addYear();
 
         $this->info("Memulai evaluasi Batas Usia Pensiun (BUP) Pegawai per tanggal: " . $hariIni->toDateString());
 
@@ -33,8 +33,8 @@ class CekPensiunHarian extends Command
             // Hitung Tanggal Jatuh Tempo Pensiun Resmi
             $tglPensiun = $tglLahir->copy()->addYears($bup);
 
-            // Cek jika TGL PENSIUN masuk dalam rentang HARI INI s/d 3 BULAN KE DEPAN
-            if ($tglPensiun->between($hariIni, $batasH3Bulan)) {
+            // Cek jika TGL PENSIUN masuk dalam rentang HARI INI s/d 1 TAHUN KE DEPAN
+            if ($tglPensiun->between($hariIni, $batasH1Tahun)) {
                 $pegawai->bup_tahun = $bup;
                 $pegawai->tgl_pensiun = $tglPensiun->format('Y-m-d');
                 $pensiunPegawai->push($pegawai);
@@ -57,7 +57,7 @@ class CekPensiunHarian extends Command
             }
             $this->info("✅ Notifikasi radar pensiun dikirim ke Admin/Pengelola.");
         } else {
-            $this->info("Tidak ada pegawai yang masuk radar persiapan pensiun dalam 3 bulan ke depan.");
+            $this->info("Tidak ada pegawai yang masuk radar persiapan pensiun dalam 1 tahun ke depan.");
         }
 
         return Command::SUCCESS;
