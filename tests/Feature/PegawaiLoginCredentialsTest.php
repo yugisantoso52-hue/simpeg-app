@@ -77,4 +77,37 @@ class PegawaiLoginCredentialsTest extends TestCase
             'pegawai_id' => $pegawai->id,
         ]);
     }
+
+    /**
+     * Test production NIP login and self-healing from previous password hash
+     */
+    public function test_production_nip_login_self_heals_with_password(): void
+    {
+        $pegawai = Pegawai::create([
+            'nip'            => '198006152025211060',
+            'nama'           => 'Rahmad Hidayat',
+            'status_pegawai' => 'Aktif',
+            'tanggal_lahir'  => '1980-06-15',
+        ]);
+
+        $rolePegawai = Role::where('name', 'pegawai')->first();
+        // User exists with old birthdate password hash
+        User::create([
+            'name'                 => $pegawai->nama,
+            'email'                => '198006152025211060@staff.unri.ac.id',
+            'password'             => Hash::make('19800615'),
+            'role_id'              => $rolePegawai->id,
+            'pegawai_id'           => $pegawai->id,
+            'must_change_password' => true,
+        ]);
+
+        // Login with 'Password'
+        $response = $this->post('/login', [
+            'login'    => '198006152025211060',
+            'password' => 'Password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/dashboard');
+    }
 }
