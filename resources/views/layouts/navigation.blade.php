@@ -1,32 +1,32 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100 shadow-sm">
     <!-- ========================================== -->
-    <!-- 1. KOP HEADER INSTANSI (CENTERED & RAPI)   -->
+    <!-- 1. KOP HEADER INSTANSI (FULLY RESPONSIVE)  -->
     <!-- ========================================== -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-4">
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-3 md:pt-4 pb-2 md:pb-3 overflow-x-hidden">
+        <div class="flex flex-col md:flex-row items-center justify-center gap-2.5 md:gap-4 text-center">
             <!-- Logo UNRI -->
             <a href="{{ route('dashboard') }}" class="shrink-0 transition transform hover:scale-105 duration-200">
-                <img src="{{ asset('logo-unri.png') }}" alt="Logo UNRI" class="h-20 sm:h-22 w-auto object-contain">
+                <img src="{{ asset('logo-unri.png') }}" alt="Logo UNRI" class="h-[48px] md:h-[68px] w-auto object-contain">
             </a>
 
             <!-- Teks Kop Surat -->
-            <div class="text-gray-800 leading-tight">
-                <h1 class="text-lg sm:text-xl font-black tracking-wide text-gray-900 uppercase mb-1">
-                    SISTEM INFORMASI KEPEGAWAIAN (SIKAP)
-                </h1>
-                <h2 class="text-xs sm:text-sm font-semibold tracking-wider text-gray-700 uppercase">
+            <div class="leading-tight max-w-full px-1">
+                <h2 class="text-[10px] md:text-[11px] font-semibold tracking-wider text-slate-600 uppercase">
                     KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI
                 </h2>
-                <h3 class="text-sm sm:text-base font-bold tracking-widest text-gray-800 uppercase my-0.5">
+                <h3 class="text-[12px] md:text-[14px] font-bold tracking-wide text-slate-900 uppercase my-0.5">
                     UNIVERSITAS RIAU
                 </h3>
-                <h4 class="text-base sm:text-lg font-black tracking-wide text-gray-900 uppercase">
+                <h4 class="text-[13px] md:text-[15px] font-extrabold tracking-wide uppercase text-[#007a3d]">
                     FAKULTAS KEPERAWATAN
                 </h4>
-                <p class="text-[11px] sm:text-xs text-gray-600 mt-1">
+                <h1 class="text-[11.5px] md:text-[13px] font-bold tracking-wide uppercase text-slate-800 mt-0.5">
+                    SISTEM INFORMASI KEPEGAWAIAN (SIKAP)
+                </h1>
+                <p class="text-[9.5px] md:text-[10.5px] leading-tight text-slate-500 mt-1 break-words">
                     Kampus Bina Widya Gedung Health Studies Complex Km.12,5 Simpang Baru 28293
                 </p>
-                <p class="text-[11px] sm:text-xs text-gray-600">
+                <p class="text-[9.5px] md:text-[10.5px] leading-tight text-slate-500 break-words">
                     Laman: <a href="http://keperawatan.unri.ac.id" target="_blank" class="text-blue-600 hover:underline">http://keperawatan.unri.ac.id</a> | Email: <a href="mailto:keperawatan@unri.ac.id" class="text-blue-600 hover:underline">keperawatan@unri.ac.id</a>
                 </p>
             </div>
