@@ -70,14 +70,7 @@ class LoginRequest extends FormRequest
                 ->orWhere('email', $emailTemp)
                 ->first();
 
-            $dob = '19900101';
-            if ($pegawai->tanggal_lahir) {
-                try {
-                    $dob = \Carbon\Carbon::parse($pegawai->tanggal_lahir)->format('Ymd');
-                } catch (\Exception $e) {
-                    $dob = '19900101';
-                }
-            }
+            $defaultPassword = 'Password';
 
             if ($user) {
                 // Update jika data pegawai berubah
@@ -86,7 +79,7 @@ class LoginRequest extends FormRequest
                 $user->pegawai_id = $pegawai->id;
                 $user->role_id = $user->role_id ?? ($rolePegawai->id ?? 2);
                 if ($user->must_change_password) {
-                    $user->password = \Illuminate\Support\Facades\Hash::make($dob);
+                    $user->password = \Illuminate\Support\Facades\Hash::make($defaultPassword);
                 }
                 $user->save();
             } else {
@@ -94,7 +87,7 @@ class LoginRequest extends FormRequest
                 \App\Models\User::create([
                     'name'                 => $pegawai->nama,
                     'email'                => $emailTemp,
-                    'password'             => \Illuminate\Support\Facades\Hash::make($dob),
+                    'password'             => \Illuminate\Support\Facades\Hash::make($defaultPassword),
                     'role_id'              => $rolePegawai->id ?? 2,
                     'pegawai_id'           => $pegawai->id,
                     'must_change_password' => true,
@@ -111,7 +104,18 @@ class LoginRequest extends FormRequest
             ->first();
 
         // 4. Verifikasi Kredensial
-        if (!$user || !\Illuminate\Support\Facades\Hash::check($this->input('password'), $user->password)) {
+        $passwordValid = false;
+        if ($user) {
+            if (\Illuminate\Support\Facades\Hash::check($this->input('password'), $user->password)) {
+                $passwordValid = true;
+            } elseif ($user->must_change_password && in_array($this->input('password'), ['Password', 'password'], true)) {
+                $user->password = \Illuminate\Support\Facades\Hash::make('Password');
+                $user->save();
+                $passwordValid = true;
+            }
+        }
+
+        if (!$user || !$passwordValid) {
             \Illuminate\Support\Facades\RateLimiter::hit($this->throttleKey());
 
             throw \Illuminate\Validation\ValidationException::withMessages([

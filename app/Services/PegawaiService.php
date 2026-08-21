@@ -193,19 +193,12 @@ class PegawaiService
                 $identifier = !empty($nipClean) ? $nipClean : 'pegawai_' . $pegawai->id;
                 $emailLogin = $identifier . '@staff.unri.ac.id';
 
-                $passwordDefault = '19900101';
-                if (!empty($pegawai->tanggal_birth) || !empty($pegawai->tanggal_lahir)) {
-                    try {
-                        $passwordDefault = Carbon::parse($pegawai->tanggal_lahir)->format('Ymd');
-                    } catch (\Exception $e) {
-                        $passwordDefault = '19900101';
-                    }
-                }
+                $passwordDefault = 'Password';
 
                 User::create([
                     'name'                 => $pegawai->nama,
                     'email'                => $emailLogin,
-                    'password'             => Hash::make($passwordDefault), // Password default awal pegawai
+                    'password'             => Hash::make($passwordDefault), // Password default awal pegawai: Password
                     'role_id'              => $rolePegawai->id,
                     'pegawai_id'           => $pegawai->id,
                     'must_change_password' => true,

@@ -95,16 +95,8 @@ class SyncPegawaiUsers extends Command
                 $cleanedCount++;
             }
 
-            // 2. Tentukan password default dari tanggal_lahir YYYYMMDD
-            $dob = '19900101';
-            if ($pegawai->tanggal_lahir) {
-                try {
-                    $dob = Carbon::parse($pegawai->tanggal_lahir)->format('Ymd');
-                } catch (\Exception $e) {
-                    $dob = '19900101';
-                }
-            }
-
+            // 2. Tentukan password default: Password
+            $defaultPassword = 'Password';
             $emailTemp = $cleanedNip . '@staff.unri.ac.id';
 
             // 3. Sinkronisasi User
@@ -119,7 +111,7 @@ class SyncPegawaiUsers extends Command
                 $user->pegawai_id = $pegawai->id;
                 $user->role_id = $user->role_id ?? $rolePegawai->id; // Pertahankan jika sudah ada role lain
                 $user->must_change_password = true; // Wajib ganti password
-                $user->password = Hash::make($dob); // Reset password ke DOB format
+                $user->password = Hash::make($defaultPassword); // Reset password ke default Password
                 $user->save();
                 $updatedCount++;
             } else {
@@ -127,7 +119,7 @@ class SyncPegawaiUsers extends Command
                 $user = User::create([
                     'name'                 => $pegawai->nama,
                     'email'                => $emailTemp,
-                    'password'             => Hash::make($dob), // Set password ke DOB format
+                    'password'             => Hash::make($defaultPassword), // Set password default: Password
                     'role_id'              => $rolePegawai->id,
                     'pegawai_id'           => $pegawai->id,
                     'must_change_password' => true,
@@ -139,7 +131,7 @@ class SyncPegawaiUsers extends Command
                 'nama' => $pegawai->nama,
                 'nip' => $cleanedNip,
                 'dob' => $pegawai->tanggal_lahir ? Carbon::parse($pegawai->tanggal_lahir)->format('d-m-Y') : 'NULL',
-                'pass' => $dob
+                'pass' => $defaultPassword
             ];
         }
 
