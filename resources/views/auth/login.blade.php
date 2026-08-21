@@ -56,7 +56,7 @@
                 <input id="password"
                        :type="showPassword ? 'text' : 'password'"
                        name="password"
-                       placeholder="Masukkan password (default: YYYYMMDD)"
+                       placeholder="Masukkan password (default: Password)"
                        class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-[#007a3d] focus:ring focus:ring-[#007a3d]/20 text-sm py-2.5 pl-3 pr-10"
                        required
                        autocomplete="current-password" />
@@ -84,7 +84,7 @@
         <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-900 text-xs leading-relaxed flex items-start gap-2">
             <span class="text-base leading-none select-none">💡</span>
             <div>
-                <span class="font-bold">Petunjuk:</span> Untuk login pertama kali, gunakan 18 digit NIP Anda dan password default format tanggal lahir (<span class="font-semibold font-mono">YYYYMMDD</span>, contoh: <span class="font-semibold font-mono">19800615</span>) atau <span class="font-semibold font-mono">Password</span>.
+                <span class="font-bold">Petunjuk:</span> Untuk login pertama kali, gunakan 18 digit NIP Anda dan password default <span class="font-semibold font-mono">Password</span>.
             </div>
         </div>
 
