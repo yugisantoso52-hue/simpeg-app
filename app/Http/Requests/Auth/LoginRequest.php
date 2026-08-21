@@ -48,13 +48,23 @@ class LoginRequest extends FormRequest
         // 1. Cari Pegawai terlebih dahulu jika input adalah NIP (numeric)
         $pegawai = null;
         if (!empty($cleanNip)) {
-            $pegawai = \App\Models\Pegawai::whereRaw("REPLACE(REPLACE(nip, ' ', ''), CHAR(39), '') = ?", [$cleanNip])->first();
+            $pegawai = \App\Models\Pegawai::whereRaw(
+                "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nip, ' ', ''), CHAR(39), ''), '’', ''), '‘', ''), '`', ''), '.', '') = ?",
+                [$cleanNip]
+            )->first();
         }
 
         // 2. Jika pegawai ditemukan, pastikan akun User-nya ada dan tersinkronisasi (On-the-Fly Sync)
         if ($pegawai) {
+            // Bersihkan NIP di database pegawai secara langsung (Self-Healing on Login)
+            $nipCleaned = preg_replace('/[^0-9]/', '', $pegawai->nip);
+            if ($pegawai->nip !== $nipCleaned) {
+                $pegawai->nip = $nipCleaned;
+                $pegawai->save();
+            }
+
             $rolePegawai = \App\Models\Role::where('name', 'pegawai')->first();
-            $emailTemp = $pegawai->nip . '@staff.unri.ac.id';
+            $emailTemp = $nipCleaned . '@staff.unri.ac.id';
 
             $user = \App\Models\User::where('pegawai_id', $pegawai->id)
                 ->orWhere('email', $emailTemp)

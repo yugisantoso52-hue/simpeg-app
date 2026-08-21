@@ -32,6 +32,24 @@ class PegawaiController extends Controller
 
     public function index(Request $request)
     {
+        // Self-Healing NIP kotor
+        $dirtyPegawais = Pegawai::where('nip', 'like', '%\'%')
+            ->orWhere('nip', 'like', '%’%')
+            ->orWhere('nip', 'like', '%‘%')
+            ->orWhere('nip', 'like', '% %')
+            ->get();
+
+        if ($dirtyPegawais->isNotEmpty()) {
+            foreach ($dirtyPegawais as $p) {
+                $p->nip = preg_replace('/[^0-9]/', '', $p->nip);
+                $p->save();
+            }
+            Cache::forget('dashboard_statistics');
+            Cache::forget('dashboard_grafik_golongan');
+            Cache::forget('dashboard_grafik_pendidikan');
+            Cache::forget('dashboard_grafik_unit');
+        }
+
         $search = $request->get('search');
         $pegawai = $this->pegawaiService->search($search);
         $statistics = $this->pegawaiService->getStatistics();
@@ -45,6 +63,24 @@ class PegawaiController extends Controller
 
     public function duk(Request $request)
     {
+        // Self-Healing NIP kotor
+        $dirtyPegawais = Pegawai::where('nip', 'like', '%\'%')
+            ->orWhere('nip', 'like', '%’%')
+            ->orWhere('nip', 'like', '%‘%')
+            ->orWhere('nip', 'like', '% %')
+            ->get();
+
+        if ($dirtyPegawais->isNotEmpty()) {
+            foreach ($dirtyPegawais as $p) {
+                $p->nip = preg_replace('/[^0-9]/', '', $p->nip);
+                $p->save();
+            }
+            Cache::forget('dashboard_statistics');
+            Cache::forget('dashboard_grafik_golongan');
+            Cache::forget('dashboard_grafik_pendidikan');
+            Cache::forget('dashboard_grafik_unit');
+        }
+
         $search = $request->get('search');
         $query = Pegawai::with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
 
