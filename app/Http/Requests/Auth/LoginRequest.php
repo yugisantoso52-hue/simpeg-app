@@ -43,14 +43,17 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         $loginInput = $this->input('login');
-        // Bersihkan karakter spasi otomatis dari NIP
-        $loginClean = str_replace(' ', '', trim($loginInput));
+        // Bersihkan NIP menggunakan preg_replace untuk menyaring karakter non-numerik
+        $loginClean = preg_replace('/[^0-9]/', '', $loginInput);
 
-        // Cari user berdasarkan email atau NIP pegawai yang terkait
-        $user = \App\Models\User::where('email', $loginInput)
-            ->orWhereHas('pegawai', function ($query) use ($loginClean) {
-                $query->where('nip', $loginClean);
+        // Cari user berdasarkan kolom NIP baru, email, atau relasi pegawai
+        $user = \App\Models\User::when(!empty($loginClean), function ($query) use ($loginClean) {
+                $query->where('nip', $loginClean)
+                      ->orWhereHas('pegawai', function ($q) use ($loginClean) {
+                          $q->where('nip', $loginClean);
+                      });
             })
+            ->orWhere('email', $loginInput)
             ->first();
 
         if (!$user || ! \Illuminate\Support\Facades\Hash::check($this->input('password'), $user->password)) {
