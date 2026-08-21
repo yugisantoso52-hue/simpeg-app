@@ -30,6 +30,7 @@ class Pegawai extends Model
         'unit_kerja_id', 'jabatan_id', 'golongan_id', 'tanggal_masuk',
         'tmt_sk_pertama', 'tmt_pangkat_terakhir', 'tmt_kgb_terakhir',
         'file_sk_pertama', 'file_sk_pangkat_terakhir', 'file_sk_kgb_terakhir',
+        'nomor_sk_pertama', 'tanggal_sk_pertama', 'nomor_sk_pangkat_terakhir', 'tanggal_sk_pangkat_terakhir',
         'satyalancana_terakhir', 'satyalancana_berikutnya', 'status_pegawai', 'foto',
         'kgb_berikutnya', 'kp_berikutnya'
     ];
@@ -40,6 +41,8 @@ class Pegawai extends Model
         'tmt_sk_pertama'          => 'date',
         'tmt_pangkat_terakhir'    => 'date',
         'tmt_kgb_terakhir'        => 'date',
+        'tanggal_sk_pertama'      => 'date',
+        'tanggal_sk_pangkat_terakhir' => 'date',
         'satyalancana_berikutnya' => 'date',
         'kgb_berikutnya'          => 'date',
         'kp_berikutnya'           => 'date',

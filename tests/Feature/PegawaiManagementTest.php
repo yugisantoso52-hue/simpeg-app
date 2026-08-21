@@ -36,9 +36,9 @@ class PegawaiManagementTest extends TestCase
         $stafRole = Role::firstOrCreate(['name' => 'staf'], ['display_name' => 'Staf Biasa']);
 
         // Users
-        $this->adminUser = User::factory()->create(['role_id' => $adminRole->id]);
-        $this->pimpinanUser = User::factory()->create(['role_id' => $pimpinanRole->id]);
-        $this->stafUser = User::factory()->create(['role_id' => $stafRole->id]);
+        $this->adminUser = User::factory()->create(['role_id' => $adminRole->id, 'must_change_password' => false]);
+        $this->pimpinanUser = User::factory()->create(['role_id' => $pimpinanRole->id, 'must_change_password' => false]);
+        $this->stafUser = User::factory()->create(['role_id' => $stafRole->id, 'must_change_password' => false]);
 
         // Master Data
         $this->unitKerja = UnitKerja::create([
@@ -122,6 +122,7 @@ class PegawaiManagementTest extends TestCase
             'nip'                  => '199202022018021003',
             'nama_lengkap'         => 'Ahmad Dahlan',
             'nama'                 => 'Ahmad Dahlan',
+            'nik'                  => '1234567890123456',
             'jenis_kelamin'        => 'L',
             'jenis_pegawai'        => 'PNS',
             'status_asn'           => 'ASN',
@@ -207,8 +208,11 @@ class PegawaiManagementTest extends TestCase
             'nip'           => '199001012015011007',
             'nama_lengkap'  => 'Jendral Sudirman Updated',
             'nama'          => 'Jendral Sudirman Updated',
+            'nik'           => '1234567890123456',
+            'jenis_kelamin' => 'L',
             'unit_kerja_id' => $this->unitKerja->id,
             'jabatan_id'    => $this->jabatan->id,
+            'golongan_id'   => $this->golongan->id,
         ];
 
         $response = $this->actingAs($this->adminUser)

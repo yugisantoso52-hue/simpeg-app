@@ -16,14 +16,14 @@ class StorePegawaiRequest extends FormRequest
         return [
             // Disesuaikan agar menerima 'nama_lengkap' atau 'nama'
             'nip'                  => 'required|string|max:50|unique:pegawai,nip',
-            'nama_lengkap'         => 'nullable|string|max:150', 
-            'nama'                 => 'nullable|string|max:150',
-            'nik'                  => 'nullable|string|max:30',
+            'nama_lengkap'         => 'required|string|max:150', 
+            'nama'                 => 'required|string|max:150',
+            'nik'                  => 'required|string|max:30',
             'gelar_depan'          => 'nullable|string|max:20',
             'gelar_belakang'       => 'nullable|string|max:20',
             'tempat_lahir'         => 'nullable|string|max:100',
             'tanggal_lahir'        => 'nullable|date',
-            'jenis_kelamin'        => 'nullable|in:L,P',
+            'jenis_kelamin'        => 'required|in:L,P',
             'agama'                => 'nullable|string|max:30',
             'pendidikan'           => 'nullable|string|max:100',
             'email'                => 'nullable|email|max:100',
@@ -40,7 +40,7 @@ class StorePegawaiRequest extends FormRequest
             // Relasi Utama
             'unit_kerja_id'        => 'required|exists:unit_kerja,id',
             'jabatan_id'           => 'required|exists:jabatan,id',
-            'golongan_id'          => 'nullable|exists:golongan,id',
+            'golongan_id'          => 'required|exists:golongan,id',
             
             'tanggal_masuk'        => 'nullable|date',
             'tmt_sk_pertama'       => 'nullable|date',

@@ -36,13 +36,24 @@ class GeneratePegawaiUsersSeeder extends Seeder
                 $email = $identifier . '@simpeg.test';
             }
 
+            // Password default: format YYYYMMDD dari tanggal lahir (atau fallback jika null)
+            $passwordDefault = '19900101';
+            if (!empty($pegawai->tanggal_lahir)) {
+                try {
+                    $passwordDefault = \Carbon\Carbon::parse($pegawai->tanggal_lahir)->format('Ymd');
+                } catch (\Exception $e) {
+                    $passwordDefault = '19900101';
+                }
+            }
+
             // Buat akun User baru
             User::create([
-                'name'       => $pegawai->nama,
-                'email'      => $email,
-                'password'   => Hash::make('password123'), // Password default untuk seluruh pegawai
-                'role_id'    => $rolePegawai->id,
-                'pegawai_id' => $pegawai->id,
+                'name'                 => $pegawai->nama,
+                'email'                => $email,
+                'password'             => Hash::make($passwordDefault),
+                'role_id'              => $rolePegawai->id,
+                'pegawai_id'           => $pegawai->id,
+                'must_change_password' => true, // Wajib ganti password saat login pertama kali
             ]);
 
             $count++;

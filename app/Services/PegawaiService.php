@@ -188,12 +188,22 @@ class PegawaiService
                     $emailLogin = $identifier . '@simpeg.test';
                 }
 
+                $passwordDefault = '19900101';
+                if (!empty($pegawai->tanggal_lahir)) {
+                    try {
+                        $passwordDefault = Carbon::parse($pegawai->tanggal_lahir)->format('Ymd');
+                    } catch (\Exception $e) {
+                        $passwordDefault = '19900101';
+                    }
+                }
+
                 User::create([
-                    'name'       => $pegawai->nama,
-                    'email'      => $emailLogin,
-                    'password'   => Hash::make('password123'), // Password default awal pegawai
-                    'role_id'    => $rolePegawai->id,
-                    'pegawai_id' => $pegawai->id,
+                    'name'                 => $pegawai->nama,
+                    'email'                => $emailLogin,
+                    'password'             => Hash::make($passwordDefault), // Password default awal pegawai
+                    'role_id'              => $rolePegawai->id,
+                    'pegawai_id'           => $pegawai->id,
+                    'must_change_password' => true,
                 ]);
             }
 
@@ -342,6 +352,23 @@ class PegawaiService
 
             // Update tabel pegawai utama
             $pegawaiUpdated = $this->pegawaiRepository->update($pegawai->id, $data);
+
+            // Catat log perubahan data (timestamp dan identitas pengubah)
+            $changes = $pegawaiUpdated->getChanges();
+            if (!empty($changes)) {
+                $user = auth()->user();
+                $modifier = $user ? "User ID {$user->id} ({$user->name})" : "System/Console";
+                $logFilePath = storage_path('logs/audit_pegawai.log');
+                $logMessage = sprintf(
+                    "[%s] Pegawai ID %s (%s) diubah oleh %s. Perubahan: %s\n",
+                    now()->toDateTimeString(),
+                    $pegawaiUpdated->id,
+                    $pegawaiUpdated->nama,
+                    $modifier,
+                    json_encode($changes, JSON_UNESCAPED_UNICODE)
+                );
+                @file_put_contents($logFilePath, $logMessage, FILE_APPEND);
+            }
 
             // Synchronize User table name and email if user exists
             if ($pegawaiUser = User::where('pegawai_id', $pegawaiUpdated->id)->first()) {

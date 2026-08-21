@@ -30,7 +30,7 @@ Route::get('/', function () {
 });
 
 // AUTHENTICATED USERS (Semua User Login)
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'force.password.change'])->group(function () {
 
     /* Dashboard & Profile Akun User */
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

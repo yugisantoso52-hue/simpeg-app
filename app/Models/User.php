@@ -18,6 +18,7 @@ class User extends Authenticatable
         'password',
         'role_id',
         'pegawai_id', // Tambahkan field ini
+        'must_change_password',
     ];
 
     protected $hidden = [
@@ -30,6 +31,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'must_change_password' => 'boolean',
         ];
     }
 

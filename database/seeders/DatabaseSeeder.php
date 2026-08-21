@@ -17,7 +17,8 @@ class DatabaseSeeder extends Seeder
             JabatanSeeder::class,
             GolonganSeeder::class,
             AdminSeeder::class,
-PegawaiSeeder::class,
+            PegawaiSeeder::class,
+            GeneratePegawaiUsersSeeder::class,
         ]);
     }
 }

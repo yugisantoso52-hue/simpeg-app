@@ -30,11 +30,12 @@ class InputValidationSecurityAuditTest extends TestCase
         $adminRole = Role::firstOrCreate(['name' => 'admin'], ['display_name' => 'Admin Kepegawaian']);
         $stafRole  = Role::firstOrCreate(['name' => 'staf'], ['display_name' => 'Staf Biasa']);
 
-        $this->adminUser = User::factory()->create(['role_id' => $adminRole->id]);
-        $this->stafUser  = User::factory()->create(['role_id' => $stafRole->id]);
+        $this->adminUser = User::factory()->create(['role_id' => $adminRole->id, 'must_change_password' => false]);
+        $this->stafUser  = User::factory()->create(['role_id' => $stafRole->id, 'must_change_password' => false]);
 
         $this->unit    = UnitKerja::create(['nama_unit' => 'Dinas Pendidikan', 'kode_unit' => 'DISDIK']);
         $this->jabatan = Jabatan::create(['kode_jabatan' => 'JAB-001', 'nama_jabatan' => 'Guru']);
+        $this->golongan = Golongan::create(['nama_golongan' => 'III/a', 'nama_pangkat' => 'Penata Muda']);
     }
 
     /**
@@ -57,8 +58,12 @@ class InputValidationSecurityAuditTest extends TestCase
             ->post('/pegawai', [
                 'nip'           => '199001012015011099',
                 'nama'          => 'Pegawai Test Invalid FK',
+                'nama_lengkap'  => 'Pegawai Test Invalid FK',
+                'nik'           => '1234567890123456',
+                'jenis_kelamin' => 'L',
                 'unit_kerja_id' => 99999, // Nonexistent
                 'jabatan_id'    => 99999, // Nonexistent
+                'golongan_id'   => $this->golongan->id,
             ]);
 
         $response->assertSessionHasErrors(['unit_kerja_id', 'jabatan_id']);
@@ -72,16 +77,24 @@ class InputValidationSecurityAuditTest extends TestCase
         Pegawai::create([
             'nip'           => '199001012015011001',
             'nama'          => 'Pegawai Existing',
+            'nama_lengkap'  => 'Pegawai Existing',
+            'nik'           => '1234567890123456',
+            'jenis_kelamin' => 'L',
             'unit_kerja_id' => $this->unit->id,
             'jabatan_id'    => $this->jabatan->id,
+            'golongan_id'   => $this->golongan->id,
         ]);
 
         $response = $this->actingAs($this->adminUser)
             ->post('/pegawai', [
                 'nip'           => '199001012015011001',
                 'nama'          => 'Pegawai Duplicate NIP',
+                'nama_lengkap'  => 'Pegawai Duplicate NIP',
+                'nik'           => '1234567890123456',
+                'jenis_kelamin' => 'L',
                 'unit_kerja_id' => $this->unit->id,
                 'jabatan_id'    => $this->jabatan->id,
+                'golongan_id'   => $this->golongan->id,
             ]);
 
         $response->assertSessionHasErrors(['nip']);
@@ -96,8 +109,11 @@ class InputValidationSecurityAuditTest extends TestCase
             ->post('/pegawai', [
                 'nip'           => '199001012015011002',
                 'nama'          => 'Pegawai Invalid Enum',
+                'nama_lengkap'  => 'Pegawai Invalid Enum',
+                'nik'           => '1234567890123456',
                 'unit_kerja_id' => $this->unit->id,
                 'jabatan_id'    => $this->jabatan->id,
+                'golongan_id'   => $this->golongan->id,
                 'jenis_kelamin' => 'INVALID_GENDER',
                 'status_asn'    => 'MALICIOUS_STATUS',
                 'tanggal_lahir' => 'NOT_A_DATE',
@@ -115,8 +131,12 @@ class InputValidationSecurityAuditTest extends TestCase
             ->post('/pegawai', [
                 'nip'           => str_repeat('1', 100), // Max 50
                 'nama'          => str_repeat('A', 300), // Max 150
+                'nama_lengkap'  => str_repeat('A', 300), // Max 150
+                'nik'           => '1234567890123456',
+                'jenis_kelamin' => 'L',
                 'unit_kerja_id' => $this->unit->id,
                 'jabatan_id'    => $this->jabatan->id,
+                'golongan_id'   => $this->golongan->id,
             ]);
 
         $response->assertSessionHasErrors(['nip', 'nama']);
@@ -131,8 +151,12 @@ class InputValidationSecurityAuditTest extends TestCase
             ->post('/pegawai', [
                 'nip'           => '199001012015011003',
                 'nama'          => 'Pegawai Unknown Fields',
+                'nama_lengkap'  => 'Pegawai Unknown Fields',
+                'nik'           => '1234567890123456',
+                'jenis_kelamin' => 'L',
                 'unit_kerja_id' => $this->unit->id,
                 'jabatan_id'    => $this->jabatan->id,
+                'golongan_id'   => $this->golongan->id,
                 'is_admin'      => true, // Injection attempt
                 'role_id'       => 1,    // Injection attempt
             ]);

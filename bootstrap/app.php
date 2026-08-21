@@ -14,9 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         
-        // Pendaftaran Alias Middleware Role
+        // Pendaftaran Alias Middleware Role & ForcePasswordChange
         $middleware->alias([
             'role' => RoleMiddleware::class,
+            'force.password.change' => \App\Http\Middleware\ForcePasswordChange::class,
         ]);
 
         // Opsional: Redirect Guest jika belum terautentikasi (Custom Redirection)

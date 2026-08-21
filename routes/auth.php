@@ -53,6 +53,11 @@ Route::middleware('auth')->group(function () {
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
+    Route::get('change-password', [PasswordController::class, 'edit'])
+        ->name('password.change');
+
+    Route::post('change-password', [PasswordController::class, 'store']);
+
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });
