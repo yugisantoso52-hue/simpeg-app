@@ -141,6 +141,14 @@ class Pegawai extends Model
 
     /* --- ACCESSORS --- */
 
+    protected function nip(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => preg_replace('/[^0-9]/', '', (string)$value),
+            set: fn ($value) => preg_replace('/[^0-9]/', '', (string)$value),
+        );
+    }
+
     protected function namaLengkap(): Attribute
     {
         return Attribute::make(

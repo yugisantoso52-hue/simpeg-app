@@ -132,4 +132,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     });
 });
 
+Route::get('/sync-db-production-simpeg-secure', function() {
+    \Illuminate\Support\Facades\Artisan::call('pegawai:sync-users');
+    return "<pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+});
+
 require __DIR__ . '/auth.php';
