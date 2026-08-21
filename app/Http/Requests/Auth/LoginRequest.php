@@ -42,19 +42,21 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $loginInput = $this->input('login');
-        // Bersihkan NIP menggunakan preg_replace untuk menyaring karakter non-numerik
-        $loginClean = preg_replace('/[^0-9]/', '', $loginInput);
+        $login = preg_replace('/[^0-9]/', '', $this->input('login')); // NIP bersih jika input angka
+        $rawLogin = $this->input('login');
 
-        // Cari user berdasarkan kolom NIP baru, email, atau relasi pegawai
-        $user = \App\Models\User::when(!empty($loginClean), function ($query) use ($loginClean) {
-                $query->where('nip', $loginClean)
-                      ->orWhereHas('pegawai', function ($q) use ($loginClean) {
-                          $q->where('nip', $loginClean);
-                      });
-            })
-            ->orWhere('email', $loginInput)
-            ->first();
+        $user = \App\Models\User::where(function ($query) use ($login, $rawLogin) {
+            if (!empty($login)) {
+                // Cari via relasi pegawai
+                $query->whereHas('pegawai', function ($q) use ($login) {
+                    $q->where('nip', $login);
+                })
+                // Atau via email internal {nip}@staff.unri.ac.id
+                ->orWhere('email', $login . '@staff.unri.ac.id');
+            }
+            // Atau pencarian via email asli yang diinput user
+            $query->orWhere('email', $rawLogin);
+        })->first();
 
         if (!$user || ! \Illuminate\Support\Facades\Hash::check($this->input('password'), $user->password)) {
             RateLimiter::hit($this->throttleKey());

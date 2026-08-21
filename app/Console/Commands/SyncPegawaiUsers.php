@@ -91,7 +91,6 @@ class SyncPegawaiUsers extends Command
 
             // 3. Sinkronisasi User
             $user = User::where('pegawai_id', $pegawai->id)
-                ->orWhere('nip', $cleanedNip)
                 ->orWhere('email', $emailTemp)
                 ->first();
 
@@ -99,7 +98,6 @@ class SyncPegawaiUsers extends Command
                 // Update user yang sudah ada
                 $user->name = $pegawai->nama;
                 $user->email = $emailTemp;
-                $user->nip = $cleanedNip; // Sinkronisasi kolom NIP baru
                 $user->pegawai_id = $pegawai->id;
                 $user->role_id = $user->role_id ?? $rolePegawai->id; // Pertahankan jika sudah ada role lain
                 $user->must_change_password = true; // Wajib ganti password
@@ -111,7 +109,6 @@ class SyncPegawaiUsers extends Command
                 $user = User::create([
                     'name'                 => $pegawai->nama,
                     'email'                => $emailTemp,
-                    'nip'                  => $cleanedNip, // Set kolom NIP baru
                     'password'             => Hash::make($dob), // Set password ke DOB format
                     'role_id'              => $rolePegawai->id,
                     'pegawai_id'           => $pegawai->id,
