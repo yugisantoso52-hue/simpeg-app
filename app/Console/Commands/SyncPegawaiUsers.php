@@ -57,6 +57,24 @@ class SyncPegawaiUsers extends Command
             ]);
         }
 
+        // Cek/Buat data pegawai NIP 198006152025211060 jika tidak ada
+        $prodNip = '198006152025211060';
+        $prodPegawai = Pegawai::where('nip', $prodNip)->first();
+        if (!$prodPegawai) {
+            $this->info("Membuat data pegawai NIP 198006152025211060...");
+            $prodPegawai = Pegawai::create([
+                'nip' => $prodNip,
+                'nama' => 'Pegawai Production Test',
+                'nik' => '1234567890123457',
+                'jenis_kelamin' => 'L',
+                'tanggal_lahir' => '1980-06-15',
+                'status_pegawai' => 'Aktif',
+                'unit_kerja_id' => 1,
+                'jabatan_id' => 1,
+                'golongan_id' => 1,
+            ]);
+        }
+
         $pegawais = Pegawai::all();
         $this->info("Jumlah pegawai di database: " . $pegawais->count());
 

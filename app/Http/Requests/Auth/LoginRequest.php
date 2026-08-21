@@ -58,15 +58,13 @@ class LoginRequest extends FormRequest
             $query->orWhere('email', $rawLogin);
         })->first();
 
-        if (!$user || ! \Illuminate\Support\Facades\Hash::check($this->input('password'), $user->password)) {
+        if (!$user || ! Auth::attempt(['email' => $user->email, 'password' => $this->input('password')], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
                 'login' => trans('auth.failed'),
             ]);
         }
-
-        Auth::login($user, $this->boolean('remember'));
 
         RateLimiter::clear($this->throttleKey());
     }
