@@ -58,6 +58,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('change-password', [PasswordController::class, 'store']);
 
+    Route::post('change-password/skip', [PasswordController::class, 'skip'])
+        ->name('password.skip');
+
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });

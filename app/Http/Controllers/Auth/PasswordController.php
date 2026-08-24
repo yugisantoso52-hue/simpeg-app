@@ -54,4 +54,17 @@ class PasswordController extends Controller
         return redirect()->route('dashboard')
             ->with('success', 'Password Anda berhasil diperbarui. Sekarang Anda dapat menggunakan seluruh fitur SIMPEG.');
     }
+
+    /**
+     * Lewati penggantian password default (untuk pengujian atau ditunda).
+     */
+    public function skip(Request $request): RedirectResponse
+    {
+        $request->user()->update([
+            'must_change_password' => false,
+        ]);
+
+        return redirect()->route('dashboard')
+            ->with('info', 'Penggantian password dilewati. Anda dapat mengganti password kapan saja melalui menu Profil.');
+    }
 }

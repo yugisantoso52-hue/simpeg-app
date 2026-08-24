@@ -49,4 +49,30 @@ class ProductionReadinessAndReminderTest extends TestCase
         $this->artisan('simpeg:backup --only-db')
             ->assertSuccessful();
     }
+
+    public function test_user_can_skip_forced_password_change(): void
+    {
+        $user = User::factory()->create([
+            'role_id' => Role::where('name', 'pegawai')->first()->id,
+            'must_change_password' => true,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->post(route('password.skip'));
+
+        $response->assertRedirect(route('dashboard'));
+        $this->assertFalse($user->fresh()->must_change_password);
+    }
+
+    public function test_reset_password_flag_command(): void
+    {
+        User::factory()->create([
+            'must_change_password' => true,
+        ]);
+
+        $this->artisan('user:reset-password-flag --all')
+            ->assertSuccessful();
+
+        $this->assertEquals(0, User::where('must_change_password', true)->count());
+    }
 }

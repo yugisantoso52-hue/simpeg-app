@@ -22,14 +22,15 @@ class ForcePasswordChange
             if ($user->must_change_password) {
                 // Pengecualian rute agar tidak terjadi loop redirect:
                 // - /change-password (GET & POST)
+                // - /change-password/skip (POST)
                 // - /logout (POST)
                 if (!$request->is('change-password*') &&
-                    !$request->routeIs('password.change') &&
+                    !$request->routeIs('password.change', 'password.skip') &&
                     !$request->is('logout') &&
                     !$request->routeIs('logout')) {
 
                     return redirect()->route('password.change')
-                        ->with('warning', 'Anda wajib mengganti password default Anda saat login pertama kali demi keamanan akun.');
+                        ->with('warning', 'Anda disarankan mengganti password default Anda saat login pertama kali demi keamanan akun.');
                 }
             }
         }
