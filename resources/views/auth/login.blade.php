@@ -29,16 +29,14 @@
         <!-- Field NIP -->
         <div>
             <label for="login" class="block font-semibold text-xs text-slate-700 uppercase tracking-wider mb-1">
-                NIP
+                NIP / USERNAME
             </label>
             <div class="relative">
                 <input id="login"
                        type="text"
                        name="login"
                        value="{{ old('login') }}"
-                       placeholder="Masukkan 18 digit NIP"
-                       inputmode="numeric"
-                       oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                       placeholder="Masukkan NIP atau Username"
                        class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-[#007a3d] focus:ring focus:ring-[#007a3d]/20 text-sm py-2.5 px-3"
                        required
                        autofocus
