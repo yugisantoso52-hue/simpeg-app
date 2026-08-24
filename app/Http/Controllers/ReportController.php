@@ -69,6 +69,30 @@ class ReportController extends Controller
     }
 
     /**
+     * Export Daftar Pengingat Kepegawaian (KGB, KP, Pensiun, Satyalancana) ke PDF
+     */
+    public function exportReminderPdf(Request $request)
+    {
+        $type = $request->get('type', 'all');
+        $repository = app(\App\Repositories\Contracts\DashboardRepositoryInterface::class);
+        $reminder = $repository->getReminder();
+
+        $pdf = Pdf::loadView('exports.pdf.reminder', compact('reminder', 'type'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream('Pengingat_Kepegawaian_' . $type . '_' . date('Y-m-d') . '.pdf');
+    }
+
+    /**
+     * Export Daftar Pengingat Kepegawaian (KGB, KP, Pensiun, Satyalancana) ke Excel
+     */
+    public function exportReminderExcel(Request $request)
+    {
+        $type = $request->get('type', 'all');
+        return Excel::download(new \App\Exports\ReminderExport($type), 'Pengingat_Kepegawaian_' . $type . '_' . date('Y-m-d') . '.xlsx');
+    }
+
+    /**
      * Layanan Stream / Preview Berkas Privat Terproteksi Autentikasi & Autorisasi (SEC-NEW-01 Fix)
      */
     public function streamPrivateFile(Request $request, string $path)

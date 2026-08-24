@@ -40,6 +40,13 @@ Schedule::command(CekPensiunHarian::class)
     ->onOneServer()
     ->runInBackground();
 
+// 5. Auto Backup Database & Storage - Setiap Hari Jam 00:00 WIB
+Schedule::command(\App\Console\Commands\BackupDatabaseCommand::class)
+    ->dailyAt('00:00')
+    ->timezone('Asia/Jakarta')
+    ->onOneServer()
+    ->runInBackground();
+
 /*
 |--------------------------------------------------------------------------
 | System Maintenance & Cleanup (Pemeliharaan Otomatis)

@@ -130,6 +130,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/riwayat-diklat', [RiwayatDiklatController::class, 'index'])->name('riwayat-diklat.index');
 
         Route::get('/reports/kgb/{id}/pdf', [ReportController::class, 'exportKgbPdf'])->name('reports.kgb.pdf');
+        Route::get('/reports/reminder/pdf', [ReportController::class, 'exportReminderPdf'])->name('reports.reminder.pdf');
+        Route::get('/reports/reminder/excel', [ReportController::class, 'exportReminderExcel'])->name('reports.reminder.excel');
     });
 });
 
