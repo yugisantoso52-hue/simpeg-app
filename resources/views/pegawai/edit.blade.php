@@ -1,10 +1,16 @@
 <x-app-layout>
 
     <x-slot name="header">
+        @php
+            $isPegawai = auth()->user()->hasRole('pegawai') || (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('pimpinan'));
+            $backUrl = $isPegawai ? route('pegawai.show', $pegawai->id) : route('pegawai.index');
+            $parentLabel = $isPegawai ? 'Profil Saya' : 'Pegawai';
+        @endphp
+
         <x-enterprise.breadcrumb
             :items="[
-                ['label'=>'Pegawai','url'=>route('pegawai.index')],
-                ['label'=>'Edit Pegawai']
+                ['label' => $parentLabel, 'url' => $backUrl],
+                ['label' => 'Edit Pegawai']
             ]"
         />
 
@@ -13,7 +19,7 @@
                 title="Edit Data Pegawai"
                 subtitle="Perbarui data operasional pegawai SIKAP Enterprise">
 
-                <a href="{{ route('pegawai.index') }}"
+                <a href="{{ $backUrl }}"
                    class="inline-flex items-center rounded-lg bg-slate-600 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 transition">
                     ← Kembali
                 </a>
@@ -66,7 +72,7 @@
                         @include('pegawai.forms._diklat')
 
                         <x-enterprise.forms.actions
-                            :back="route('pegawai.index')"
+                            :back="$backUrl"
                             submit="Simpan Perubahan"/>
                     </form>
                 </div>
