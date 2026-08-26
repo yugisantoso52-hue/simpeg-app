@@ -59,6 +59,11 @@
                     </x-nav-link>
                 @endif
 
+                {{-- 3. E-Cuti Pegawai (Semua Role) --}}
+                <x-nav-link :href="route('pengajuan-cuti.index')" :active="request()->routeIs('pengajuan-cuti.*')">
+                    🏖️ E-Cuti
+                </x-nav-link>
+
                 {{-- 3. Dropdown Data Pegawai (Khusus Admin & Pimpinan) --}}
                 @if(Auth::user()->hasRole(['admin', 'pimpinan']))
                     <x-dropdown align="left" width="56">
@@ -205,6 +210,11 @@
                     👤 Profil Saya
                 </x-responsive-nav-link>
             @endif
+
+            {{-- E-Cuti Pegawai --}}
+            <x-responsive-nav-link :href="route('pengajuan-cuti.index')" :active="request()->routeIs('pengajuan-cuti.*')">
+                🏖️ E-Cuti Pegawai
+            </x-responsive-nav-link>
 
             {{-- Group Data Pegawai (Admin & Pimpinan) --}}
             @if(Auth::user()->hasRole(['admin', 'pimpinan']))

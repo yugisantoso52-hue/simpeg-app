@@ -15,6 +15,7 @@ use App\Repositories\Contracts\RiwayatJabatanRepositoryInterface;
 use App\Repositories\Contracts\RiwayatPangkatRepositoryInterface;
 use App\Repositories\Contracts\RiwayatDiklatRepositoryInterface;
 use App\Repositories\Contracts\RiwayatStrSipRepositoryInterface;
+use App\Repositories\Contracts\PengajuanCutiRepositoryInterface;
 
 // Import Eloquent Repositories
 use App\Repositories\Eloquent\PegawaiRepository;
@@ -27,6 +28,7 @@ use App\Repositories\Eloquent\RiwayatJabatanRepository;
 use App\Repositories\Eloquent\RiwayatPangkatRepository;
 use App\Repositories\Eloquent\RiwayatDiklatRepository;
 use App\Repositories\Eloquent\RiwayatStrSipRepository;
+use App\Repositories\Eloquent\PengajuanCutiRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -92,6 +94,12 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(
             RiwayatStrSipRepositoryInterface::class,
             RiwayatStrSipRepository::class
+        );
+
+        // Pengajuan Cuti (E-Cuti)
+        $this->app->bind(
+            PengajuanCutiRepositoryInterface::class,
+            PengajuanCutiRepository::class
         );
     }
 

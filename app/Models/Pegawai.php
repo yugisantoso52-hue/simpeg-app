@@ -157,6 +157,26 @@ class Pegawai extends Model
         return $this->hasMany(RiwayatStrSip::class, 'pegawai_id');
     }
 
+    public function pengajuanCuti(): HasMany
+    {
+        return $this->hasMany(PengajuanCuti::class, 'pegawai_id');
+    }
+
+    /**
+     * Hitung sisa kuota cuti tahunan pada tahun berjalan (Standar: 12 hari kerja)
+     */
+    public function getSisaCutiTahunanAttribute(): int
+    {
+        $currentYear = now()->year;
+        $cutiTerpakai = $this->pengajuanCuti()
+            ->where('jenis_cuti', 'Cuti Tahunan')
+            ->where('status', 'Disetujui')
+            ->whereYear('tanggal_mulai', $currentYear)
+            ->sum('jumlah_hari');
+
+        return max(0, 12 - (int)$cutiTerpakai);
+    }
+
     /* --- ACCESSORS --- */
 
     protected function nip(): Attribute

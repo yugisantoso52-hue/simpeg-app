@@ -13,6 +13,7 @@ use App\Http\Controllers\RiwayatJabatanController;
 use App\Http\Controllers\RiwayatPangkatController;
 use App\Http\Controllers\RiwayatDiklatController;
 use App\Http\Controllers\RiwayatStrSipController;
+use App\Http\Controllers\PengajuanCutiController;
 use App\Http\Controllers\MutasiPegawaiController;
 use App\Http\Controllers\KgbController;
 use App\Http\Controllers\KpController;
@@ -105,6 +106,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::resource('riwayat-pangkat', RiwayatPangkatController::class)->except(['index', 'show']);
         Route::resource('riwayat-diklat', RiwayatDiklatController::class)->except(['index', 'show']);
         Route::resource('riwayat-str-sip', RiwayatStrSipController::class)->except(['index', 'show']);
+        Route::delete('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'destroy'])->name('pengajuan-cuti.destroy');
     });
 
     // ======================================================================
@@ -113,12 +115,22 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::middleware(['role:admin,pimpinan,pegawai'])->group(function () {
         Route::get('/pegawai/{pegawai}', [PegawaiController::class, 'show'])->name('pegawai.show');
         Route::get('/pegawai/{id}/download-pdf', [PegawaiController::class, 'exportProfilPdf'])->name('pegawai.download-pdf');
+
+        /* Modul E-Cuti Pegawai (Self-Service) */
+        Route::get('/pengajuan-cuti', [PengajuanCutiController::class, 'index'])->name('pengajuan-cuti.index');
+        Route::get('/pengajuan-cuti/create', [PengajuanCutiController::class, 'create'])->name('pengajuan-cuti.create');
+        Route::post('/pengajuan-cuti', [PengajuanCutiController::class, 'store'])->name('pengajuan-cuti.store');
+        Route::get('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'show'])->name('pengajuan-cuti.show');
+        Route::post('/pengajuan-cuti/{id}/cancel', [PengajuanCutiController::class, 'cancel'])->name('pengajuan-cuti.cancel');
+        Route::get('/pengajuan-cuti/{id}/cetak-pdf', [PengajuanCutiController::class, 'cetakFormPdf'])->name('pengajuan-cuti.cetak-pdf');
     });
 
     // ======================================================================
-    // KHUSUS ADMIN & PIMPINAN (MONITORING & REPORTS)
+    // KHUSUS ADMIN & PIMPINAN (MONITORING, APPROVAL & REPORTS)
     // ======================================================================
     Route::middleware(['role:admin,pimpinan'])->group(function () {
+        /* Approval Pengajuan Cuti */
+        Route::post('/pengajuan-cuti/{id}/approve', [PengajuanCutiController::class, 'approve'])->name('pengajuan-cuti.approve');
 
         Route::get('/pegawai', [PegawaiController::class, 'index'])->name('pegawai.index');
         Route::get('/duk', [PegawaiController::class, 'duk'])->name('duk.index');
