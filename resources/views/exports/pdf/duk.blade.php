@@ -31,9 +31,9 @@
     @php
         // Pengurutan Bertingkat Sesuai Standar BKN: Jenis Pegawai -> Golongan -> TMT Pangkat -> Tgl Lahir
         $sortedPegawais = $pegawais->sort(function($a, $b) {
-            $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'HONORER' => 3];
-            $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 4;
-            $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 4;
+            $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'DOSEN' => 3, 'PHL' => 4, 'HONORER' => 4];
+            $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 5;
+            $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 5;
             if ($jenisA !== $jenisB) return $jenisA <=> $jenisB;
 
             $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
@@ -52,8 +52,9 @@
         // Hitung Rekapitulasi
         $totalPns     = $pegawais->where('jenis_pegawai', 'PNS')->count();
         $totalPppk    = $pegawais->where('jenis_pegawai', 'PPPK')->count();
-        $totalHonorer = $pegawais->where('jenis_pegawai', 'Honorer')->count();
-        $totalLainnya = $pegawais->whereNotIn('jenis_pegawai', ['PNS', 'PPPK', 'Honorer'])->count();
+        $totalDosen   = $pegawais->where('jenis_pegawai', 'Dosen')->count();
+        $totalPhl     = $pegawais->whereIn('jenis_pegawai', ['PHL', 'Honorer'])->count();
+        $totalLainnya = $pegawais->whereNotIn('jenis_pegawai', ['PNS', 'PPPK', 'Dosen', 'PHL', 'Honorer'])->count();
     @endphp
 
     <table>
@@ -159,8 +160,12 @@
                     <td class="text-center">{{ $totalPppk }} Orang</td>
                 </tr>
                 <tr>
-                    <td>Honorer</td>
-                    <td class="text-center">{{ $totalHonorer }} Orang</td>
+                    <td>Dosen</td>
+                    <td class="text-center">{{ $totalDosen }} Orang</td>
+                </tr>
+                <tr>
+                    <td>PHL</td>
+                    <td class="text-center">{{ $totalPhl }} Orang</td>
                 </tr>
                 @if($totalLainnya > 0)
                 <tr>
