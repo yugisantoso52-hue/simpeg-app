@@ -20,9 +20,10 @@ class DashboardRepository implements DashboardRepositoryInterface
             'non_asn' => Pegawai::where('status_asn', 'Non ASN')->count(),
             'aktif'   => Pegawai::where('status_pegawai', 'Aktif')->count(),
             'pensiun' => Pegawai::where('status_pegawai', 'Pensiun')->count(),
+            'dosen'   => Pegawai::where('jenis_pegawai', 'Dosen')->count(),
             'pns'     => Pegawai::where('jenis_pegawai', 'PNS')->count(),
             'pppk'    => Pegawai::where('jenis_pegawai', 'PPPK')->count(),
-            'honorer' => Pegawai::where('jenis_pegawai', 'Honorer')->count(),
+            'phl'     => Pegawai::whereIn('jenis_pegawai', ['PHL', 'Honorer'])->count(),
         ];
     }
 
@@ -49,11 +50,11 @@ class DashboardRepository implements DashboardRepositoryInterface
      */
     public function getPegawaiPerPendidikan()
     {
-        return Pegawai::select('pendidikan', DB::raw('count(*) as total'))
-            ->whereNotNull('pendidikan')
-            ->where('pendidikan', '!=', '')
-            ->groupBy('pendidikan')
-            ->orderBy('pendidikan')
+        return Pegawai::select('pendidikan_terakhir', DB::raw('count(*) as total'))
+            ->whereNotNull('pendidikan_terakhir')
+            ->where('pendidikan_terakhir', '!=', '')
+            ->groupBy('pendidikan_terakhir')
+            ->orderBy('pendidikan_terakhir')
             ->get();
     }
 
