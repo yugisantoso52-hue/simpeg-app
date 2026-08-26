@@ -10,38 +10,38 @@
         </x-enterprise.forms.field>
 
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="NIK">
-                <x-enterprise.input name="nik" :value="old('nik', $pegawai->nik ?? '')" />
+            <x-enterprise.form-group label="KARPEG / KARIS / KARSU">
+                <x-enterprise.input name="karpeg_karis_karsu"
+                    :value="old('karpeg_karis_karsu', $pegawai->karpeg_karis_karsu ?? '')"
+                    placeholder="Nomor Kartu ASN / KARIS / KARSU" />
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
 
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="Nama Lengkap" required>
-                <x-enterprise.input name="nama" :value="old('nama', $pegawai->nama ?? '')" required />
+            <x-enterprise.form-group label="NIDN / NUPTK">
+                <x-enterprise.input name="nidn_nuptk"
+                    :value="old('nidn_nuptk', $pegawai->nidn_nuptk ?? '')"
+                    placeholder="NIDN (Dosen) atau NUPTK (Tendik)" />
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>
 
     <x-enterprise.forms.row cols="3">
         <x-enterprise.forms.field>
+            <x-enterprise.form-group label="Nama Lengkap" required>
+                <x-enterprise.input name="nama" :value="old('nama', $pegawai->nama ?? '')" required />
+            </x-enterprise.form-group>
+        </x-enterprise.forms.field>
+
+        <x-enterprise.forms.field>
             <x-enterprise.form-group label="Gelar Depan">
-                <x-enterprise.input name="gelar_depan" :value="old('gelar_depan', $pegawai->gelar_depan ?? '')" />
+                <x-enterprise.input name="gelar_depan" :value="old('gelar_depan', $pegawai->gelar_depan ?? '')" placeholder="Contoh: Dr., Prof." />
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
 
         <x-enterprise.forms.field>
             <x-enterprise.form-group label="Gelar Belakang">
-                <x-enterprise.input name="gelar_belakang" :value="old('gelar_belakang', $pegawai->gelar_belakang ?? '')" />
-            </x-enterprise.form-group>
-        </x-enterprise.forms.field>
-
-        <x-enterprise.forms.field>
-            <x-enterprise.form-group label="Jenis Kelamin">
-                <x-enterprise.select name="jenis_kelamin">
-                    <option value="">Pilih Jenis Kelamin</option>
-                    <option value="L" @selected(old('jenis_kelamin', $pegawai->jenis_kelamin ?? '')=='L')>Laki-laki</option>
-                    <option value="P" @selected(old('jenis_kelamin', $pegawai->jenis_kelamin ?? '')=='P')>Perempuan</option>
-                </x-enterprise.select>
+                <x-enterprise.input name="gelar_belakang" :value="old('gelar_belakang', $pegawai->gelar_belakang ?? '')" placeholder="Contoh: M.Kep., Sp.KJ." />
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>
@@ -60,6 +60,18 @@
         </x-enterprise.forms.field>
 
         <x-enterprise.forms.field>
+            <x-enterprise.form-group label="Jenis Kelamin">
+                <x-enterprise.select name="jenis_kelamin">
+                    <option value="">Pilih Jenis Kelamin</option>
+                    <option value="L" @selected(old('jenis_kelamin', $pegawai->jenis_kelamin ?? '')=='L')>Laki-laki</option>
+                    <option value="P" @selected(old('jenis_kelamin', $pegawai->jenis_kelamin ?? '')=='P')>Perempuan</option>
+                </x-enterprise.select>
+            </x-enterprise.form-group>
+        </x-enterprise.forms.field>
+    </x-enterprise.forms.row>
+
+    <x-enterprise.forms.row cols="1">
+        <x-enterprise.forms.field>
             <x-enterprise.form-group label="Agama">
                 <x-enterprise.select name="agama">
                     <option value="">Pilih Agama</option>
@@ -69,20 +81,6 @@
                         </option>
                     @endforeach
                 </x-enterprise.select>
-            </x-enterprise.form-group>
-        </x-enterprise.forms.field>
-    </x-enterprise.forms.row>
-
-    <x-enterprise.forms.row cols="2">
-        <x-enterprise.forms.field>
-            <x-enterprise.form-group label="NPWP">
-                <x-enterprise.input name="npwp" :value="old('npwp', $pegawai->npwp ?? '')" />
-            </x-enterprise.form-group>
-        </x-enterprise.forms.field>
-
-        <x-enterprise.forms.field>
-            <x-enterprise.form-group label="BPJS">
-                <x-enterprise.input name="bpjs" :value="old('bpjs', $pegawai->bpjs ?? '')" />
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>

@@ -29,10 +29,10 @@ class DukExport implements FromCollection, WithMapping, WithHeadings, ShouldAuto
 
         // Pengurutan Bertingkat Resmi BKN: Jenis Pegawai -> Golongan (Desc) -> TMT Pangkat (Asc) -> Tanggal Lahir (Asc)
         $this->pegawais = $query->get()->sort(function($a, $b) {
-            // 1. Prioritas Jenis Pegawai (PNS -> PPPK -> Honorer)
-            $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'HONORER' => 3];
-            $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 4;
-            $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 4;
+            // 1. Prioritas Jenis Pegawai (PNS -> PPPK -> Dosen -> PHL)
+            $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'DOSEN' => 3, 'PHL' => 4, 'HONORER' => 4];
+            $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 5;
+            $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 5;
             if ($jenisA !== $jenisB) return $jenisA <=> $jenisB;
 
             // 2. Tingkat Golongan/Pangkat (Tertinggi ke Terendah)
@@ -95,15 +95,17 @@ class DukExport implements FromCollection, WithMapping, WithHeadings, ShouldAuto
         $rows->push(array_fill(0, 17, ''));
 
         // 2. Rekapitulasi
-        $totalPns     = $this->pegawais->where('jenis_pegawai', 'PNS')->count();
-        $totalPppk    = $this->pegawais->where('jenis_pegawai', 'PPPK')->count();
-        $totalHonorer = $this->pegawais->where('jenis_pegawai', 'Honorer')->count();
-        $totalSemua   = $this->pegawais->count();
+        $totalPns   = $this->pegawais->where('jenis_pegawai', 'PNS')->count();
+        $totalPppk  = $this->pegawais->where('jenis_pegawai', 'PPPK')->count();
+        $totalDosen = $this->pegawais->where('jenis_pegawai', 'Dosen')->count();
+        $totalPhl   = $this->pegawais->whereIn('jenis_pegawai', ['PHL', 'Honorer'])->count();
+        $totalSemua = $this->pegawais->count();
 
         $rows->push(['', 'REKAPITULASI PEGAWAI', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-        $rows->push(['', '1. PNS', $totalPns . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-        $rows->push(['', '2. PPPK', $totalPppk . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-        $rows->push(['', '3. Honorer', $totalHonorer . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['', '1. PNS',   $totalPns   . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['', '2. PPPK',  $totalPppk  . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['', '3. Dosen', $totalDosen . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['', '4. PHL',   $totalPhl   . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
         $rows->push(['', 'TOTAL PEGAWAI', $totalSemua . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
 
         return $rows;
@@ -142,9 +144,9 @@ class DukExport implements FromCollection, WithMapping, WithHeadings, ShouldAuto
         $totalRows = $this->pegawais->count() + 1;
 
         return [
-            1 => ['font' => ['bold' => true]],
-            ($totalRows + 2) => ['font' => ['bold' => true]],
-            ($totalRows + 6) => ['font' => ['bold' => true]],
+            1                  => ['font' => ['bold' => true]],
+            ($totalRows + 2)   => ['font' => ['bold' => true]], // Baris REKAPITULASI
+            ($totalRows + 7)   => ['font' => ['bold' => true]], // Baris TOTAL PEGAWAI
         ];
     }
 }

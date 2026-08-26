@@ -29,7 +29,7 @@
                         <td class="px-3 py-2">
                             <select name="riwayat_pendidikan[{{ $index }}][jenjang]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="">-- Pilih --</option>
-                                @foreach(['SD', 'SMP', 'SMA', 'D3', 'S1', 'S2', 'S3', 'Profesor'] as $j)
+                                @foreach(['SD', 'SMP', 'SMA', 'D1', 'D2', 'D3', 'D4', 'S1', 'S2', 'S3', 'Profesi'] as $j)
                                     <option value="{{ $j }}" @selected($rp->jenjang == $j)>{{ $j }}</option>
                                 @endforeach
                             </select>
@@ -119,11 +119,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         <option value="SD">SD</option>
                         <option value="SMP">SMP</option>
                         <option value="SMA">SMA</option>
+                        <option value="D1">D1</option>
+                        <option value="D2">D2</option>
                         <option value="D3">D3</option>
+                        <option value="D4">D4</option>
                         <option value="S1">S1</option>
                         <option value="S2">S2</option>
                         <option value="S3">S3</option>
-                        <option value="Profesor">Profesor</option>
+                        <option value="Profesi">Profesi</option>
                     </select>
                 </td>
                 <td class="px-3 py-2">

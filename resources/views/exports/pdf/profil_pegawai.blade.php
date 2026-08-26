@@ -30,16 +30,25 @@
     <div class="section-header">1. DATA PRIBADI</div>
     <table class="form-table">
         <tr>
-            <td style="width: 32%;" class="bold">NIP / NIK</td>
+            <td style="width: 32%;" class="bold">NIP</td>
             <td style="width: 3%;">:</td>
-            <td>{{ $pegawai->nip ?? '-' }} / {{ $pegawai->nik ?? '-' }}</td>
+            <td>{{ $pegawai->nip ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">KARPEG / KARIS / KARSU</td>
+            <td>:</td>
+            <td>{{ $pegawai->karpeg_karis_karsu ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">NIDN / NUPTK</td>
+            <td>:</td>
+            <td>{{ $pegawai->nidn_nuptk ?? '-' }}</td>
         </tr>
         <tr>
             <td class="bold">Nama Lengkap</td>
             <td>:</td>
             <td>{{ $namaCore }}</td>
         </tr>
-        <!-- Baris Gelar Depan / Belakang telah dihapus dari sini -->
         <tr>
             <td class="bold">Jenis Kelamin</td>
             <td>:</td>
@@ -80,8 +89,8 @@
         </tr>
     </table>
 
-    <!-- 3. DATA KELUARGA & LEGAL -->
-    <div class="section-header">3. DATA KELUARGA & LEGAL</div>
+    <!-- 3. DATA KELUARGA -->
+    <div class="section-header">3. DATA KELUARGA</div>
     <table class="form-table">
         <tr>
             <td style="width: 32%;" class="bold">Status Pernikahan</td>
@@ -97,16 +106,6 @@
             <td class="bold">Jumlah Anak</td>
             <td>:</td>
             <td>{{ $pegawai->jumlah_anak ?? 0 }} Orang</td>
-        </tr>
-        <tr>
-            <td class="bold">NPWP / BPJS</td>
-            <td>:</td>
-            <td>{{ $pegawai->npwp ?? '-' }} / {{ $pegawai->bpjs ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td class="bold">Jenis Pegawai / Status ASN</td>
-            <td>:</td>
-            <td>{{ $pegawai->jenis_pegawai ?? '-' }} / {{ $pegawai->status_asn ?? '-' }}</td>
         </tr>
     </table>
 
@@ -132,6 +131,21 @@
                     ({{ $pegawai->golongan->nama_pangkat }})
                 @endif
             </td>
+        </tr>
+        <tr>
+            <td class="bold">Jenis Pegawai / Status ASN</td>
+            <td>:</td>
+            <td>{{ $pegawai->jenis_pegawai ?? '-' }} / {{ $pegawai->status_asn ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Pendidikan Terakhir</td>
+            <td>:</td>
+            <td>{{ $pegawai->pendidikan_terakhir ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">MKG (Masa Kerja Golongan)</td>
+            <td>:</td>
+            <td>{{ $pegawai->mkg_tahun ?? 0 }} Thn {{ $pegawai->mkg_bulan ?? 0 }} Bln</td>
         </tr>
     </table>
 
@@ -162,21 +176,6 @@
             <td class="bold">Status Pegawai</td>
             <td>:</td>
             <td>{{ $pegawai->status_pegawai ?? 'Aktif' }}</td>
-        </tr>
-    </table>
-
-    <!-- 6. DATA FISIK -->
-    <div class="section-header">6. DATA FISIK</div>
-    <table class="form-table">
-        <tr>
-            <td style="width: 32%;" class="bold">Golongan Darah</td>
-            <td style="width: 3%;">:</td>
-            <td>{{ $pegawai->gol_darah ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td class="bold">Tinggi Badan / Berat Badan</td>
-            <td>:</td>
-            <td>{{ $pegawai->tinggi_badan ? $pegawai->tinggi_badan.' cm' : '-' }} / {{ $pegawai->berat_badan ? $pegawai->berat_badan.' kg' : '-' }}</td>
         </tr>
     </table>
 

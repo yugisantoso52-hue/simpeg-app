@@ -20,24 +20,25 @@ class StorePegawaiRequest extends FormRequest
             'nama_lengkap'         => 'nullable|string|max:150',
 
             // Opsional (Nullable): Seluruh kolom identitas & kontak
-            'nik'                  => 'nullable|string|max:30',
+            'karpeg_karis_karsu'   => 'nullable|string|max:50',
+            'nidn_nuptk'           => 'nullable|string|max:20',
             'gelar_depan'          => 'nullable|string|max:20',
             'gelar_belakang'       => 'nullable|string|max:20',
             'tempat_lahir'         => 'nullable|string|max:100',
             'tanggal_lahir'        => 'nullable|date',
             'jenis_kelamin'        => 'nullable|in:L,P',
             'agama'                => 'nullable|string|max:30',
-            'pendidikan'           => 'nullable|string|max:100',
+            'pendidikan_terakhir'  => 'nullable|string|max:100',
             'email'                => 'nullable|email|max:100',
             'no_hp'                => 'nullable|string|max:20',
             'alamat'               => 'nullable|string',
-            'npwp'                 => 'nullable|string|max:50',
-            'bpjs'                 => 'nullable|string|max:50',
-            'jenis_pegawai'        => 'nullable|in:PNS,PPPK,Honorer',
+            'jenis_pegawai'        => 'nullable|in:Dosen,PNS,PPPK,PHL',
             'status_asn'           => 'nullable|in:ASN,Non ASN',
             'status_pernikahan'    => 'nullable|in:Belum Menikah,Menikah,Cerai',
             'nama_pasangan'        => 'nullable|string|max:150',
             'jumlah_anak'          => 'nullable|integer|min:0',
+            'mkg_tahun'            => 'nullable|integer|min:0|max:40',
+            'mkg_bulan'            => 'nullable|integer|min:0|max:11',
             
             // Relasi Utama (Opsional saat pengisian parsial)
             'unit_kerja_id'        => 'nullable|exists:unit_kerja,id',
@@ -53,18 +54,13 @@ class StorePegawaiRequest extends FormRequest
             'tanggal_sk_pertama'         => 'nullable|date',
             'nomor_sk_pangkat_terakhir'   => 'nullable|string|max:100',
             'tanggal_sk_pangkat_terakhir' => 'nullable|date',
-            'status_pegawai'           => 'nullable|in:Aktif,Non Aktif,Pensiun',
+            'status_pegawai'           => 'nullable|in:Aktif,Tugas Belajar,Non Aktif,Pensiun',
             
             // Upload Berkas (Opsional)
             'foto'                     => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'file_sk_pertama'          => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'file_sk_pangkat_terakhir' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'file_sk_kgb_terakhir'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            
-            // Data Fisik
-            'gol_darah'            => 'nullable|in:A,B,AB,O',
-            'tinggi_badan'         => 'nullable|integer|min:0',
-            'berat_badan'          => 'nullable|integer|min:0',
 
             // Validasi Input Multi-Riwayat Pendidikan (Opsional)
             'riwayat_pendidikan'                       => 'nullable|array',

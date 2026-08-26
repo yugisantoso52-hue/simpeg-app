@@ -56,9 +56,9 @@ class PegawaiController extends Controller
         }
 
         $pegawais = $query->get()->sort(function($a, $b) {
-            $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'HONORER' => 3];
-            $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 4;
-            $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 4;
+            $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'DOSEN' => 3, 'PHL' => 4, 'HONORER' => 4];
+            $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 5;
+            $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 5;
             if ($jenisA !== $jenisB) return $jenisA <=> $jenisB;
 
             $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
@@ -241,9 +241,9 @@ class PegawaiController extends Controller
         }
 
         $pegawais = $query->get()->sort(function($a, $b) {
-            $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'HONORER' => 3];
-            $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 4;
-            $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 4;
+            $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'DOSEN' => 3, 'PHL' => 4, 'HONORER' => 4];
+            $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 5;
+            $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 5;
             if ($jenisA !== $jenisB) return $jenisA <=> $jenisB;
 
             $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;

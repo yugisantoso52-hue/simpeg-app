@@ -16,23 +16,36 @@ class Pegawai extends Model
 
     protected $table = 'pegawai';
 
-    public const STATUS_AKTIF = 'Aktif';
-    public const STATUS_PENSIUN = 'Pensiun';
-    public const STATUS_MUTASI = 'Mutasi';
-    public const STATUS_RESIGN = 'Resign';
+    public const STATUS_AKTIF         = 'Aktif';
+    public const STATUS_TUGAS_BELAJAR = 'Tugas Belajar';
+    public const STATUS_NON_AKTIF     = 'Non Aktif';
+    public const STATUS_PENSIUN       = 'Pensiun';
+    public const STATUS_MUTASI        = 'Mutasi';
+    public const STATUS_RESIGN        = 'Resign';
 
     protected $fillable = [
-        'nip', 'nik', 'nama', 'gelar_depan', 'gelar_belakang',
+        // Identitas Utama
+        'nip', 'karpeg_karis_karsu', 'nidn_nuptk', 'nama', 'gelar_depan', 'gelar_belakang',
+        // Data Pribadi
         'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'agama',
-        'pendidikan', 'npwp', 'bpjs', 'email', 'no_hp', 'alamat',
-        'status_pernikahan', 'nama_pasangan', 'jumlah_anak', 'gol_darah',
-        'tinggi_badan', 'berat_badan', 'jenis_pegawai', 'status_asn',
-        'unit_kerja_id', 'jabatan_id', 'golongan_id', 'tanggal_masuk',
-        'tmt_sk_pertama', 'tmt_pangkat_terakhir', 'tmt_kgb_terakhir',
+        // Kontak
+        'email', 'no_hp', 'alamat',
+        // Status Keluarga
+        'status_pernikahan', 'nama_pasangan', 'jumlah_anak',
+        // Kepegawaian
+        'jenis_pegawai', 'status_asn', 'pendidikan_terakhir',
+        'unit_kerja_id', 'jabatan_id', 'golongan_id',
+        // Masa Kerja Golongan (MKG)
+        'mkg_tahun', 'mkg_bulan',
+        // Tanggal Masuk & TMT
+        'tanggal_masuk', 'tmt_sk_pertama', 'tmt_pangkat_terakhir', 'tmt_kgb_terakhir',
+        // File SK
         'file_sk_pertama', 'file_sk_pangkat_terakhir', 'file_sk_kgb_terakhir',
+        // Nomor & Tanggal SK
         'nomor_sk_pertama', 'tanggal_sk_pertama', 'nomor_sk_pangkat_terakhir', 'tanggal_sk_pangkat_terakhir',
+        // Satyalancana & Status
         'satyalancana_terakhir', 'satyalancana_berikutnya', 'status_pegawai', 'foto',
-        'kgb_berikutnya', 'kp_berikutnya'
+        'kgb_berikutnya', 'kp_berikutnya',
     ];
 
     protected $casts = [
@@ -231,8 +244,8 @@ class Pegawai extends Model
     {
         return Attribute::make(
             get: function () {
-                if (!empty($this->pendidikan)) {
-                    return $this->pendidikan;
+                if (!empty($this->pendidikan_terakhir)) {
+                    return $this->pendidikan_terakhir;
                 }
 
                 if ($this->relationLoaded('riwayatPendidikan')) {

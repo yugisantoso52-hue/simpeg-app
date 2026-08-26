@@ -16,9 +16,10 @@
         <x-enterprise.forms.field>
             <x-enterprise.form-group label="Status Pegawai">
                 <x-enterprise.select name="status_pegawai">
-                    <option value="Aktif" @selected(old('status_pegawai', $pegawai->status_pegawai ?? 'Aktif') == 'Aktif')>Aktif</option>
-                    <option value="Non Aktif" @selected(old('status_pegawai', $pegawai->status_pegawai ?? '') == 'Non Aktif')>Non Aktif</option>
-                    <option value="Pensiun" @selected(old('status_pegawai', $pegawai->status_pegawai ?? '') == 'Pensiun')>Pensiun</option>
+                    <option value="Aktif"         @selected(old('status_pegawai', $pegawai->status_pegawai ?? 'Aktif') == 'Aktif')>Aktif</option>
+                    <option value="Tugas Belajar" @selected(old('status_pegawai', $pegawai->status_pegawai ?? '') == 'Tugas Belajar')>Tugas Belajar</option>
+                    <option value="Non Aktif"     @selected(old('status_pegawai', $pegawai->status_pegawai ?? '') == 'Non Aktif')>Non Aktif</option>
+                    <option value="Pensiun"       @selected(old('status_pegawai', $pegawai->status_pegawai ?? '') == 'Pensiun')>Pensiun</option>
                 </x-enterprise.select>
             </x-enterprise.form-group>
         </x-enterprise.forms.field>

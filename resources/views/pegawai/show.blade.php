@@ -73,12 +73,16 @@
                             <table class="w-full text-sm text-gray-600">
                                 <tbody>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500 w-44">NIP / NIK</td>
-                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->nip ?? '-' }} / {{ $pegawai->nik ?? '-' }}</td>
+                                        <td class="py-1.5 font-medium text-gray-500 w-44">NIP</td>
+                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->nip ?? '-' }}</td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">NPWP / BPJS</td>
-                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->npwp ?? '-' }} / {{ $pegawai->bpjs ?? '-' }}</td>
+                                        <td class="py-1.5 font-medium text-gray-500">KARPEG / KARIS / KARSU</td>
+                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->karpeg_karis_karsu ?? '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">NIDN / NUPTK</td>
+                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->nidn_nuptk ?? '-' }}</td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">Jenis Kelamin</td>
@@ -136,7 +140,7 @@
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">Jumlah Anak</td>
                                         <td class="py-1.5 text-gray-900">{{ $pegawai->jumlah_anak ?? 0 }} Orang</td>
-                                    </tr>                                           
+                                    </tr>                                          
                                 </tbody>
                             </table>
                         </div>
@@ -166,6 +170,16 @@
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">Jenis Pegawai / Status ASN</td>
                                         <td class="py-1.5 text-gray-900">{{ $pegawai->jenis_pegawai ?? '-' }} / {{ $pegawai->status_asn ?? '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Pendidikan Terakhir</td>
+                                        <td class="py-1.5 text-gray-900">{{ $pegawai->pendidikan_terakhir ?? '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">MKG (Masa Kerja Golongan)</td>
+                                        <td class="py-1.5 text-gray-900">
+                                            {{ $pegawai->mkg_tahun ?? 0 }} Thn {{ $pegawai->mkg_bulan ?? 0 }} Bln
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -269,27 +283,6 @@
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">Status Pegawai</td>
                                         <td class="py-1.5 text-gray-900">{{ $pegawai->status_pegawai ?? 'Aktif' }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {{-- 8. DATA FISIK --}}
-                        <div>
-                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">8. Data Fisik</h4>
-                            <table class="w-full text-sm text-gray-600">
-                                <tbody>
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500 w-44">Golongan Darah</td>
-                                        <td class="py-1.5 text-gray-900">{{ $pegawai->gol_darah ?? '-' }}</td>
-                                    </tr>
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Tinggi Badan</td>
-                                        <td class="py-1.5 text-gray-900">{{ $pegawai->tinggi_badan ? $pegawai->tinggi_badan.' cm' : '-' }}</td>
-                                    </tr>
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Berat Badan</td>
-                                        <td class="py-1.5 text-gray-900">{{ $pegawai->berat_badan ? $pegawai->berat_badan.' kg' : '-' }}</td>
                                     </tr>
                                 </tbody>
                             </table>
