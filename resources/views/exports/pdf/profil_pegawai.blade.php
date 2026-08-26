@@ -197,4 +197,22 @@
         </table>
     @endif
 
+    @if($pegawai->tugasBelajar && $pegawai->tugasBelajar->count() > 0)
+        <!-- 7. TUGAS & IZIN BELAJAR (STUDI LANJUT) -->
+        <div class="section-header">7. TUGAS BELAJAR & IZIN BELAJAR</div>
+        <table class="form-table">
+            @foreach($pegawai->tugasBelajar as $tb)
+                <tr>
+                    <td style="width: 32%;" class="bold">{{ $tb->jenis_pengembangan }} ({{ $tb->jenjang_studi }})</td>
+                    <td style="width: 3%;">:</td>
+                    <td>
+                        <strong>{{ $tb->program_studi }}</strong> - {{ $tb->perguruan_tinggi }} ({{ $tb->negara }})<br>
+                        Beasiswa: {{ $tb->sumber_pembiayaan }} | Semester: {{ $tb->semester_berjalan }} | Status: <strong>{{ $tb->status_studi }}</strong><br>
+                        Masa Studi: {{ $tb->tanggal_mulai ? $tb->tanggal_mulai->translatedFormat('d F Y') : '-' }} s.d. {{ $tb->tanggal_selesai ? $tb->tanggal_selesai->translatedFormat('d F Y') : '-' }} (SK: {{ $tb->nomor_sk }})
+                    </td>
+                </tr>
+            @endforeach
+        </table>
+    @endif
+
 @endsection

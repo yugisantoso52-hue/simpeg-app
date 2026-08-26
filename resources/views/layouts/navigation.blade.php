@@ -87,6 +87,9 @@
                                     🔄 Mutasi Pegawai
                                 </x-dropdown-link>
                             @endif
+                            <x-dropdown-link :href="route('tugas-belajar.index')">
+                                🎓 Tugas Belajar
+                            </x-dropdown-link>
                         </x-slot>
                     </x-dropdown>
                 @endif
@@ -230,6 +233,9 @@
                         🔄 Mutasi Pegawai
                     </x-responsive-nav-link>
                 @endif
+                <x-responsive-nav-link :href="route('tugas-belajar.index')" :active="request()->routeIs('tugas-belajar.*')">
+                    🎓 Tugas Belajar
+                </x-responsive-nav-link>
             @endif
 
             {{-- Group Riwayat (Admin & Pimpinan) --}}

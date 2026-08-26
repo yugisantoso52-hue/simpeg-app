@@ -162,6 +162,11 @@ class Pegawai extends Model
         return $this->hasMany(PengajuanCuti::class, 'pegawai_id');
     }
 
+    public function tugasBelajar(): HasMany
+    {
+        return $this->hasMany(TugasBelajar::class, 'pegawai_id');
+    }
+
     /**
      * Hitung sisa kuota cuti tahunan pada tahun berjalan (Standar: 12 hari kerja)
      */

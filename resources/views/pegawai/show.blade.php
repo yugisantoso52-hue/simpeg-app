@@ -352,6 +352,85 @@
                             @endif
                         </div>
 
+                        {{-- 9. RIWAYAT TUGAS & IZIN BELAJAR (STUDI LANJUT) --}}
+                        <div>
+                            <div class="flex items-center justify-between border-b pb-1 mb-2">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">9. Tugas Belajar & Izin Belajar (Studi Lanjut)</h4>
+                                @if(Auth::user()->hasRole('admin'))
+                                    <a href="{{ route('tugas-belajar.create', ['pegawai_id' => $pegawai->id]) }}"
+                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                        + Tambah Tubel/Ibel
+                                    </a>
+                                @endif
+                            </div>
+                            @if($pegawai->tugasBelajar && $pegawai->tugasBelajar->count() > 0)
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
+                                                <th class="py-2 px-3">Jenis & Jenjang</th>
+                                                <th class="py-2 px-3">Universitas & Prodi</th>
+                                                <th class="py-2 px-3">Beasiswa / SK</th>
+                                                <th class="py-2 px-3 text-center">Semester & Masa Studi</th>
+                                                <th class="py-2 px-3 text-center">Status</th>
+                                                <th class="py-2 px-3 text-center">Berkas</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pegawai->tugasBelajar as $tb)
+                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">
+                                                        <span class="inline-block px-1.5 py-0.5 rounded text-[11px] font-bold {{ $tb->jenis_pengembangan === 'Tugas Belajar' ? 'bg-indigo-100 text-indigo-800' : 'bg-teal-100 text-teal-800' }}">
+                                                            {{ $tb->jenis_pengembangan }}
+                                                        </span>
+                                                        <div class="font-bold text-xs mt-0.5">{{ $tb->jenjang_studi }}</div>
+                                                    </td>
+                                                    <td class="py-1.5 px-3">
+                                                        <div class="text-gray-900 font-semibold text-xs">{{ $tb->program_studi }}</div>
+                                                        <div class="text-[11px] text-gray-500">{{ $tb->perguruan_tinggi }} ({{ $tb->negara }})</div>
+                                                    </td>
+                                                    <td class="py-1.5 px-3">
+                                                        <div class="text-xs text-gray-800">{{ $tb->sumber_pembiayaan }}</div>
+                                                        <div class="text-[11px] text-gray-500 font-mono">SK: {{ $tb->nomor_sk }}</div>
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        <div class="text-xs font-bold text-gray-800">Semester {{ $tb->semester_berjalan }}</div>
+                                                        <div class="text-[11px] text-gray-500">
+                                                            {{ $tb->tanggal_mulai ? $tb->tanggal_mulai->format('d/m/Y') : '-' }} s.d. {{ $tb->tanggal_selesai ? $tb->tanggal_selesai->format('d/m/Y') : '-' }}
+                                                        </div>
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full border {{ $tb->status_badge_class }}">
+                                                            {{ $tb->status_studi }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        <div class="flex flex-col items-center gap-1">
+                                                            @if($tb->file_sk_url)
+                                                                <a href="{{ $tb->file_sk_url }}" target="_blank" class="text-indigo-600 hover:underline text-xs font-semibold">
+                                                                    SK
+                                                                </a>
+                                                            @endif
+                                                            @if($tb->file_laporan_progress_url)
+                                                                <a href="{{ $tb->file_laporan_progress_url }}" target="_blank" class="text-teal-600 hover:underline text-xs font-semibold">
+                                                                    KHS
+                                                                </a>
+                                                            @endif
+                                                            @if(!$tb->file_sk_url && !$tb->file_laporan_progress_url)
+                                                                <span class="text-gray-400 italic text-xs">-</span>
+                                                            @endif
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-500 italic py-1">Belum ada riwayat tugas belajar / izin belajar tercatat.</p>
+                            @endif
+                        </div>
+
                     </div>
                 </div>
 

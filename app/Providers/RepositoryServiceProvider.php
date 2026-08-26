@@ -16,6 +16,7 @@ use App\Repositories\Contracts\RiwayatPangkatRepositoryInterface;
 use App\Repositories\Contracts\RiwayatDiklatRepositoryInterface;
 use App\Repositories\Contracts\RiwayatStrSipRepositoryInterface;
 use App\Repositories\Contracts\PengajuanCutiRepositoryInterface;
+use App\Repositories\Contracts\TugasBelajarRepositoryInterface;
 
 // Import Eloquent Repositories
 use App\Repositories\Eloquent\PegawaiRepository;
@@ -29,6 +30,7 @@ use App\Repositories\Eloquent\RiwayatPangkatRepository;
 use App\Repositories\Eloquent\RiwayatDiklatRepository;
 use App\Repositories\Eloquent\RiwayatStrSipRepository;
 use App\Repositories\Eloquent\PengajuanCutiRepository;
+use App\Repositories\Eloquent\TugasBelajarRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -100,6 +102,12 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(
             PengajuanCutiRepositoryInterface::class,
             PengajuanCutiRepository::class
+        );
+
+        // Tugas Belajar & Izin Belajar
+        $this->app->bind(
+            TugasBelajarRepositoryInterface::class,
+            TugasBelajarRepository::class
         );
     }
 
