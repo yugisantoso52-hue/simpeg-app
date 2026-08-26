@@ -288,6 +288,70 @@
                             </table>
                         </div>
 
+                        {{-- 8. LEGALITAS PROFESI (STR & SIP / SIKP) --}}
+                        <div>
+                            <div class="flex items-center justify-between border-b pb-1 mb-2">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">8. Legalitas Profesi (STR & SIP)</h4>
+                                @if(Auth::user()->hasRole('admin'))
+                                    <a href="{{ route('riwayat-str-sip.create', ['pegawai_id' => $pegawai->id]) }}"
+                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                        + Tambah STR/SIP
+                                    </a>
+                                @endif
+                            </div>
+                            @if($pegawai->riwayatStrSip && $pegawai->riwayatStrSip->count() > 0)
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
+                                                <th class="py-2 px-3">Jenis</th>
+                                                <th class="py-2 px-3">Nomor Registrasi</th>
+                                                <th class="py-2 px-3">Kualifikasi / Penerbit</th>
+                                                <th class="py-2 px-3 text-center">Masa Berlaku</th>
+                                                <th class="py-2 px-3 text-center">Status</th>
+                                                <th class="py-2 px-3 text-center">Berkas</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pegawai->riwayatStrSip as $doc)
+                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $doc->jenis_dokumen }}</td>
+                                                    <td class="py-1.5 px-3 font-mono font-medium">{{ $doc->nomor_registrasi }}</td>
+                                                    <td class="py-1.5 px-3">
+                                                        <div class="text-gray-800">{{ $doc->nama_dokumen ?? '-' }}</div>
+                                                        <div class="text-[11px] text-gray-500">{{ $doc->instansi_penerbit ?? '-' }}</div>
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        @if($doc->is_seumur_hidup)
+                                                            <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Seumur Hidup</span>
+                                                        @else
+                                                            <div class="text-xs">{{ $doc->tanggal_berakhir ? $doc->tanggal_berakhir->format('d/m/Y') : '-' }}</div>
+                                                        @endif
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ $doc->is_seumur_hidup ? 'bg-emerald-100 text-emerald-800' : ($doc->sisa_hari !== null && $doc->sisa_hari <= 180 ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800') }}">
+                                                            {{ $doc->status_label }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        @if($doc->file_dokumen_url)
+                                                            <a href="{{ $doc->file_dokumen_url }}" target="_blank" class="text-blue-600 hover:underline text-xs font-semibold">
+                                                                Lihat
+                                                            </a>
+                                                        @else
+                                                            <span class="text-gray-400 italic text-xs">-</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-500 italic py-1">Belum ada data STR / SIP tercatat.</p>
+                            @endif
+                        </div>
+
                     </div>
                 </div>
 

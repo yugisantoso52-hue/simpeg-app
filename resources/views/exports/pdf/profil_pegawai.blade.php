@@ -179,4 +179,22 @@
         </tr>
     </table>
 
+    @if($pegawai->riwayatStrSip && $pegawai->riwayatStrSip->count() > 0)
+        <!-- 6. LEGALITAS PROFESI (STR & SIP) -->
+        <div class="section-header">6. LEGALITAS PROFESI (STR & SIP / SIKP)</div>
+        <table class="form-table">
+            @foreach($pegawai->riwayatStrSip as $idx => $str)
+                <tr>
+                    <td style="width: 32%;" class="bold">{{ $str->jenis_dokumen }} - {{ $str->nama_dokumen ?? 'Dokumen' }}</td>
+                    <td style="width: 3%;">:</td>
+                    <td>
+                        <strong>{{ $str->nomor_registrasi }}</strong> 
+                        ({{ $str->is_seumur_hidup ? 'Berlaku Seumur Hidup' : 'Berlaku s.d. ' . ($str->tanggal_berakhir ? $str->tanggal_berakhir->translatedFormat('d F Y') : '-') }})
+                        - <em>{{ $str->status_label }}</em>
+                    </td>
+                </tr>
+            @endforeach
+        </table>
+    @endif
+
 @endsection

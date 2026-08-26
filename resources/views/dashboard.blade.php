@@ -83,7 +83,7 @@
                     @endif
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     
                     {{-- Card 1: Reminder KGB --}}
                     <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 flex flex-col justify-between">
@@ -181,6 +181,31 @@
                                 </ul>
                             @else
                                 <p class="text-xs text-rose-600 mt-2 italic">Aman. Tidak ada masa pensiun terdekat.</p>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Card 5: Reminder STR & SIP (Khas Ners/Klinis) --}}
+                    <div class="bg-sky-50 border border-sky-200 rounded-lg p-4 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-semibold text-sky-800 flex justify-between items-center mb-2">
+                                <div>
+                                    <span>STR & SIP (Ners/Klinis)</span>
+                                    <span class="block text-[10px] text-sky-600 font-semibold">6 Bulan ke Depan</span>
+                                </div>
+                                <span class="bg-sky-200 text-sky-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ count($reminder['str_sip'] ?? []) }}</span>
+                            </h4>
+                            @if(isset($reminder['str_sip']) && count($reminder['str_sip']) > 0)
+                                <ul class="text-xs text-sky-900 divide-y divide-sky-200 max-h-48 overflow-y-auto">
+                                    @foreach($reminder['str_sip'] as $r)
+                                        <li class="py-1.5 flex justify-between items-center">
+                                            <span class="truncate mr-2" title="{{ $r->nama_lengkap ?? $r->nama }} ({{ $r->jenis_dokumen }})">{{ $r->nama_lengkap ?? $r->nama }}</span> 
+                                            <strong class="text-sky-700 font-mono flex-shrink-0">{{ $r->tanggal_kegiatan }}</strong>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <p class="text-xs text-sky-600 mt-2 italic">Aman. Tidak ada STR/SIP kedaluwarsa terdekat.</p>
                             @endif
                         </div>
                     </div>

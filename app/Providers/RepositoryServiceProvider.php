@@ -14,6 +14,7 @@ use App\Repositories\Contracts\RiwayatPendidikanRepositoryInterface;
 use App\Repositories\Contracts\RiwayatJabatanRepositoryInterface;
 use App\Repositories\Contracts\RiwayatPangkatRepositoryInterface;
 use App\Repositories\Contracts\RiwayatDiklatRepositoryInterface;
+use App\Repositories\Contracts\RiwayatStrSipRepositoryInterface;
 
 // Import Eloquent Repositories
 use App\Repositories\Eloquent\PegawaiRepository;
@@ -25,6 +26,7 @@ use App\Repositories\Eloquent\RiwayatPendidikanRepository;
 use App\Repositories\Eloquent\RiwayatJabatanRepository;
 use App\Repositories\Eloquent\RiwayatPangkatRepository;
 use App\Repositories\Eloquent\RiwayatDiklatRepository;
+use App\Repositories\Eloquent\RiwayatStrSipRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -81,10 +83,16 @@ class RepositoryServiceProvider extends ServiceProvider
             RiwayatPangkatRepository::class
         );
 
-$this->app->bind(
-    RiwayatDiklatRepositoryInterface::class,
-    RiwayatDiklatRepository::class
-);
+        $this->app->bind(
+            RiwayatDiklatRepositoryInterface::class,
+            RiwayatDiklatRepository::class
+        );
+
+        // Riwayat STR & SIP (Legalitas Profesi)
+        $this->app->bind(
+            RiwayatStrSipRepositoryInterface::class,
+            RiwayatStrSipRepository::class
+        );
     }
 
     /**

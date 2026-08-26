@@ -148,11 +148,27 @@ class DashboardRepository implements DashboardRepositoryInterface
                 return $pegawai;
             });
 
+        // 5. Legalitas Profesi (STR & SIP - Radar 6 Bulan ke Depan)
+        $hariTarget6Bulan = Carbon::now()->addMonths(6)->endOfDay()->toDateTimeString();
+        $strSip = \App\Models\RiwayatStrSip::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])
+            ->where('is_seumur_hidup', false)
+            ->whereBetween('tanggal_berakhir', [$hariIni, $hariTarget6Bulan])
+            ->orderBy('tanggal_berakhir', 'asc')
+            ->take(20)
+            ->get()
+            ->map(function ($item) {
+                $item->nama = $item->pegawai->nama_lengkap ?? $item->pegawai->nama ?? '-';
+                $item->nama_lengkap = $item->nama;
+                $item->tanggal_kegiatan = $item->tanggal_berakhir ? Carbon::parse($item->tanggal_berakhir)->format('d-m-Y') : '-';
+                return $item;
+            });
+
         return [
             'kgb'          => $kgb,
             'kp'           => $kp,
             'pensiun'      => $pensiun,
             'satyalancana' => $satyalancana,
+            'str_sip'      => $strSip,
         ];
     }
 }

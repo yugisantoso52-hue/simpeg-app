@@ -12,6 +12,7 @@ use App\Http\Controllers\RiwayatPendidikanController;
 use App\Http\Controllers\RiwayatJabatanController;
 use App\Http\Controllers\RiwayatPangkatController;
 use App\Http\Controllers\RiwayatDiklatController;
+use App\Http\Controllers\RiwayatStrSipController;
 use App\Http\Controllers\MutasiPegawaiController;
 use App\Http\Controllers\KgbController;
 use App\Http\Controllers\KpController;
@@ -103,6 +104,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::resource('riwayat-jabatan', RiwayatJabatanController::class)->except(['index', 'show']);
         Route::resource('riwayat-pangkat', RiwayatPangkatController::class)->except(['index', 'show']);
         Route::resource('riwayat-diklat', RiwayatDiklatController::class)->except(['index', 'show']);
+        Route::resource('riwayat-str-sip', RiwayatStrSipController::class)->except(['index', 'show']);
     });
 
     // ======================================================================
@@ -128,6 +130,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/riwayat-jabatan', [RiwayatJabatanController::class, 'index'])->name('riwayat-jabatan.index');
         Route::get('/riwayat-pangkat', [RiwayatPangkatController::class, 'index'])->name('riwayat-pangkat.index');
         Route::get('/riwayat-diklat', [RiwayatDiklatController::class, 'index'])->name('riwayat-diklat.index');
+        Route::get('/riwayat-str-sip', [RiwayatStrSipController::class, 'index'])->name('riwayat-str-sip.index');
 
         Route::get('/reports/kgb/{id}/pdf', [ReportController::class, 'exportKgbPdf'])->name('reports.kgb.pdf');
         Route::get('/reports/reminder/pdf', [ReportController::class, 'exportReminderPdf'])->name('reports.reminder.pdf');

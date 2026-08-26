@@ -152,6 +152,11 @@ class Pegawai extends Model
         return $this->hasMany(MutasiPegawai::class, 'pegawai_id');
     }
 
+    public function riwayatStrSip(): HasMany
+    {
+        return $this->hasMany(RiwayatStrSip::class, 'pegawai_id');
+    }
+
     /* --- ACCESSORS --- */
 
     protected function nip(): Attribute

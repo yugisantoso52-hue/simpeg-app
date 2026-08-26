@@ -110,6 +110,9 @@
                             <x-dropdown-link :href="route('riwayat-diklat.index')">
                                 📜 Riwayat Diklat
                             </x-dropdown-link>
+                            <x-dropdown-link :href="route('riwayat-str-sip.index')">
+                                🩺 Riwayat STR & SIP
+                            </x-dropdown-link>
                         </x-slot>
                     </x-dropdown>
                 @endif
@@ -233,6 +236,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('riwayat-diklat.index')" :active="request()->routeIs('riwayat-diklat.*')">
                     📜 Riwayat Diklat
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('riwayat-str-sip.index')" :active="request()->routeIs('riwayat-str-sip.*')">
+                    🩺 Riwayat STR & SIP
                 </x-responsive-nav-link>
             @endif
 
