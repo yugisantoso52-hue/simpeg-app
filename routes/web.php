@@ -13,6 +13,7 @@ use App\Http\Controllers\RiwayatJabatanController;
 use App\Http\Controllers\RiwayatPangkatController;
 use App\Http\Controllers\RiwayatDiklatController;
 use App\Http\Controllers\RiwayatStrSipController;
+use App\Http\Controllers\RiwayatSkpController;
 use App\Http\Controllers\PengajuanCutiController;
 use App\Http\Controllers\TugasBelajarController;
 use App\Http\Controllers\MutasiPegawaiController;
@@ -108,6 +109,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::resource('riwayat-diklat', RiwayatDiklatController::class)->except(['index', 'show']);
         Route::resource('riwayat-str-sip', RiwayatStrSipController::class)->except(['index', 'show']);
         Route::resource('tugas-belajar', TugasBelajarController::class)->except(['index', 'show']);
+        Route::resource('riwayat-skp', RiwayatSkpController::class)->except(['index', 'show']);
         Route::delete('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'destroy'])->name('pengajuan-cuti.destroy');
     });
 
@@ -126,8 +128,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('/pengajuan-cuti/{id}/cancel', [PengajuanCutiController::class, 'cancel'])->name('pengajuan-cuti.cancel');
         Route::get('/pengajuan-cuti/{id}/cetak-pdf', [PengajuanCutiController::class, 'cetakFormPdf'])->name('pengajuan-cuti.cetak-pdf');
 
-        /* Monitoring Tugas Belajar */
+        /* Monitoring Tugas Belajar & Riwayat SKP */
         Route::get('/tugas-belajar', [TugasBelajarController::class, 'index'])->name('tugas-belajar.index');
+        Route::get('/riwayat-skp', [RiwayatSkpController::class, 'index'])->name('riwayat-skp.index');
     });
 
     // ======================================================================

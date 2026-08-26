@@ -121,6 +121,9 @@
                             <x-dropdown-link :href="route('riwayat-str-sip.index')">
                                 🩺 Riwayat STR & SIP
                             </x-dropdown-link>
+                            <x-dropdown-link :href="route('riwayat-skp.index')">
+                                📊 Riwayat SKP
+                            </x-dropdown-link>
                         </x-slot>
                     </x-dropdown>
                 @endif
@@ -255,6 +258,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('riwayat-str-sip.index')" :active="request()->routeIs('riwayat-str-sip.*')">
                     🩺 Riwayat STR & SIP
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('riwayat-skp.index')" :active="request()->routeIs('riwayat-skp.*')">
+                    📊 Riwayat SKP
                 </x-responsive-nav-link>
             @endif
 

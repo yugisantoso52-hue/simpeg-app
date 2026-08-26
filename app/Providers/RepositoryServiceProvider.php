@@ -17,6 +17,7 @@ use App\Repositories\Contracts\RiwayatDiklatRepositoryInterface;
 use App\Repositories\Contracts\RiwayatStrSipRepositoryInterface;
 use App\Repositories\Contracts\PengajuanCutiRepositoryInterface;
 use App\Repositories\Contracts\TugasBelajarRepositoryInterface;
+use App\Repositories\Contracts\RiwayatSkpRepositoryInterface;
 
 // Import Eloquent Repositories
 use App\Repositories\Eloquent\PegawaiRepository;
@@ -31,6 +32,7 @@ use App\Repositories\Eloquent\RiwayatDiklatRepository;
 use App\Repositories\Eloquent\RiwayatStrSipRepository;
 use App\Repositories\Eloquent\PengajuanCutiRepository;
 use App\Repositories\Eloquent\TugasBelajarRepository;
+use App\Repositories\Eloquent\RiwayatSkpRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -108,6 +110,12 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(
             TugasBelajarRepositoryInterface::class,
             TugasBelajarRepository::class
+        );
+
+        // Riwayat SKP (Sasaran Kinerja Pegawai)
+        $this->app->bind(
+            RiwayatSkpRepositoryInterface::class,
+            RiwayatSkpRepository::class
         );
     }
 

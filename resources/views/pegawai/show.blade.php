@@ -431,6 +431,179 @@
                             @endif
                         </div>
 
+                        {{-- 10. PENGARSIPAN SKP (SASARAN KINERJA PEGAWAI - 2 TAHUN) --}}
+                        <div>
+                            <div class="flex items-center justify-between border-b pb-1 mb-3">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">10. Pengarsipan SKP (Sasaran Kinerja Pegawai - 2 Tahun)</h4>
+                                @if(Auth::user()->hasRole('admin'))
+                                    <a href="{{ route('riwayat-skp.create', ['pegawai_id' => $pegawai->id]) }}"
+                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                        + Tambah Arsip SKP
+                                    </a>
+                                @endif
+                            </div>
+
+                            @php
+                                $skpN = $pegawai->getSkpTahun(now()->year);
+                                $skpN1 = $pegawai->getSkpTahun(now()->year - 1);
+                                $skpLainnya = $pegawai->riwayatSkp->filter(fn($s) => !in_array($s->tahun, [now()->year, now()->year - 1]));
+                            @endphp
+
+                            {{-- KARTU BERDAMPINGAN: SKP TAHUN N DAN TAHUN N-1 --}}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                {{-- KARTU TAHUN INI (N) --}}
+                                <div class="rounded-xl border {{ $skpN ? 'border-blue-200 bg-blue-50/30' : 'border-dashed border-gray-300 bg-gray-50/50' }} p-4">
+                                    <div class="flex items-center justify-between border-b border-gray-200/70 pb-2">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-base font-extrabold text-gray-900">Tahun {{ now()->year }} (N)</span>
+                                            <span class="text-[11px] font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">Tahun Berjalan</span>
+                                        </div>
+                                        @if($skpN && Auth::user()->hasRole('admin'))
+                                            <a href="{{ route('riwayat-skp.edit', $skpN->id) }}" class="text-xs text-yellow-700 hover:underline">Edit</a>
+                                        @elseif(!$skpN && Auth::user()->hasRole('admin'))
+                                            <a href="{{ route('riwayat-skp.create', ['pegawai_id' => $pegawai->id, 'tahun' => now()->year]) }}" class="text-xs text-blue-600 font-semibold hover:underline">+ Unggah SKP {{ now()->year }}</a>
+                                        @endif
+                                    </div>
+
+                                    @if($skpN)
+                                        <div class="mt-3 space-y-2 text-xs">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-gray-500 font-semibold">Predikat Kinerja:</span>
+                                                @if($skpN->predikat_kinerja)
+                                                    <span class="font-bold px-2 py-0.5 rounded-full border {{ $skpN->predikat_badge_class }}">
+                                                        {{ $skpN->predikat_kinerja }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-gray-400 italic">Sedang Berjalan</span>
+                                                @endif
+                                            </div>
+
+                                            <div class="flex justify-between items-center pt-1 border-t border-gray-100">
+                                                <span class="text-gray-600">1. Rencana SKP:</span>
+                                                @if($skpN->file_rencana_skp_url)
+                                                    <a href="{{ $skpN->file_rencana_skp_url }}" target="_blank" class="font-bold text-blue-600 hover:underline">📄 Lihat File</a>
+                                                @else
+                                                    <span class="text-amber-600 italic">Belum diunggah</span>
+                                                @endif
+                                            </div>
+
+                                            <div class="flex justify-between items-center pt-1 border-t border-gray-100">
+                                                <span class="text-gray-600">2. Evaluasi SKP:</span>
+                                                @if($skpN->file_evaluasi_skp_url)
+                                                    <a href="{{ $skpN->file_evaluasi_skp_url }}" target="_blank" class="font-bold text-emerald-600 hover:underline">📑 Lihat File</a>
+                                                @else
+                                                    <span class="text-amber-600 italic">Belum diunggah</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="py-4 text-center text-xs text-gray-400 italic">
+                                            Belum ada arsip SKP Tahun {{ now()->year }}.
+                                        </div>
+                                    @endif
+                                </div>
+
+                                {{-- KARTU TAHUN SEBELUMNYA (N-1) --}}
+                                <div class="rounded-xl border {{ $skpN1 ? 'border-indigo-200 bg-indigo-50/30' : 'border-dashed border-gray-300 bg-gray-50/50' }} p-4">
+                                    <div class="flex items-center justify-between border-b border-gray-200/70 pb-2">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-base font-extrabold text-gray-900">Tahun {{ now()->year - 1 }} (N-1)</span>
+                                            <span class="text-[11px] font-semibold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded">Tahun Sebelumnya</span>
+                                        </div>
+                                        @if($skpN1 && Auth::user()->hasRole('admin'))
+                                            <a href="{{ route('riwayat-skp.edit', $skpN1->id) }}" class="text-xs text-yellow-700 hover:underline">Edit</a>
+                                        @elseif(!$skpN1 && Auth::user()->hasRole('admin'))
+                                            <a href="{{ route('riwayat-skp.create', ['pegawai_id' => $pegawai->id, 'tahun' => now()->year - 1]) }}" class="text-xs text-indigo-600 font-semibold hover:underline">+ Unggah SKP {{ now()->year - 1 }}</a>
+                                        @endif
+                                    </div>
+
+                                    @if($skpN1)
+                                        <div class="mt-3 space-y-2 text-xs">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-gray-500 font-semibold">Predikat Kinerja:</span>
+                                                @if($skpN1->predikat_kinerja)
+                                                    <span class="font-bold px-2 py-0.5 rounded-full border {{ $skpN1->predikat_badge_class }}">
+                                                        {{ $skpN1->predikat_kinerja }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-gray-400 italic">Belum Ada</span>
+                                                @endif
+                                            </div>
+
+                                            <div class="flex justify-between items-center pt-1 border-t border-gray-100">
+                                                <span class="text-gray-600">1. Rencana SKP:</span>
+                                                @if($skpN1->file_rencana_skp_url)
+                                                    <a href="{{ $skpN1->file_rencana_skp_url }}" target="_blank" class="font-bold text-blue-600 hover:underline">📄 Lihat File</a>
+                                                @else
+                                                    <span class="text-amber-600 italic">Belum diunggah</span>
+                                                @endif
+                                            </div>
+
+                                            <div class="flex justify-between items-center pt-1 border-t border-gray-100">
+                                                <span class="text-gray-600">2. Evaluasi SKP:</span>
+                                                @if($skpN1->file_evaluasi_skp_url)
+                                                    <a href="{{ $skpN1->file_evaluasi_skp_url }}" target="_blank" class="font-bold text-emerald-600 hover:underline">📑 Lihat File</a>
+                                                @else
+                                                    <span class="text-amber-600 italic">Belum diunggah</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="py-4 text-center text-xs text-gray-400 italic">
+                                            Belum ada arsip SKP Tahun {{ now()->year - 1 }}.
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- TABEL ARSIP SKP TAHUN-TAHUN TERDAHULU --}}
+                            @if($skpLainnya->count() > 0)
+                                <div class="mt-3">
+                                    <div class="text-[11px] font-bold uppercase text-gray-500 mb-1.5">Arsip SKP Tahun Terdahulu:</div>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-xs text-gray-600 border border-gray-100 rounded">
+                                            <thead>
+                                                <tr class="bg-gray-50 text-left border-b border-gray-100 font-semibold text-gray-500">
+                                                    <th class="py-1.5 px-3 text-center">Tahun</th>
+                                                    <th class="py-1.5 px-3 text-center">Predikat</th>
+                                                    <th class="py-1.5 px-3">Pejabat Penilai</th>
+                                                    <th class="py-1.5 px-3 text-center">Rencana SKP</th>
+                                                    <th class="py-1.5 px-3 text-center">Evaluasi SKP</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($skpLainnya as $skpOld)
+                                                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                                                        <td class="py-1.5 px-3 text-center font-bold font-mono">{{ $skpOld->tahun }}</td>
+                                                        <td class="py-1.5 px-3 text-center">
+                                                            <span class="px-2 py-0.5 rounded-full {{ $skpOld->predikat_badge_class }}">
+                                                                {{ $skpOld->predikat_kinerja ?: '-' }}
+                                                            </span>
+                                                        </td>
+                                                        <td class="py-1.5 px-3">{{ $skpOld->pejabat_penilai ?: '-' }}</td>
+                                                        <td class="py-1.5 px-3 text-center">
+                                                            @if($skpOld->file_rencana_skp_url)
+                                                                <a href="{{ $skpOld->file_rencana_skp_url }}" target="_blank" class="text-blue-600 hover:underline font-semibold">📄 File</a>
+                                                            @else
+                                                                <span class="text-gray-400">-</span>
+                                                            @endif
+                                                        </td>
+                                                        <td class="py-1.5 px-3 text-center">
+                                                            @if($skpOld->file_evaluasi_skp_url)
+                                                                <a href="{{ $skpOld->file_evaluasi_skp_url }}" target="_blank" class="text-emerald-600 hover:underline font-semibold">📑 File</a>
+                                                            @else
+                                                                <span class="text-gray-400">-</span>
+                                                            @endif
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
                     </div>
                 </div>
 

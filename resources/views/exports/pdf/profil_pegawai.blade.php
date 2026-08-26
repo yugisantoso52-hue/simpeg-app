@@ -215,4 +215,22 @@
         </table>
     @endif
 
+    @if($pegawai->riwayatSkp && $pegawai->riwayatSkp->count() > 0)
+        <!-- 8. EVALUASI KINERJA (SKP) -->
+        <div class="section-header">8. EVALUASI KINERJA (SASARAN KINERJA PEGAWAI)</div>
+        <table class="form-table">
+            @foreach($pegawai->riwayatSkp->take(2) as $skp)
+                <tr>
+                    <td style="width: 32%;" class="bold">SKP Tahun {{ $skp->tahun }}</td>
+                    <td style="width: 3%;">:</td>
+                    <td>
+                        Predikat: <strong>{{ $skp->predikat_kinerja ?: 'Sedang Proses' }}</strong> | Penilai: {{ $skp->pejabat_penilai ?: '-' }}
+                        <br>
+                        Status Berkas: {{ $skp->is_lengkap ? 'Lengkap (Rencana & Evaluasi)' : ($skp->file_rencana_skp ? 'Rencana Saja' : ($skp->file_evaluasi_skp ? 'Evaluasi Saja' : 'Belum Ada Berkas')) }}
+                    </td>
+                </tr>
+            @endforeach
+        </table>
+    @endif
+
 @endsection
