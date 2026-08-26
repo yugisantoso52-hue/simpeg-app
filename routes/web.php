@@ -159,8 +159,27 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
 });
 
 Route::get('/sync-db-production-simpeg-secure', function() {
+    $output = "=== SIMPEG PRODUCTION SYNC & MIGRATION TOOL ===\n\n";
+
+    // 1. Run Migrations
+    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    $output .= "[MIGRATE]:\n" . \Illuminate\Support\Facades\Artisan::output() . "\n";
+
+    // 2. Sync Users
     \Illuminate\Support\Facades\Artisan::call('pegawai:sync-users');
-    return "<pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+    $output .= "[SYNC USERS]:\n" . \Illuminate\Support\Facades\Artisan::output() . "\n";
+
+    // 3. Clear Caches
+    \Illuminate\Support\Facades\Artisan::call('view:clear');
+    $output .= "[VIEW CLEAR]: " . \Illuminate\Support\Facades\Artisan::output() . "\n";
+    \Illuminate\Support\Facades\Artisan::call('cache:clear');
+    $output .= "[CACHE CLEAR]: " . \Illuminate\Support\Facades\Artisan::output() . "\n";
+    \Illuminate\Support\Facades\Artisan::call('config:clear');
+    $output .= "[CONFIG CLEAR]: " . \Illuminate\Support\Facades\Artisan::output() . "\n";
+
+    $output .= "\n=== ALL PRODUCTION OPERATIONS COMPLETED SUCCESSFULLY ===";
+
+    return "<pre style='background:#1e1e1e;color:#00ff66;padding:20px;font-family:monospace;border-radius:8px;'>" . $output . "</pre>";
 });
 
 require __DIR__ . '/auth.php';
