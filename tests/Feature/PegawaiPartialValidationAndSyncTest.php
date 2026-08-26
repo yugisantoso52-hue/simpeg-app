@@ -67,7 +67,6 @@ class PegawaiPartialValidationAndSyncTest extends TestCase
         $this->assertDatabaseHas('pegawai', [
             'nip'           => '199501012022011001',
             'nama'          => 'Budi Santoso',
-            'nik'           => null,
             'unit_kerja_id' => null,
             'jabatan_id'    => null,
             'golongan_id'   => null,
@@ -85,18 +84,18 @@ class PegawaiPartialValidationAndSyncTest extends TestCase
         ]);
 
         $payload = [
-            'nip'  => '199501012022011002',
-            'nama' => 'Siti Aminah, S.Kom',
-            'nik'  => '3201012345670001',
+            'nip'                => '199501012022011002',
+            'nama'               => 'Siti Aminah, S.Kom',
+            'karpeg_karis_karsu' => '12345678',
         ];
 
         $response = $this->actingAs($this->adminUser)->put(route('pegawai.update', $pegawai->id), $payload);
 
         $response->assertRedirect(route('pegawai.index'));
         $this->assertDatabaseHas('pegawai', [
-            'id'   => $pegawai->id,
-            'nama' => 'Siti Aminah, S.Kom',
-            'nik'  => '3201012345670001',
+            'id'                 => $pegawai->id,
+            'nama'               => 'Siti Aminah, S.Kom',
+            'karpeg_karis_karsu' => '12345678',
         ]);
     }
 

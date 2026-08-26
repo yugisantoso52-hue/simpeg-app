@@ -306,7 +306,7 @@ class PegawaiManagementTest extends TestCase
         $pegawai = Pegawai::create([
             'nip'           => '199001012015011012',
             'nama'          => 'Pegawai Accessor Test',
-            'pendidikan'    => 'S1 Teknik Informatika',
+            'pendidikan_terakhir' => 'S1 Teknik Informatika',
             'unit_kerja_id' => $this->unitKerja->id,
             'jabatan_id'    => $this->jabatan->id,
         ]);

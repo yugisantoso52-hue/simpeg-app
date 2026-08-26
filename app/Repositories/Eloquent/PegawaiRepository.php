@@ -104,8 +104,16 @@ public function getStatistics(): array
             ->where('jenis_pegawai', 'PPPK')
             ->count(),
 
+        'dosen' => $this->model
+            ->where('jenis_pegawai', 'Dosen')
+            ->count(),
+
+        'phl' => $this->model
+            ->whereIn('jenis_pegawai', ['PHL', 'Honorer'])
+            ->count(),
+
         'honorer' => $this->model
-            ->where('jenis_pegawai', 'Honorer')
+            ->whereIn('jenis_pegawai', ['PHL', 'Honorer'])
             ->count(),
 
     ];

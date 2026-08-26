@@ -47,7 +47,7 @@ class DashboardTest extends TestCase
             'unit_kerja_id'  => $unit->id,
             'jabatan_id'     => $jabatan->id,
             'golongan_id'    => $golongan->id,
-            'pendidikan'     => 'S1 Informatika',
+            'pendidikan_terakhir' => 'S1 Informatika',
         ]);
 
         $response = $this->actingAs($this->adminUser)

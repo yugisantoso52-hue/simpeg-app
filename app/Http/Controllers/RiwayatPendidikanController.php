@@ -67,7 +67,7 @@ class RiwayatPendidikanController extends Controller
             ]);
 
             // Sync ke tabel utama Pegawai
-            Pegawai::where('id', $request->pegawai_id)->update(['pendidikan' => $request->jenjang]);
+            Pegawai::where('id', $request->pegawai_id)->update(['pendidikan_terakhir' => $request->jenjang]);
         });
 
         return redirect()
@@ -117,7 +117,7 @@ class RiwayatPendidikanController extends Controller
             $data->update($updateData);
 
             // Sync ke tabel utama Pegawai
-            Pegawai::where('id', $request->pegawai_id)->update(['pendidikan' => $request->jenjang]);
+            Pegawai::where('id', $request->pegawai_id)->update(['pendidikan_terakhir' => $request->jenjang]);
         });
 
         return redirect()

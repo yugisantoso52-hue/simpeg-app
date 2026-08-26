@@ -179,8 +179,6 @@ class PegawaiService
             $data['satyalancana_berikutnya'] = $satyalancana['berikutnya'];
 
             $data['jumlah_anak'] = $data['jumlah_anak'] ?? 0;
-            $data['tinggi_badan'] = $data['tinggi_badan'] ?? 0;
-            $data['berat_badan'] = $data['berat_badan'] ?? 0;
             $data['status_pegawai'] = $data['status_pegawai'] ?? 'Aktif';
 
             // 1. Simpan data pegawai utama
@@ -773,15 +771,19 @@ class PegawaiService
 
         // 3. Sinkronisasi Pendidikan Terakhir (Kualifikasi Tertinggi)
         $jenjangOrder = [
-            'SD' => 1,
-            'SMP' => 2,
-            'SMA' => 3,
-            'D3' => 4,
-            'S1' => 5,
-            'S2' => 6,
-            'S3' => 7,
-            'PROFESOR' => 8,
-            'PROF' => 8,
+            'SD'       => 1,
+            'SMP'      => 2,
+            'SMA'      => 3,
+            'D1'       => 4,
+            'D2'       => 5,
+            'D3'       => 6,
+            'D4'       => 7,
+            'S1'       => 8,
+            'PROFESI'  => 9,
+            'S2'       => 10,
+            'S3'       => 11,
+            'PROFESOR' => 12,
+            'PROF'     => 12,
         ];
         
         $highestPendidikan = $pegawai->riwayatPendidikan()
@@ -793,7 +795,7 @@ class PegawaiService
             ->first();
 
         if ($highestPendidikan && !empty($highestPendidikan->jenjang)) {
-            $pegawai->pendidikan = $highestPendidikan->jenjang;
+            $pegawai->pendidikan_terakhir = $highestPendidikan->jenjang;
         }
 
         $pegawai->save();
