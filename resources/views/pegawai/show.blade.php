@@ -343,24 +343,59 @@
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">TMT SK Pertama</td>
                                         <td class="py-1.5 text-gray-900">
-                                            {{ $pegawai->tmt_sk_pertama ? (is_string($pegawai->tmt_sk_pertama) ? \Carbon\Carbon::parse($pegawai->tmt_sk_pertama)->translatedFormat('d F Y') : $pegawai->tmt_sk_pertama->translatedFormat('d F Y')) : '-' }}
+                                            <div>{{ $pegawai->tmt_sk_pertama ? (is_string($pegawai->tmt_sk_pertama) ? \Carbon\Carbon::parse($pegawai->tmt_sk_pertama)->translatedFormat('d F Y') : $pegawai->tmt_sk_pertama->translatedFormat('d F Y')) : '-' }}</div>
+                                            @if($pegawai->nomor_sk_pertama || $pegawai->tanggal_sk_pertama || $pegawai->file_sk_pertama)
+                                                <div class="text-xs text-gray-500 mt-0.5 flex items-center gap-2 flex-wrap">
+                                                    @if($pegawai->nomor_sk_pertama)
+                                                        <span>No. SK: <strong class="text-gray-700 font-mono">{{ $pegawai->nomor_sk_pertama }}</strong></span>
+                                                    @endif
+                                                    @if($pegawai->tanggal_sk_pertama)
+                                                        <span>(Tgl: {{ is_string($pegawai->tanggal_sk_pertama) ? \Carbon\Carbon::parse($pegawai->tanggal_sk_pertama)->translatedFormat('d/m/Y') : $pegawai->tanggal_sk_pertama->translatedFormat('d/m/Y') }})</span>
+                                                    @endif
+                                                    @if($pegawai->file_sk_pertama)
+                                                        <a href="{{ route('document.preview', ['path' => $pegawai->file_sk_pertama]) }}" target="_blank" class="text-blue-600 hover:underline font-semibold text-[11px]">📄 Berkas SK</a>
+                                                    @endif
+                                                </div>
+                                            @endif
                                         </td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">TMT Pangkat Terakhir</td>
                                         <td class="py-1.5 text-gray-900">
-                                            {{ $pegawai->tmt_pangkat_terakhir ? (is_string($pegawai->tmt_pangkat_terakhir) ? \Carbon\Carbon::parse($pegawai->tmt_pangkat_terakhir)->translatedFormat('d F Y') : $pegawai->tmt_pangkat_terakhir->translatedFormat('d F Y')) : '-' }}
+                                            <div>{{ $pegawai->tmt_pangkat_terakhir ? (is_string($pegawai->tmt_pangkat_terakhir) ? \Carbon\Carbon::parse($pegawai->tmt_pangkat_terakhir)->translatedFormat('d F Y') : $pegawai->tmt_pangkat_terakhir->translatedFormat('d F Y')) : '-' }}</div>
+                                            @if($pegawai->nomor_sk_pangkat_terakhir || $pegawai->tanggal_sk_pangkat_terakhir || $pegawai->file_sk_pangkat_terakhir)
+                                                <div class="text-xs text-gray-500 mt-0.5 flex items-center gap-2 flex-wrap">
+                                                    @if($pegawai->nomor_sk_pangkat_terakhir)
+                                                        <span>No. SK: <strong class="text-gray-700 font-mono">{{ $pegawai->nomor_sk_pangkat_terakhir }}</strong></span>
+                                                    @endif
+                                                    @if($pegawai->tanggal_sk_pangkat_terakhir)
+                                                        <span>(Tgl: {{ is_string($pegawai->tanggal_sk_pangkat_terakhir) ? \Carbon\Carbon::parse($pegawai->tanggal_sk_pangkat_terakhir)->translatedFormat('d/m/Y') : $pegawai->tanggal_sk_pangkat_terakhir->translatedFormat('d/m/Y') }})</span>
+                                                    @endif
+                                                    @if($pegawai->file_sk_pangkat_terakhir)
+                                                        <a href="{{ route('document.preview', ['path' => $pegawai->file_sk_pangkat_terakhir]) }}" target="_blank" class="text-blue-600 hover:underline font-semibold text-[11px]">📄 Berkas SK Pangkat</a>
+                                                    @endif
+                                                </div>
+                                            @endif
                                         </td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">TMT KGB Terakhir</td>
                                         <td class="py-1.5 text-gray-900">
-                                            {{ $pegawai->tmt_kgb_terakhir ? (is_string($pegawai->tmt_kgb_terakhir) ? \Carbon\Carbon::parse($pegawai->tmt_kgb_terakhir)->translatedFormat('d F Y') : $pegawai->tmt_kgb_terakhir->translatedFormat('d F Y')) : '-' }}
+                                            <div class="flex items-center gap-3">
+                                                <span>{{ $pegawai->tmt_kgb_terakhir ? (is_string($pegawai->tmt_kgb_terakhir) ? \Carbon\Carbon::parse($pegawai->tmt_kgb_terakhir)->translatedFormat('d F Y') : $pegawai->tmt_kgb_terakhir->translatedFormat('d F Y')) : '-' }}</span>
+                                                @if($pegawai->file_sk_kgb_terakhir)
+                                                    <a href="{{ route('document.preview', ['path' => $pegawai->file_sk_kgb_terakhir]) }}" target="_blank" class="text-blue-600 hover:underline font-semibold text-[11px]">📄 Berkas SK KGB</a>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">Status Pegawai</td>
-                                        <td class="py-1.5 text-gray-900">{{ $pegawai->status_pegawai ?? 'Aktif' }}</td>
+                                        <td class="py-1.5 text-gray-900">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold {{ ($pegawai->status_pegawai ?? 'Aktif') === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                {{ $pegawai->status_pegawai ?? 'Aktif' }}
+                                            </span>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
