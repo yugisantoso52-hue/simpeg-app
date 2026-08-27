@@ -124,4 +124,47 @@
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>
 
+    {{-- Batas Usia Pensiun (BUP) & Pensiun --}}
+    <x-enterprise.forms.row cols="2">
+        <x-enterprise.forms.field>
+            <x-enterprise.form-group label="Batas Usia Pensiun (BUP)">
+                <x-enterprise.select name="batas_usia_pensiun">
+                    <option value="">Pilih BUP</option>
+                    <option value="56" @selected(old('batas_usia_pensiun', $pegawai->batas_usia_pensiun ?? '') == 56)>56 Tahun</option>
+                    <option value="58" @selected(old('batas_usia_pensiun', $pegawai->batas_usia_pensiun ?? '') == 58)>58 Tahun (Tendik Pelaksana/Fungsional Ahli Pertama/Muda)</option>
+                    <option value="60" @selected(old('batas_usia_pensiun', $pegawai->batas_usia_pensiun ?? '') == 60)>60 Tahun (Fungsional Ahli Madya / Pejabat Pimpinan)</option>
+                    <option value="65" @selected(old('batas_usia_pensiun', $pegawai->batas_usia_pensiun ?? '') == 65)>65 Tahun (Dosen / Fungsional Ahli Utama)</option>
+                </x-enterprise.select>
+                <span class="text-[11px] text-gray-500 mt-1 block">Tanggal pensiun akan otomatis dihitung dari tanggal lahir + BUP jika dikosongkan.</span>
+            </x-enterprise.form-group>
+        </x-enterprise.forms.field>
+
+        <x-enterprise.forms.field>
+            <x-enterprise.form-group label="Tanggal Pensiun (Manual Override)">
+                <x-enterprise.date-picker name="tanggal_pensiun" :value="old('tanggal_pensiun', (isset($pegawai->tanggal_pensiun) && $pegawai->tanggal_pensiun) ? \Carbon\Carbon::parse($pegawai->tanggal_pensiun)->format('Y-m-d') : '')"/>
+            </x-enterprise.form-group>
+        </x-enterprise.forms.field>
+    </x-enterprise.forms.row>
+
+    {{-- Khusus PHL: Masa Kontrak --}}
+    <x-enterprise.forms.row cols="3">
+        <x-enterprise.forms.field>
+            <x-enterprise.form-group label="Jenis Kontrak (Khusus PHL/Honorer)">
+                <x-enterprise.input name="jenis_kontrak" :value="old('jenis_kontrak', $pegawai->jenis_kontrak ?? '')" placeholder="Contoh: Kontrak Tahunan / Bulanan"/>
+            </x-enterprise.form-group>
+        </x-enterprise.forms.field>
+
+        <x-enterprise.forms.field>
+            <x-enterprise.form-group label="Tanggal Kontrak Mulai">
+                <x-enterprise.date-picker name="tanggal_kontrak_mulai" :value="old('tanggal_kontrak_mulai', (isset($pegawai->tanggal_kontrak_mulai) && $pegawai->tanggal_kontrak_mulai) ? \Carbon\Carbon::parse($pegawai->tanggal_kontrak_mulai)->format('Y-m-d') : '')"/>
+            </x-enterprise.form-group>
+        </x-enterprise.forms.field>
+
+        <x-enterprise.forms.field>
+            <x-enterprise.form-group label="Tanggal Kontrak Berakhir">
+                <x-enterprise.date-picker name="tanggal_kontrak_selesai" :value="old('tanggal_kontrak_selesai', (isset($pegawai->tanggal_kontrak_selesai) && $pegawai->tanggal_kontrak_selesai) ? \Carbon\Carbon::parse($pegawai->tanggal_kontrak_selesai)->format('Y-m-d') : '')"/>
+            </x-enterprise.form-group>
+        </x-enterprise.forms.field>
+    </x-enterprise.forms.row>
+
 </x-enterprise.forms.section>

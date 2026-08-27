@@ -43,6 +43,33 @@
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>
 
+    {{-- Jenis Jabatan & Angka Kredit --}}
+    <x-enterprise.forms.row cols="2">
+        <x-enterprise.forms.field>
+            <x-enterprise.form-group label="Jenis Jabatan">
+                <x-enterprise.select name="jenis_jabatan">
+                    <option value="">Pilih Jenis Jabatan</option>
+                    <option value="Fungsional" @selected(old('jenis_jabatan', $pegawai->jenis_jabatan ?? '')=='Fungsional')>Fungsional (Dosen/Pranata Laboratorium/dll)</option>
+                    <option value="Struktural" @selected(old('jenis_jabatan', $pegawai->jenis_jabatan ?? '')=='Struktural')>Struktural (Dekan/Kajur/Kaprodi/KTU)</option>
+                    <option value="Pelaksana"  @selected(old('jenis_jabatan', $pegawai->jenis_jabatan ?? '')=='Pelaksana')>Pelaksana / Staf Administrasi</option>
+                    <option value="Lainnya"    @selected(old('jenis_jabatan', $pegawai->jenis_jabatan ?? '')=='Lainnya')>Lainnya</option>
+                </x-enterprise.select>
+            </x-enterprise.form-group>
+        </x-enterprise.forms.field>
+
+        <x-enterprise.forms.field>
+            <x-enterprise.form-group label="Angka Kredit Kumulatif (PAK)">
+                <x-enterprise.input
+                    type="number"
+                    step="0.01"
+                    name="angka_kredit"
+                    :value="old('angka_kredit', $pegawai->angka_kredit ?? 0)"
+                    placeholder="Contoh: 150.00"
+                />
+            </x-enterprise.form-group>
+        </x-enterprise.forms.field>
+    </x-enterprise.forms.row>
+
     <x-enterprise.forms.row cols="3">
         <x-enterprise.forms.field>
             <x-enterprise.form-group label="Jenis Pegawai">

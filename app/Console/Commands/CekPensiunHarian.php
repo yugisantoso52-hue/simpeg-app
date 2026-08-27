@@ -25,13 +25,18 @@ class CekPensiunHarian extends Command
         $pensiunPegawai = collect();
 
         foreach ($paraPegawai as $pegawai) {
-            if (!$pegawai->tanggal_lahir) continue;
+            if (!$pegawai->tanggal_lahir && !$pegawai->tanggal_pensiun) continue;
 
-            $tglLahir = Carbon::parse($pegawai->tanggal_lahir);
-            $bup = $this->hitungBup($pegawai);
+            $bup = $pegawai->batas_usia_pensiun ?: $this->hitungBup($pegawai);
 
-            // Hitung Tanggal Jatuh Tempo Pensiun Resmi
-            $tglPensiun = $tglLahir->copy()->addYears($bup);
+            // Gunakan tanggal_pensiun yang sudah tersimpan di database atau kalkulasi
+            if ($pegawai->tanggal_pensiun) {
+                $tglPensiun = Carbon::parse($pegawai->tanggal_pensiun);
+            } elseif ($pegawai->tanggal_lahir) {
+                $tglPensiun = Carbon::parse($pegawai->tanggal_lahir)->addYears($bup);
+            } else {
+                continue;
+            }
 
             // Cek jika TGL PENSIUN masuk dalam rentang HARI INI s/d 1 TAHUN KE DEPAN
             if ($tglPensiun->between($hariIni, $batasH1Tahun)) {

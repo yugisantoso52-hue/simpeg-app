@@ -145,6 +145,14 @@ class PegawaiService
                 'golongan',
                 'riwayatPendidikan',
                 'riwayatDiklat',
+                'riwayatJabatan',
+                'riwayatPangkat',
+                'riwayatStrSip',
+                'tugasBelajar',
+                'riwayatSkp',
+                'riwayatPenghargaan',
+                'riwayatOrganisasi',
+                'riwayatPublikasi',
             ]);
     }
 

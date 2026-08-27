@@ -103,9 +103,9 @@
                             </table>
                         </div>
 
-                        {{-- 2. INFORMASI KONTAK --}}
+                        {{-- 2. INFORMASI KONTAK & DOMISILI --}}
                         <div>
-                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">2. Informasi Kontak</h4>
+                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">2. Informasi Kontak & Domisili</h4>
                             <table class="w-full text-sm text-gray-600">
                                 <tbody>
                                     <tr class="border-b border-gray-50">
@@ -113,13 +113,38 @@
                                         <td class="py-1.5 text-gray-900">{{ $pegawai->email ?? '-' }}</td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Nomor HP</td>
+                                        <td class="py-1.5 font-medium text-gray-500">Nomor HP / WhatsApp</td>
                                         <td class="py-1.5 text-gray-900">{{ $pegawai->no_hp ?? $pegawai->telepon ?? '-' }}</td>
                                     </tr>
+                                    @if($pegawai->no_hp_darurat || $pegawai->nama_kontak_darurat)
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Alamat</td>
+                                        <td class="py-1.5 font-medium text-gray-500">Kontak Darurat</td>
+                                        <td class="py-1.5 text-gray-900">
+                                            {{ $pegawai->nama_kontak_darurat ?? '-' }} 
+                                            @if($pegawai->hubungan_kontak_darurat)
+                                                ({{ $pegawai->hubungan_kontak_darurat }})
+                                            @endif
+                                            : <span class="font-mono">{{ $pegawai->no_hp_darurat ?? '-' }}</span>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Alamat KTP / Asal</td>
                                         <td class="py-1.5 text-gray-900">{{ $pegawai->alamat ?? '-' }}</td>
                                     </tr>
+                                    @if($pegawai->alamat_domisili)
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Alamat Domisili</td>
+                                        <td class="py-1.5 text-gray-900">
+                                            {{ $pegawai->alamat_domisili }}
+                                            @if($pegawai->kota_domisili || $pegawai->provinsi)
+                                                <div class="text-xs text-gray-500 mt-0.5">
+                                                    {{ $pegawai->kota_domisili ? $pegawai->kota_domisili . ', ' : '' }}{{ $pegawai->provinsi ?? '' }} {{ $pegawai->kode_pos ? '(' . $pegawai->kode_pos . ')' : '' }}
+                                                </div>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endif
                                 </tbody>
                             </table>
                         </div>
@@ -145,43 +170,80 @@
                             </table>
                         </div>
 
-                        {{-- 4. DATA KEPEGAWAIAN --}}
+                        {{-- 4. DATA KEPEGAWAIAN & TEKNIS --}}
                         <div>
-                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">4. Data Kepegawaian</h4>
+                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">4. Data Kepegawaian & Teknis</h4>
                             <table class="w-full text-sm text-gray-600">
-                                <tbody>
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500 w-44">Unit Kerja</td>
-                                        <td class="py-1.5 text-gray-900 font-semibold">{{ $pegawai->unitKerja->nama_unit ?? $pegawai->unitKerja->nama_unit_kerja ?? $pegawai->unit_kerja ?? '-' }}</td>
-                                    </tr>
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Jabatan</td>
-                                        <td class="py-1.5 text-gray-900 font-semibold">{{ $pegawai->jabatan->nama_jabatan ?? $pegawai->jabatan->nama ?? $pegawai->jabatan ?? '-' }}</td>
-                                    </tr>
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Golongan</td>
-                                        <td class="py-1.5 text-gray-900">
-                                            {{ $pegawai->golongan->nama_golongan ?? $pegawai->golongan->nama ?? $pegawai->golongan ?? '-' }}
-                                            @if(!empty($pegawai->golongan->nama_pangkat))
-                                                ({{ $pegawai->golongan->nama_pangkat }})
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Jenis Pegawai / Status ASN</td>
-                                        <td class="py-1.5 text-gray-900">{{ $pegawai->jenis_pegawai ?? '-' }} / {{ $pegawai->status_asn ?? '-' }}</td>
-                                    </tr>
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Pendidikan Terakhir</td>
-                                        <td class="py-1.5 text-gray-900">{{ $pegawai->pendidikan_terakhir ?? '-' }}</td>
-                                    </tr>
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">MKG (Masa Kerja Golongan)</td>
-                                        <td class="py-1.5 text-gray-900">
-                                            {{ $pegawai->mkg_tahun ?? 0 }} Thn {{ $pegawai->mkg_bulan ?? 0 }} Bln
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                 <tbody>
+                                     <tr class="border-b border-gray-50">
+                                         <td class="py-1.5 font-medium text-gray-500 w-44">Unit Kerja</td>
+                                         <td class="py-1.5 text-gray-900 font-semibold">{{ $pegawai->unitKerja->nama_unit ?? $pegawai->unitKerja->nama_unit_kerja ?? $pegawai->unit_kerja ?? '-' }}</td>
+                                     </tr>
+                                     <tr class="border-b border-gray-50">
+                                         <td class="py-1.5 font-medium text-gray-500">Jabatan</td>
+                                         <td class="py-1.5 text-gray-900 font-semibold">
+                                             {{ $pegawai->jabatan->nama_jabatan ?? $pegawai->jabatan->nama ?? $pegawai->jabatan ?? '-' }}
+                                             @if($pegawai->jenis_jabatan)
+                                                 <span class="ml-1 text-xs font-normal text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                                                     {{ $pegawai->jenis_jabatan }}
+                                                 </span>
+                                             @endif
+                                         </td>
+                                     </tr>
+                                     @if($pegawai->angka_kredit > 0 || $pegawai->jenis_jabatan == 'Fungsional' || $pegawai->jenis_pegawai == 'Dosen')
+                                     <tr class="border-b border-gray-50">
+                                         <td class="py-1.5 font-medium text-gray-500">Angka Kredit (PAK)</td>
+                                         <td class="py-1.5 text-gray-900 font-mono font-semibold">{{ number_format($pegawai->angka_kredit ?? 0, 2, ',', '.') }}</td>
+                                     </tr>
+                                     @endif
+                                     <tr class="border-b border-gray-50">
+                                         <td class="py-1.5 font-medium text-gray-500">Golongan / Pangkat</td>
+                                         <td class="py-1.5 text-gray-900">
+                                             {{ $pegawai->golongan->nama_golongan ?? $pegawai->golongan->nama ?? $pegawai->golongan ?? '-' }}
+                                             @if(!empty($pegawai->golongan->nama_pangkat))
+                                                 ({{ $pegawai->golongan->nama_pangkat }})
+                                             @endif
+                                         </td>
+                                     </tr>
+                                     <tr class="border-b border-gray-50">
+                                         <td class="py-1.5 font-medium text-gray-500">Jenis Pegawai / Status ASN</td>
+                                         <td class="py-1.5 text-gray-900">{{ $pegawai->jenis_pegawai ?? '-' }} / {{ $pegawai->status_asn ?? '-' }}</td>
+                                     </tr>
+                                     <tr class="border-b border-gray-50">
+                                         <td class="py-1.5 font-medium text-gray-500">Pendidikan Terakhir</td>
+                                         <td class="py-1.5 text-gray-900">{{ $pegawai->pendidikan_terakhir ?? '-' }}</td>
+                                     </tr>
+                                     <tr class="border-b border-gray-50">
+                                         <td class="py-1.5 font-medium text-gray-500">MKG (Masa Kerja Golongan)</td>
+                                         <td class="py-1.5 text-gray-900">
+                                             {{ $pegawai->mkg_tahun ?? 0 }} Thn {{ $pegawai->mkg_bulan ?? 0 }} Bln
+                                         </td>
+                                     </tr>
+                                     @if($pegawai->batas_usia_pensiun || $pegawai->tanggal_pensiun)
+                                     <tr class="border-b border-gray-50">
+                                         <td class="py-1.5 font-medium text-gray-500">BUP / Estimasi Pensiun</td>
+                                         <td class="py-1.5 text-gray-900">
+                                             BUP: {{ $pegawai->batas_usia_pensiun ? $pegawai->batas_usia_pensiun . ' Tahun' : '-' }} 
+                                             <span class="text-gray-400">|</span> 
+                                             Tanggal Pensiun: <span class="font-medium text-amber-800">{{ $pegawai->tanggal_pensiun ? $pegawai->tanggal_pensiun->translatedFormat('d F Y') : '-' }}</span>
+                                         </td>
+                                     </tr>
+                                     @endif
+                                     @if($pegawai->jenis_pegawai === 'PHL' && ($pegawai->jenis_kontrak || $pegawai->tanggal_kontrak_mulai))
+                                     <tr class="border-b border-gray-50 bg-amber-50/50">
+                                         <td class="py-1.5 font-medium text-amber-800">Masa Kontrak PHL</td>
+                                         <td class="py-1.5 text-amber-900">
+                                             {{ $pegawai->jenis_kontrak ?? 'Kontrak Kerja' }} 
+                                             ({{ $pegawai->tanggal_kontrak_mulai ? $pegawai->tanggal_kontrak_mulai->format('d/m/Y') : '?' }} s.d. {{ $pegawai->tanggal_kontrak_selesai ? $pegawai->tanggal_kontrak_selesai->format('d/m/Y') : '?' }})
+                                             @if($pegawai->status_kontrak)
+                                                 <span class="ml-1 text-[11px] font-bold px-2 py-0.5 rounded-full {{ $pegawai->status_kontrak === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                     {{ $pegawai->status_kontrak }}
+                                                 </span>
+                                             @endif
+                                         </td>
+                                     </tr>
+                                     @endif
+                                 </tbody>
                             </table>
                         </div>
 
@@ -601,6 +663,156 @@
                                         </table>
                                     </div>
                                 </div>
+                            @endif
+                        {{-- 11. RIWAYAT PENGHARGAAN & TANDA JASA --}}
+                        <div>
+                            <div class="flex items-center justify-between border-b pb-1 mb-2">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">11. Riwayat Penghargaan & Tanda Jasa</h4>
+                                @if(Auth::user()->hasRole('admin'))
+                                    <a href="{{ route('riwayat-penghargaan.create', ['pegawai_id' => $pegawai->id]) }}"
+                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                        + Tambah Penghargaan
+                                    </a>
+                                @endif
+                            </div>
+                            @if($pegawai->riwayatPenghargaan && $pegawai->riwayatPenghargaan->count() > 0)
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
+                                                <th class="py-2 px-3">Nama Penghargaan</th>
+                                                <th class="py-2 px-3">Jenis</th>
+                                                <th class="py-2 px-3">Pemberi</th>
+                                                <th class="py-2 px-3 text-center">Tanggal Terima</th>
+                                                <th class="py-2 px-3 text-center">Berkas</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pegawai->riwayatPenghargaan as $p)
+                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $p->nama_penghargaan }}</td>
+                                                    <td class="py-1.5 px-3 text-xs text-gray-600">{{ $p->jenis_penghargaan ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-xs text-gray-600">{{ $p->instansi_pemberi ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $p->tanggal_terima ? $p->tanggal_terima->format('d/m/Y') : '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        @if($p->file_sk)
+                                                            <a href="{{ route('document.preview', ['path' => $p->file_sk]) }}" target="_blank" class="text-blue-600 font-semibold text-xs hover:underline">Lihat SK</a>
+                                                        @else
+                                                            <span class="text-gray-400 text-xs">-</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-500 italic py-1">Belum ada riwayat penghargaan / tanda jasa tercatat.</p>
+                            @endif
+                        </div>
+
+                        {{-- 12. RIWAYAT KEANGGOTAAN ORGANISASI --}}
+                        <div>
+                            <div class="flex items-center justify-between border-b pb-1 mb-2">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">12. Riwayat Keanggotaan Organisasi</h4>
+                                @if(Auth::user()->hasRole('admin'))
+                                    <a href="{{ route('riwayat-organisasi.create', ['pegawai_id' => $pegawai->id]) }}"
+                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                        + Tambah Organisasi
+                                    </a>
+                                @endif
+                            </div>
+                            @if($pegawai->riwayatOrganisasi && $pegawai->riwayatOrganisasi->count() > 0)
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
+                                                <th class="py-2 px-3">Nama Organisasi</th>
+                                                <th class="py-2 px-3">Jabatan / Peran</th>
+                                                <th class="py-2 px-3 text-center">Periode</th>
+                                                <th class="py-2 px-3 text-center">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pegawai->riwayatOrganisasi as $org)
+                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $org->nama_organisasi }}</td>
+                                                    <td class="py-1.5 px-3 text-xs text-gray-600">{{ $org->jabatan_organisasi ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center text-xs font-mono">{{ $org->tahun_mulai ?? '?' }} - {{ $org->tahun_selesai ?? 'sekarang' }}</td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ $org->masih_aktif ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
+                                                            {{ $org->masih_aktif ? 'Aktif' : 'Selesai' }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-500 italic py-1">Belum ada riwayat keanggotaan organisasi tercatat.</p>
+                            @endif
+                        </div>
+
+                        {{-- 13. RIWAYAT PUBLIKASI ILMIAH & KARYA --}}
+                        <div>
+                            <div class="flex items-center justify-between border-b pb-1 mb-2">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">13. Riwayat Publikasi Ilmiah & Karya</h4>
+                                @if(Auth::user()->hasRole('admin'))
+                                    <a href="{{ route('riwayat-publikasi.create', ['pegawai_id' => $pegawai->id]) }}"
+                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                        + Tambah Publikasi
+                                    </a>
+                                @endif
+                            </div>
+                            @if($pegawai->riwayatPublikasi && $pegawai->riwayatPublikasi->count() > 0)
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
+                                                <th class="py-2 px-3">Judul Publikasi</th>
+                                                <th class="py-2 px-3">Jenis & Indeksasi</th>
+                                                <th class="py-2 px-3">Jurnal / Penerbit</th>
+                                                <th class="py-2 px-3 text-center">Tahun</th>
+                                                <th class="py-2 px-3 text-center">Berkas</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pegawai->riwayatPublikasi as $pub)
+                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                                                    <td class="py-1.5 px-3 font-semibold text-gray-800 max-w-xs">
+                                                        <div class="line-clamp-2">{{ $pub->judul_publikasi }}</div>
+                                                        @if($pub->url_doi)
+                                                            <a href="{{ $pub->url_doi }}" target="_blank" class="text-[11px] text-blue-500 hover:underline">Link DOI</a>
+                                                        @endif
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-xs">
+                                                        <span class="font-medium text-gray-800">{{ $pub->jenis_publikasi }}</span>
+                                                        @if($pub->indeksasi)
+                                                            <span class="block text-[10px] text-indigo-700 font-semibold mt-0.5">{{ $pub->indeksasi }}</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-xs text-gray-600">
+                                                        {{ $pub->nama_jurnal ?? $pub->penerbit ?? '-' }}
+                                                        @if($pub->volume_nomor)
+                                                            <span class="block text-[10px] text-gray-400">{{ $pub->volume_nomor }}</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $pub->tahun_terbit ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        @if($pub->file_publikasi)
+                                                            <a href="{{ route('document.preview', ['path' => $pub->file_publikasi]) }}" target="_blank" class="text-emerald-600 font-semibold text-xs hover:underline">PDF</a>
+                                                        @else
+                                                            <span class="text-gray-400 text-xs">-</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-500 italic py-1">Belum ada riwayat publikasi ilmiah tercatat.</p>
                             @endif
                         </div>
 
