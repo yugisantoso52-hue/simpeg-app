@@ -22,6 +22,9 @@ use App\Http\Controllers\KpController;
 use App\Http\Controllers\SatyalancanaController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RiwayatPenghargaanController;
+use App\Http\Controllers\RiwayatOrganisasiController;
+use App\Http\Controllers\RiwayatPublikasiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -110,6 +113,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::resource('riwayat-str-sip', RiwayatStrSipController::class)->except(['index', 'show']);
         Route::resource('tugas-belajar', TugasBelajarController::class)->except(['index', 'show']);
         Route::resource('riwayat-skp', RiwayatSkpController::class)->except(['index', 'show']);
+        Route::resource('riwayat-penghargaan', RiwayatPenghargaanController::class)->except(['show']);
+        Route::resource('riwayat-organisasi', RiwayatOrganisasiController::class)->except(['show']);
+        Route::resource('riwayat-publikasi', RiwayatPublikasiController::class)->except(['show']);
         Route::delete('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'destroy'])->name('pengajuan-cuti.destroy');
     });
 

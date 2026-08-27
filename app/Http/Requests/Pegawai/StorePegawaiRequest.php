@@ -39,7 +39,27 @@ class StorePegawaiRequest extends FormRequest
             'jumlah_anak'          => 'nullable|integer|min:0',
             'mkg_tahun'            => 'nullable|integer|min:0|max:40',
             'mkg_bulan'            => 'nullable|integer|min:0|max:11',
-            
+
+            // Kontak Tambahan & Domisili
+            'no_hp_darurat'            => 'nullable|string|max:20',
+            'nama_kontak_darurat'      => 'nullable|string|max:100',
+            'hubungan_kontak_darurat'  => 'nullable|string|max:50',
+            'alamat_domisili'          => 'nullable|string',
+            'kode_pos'                 => 'nullable|string|max:10',
+            'kota_domisili'            => 'nullable|string|max:100',
+            'provinsi'                 => 'nullable|string|max:100',
+
+            // Kepegawaian Teknis
+            'jenis_jabatan'            => 'nullable|in:Struktural,Fungsional,Pelaksana,Lainnya',
+            'angka_kredit'             => 'nullable|numeric|min:0',
+            'batas_usia_pensiun'       => 'nullable|integer|in:56,58,60,65',
+            'tanggal_pensiun'          => 'nullable|date',
+            'no_sk_pensiun'            => 'nullable|string|max:100',
+            'tmt_pensiun'              => 'nullable|date',
+            'jenis_kontrak'            => 'nullable|string|max:100',
+            'tanggal_kontrak_mulai'    => 'nullable|date',
+            'tanggal_kontrak_selesai'  => 'nullable|date|after_or_equal:tanggal_kontrak_mulai',
+
             // Relasi Utama (Opsional saat pengisian parsial)
             'unit_kerja_id'        => 'nullable|exists:unit_kerja,id',
             'jabatan_id'           => 'nullable|exists:jabatan,id',

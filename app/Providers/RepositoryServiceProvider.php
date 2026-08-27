@@ -18,6 +18,9 @@ use App\Repositories\Contracts\RiwayatStrSipRepositoryInterface;
 use App\Repositories\Contracts\PengajuanCutiRepositoryInterface;
 use App\Repositories\Contracts\TugasBelajarRepositoryInterface;
 use App\Repositories\Contracts\RiwayatSkpRepositoryInterface;
+use App\Repositories\Contracts\RiwayatPenghargaanRepositoryInterface;
+use App\Repositories\Contracts\RiwayatOrganisasiRepositoryInterface;
+use App\Repositories\Contracts\RiwayatPublikasiRepositoryInterface;
 
 // Import Eloquent Repositories
 use App\Repositories\Eloquent\PegawaiRepository;
@@ -33,6 +36,9 @@ use App\Repositories\Eloquent\RiwayatStrSipRepository;
 use App\Repositories\Eloquent\PengajuanCutiRepository;
 use App\Repositories\Eloquent\TugasBelajarRepository;
 use App\Repositories\Eloquent\RiwayatSkpRepository;
+use App\Repositories\Eloquent\RiwayatPenghargaanRepository;
+use App\Repositories\Eloquent\RiwayatOrganisasiRepository;
+use App\Repositories\Eloquent\RiwayatPublikasiRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -116,6 +122,24 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(
             RiwayatSkpRepositoryInterface::class,
             RiwayatSkpRepository::class
+        );
+
+        // Riwayat Penghargaan & Tanda Jasa
+        $this->app->bind(
+            RiwayatPenghargaanRepositoryInterface::class,
+            RiwayatPenghargaanRepository::class
+        );
+
+        // Riwayat Keanggotaan Organisasi
+        $this->app->bind(
+            RiwayatOrganisasiRepositoryInterface::class,
+            RiwayatOrganisasiRepository::class
+        );
+
+        // Riwayat Publikasi Ilmiah
+        $this->app->bind(
+            RiwayatPublikasiRepositoryInterface::class,
+            RiwayatPublikasiRepository::class
         );
     }
 

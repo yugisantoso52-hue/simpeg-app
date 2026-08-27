@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\RiwayatPenghargaan;
+use App\Models\RiwayatOrganisasi;
+use App\Models\RiwayatPublikasi;
 
 class Pegawai extends Model
 {
@@ -46,6 +49,13 @@ class Pegawai extends Model
         // Satyalancana & Status
         'satyalancana_terakhir', 'satyalancana_berikutnya', 'status_pegawai', 'foto',
         'kgb_berikutnya', 'kp_berikutnya',
+        // Kontak Tambahan & Domisili
+        'no_hp_darurat', 'nama_kontak_darurat', 'hubungan_kontak_darurat',
+        'alamat_domisili', 'kode_pos', 'kota_domisili', 'provinsi',
+        // Kepegawaian Teknis
+        'jenis_jabatan', 'angka_kredit', 'batas_usia_pensiun', 'tanggal_pensiun',
+        'no_sk_pensiun', 'tmt_pensiun', 'jenis_kontrak',
+        'tanggal_kontrak_mulai', 'tanggal_kontrak_selesai',
     ];
 
     protected $casts = [
@@ -59,6 +69,12 @@ class Pegawai extends Model
         'satyalancana_berikutnya' => 'date',
         'kgb_berikutnya'          => 'date',
         'kp_berikutnya'           => 'date',
+        // Kepegawaian Teknis
+        'tanggal_pensiun'         => 'date',
+        'tmt_pensiun'             => 'date',
+        'tanggal_kontrak_mulai'   => 'date',
+        'tanggal_kontrak_selesai' => 'date',
+        'angka_kredit'            => 'decimal:2',
     ];
 
     /**
@@ -90,6 +106,13 @@ class Pegawai extends Model
                 } elseif ($years < 30) {
                     $pegawai->satyalancana_berikutnya = $start->copy()->addYears(30)->toDateString();
                 }
+            }
+
+            // 4. Auto hitung tanggal pensiun dari BUP + tanggal_lahir
+            if (empty($pegawai->tanggal_pensiun) && !empty($pegawai->tanggal_lahir) && !empty($pegawai->batas_usia_pensiun)) {
+                $pegawai->tanggal_pensiun = Carbon::parse($pegawai->tanggal_lahir)
+                    ->addYears($pegawai->batas_usia_pensiun)
+                    ->toDateString();
             }
         });
 
@@ -170,6 +193,21 @@ class Pegawai extends Model
     public function riwayatSkp(): HasMany
     {
         return $this->hasMany(RiwayatSkp::class, 'pegawai_id')->orderBy('tahun', 'desc');
+    }
+
+    public function riwayatPenghargaan(): HasMany
+    {
+        return $this->hasMany(RiwayatPenghargaan::class, 'pegawai_id')->orderBy('tanggal_terima', 'desc');
+    }
+
+    public function riwayatOrganisasi(): HasMany
+    {
+        return $this->hasMany(RiwayatOrganisasi::class, 'pegawai_id');
+    }
+
+    public function riwayatPublikasi(): HasMany
+    {
+        return $this->hasMany(RiwayatPublikasi::class, 'pegawai_id')->orderBy('tahun_terbit', 'desc');
     }
 
     public function getSkpTahun(int $year): ?RiwayatSkp
