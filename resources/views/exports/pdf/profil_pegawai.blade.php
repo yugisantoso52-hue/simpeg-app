@@ -82,36 +82,46 @@
             <td>:</td>
             <td>{{ $pegawai->no_hp ?? $pegawai->telepon ?? '-' }}</td>
         </tr>
-        @if($pegawai->nama_kontak_darurat || $pegawai->kontak_darurat_nama || $pegawai->no_hp_darurat || $pegawai->kontak_darurat_hp)
         <tr>
-            <td class="bold">Kontak Darurat</td>
+            <td class="bold">Nama Kontak Darurat</td>
             <td>:</td>
-            <td>
-                {{ $pegawai->nama_kontak_darurat ?? $pegawai->kontak_darurat_nama ?? '-' }}
-                @if($pegawai->hubungan_kontak_darurat ?? $pegawai->kontak_darurat_hubungan)
-                    ({{ $pegawai->hubungan_kontak_darurat ?? $pegawai->kontak_darurat_hubungan }})
-                @endif
-                : {{ $pegawai->no_hp_darurat ?? $pegawai->kontak_darurat_hp ?? '-' }}
-            </td>
+            <td>{{ $pegawai->nama_kontak_darurat ?? $pegawai->kontak_darurat_nama ?? '-' }}</td>
         </tr>
-        @endif
         <tr>
-            <td class="bold">Alamat KTP / Asal</td>
+            <td class="bold">Hubungan Kontak Darurat</td>
+            <td>:</td>
+            <td>{{ $pegawai->hubungan_kontak_darurat ?? $pegawai->kontak_darurat_hubungan ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Nomor HP Darurat</td>
+            <td>:</td>
+            <td>{{ $pegawai->no_hp_darurat ?? $pegawai->kontak_darurat_hp ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Alamat Sesuai KTP / Asal</td>
             <td>:</td>
             <td>{{ $pegawai->alamat ?? '-' }}</td>
         </tr>
-        @if($pegawai->alamat_domisili)
         <tr>
-            <td class="bold">Alamat Domisili</td>
+            <td class="bold">Alamat Domisili Saat Ini</td>
             <td>:</td>
-            <td>
-                {{ $pegawai->alamat_domisili }}
-                @if($pegawai->kota_domisili || $pegawai->provinsi)
-                    ({{ $pegawai->kota_domisili ? $pegawai->kota_domisili . ', ' : '' }}{{ $pegawai->provinsi ?? '' }} {{ $pegawai->kode_pos ? '(' . $pegawai->kode_pos . ')' : '' }})
-                @endif
-            </td>
+            <td>{{ $pegawai->alamat_domisili ?? '-' }}</td>
         </tr>
-        @endif
+        <tr>
+            <td class="bold">Kota / Kabupaten Domisili</td>
+            <td>:</td>
+            <td>{{ $pegawai->kota_domisili ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Provinsi Domisili</td>
+            <td>:</td>
+            <td>{{ $pegawai->provinsi ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Kode Pos</td>
+            <td>:</td>
+            <td>{{ $pegawai->kode_pos ?? '-' }}</td>
+        </tr>
     </table>
 
     <!-- 3. DATA KELUARGA -->
@@ -134,8 +144,8 @@
         </tr>
     </table>
 
-    <!-- 4. DATA KEPEGAWAIAN & TEKNIS -->
-    <div class="section-header">4. DATA KEPEGAWAIAN & TEKNIS</div>
+    <!-- 4. DATA KEPEGAWAIAN -->
+    <div class="section-header">4. DATA KEPEGAWAIAN</div>
     <table class="form-table">
         <tr>
             <td style="width: 32%;" class="bold">Unit Kerja</td>
@@ -145,20 +155,8 @@
         <tr>
             <td class="bold">Jabatan</td>
             <td>:</td>
-            <td>
-                {{ $pegawai->jabatan->nama_jabatan ?? $pegawai->jabatan->nama ?? $pegawai->jabatan ?? '-' }}
-                @if($pegawai->jenis_jabatan)
-                    ({{ $pegawai->jenis_jabatan }})
-                @endif
-            </td>
+            <td>{{ $pegawai->jabatan->nama_jabatan ?? $pegawai->jabatan->nama ?? $pegawai->jabatan ?? '-' }}</td>
         </tr>
-        @if($pegawai->angka_kredit > 0 || $pegawai->jenis_jabatan == 'Fungsional' || $pegawai->jenis_pegawai == 'Dosen')
-        <tr>
-            <td class="bold">Angka Kredit (PAK)</td>
-            <td>:</td>
-            <td>{{ number_format($pegawai->angka_kredit ?? 0, 2, ',', '.') }}</td>
-        </tr>
-        @endif
         <tr>
             <td class="bold">Golongan / Pangkat</td>
             <td>:</td>
@@ -170,9 +168,24 @@
             </td>
         </tr>
         <tr>
-            <td class="bold">Jenis Pegawai / Status ASN</td>
+            <td class="bold">Jenis Jabatan</td>
             <td>:</td>
-            <td>{{ $pegawai->jenis_pegawai ?? '-' }} / {{ $pegawai->status_asn ?? '-' }}</td>
+            <td>{{ $pegawai->jenis_jabatan ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Angka Kredit Kumulatif (PAK)</td>
+            <td>:</td>
+            <td>{{ number_format($pegawai->angka_kredit ?? 0, 2, ',', '.') }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Jenis Pegawai</td>
+            <td>:</td>
+            <td>{{ $pegawai->jenis_pegawai ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Status ASN</td>
+            <td>:</td>
+            <td>{{ $pegawai->status_asn ?? '-' }}</td>
         </tr>
         <tr>
             <td class="bold">Pendidikan Terakhir</td>
@@ -180,33 +193,15 @@
             <td>{{ $pegawai->pendidikan_terakhir ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="bold">MKG (Masa Kerja Golongan)</td>
+            <td class="bold">MKG (Masa Kerja Golongan) Tahun</td>
             <td>:</td>
-            <td>{{ $pegawai->mkg_tahun ?? 0 }} Thn {{ $pegawai->mkg_bulan ?? 0 }} Bln</td>
+            <td>{{ $pegawai->mkg_tahun ?? 0 }} Tahun</td>
         </tr>
-        @if($pegawai->batas_usia_pensiun || $pegawai->tanggal_pensiun)
         <tr>
-            <td class="bold">BUP / Estimasi Pensiun</td>
+            <td class="bold">MKG (Masa Kerja Golongan) Bulan</td>
             <td>:</td>
-            <td>
-                BUP: {{ $pegawai->batas_usia_pensiun ? $pegawai->batas_usia_pensiun . ' Tahun' : '-' }} | 
-                Tgl Pensiun: {{ $pegawai->tanggal_pensiun ? (is_string($pegawai->tanggal_pensiun) ? \Carbon\Carbon::parse($pegawai->tanggal_pensiun)->translatedFormat('d F Y') : $pegawai->tanggal_pensiun->translatedFormat('d F Y')) : '-' }}
-            </td>
+            <td>{{ $pegawai->mkg_bulan ?? 0 }} Bulan</td>
         </tr>
-        @endif
-        @if($pegawai->jenis_pegawai === 'PHL' && ($pegawai->jenis_kontrak || $pegawai->tanggal_kontrak_mulai))
-        <tr>
-            <td class="bold">Masa Kontrak PHL</td>
-            <td>:</td>
-            <td>
-                {{ $pegawai->jenis_kontrak ?? 'Kontrak Kerja' }} 
-                ({{ $pegawai->tanggal_kontrak_mulai ? (is_string($pegawai->tanggal_kontrak_mulai) ? \Carbon\Carbon::parse($pegawai->tanggal_kontrak_mulai)->format('d/m/Y') : $pegawai->tanggal_kontrak_mulai->format('d/m/Y')) : '?' }} s.d. {{ $pegawai->tanggal_kontrak_selesai ? (is_string($pegawai->tanggal_kontrak_selesai) ? \Carbon\Carbon::parse($pegawai->tanggal_kontrak_selesai)->format('d/m/Y') : $pegawai->tanggal_kontrak_selesai->format('d/m/Y')) : '?' }})
-                @if($pegawai->status_kontrak)
-                    - [{{ $pegawai->status_kontrak }}]
-                @endif
-            </td>
-        </tr>
-        @endif
     </table>
 
     <!-- 5. RIWAYAT PENDIDIKAN -->
@@ -272,6 +267,11 @@
             <td>{{ $pegawai->tanggal_masuk ? (is_string($pegawai->tanggal_masuk) ? \Carbon\Carbon::parse($pegawai->tanggal_masuk)->translatedFormat('d F Y') : $pegawai->tanggal_masuk->translatedFormat('d F Y')) : '-' }}</td>
         </tr>
         <tr>
+            <td class="bold">Status Pegawai</td>
+            <td>:</td>
+            <td>{{ $pegawai->status_pegawai ?? 'Aktif' }}</td>
+        </tr>
+        <tr>
             <td class="bold">TMT SK Pertama</td>
             <td>:</td>
             <td>
@@ -297,10 +297,34 @@
             <td>{{ $pegawai->tmt_kgb_terakhir ? (is_string($pegawai->tmt_kgb_terakhir) ? \Carbon\Carbon::parse($pegawai->tmt_kgb_terakhir)->translatedFormat('d F Y') : $pegawai->tmt_kgb_terakhir->translatedFormat('d F Y')) : '-' }}</td>
         </tr>
         <tr>
-            <td class="bold">Status Pegawai</td>
+            <td class="bold">Batas Usia Pensiun (BUP)</td>
             <td>:</td>
-            <td>{{ $pegawai->status_pegawai ?? 'Aktif' }}</td>
+            <td>{{ $pegawai->batas_usia_pensiun ? $pegawai->batas_usia_pensiun . ' Tahun' : '-' }}</td>
         </tr>
+        <tr>
+            <td class="bold">Tanggal Pensiun</td>
+            <td>:</td>
+            <td>{{ $pegawai->tanggal_pensiun ? (is_string($pegawai->tanggal_pensiun) ? \Carbon\Carbon::parse($pegawai->tanggal_pensiun)->translatedFormat('d F Y') : $pegawai->tanggal_pensiun->translatedFormat('d F Y')) : '-' }}</td>
+        </tr>
+        @if($pegawai->jenis_pegawai === 'PHL' || $pegawai->jenis_kontrak || $pegawai->tanggal_kontrak_mulai)
+        <tr>
+            <td class="bold">Jenis Kontrak (PHL)</td>
+            <td>:</td>
+            <td>{{ $pegawai->jenis_kontrak ?? 'Kontrak Kerja' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Masa Kontrak Kerja</td>
+            <td>:</td>
+            <td>
+                {{ $pegawai->tanggal_kontrak_mulai ? (is_string($pegawai->tanggal_kontrak_mulai) ? \Carbon\Carbon::parse($pegawai->tanggal_kontrak_mulai)->format('d/m/Y') : $pegawai->tanggal_kontrak_mulai->format('d/m/Y')) : '?' }} 
+                s.d. 
+                {{ $pegawai->tanggal_kontrak_selesai ? (is_string($pegawai->tanggal_kontrak_selesai) ? \Carbon\Carbon::parse($pegawai->tanggal_kontrak_selesai)->format('d/m/Y') : $pegawai->tanggal_kontrak_selesai->format('d/m/Y')) : '?' }}
+                @if($pegawai->status_kontrak)
+                    - [{{ $pegawai->status_kontrak }}]
+                @endif
+            </td>
+        </tr>
+        @endif
     </table>
 
     <!-- 8. LEGALITAS PROFESI (STR & SIP / SIKP) -->

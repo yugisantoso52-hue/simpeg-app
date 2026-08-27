@@ -66,14 +66,13 @@
 
                     {{-- Data Detail Terstruktur --}}
                     <div class="md:col-span-2 space-y-6">
-                        
-                        {{-- 1. DATA PRIBADI --}}
+                                           {{-- 1. DATA PRIBADI --}}
                         <div>
                             <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">1. Data Pribadi</h4>
                             <table class="w-full text-sm text-gray-600">
                                 <tbody>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500 w-44">NIP</td>
+                                        <td class="py-1.5 font-medium text-gray-500 w-48">NIP</td>
                                         <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->nip ?? '-' }}</td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
@@ -85,15 +84,27 @@
                                         <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->nidn_nuptk ?? '-' }}</td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Jenis Kelamin</td>
-                                        <td class="py-1.5 text-gray-900">{{ $pegawai->jenis_kelamin == 'L' ? 'Laki-laki' : ($pegawai->jenis_kelamin == 'P' ? 'Perempuan' : ($pegawai->jenis_kelamin ?? '-')) }}</td>
+                                        <td class="py-1.5 font-medium text-gray-500">Nama Lengkap</td>
+                                        <td class="py-1.5 text-gray-900 font-semibold">{{ $pegawai->nama_lengkap ?? $pegawai->nama }}</td>
                                     </tr>
+                                    @if($pegawai->gelar_depan || $pegawai->gelar_belakang)
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Gelar Depan / Belakang</td>
+                                        <td class="py-1.5 text-gray-900">
+                                            {{ $pegawai->gelar_depan ?? '-' }} / {{ $pegawai->gelar_belakang ?? '-' }}
+                                        </td>
+                                    </tr>
+                                    @endif
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">Tempat, Tanggal Lahir</td>
                                         <td class="py-1.5 text-gray-900">
                                             {{ $pegawai->tempat_lahir ?? '-' }}, 
                                             {{ $pegawai->tanggal_lahir ? (is_string($pegawai->tanggal_lahir) ? \Carbon\Carbon::parse($pegawai->tanggal_lahir)->translatedFormat('d F Y') : $pegawai->tanggal_lahir->translatedFormat('d F Y')) : '-' }}
                                         </td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Jenis Kelamin</td>
+                                        <td class="py-1.5 text-gray-900">{{ $pegawai->jenis_kelamin == 'L' ? 'Laki-laki' : ($pegawai->jenis_kelamin == 'P' ? 'Perempuan' : ($pegawai->jenis_kelamin ?? '-')) }}</td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">Agama</td>
@@ -109,42 +120,45 @@
                             <table class="w-full text-sm text-gray-600">
                                 <tbody>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500 w-44">Email</td>
+                                        <td class="py-1.5 font-medium text-gray-500 w-48">Email</td>
                                         <td class="py-1.5 text-gray-900">{{ $pegawai->email ?? '-' }}</td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">Nomor HP / WhatsApp</td>
-                                        <td class="py-1.5 text-gray-900">{{ $pegawai->no_hp ?? $pegawai->telepon ?? '-' }}</td>
+                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->no_hp ?? $pegawai->telepon ?? '-' }}</td>
                                     </tr>
-                                    @if($pegawai->no_hp_darurat || $pegawai->nama_kontak_darurat)
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Kontak Darurat</td>
-                                        <td class="py-1.5 text-gray-900">
-                                            {{ $pegawai->nama_kontak_darurat ?? '-' }} 
-                                            @if($pegawai->hubungan_kontak_darurat)
-                                                ({{ $pegawai->hubungan_kontak_darurat }})
-                                            @endif
-                                            : <span class="font-mono">{{ $pegawai->no_hp_darurat ?? '-' }}</span>
-                                        </td>
+                                        <td class="py-1.5 font-medium text-gray-500">Nama Kontak Darurat</td>
+                                        <td class="py-1.5 text-gray-900">{{ $pegawai->nama_kontak_darurat ?? $pegawai->kontak_darurat_nama ?? '-' }}</td>
                                     </tr>
-                                    @endif
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Alamat KTP / Asal</td>
+                                        <td class="py-1.5 font-medium text-gray-500">Hubungan Kontak Darurat</td>
+                                        <td class="py-1.5 text-gray-900">{{ $pegawai->hubungan_kontak_darurat ?? $pegawai->kontak_darurat_hubungan ?? '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Nomor HP Darurat</td>
+                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->no_hp_darurat ?? $pegawai->kontak_darurat_hp ?? '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Alamat Sesuai KTP / Asal</td>
                                         <td class="py-1.5 text-gray-900">{{ $pegawai->alamat ?? '-' }}</td>
                                     </tr>
-                                    @if($pegawai->alamat_domisili)
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Alamat Domisili</td>
-                                        <td class="py-1.5 text-gray-900">
-                                            {{ $pegawai->alamat_domisili }}
-                                            @if($pegawai->kota_domisili || $pegawai->provinsi)
-                                                <div class="text-xs text-gray-500 mt-0.5">
-                                                    {{ $pegawai->kota_domisili ? $pegawai->kota_domisili . ', ' : '' }}{{ $pegawai->provinsi ?? '' }} {{ $pegawai->kode_pos ? '(' . $pegawai->kode_pos . ')' : '' }}
-                                                </div>
-                                            @endif
-                                        </td>
+                                        <td class="py-1.5 font-medium text-gray-500">Alamat Domisili Saat Ini</td>
+                                        <td class="py-1.5 text-gray-900">{{ $pegawai->alamat_domisili ?? '-' }}</td>
                                     </tr>
-                                    @endif
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Kota / Kabupaten Domisili</td>
+                                        <td class="py-1.5 text-gray-900">{{ $pegawai->kota_domisili ?? '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Provinsi Domisili</td>
+                                        <td class="py-1.5 text-gray-900">{{ $pegawai->provinsi ?? '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Kode Pos</td>
+                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->kode_pos ?? '-' }}</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -155,7 +169,7 @@
                             <table class="w-full text-sm text-gray-600">
                                 <tbody>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500 w-44">Status Pernikahan</td>
+                                        <td class="py-1.5 font-medium text-gray-500 w-48">Status Pernikahan</td>
                                         <td class="py-1.5 text-gray-900">{{ $pegawai->status_pernikahan ?? $pegawai->status_kawin ?? '-' }}</td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
@@ -170,32 +184,21 @@
                             </table>
                         </div>
 
-                        {{-- 4. DATA KEPEGAWAIAN & TEKNIS --}}
+                        {{-- 4. DATA KEPEGAWAIAN --}}
                         <div>
-                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">4. Data Kepegawaian & Teknis</h4>
+                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">4. Data Kepegawaian</h4>
                             <table class="w-full text-sm text-gray-600">
                                  <tbody>
                                      <tr class="border-b border-gray-50">
-                                         <td class="py-1.5 font-medium text-gray-500 w-44">Unit Kerja</td>
+                                         <td class="py-1.5 font-medium text-gray-500 w-48">Unit Kerja</td>
                                          <td class="py-1.5 text-gray-900 font-semibold">{{ $pegawai->unitKerja->nama_unit ?? $pegawai->unitKerja->nama_unit_kerja ?? $pegawai->unit_kerja ?? '-' }}</td>
                                      </tr>
                                      <tr class="border-b border-gray-50">
                                          <td class="py-1.5 font-medium text-gray-500">Jabatan</td>
                                          <td class="py-1.5 text-gray-900 font-semibold">
                                              {{ $pegawai->jabatan->nama_jabatan ?? $pegawai->jabatan->nama ?? $pegawai->jabatan ?? '-' }}
-                                             @if($pegawai->jenis_jabatan)
-                                                 <span class="ml-1 text-xs font-normal text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
-                                                     {{ $pegawai->jenis_jabatan }}
-                                                 </span>
-                                             @endif
                                          </td>
                                      </tr>
-                                     @if($pegawai->angka_kredit > 0 || $pegawai->jenis_jabatan == 'Fungsional' || $pegawai->jenis_pegawai == 'Dosen')
-                                     <tr class="border-b border-gray-50">
-                                         <td class="py-1.5 font-medium text-gray-500">Angka Kredit (PAK)</td>
-                                         <td class="py-1.5 text-gray-900 font-mono font-semibold">{{ number_format($pegawai->angka_kredit ?? 0, 2, ',', '.') }}</td>
-                                     </tr>
-                                     @endif
                                      <tr class="border-b border-gray-50">
                                          <td class="py-1.5 font-medium text-gray-500">Golongan / Pangkat</td>
                                          <td class="py-1.5 text-gray-900">
@@ -206,43 +209,41 @@
                                          </td>
                                      </tr>
                                      <tr class="border-b border-gray-50">
-                                         <td class="py-1.5 font-medium text-gray-500">Jenis Pegawai / Status ASN</td>
-                                         <td class="py-1.5 text-gray-900">{{ $pegawai->jenis_pegawai ?? '-' }} / {{ $pegawai->status_asn ?? '-' }}</td>
+                                         <td class="py-1.5 font-medium text-gray-500">Jenis Jabatan</td>
+                                         <td class="py-1.5 text-gray-900">
+                                             @if($pegawai->jenis_jabatan)
+                                                 <span class="inline-flex items-center text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                                                     {{ $pegawai->jenis_jabatan }}
+                                                 </span>
+                                             @else
+                                                 -
+                                             @endif
+                                         </td>
+                                     </tr>
+                                     <tr class="border-b border-gray-50">
+                                         <td class="py-1.5 font-medium text-gray-500">Angka Kredit Kumulatif (PAK)</td>
+                                         <td class="py-1.5 text-gray-900 font-mono font-semibold">{{ number_format($pegawai->angka_kredit ?? 0, 2, ',', '.') }}</td>
+                                     </tr>
+                                     <tr class="border-b border-gray-50">
+                                         <td class="py-1.5 font-medium text-gray-500">Jenis Pegawai</td>
+                                         <td class="py-1.5 text-gray-900 font-semibold">{{ $pegawai->jenis_pegawai ?? '-' }}</td>
+                                     </tr>
+                                     <tr class="border-b border-gray-50">
+                                         <td class="py-1.5 font-medium text-gray-500">Status ASN</td>
+                                         <td class="py-1.5 text-gray-900">{{ $pegawai->status_asn ?? '-' }}</td>
                                      </tr>
                                      <tr class="border-b border-gray-50">
                                          <td class="py-1.5 font-medium text-gray-500">Pendidikan Terakhir</td>
                                          <td class="py-1.5 text-gray-900">{{ $pegawai->pendidikan_terakhir ?? '-' }}</td>
                                      </tr>
                                      <tr class="border-b border-gray-50">
-                                         <td class="py-1.5 font-medium text-gray-500">MKG (Masa Kerja Golongan)</td>
-                                         <td class="py-1.5 text-gray-900">
-                                             {{ $pegawai->mkg_tahun ?? 0 }} Thn {{ $pegawai->mkg_bulan ?? 0 }} Bln
-                                         </td>
+                                         <td class="py-1.5 font-medium text-gray-500">MKG (Masa Kerja Golongan) Tahun</td>
+                                         <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->mkg_tahun ?? 0 }} Tahun</td>
                                      </tr>
-                                     @if($pegawai->batas_usia_pensiun || $pegawai->tanggal_pensiun)
                                      <tr class="border-b border-gray-50">
-                                         <td class="py-1.5 font-medium text-gray-500">BUP / Estimasi Pensiun</td>
-                                         <td class="py-1.5 text-gray-900">
-                                             BUP: {{ $pegawai->batas_usia_pensiun ? $pegawai->batas_usia_pensiun . ' Tahun' : '-' }} 
-                                             <span class="text-gray-400">|</span> 
-                                             Tanggal Pensiun: <span class="font-medium text-amber-800">{{ $pegawai->tanggal_pensiun ? $pegawai->tanggal_pensiun->translatedFormat('d F Y') : '-' }}</span>
-                                         </td>
+                                         <td class="py-1.5 font-medium text-gray-500">MKG (Masa Kerja Golongan) Bulan</td>
+                                         <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->mkg_bulan ?? 0 }} Bulan</td>
                                      </tr>
-                                     @endif
-                                     @if($pegawai->jenis_pegawai === 'PHL' && ($pegawai->jenis_kontrak || $pegawai->tanggal_kontrak_mulai))
-                                     <tr class="border-b border-gray-50 bg-amber-50/50">
-                                         <td class="py-1.5 font-medium text-amber-800">Masa Kontrak PHL</td>
-                                         <td class="py-1.5 text-amber-900">
-                                             {{ $pegawai->jenis_kontrak ?? 'Kontrak Kerja' }} 
-                                             ({{ $pegawai->tanggal_kontrak_mulai ? $pegawai->tanggal_kontrak_mulai->format('d/m/Y') : '?' }} s.d. {{ $pegawai->tanggal_kontrak_selesai ? $pegawai->tanggal_kontrak_selesai->format('d/m/Y') : '?' }})
-                                             @if($pegawai->status_kontrak)
-                                                 <span class="ml-1 text-[11px] font-bold px-2 py-0.5 rounded-full {{ $pegawai->status_kontrak === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                     {{ $pegawai->status_kontrak }}
-                                                 </span>
-                                             @endif
-                                         </td>
-                                     </tr>
-                                     @endif
                                  </tbody>
                             </table>
                         </div>
@@ -335,9 +336,17 @@
                             <table class="w-full text-sm text-gray-600">
                                 <tbody>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500 w-44">Tanggal Masuk</td>
+                                        <td class="py-1.5 font-medium text-gray-500 w-48">Tanggal Masuk</td>
                                         <td class="py-1.5 text-gray-900">
                                             {{ $pegawai->tanggal_masuk ? (is_string($pegawai->tanggal_masuk) ? \Carbon\Carbon::parse($pegawai->tanggal_masuk)->translatedFormat('d F Y') : $pegawai->tanggal_masuk->translatedFormat('d F Y')) : '-' }}
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Status Pegawai</td>
+                                        <td class="py-1.5 text-gray-900">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold {{ ($pegawai->status_pegawai ?? 'Aktif') === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                {{ $pegawai->status_pegawai ?? 'Aktif' }}
+                                            </span>
                                         </td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
@@ -353,7 +362,7 @@
                                                         <span>(Tgl: {{ is_string($pegawai->tanggal_sk_pertama) ? \Carbon\Carbon::parse($pegawai->tanggal_sk_pertama)->translatedFormat('d/m/Y') : $pegawai->tanggal_sk_pertama->translatedFormat('d/m/Y') }})</span>
                                                     @endif
                                                     @if($pegawai->file_sk_pertama)
-                                                        <a href="{{ route('document.preview', ['path' => $pegawai->file_sk_pertama]) }}" target="_blank" class="text-blue-600 hover:underline font-semibold text-[11px]">📄 Berkas SK</a>
+                                                        <a href="{{ route('document.preview', ['path' => $pegawai->file_sk_pertama]) }}" target="_blank" class="text-blue-600 hover:underline font-semibold text-[11px]">📄 Berkas SK Pertama</a>
                                                     @endif
                                                 </div>
                                             @endif
@@ -390,13 +399,36 @@
                                         </td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Status Pegawai</td>
+                                        <td class="py-1.5 font-medium text-gray-500">Batas Usia Pensiun (BUP)</td>
                                         <td class="py-1.5 text-gray-900">
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold {{ ($pegawai->status_pegawai ?? 'Aktif') === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                {{ $pegawai->status_pegawai ?? 'Aktif' }}
-                                            </span>
+                                            {{ $pegawai->batas_usia_pensiun ? $pegawai->batas_usia_pensiun . ' Tahun' : '-' }}
                                         </td>
                                     </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Tanggal Pensiun</td>
+                                        <td class="py-1.5 text-gray-900 font-semibold text-amber-800">
+                                            {{ $pegawai->tanggal_pensiun ? (is_string($pegawai->tanggal_pensiun) ? \Carbon\Carbon::parse($pegawai->tanggal_pensiun)->translatedFormat('d F Y') : $pegawai->tanggal_pensiun->translatedFormat('d F Y')) : '-' }}
+                                        </td>
+                                    </tr>
+                                    @if($pegawai->jenis_pegawai === 'PHL' || $pegawai->jenis_kontrak || $pegawai->tanggal_kontrak_mulai)
+                                    <tr class="border-b border-gray-50 bg-amber-50/40">
+                                        <td class="py-1.5 font-medium text-amber-800">Jenis Kontrak (PHL)</td>
+                                        <td class="py-1.5 text-amber-900 font-semibold">{{ $pegawai->jenis_kontrak ?? 'Kontrak Kerja' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50 bg-amber-50/40">
+                                        <td class="py-1.5 font-medium text-amber-800">Masa Kontrak Kerja</td>
+                                        <td class="py-1.5 text-amber-900">
+                                            {{ $pegawai->tanggal_kontrak_mulai ? (is_string($pegawai->tanggal_kontrak_mulai) ? \Carbon\Carbon::parse($pegawai->tanggal_kontrak_mulai)->format('d/m/Y') : $pegawai->tanggal_kontrak_mulai->format('d/m/Y')) : '?' }} 
+                                            s.d. 
+                                            {{ $pegawai->tanggal_kontrak_selesai ? (is_string($pegawai->tanggal_kontrak_selesai) ? \Carbon\Carbon::parse($pegawai->tanggal_kontrak_selesai)->format('d/m/Y') : $pegawai->tanggal_kontrak_selesai->format('d/m/Y')) : '?' }}
+                                            @if($pegawai->status_kontrak)
+                                                <span class="ml-1 text-[11px] font-bold px-2 py-0.5 rounded-full {{ $pegawai->status_kontrak === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                    {{ $pegawai->status_kontrak }}
+                                                </span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endif
                                 </tbody>
                             </table>
                         </div>
