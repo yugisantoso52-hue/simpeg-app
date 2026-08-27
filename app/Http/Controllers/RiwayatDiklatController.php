@@ -50,6 +50,15 @@ class RiwayatDiklatController extends Controller
             $request->file('file_sertifikat')
         );
 
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with(
+                    'success',
+                    'Riwayat Diklat berhasil disimpan.'
+                );
+        }
+
         return redirect()
             ->route('riwayat-diklat.index')
             ->with(
@@ -83,6 +92,15 @@ class RiwayatDiklatController extends Controller
             $request->file('file_sertifikat')
         );
 
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with(
+                    'success',
+                    'Riwayat Diklat berhasil diperbarui.'
+                );
+        }
+
         return redirect()
             ->route('riwayat-diklat.index')
             ->with(
@@ -97,6 +115,15 @@ class RiwayatDiklatController extends Controller
     public function destroy($id)
     {
         $this->service->delete($id);
+
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with(
+                    'success',
+                    'Riwayat Diklat berhasil dihapus.'
+                );
+        }
 
         return redirect()
             ->route('riwayat-diklat.index')

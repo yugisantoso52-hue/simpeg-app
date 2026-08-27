@@ -66,11 +66,21 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     });
 
     // ======================================================================
-    // ROUTE EDIT & UPDATE PEGAWAI (DIAMANKAN LEWAAT PEGAWAIPOLICY)
+    // ROUTE EDIT PEGAWAI & CRUD RIWAYAT MANDIRI (ADMIN & PEGAWAI)
     // ======================================================================
     Route::middleware(['role:admin,pegawai'])->group(function () {
         Route::get('/pegawai/{pegawai}/edit', [PegawaiController::class, 'edit'])->name('pegawai.edit');
         Route::put('/pegawai/{pegawai}', [PegawaiController::class, 'update'])->name('pegawai.update');
+
+        // CRUD Riwayat Mandiri Pegawai (STR/SIP, Tubel, SKP, Penghargaan, Organisasi, Publikasi, Pendidikan, Diklat)
+        Route::resource('riwayat-pendidikan', RiwayatPendidikanController::class)->except(['index', 'show']);
+        Route::resource('riwayat-diklat', RiwayatDiklatController::class)->except(['index', 'show']);
+        Route::resource('riwayat-str-sip', RiwayatStrSipController::class)->except(['index', 'show']);
+        Route::resource('tugas-belajar', TugasBelajarController::class)->except(['index', 'show']);
+        Route::resource('riwayat-skp', RiwayatSkpController::class)->except(['index', 'show']);
+        Route::resource('riwayat-penghargaan', RiwayatPenghargaanController::class)->except(['show']);
+        Route::resource('riwayat-organisasi', RiwayatOrganisasiController::class)->except(['show']);
+        Route::resource('riwayat-publikasi', RiwayatPublikasiController::class)->except(['show']);
     });
 
     // ======================================================================
@@ -105,17 +115,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('/pegawai/bulk-delete', [PegawaiController::class, 'bulkDelete'])->name('pegawai.bulk-delete');
         Route::delete('/pegawai/{pegawai}', [PegawaiController::class, 'destroy'])->name('pegawai.destroy');
 
-        // CRUD Riwayat
-        Route::resource('riwayat-pendidikan', RiwayatPendidikanController::class)->except(['index', 'show']);
+        // Riwayat Khusus Admin (Struktural / Kepangkatan)
         Route::resource('riwayat-jabatan', RiwayatJabatanController::class)->except(['index', 'show']);
         Route::resource('riwayat-pangkat', RiwayatPangkatController::class)->except(['index', 'show']);
-        Route::resource('riwayat-diklat', RiwayatDiklatController::class)->except(['index', 'show']);
-        Route::resource('riwayat-str-sip', RiwayatStrSipController::class)->except(['index', 'show']);
-        Route::resource('tugas-belajar', TugasBelajarController::class)->except(['index', 'show']);
-        Route::resource('riwayat-skp', RiwayatSkpController::class)->except(['index', 'show']);
-        Route::resource('riwayat-penghargaan', RiwayatPenghargaanController::class)->except(['show']);
-        Route::resource('riwayat-organisasi', RiwayatOrganisasiController::class)->except(['show']);
-        Route::resource('riwayat-publikasi', RiwayatPublikasiController::class)->except(['show']);
         Route::delete('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'destroy'])->name('pengajuan-cuti.destroy');
     });
 

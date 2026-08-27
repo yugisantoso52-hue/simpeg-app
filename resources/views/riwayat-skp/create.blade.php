@@ -9,7 +9,7 @@
                     Pengarsipan Dokumen Rencana SKP & Dokumen Evaluasi Penilaian Kinerja Tahunan
                 </p>
             </div>
-            <a href="{{ route('riwayat-skp.index') }}"
+            <a href="{{ auth()->user()->hasRole('pegawai') ? route('pegawai.show', auth()->user()->pegawai_id) : (request('pegawai_id') ? route('pegawai.show', request('pegawai_id')) : route('riwayat-skp.index')) }}"
                class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition">
                 ← Kembali
             </a>
@@ -35,20 +35,24 @@
                     @csrf
 
                     {{-- Pegawai --}}
-                    <div>
-                        <label for="pegawai_id" class="block text-sm font-semibold text-gray-700 mb-1">
-                            Pilih Pegawai <span class="text-red-500">*</span>
-                        </label>
-                        <select name="pegawai_id" id="pegawai_id" required
-                                class="w-full rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">-- Pilih Pegawai --</option>
-                            @foreach($pegawai as $p)
-                                <option value="{{ $p->id }}" @selected(old('pegawai_id', request('pegawai_id')) == $p->id)>
-                                    {{ $p->nama_lengkap ?? $p->nama }} (NIP: {{ $p->nip ?? '-' }}) - {{ $p->jabatan->nama_jabatan ?? '-' }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                    @if(auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id)
+                        <input type="hidden" name="pegawai_id" value="{{ auth()->user()->pegawai_id }}">
+                    @else
+                        <div>
+                            <label for="pegawai_id" class="block text-sm font-semibold text-gray-700 mb-1">
+                                Pilih Pegawai <span class="text-red-500">*</span>
+                            </label>
+                            <select name="pegawai_id" id="pegawai_id" required
+                                    class="w-full rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">-- Pilih Pegawai --</option>
+                                @foreach($pegawai as $p)
+                                    <option value="{{ $p->id }}" @selected(old('pegawai_id', request('pegawai_id')) == $p->id)>
+                                        {{ $p->nama_lengkap ?? $p->nama }} (NIP: {{ $p->nip ?? '-' }}) - {{ $p->jabatan->nama_jabatan ?? '-' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
 
                     {{-- Tahun SKP & Predikat Kinerja --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

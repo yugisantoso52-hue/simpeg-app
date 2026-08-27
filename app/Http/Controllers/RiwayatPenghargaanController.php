@@ -37,10 +37,16 @@ class RiwayatPenghargaanController extends Controller
      */
     public function store(StoreRiwayatPenghargaanRequest $request)
     {
-        $this->service->create(
+        $penghargaan = $this->service->create(
             $request->validated(),
             $request->file('file_sk')
         );
+
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Riwayat Penghargaan berhasil disimpan.');
+        }
 
         return redirect()
             ->route('riwayat-penghargaan.index')
@@ -63,11 +69,17 @@ class RiwayatPenghargaanController extends Controller
      */
     public function update(UpdateRiwayatPenghargaanRequest $request, $id)
     {
-        $this->service->update(
+        $penghargaan = $this->service->update(
             $id,
             $request->validated(),
             $request->file('file_sk')
         );
+
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Riwayat Penghargaan berhasil diperbarui.');
+        }
 
         return redirect()
             ->route('riwayat-penghargaan.index')
@@ -79,7 +91,15 @@ class RiwayatPenghargaanController extends Controller
      */
     public function destroy($id)
     {
+        $item = $this->service->find($id);
+        $pegawaiId = $item->pegawai_id ?? null;
         $this->service->delete($id);
+
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Riwayat Penghargaan berhasil dihapus.');
+        }
 
         return redirect()
             ->route('riwayat-penghargaan.index')

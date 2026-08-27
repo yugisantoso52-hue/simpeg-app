@@ -42,6 +42,12 @@ class RiwayatPublikasiController extends Controller
             $request->file('file_publikasi')
         );
 
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Riwayat Publikasi berhasil disimpan.');
+        }
+
         return redirect()
             ->route('riwayat-publikasi.index')
             ->with('success', 'Riwayat Publikasi berhasil disimpan.');
@@ -69,6 +75,12 @@ class RiwayatPublikasiController extends Controller
             $request->file('file_publikasi')
         );
 
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Riwayat Publikasi berhasil diperbarui.');
+        }
+
         return redirect()
             ->route('riwayat-publikasi.index')
             ->with('success', 'Riwayat Publikasi berhasil diperbarui.');
@@ -80,6 +92,12 @@ class RiwayatPublikasiController extends Controller
     public function destroy($id)
     {
         $this->service->delete($id);
+
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Riwayat Publikasi berhasil dihapus.');
+        }
 
         return redirect()
             ->route('riwayat-publikasi.index')

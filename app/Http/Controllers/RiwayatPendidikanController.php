@@ -70,6 +70,12 @@ class RiwayatPendidikanController extends Controller
             Pegawai::where('id', $request->pegawai_id)->update(['pendidikan_terakhir' => $request->jenjang]);
         });
 
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Data berhasil disimpan');
+        }
+
         return redirect()
             ->route('riwayat-pendidikan.index')
             ->with('success', 'Data berhasil disimpan');
@@ -120,6 +126,12 @@ class RiwayatPendidikanController extends Controller
             Pegawai::where('id', $request->pegawai_id)->update(['pendidikan_terakhir' => $request->jenjang]);
         });
 
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Data berhasil diperbarui');
+        }
+
         return redirect()
             ->route('riwayat-pendidikan.index')
             ->with('success', 'Data berhasil diperbarui');
@@ -127,7 +139,15 @@ class RiwayatPendidikanController extends Controller
 
     public function destroy($id)
     {
+        $data = RiwayatPendidikan::find($id);
+        $pegawaiId = $data->pegawai_id ?? null;
         RiwayatPendidikan::destroy($id);
+
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Data berhasil dihapus');
+        }
 
         return redirect()
             ->route('riwayat-pendidikan.index')

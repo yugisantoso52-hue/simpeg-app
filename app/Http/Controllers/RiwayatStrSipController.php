@@ -39,6 +39,12 @@ class RiwayatStrSipController extends Controller
             $request->file('file_dokumen')
         );
 
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Data STR / SIP berhasil disimpan.');
+        }
+
         return redirect()
             ->route('riwayat-str-sip.index')
             ->with('success', 'Data STR / SIP berhasil disimpan.');
@@ -60,6 +66,12 @@ class RiwayatStrSipController extends Controller
             $request->file('file_dokumen')
         );
 
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Data STR / SIP berhasil diperbarui.');
+        }
+
         return redirect()
             ->route('riwayat-str-sip.index')
             ->with('success', 'Data STR / SIP berhasil diperbarui.');
@@ -68,6 +80,12 @@ class RiwayatStrSipController extends Controller
     public function destroy(int $id)
     {
         $this->service->delete($id);
+
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Data STR / SIP berhasil dihapus.');
+        }
 
         return redirect()
             ->route('riwayat-str-sip.index')

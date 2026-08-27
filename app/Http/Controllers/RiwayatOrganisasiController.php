@@ -39,6 +39,12 @@ class RiwayatOrganisasiController extends Controller
     {
         $this->service->create($request->validated());
 
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Riwayat Organisasi berhasil disimpan.');
+        }
+
         return redirect()
             ->route('riwayat-organisasi.index')
             ->with('success', 'Riwayat Organisasi berhasil disimpan.');
@@ -62,6 +68,12 @@ class RiwayatOrganisasiController extends Controller
     {
         $this->service->update($id, $request->validated());
 
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Riwayat Organisasi berhasil diperbarui.');
+        }
+
         return redirect()
             ->route('riwayat-organisasi.index')
             ->with('success', 'Riwayat Organisasi berhasil diperbarui.');
@@ -73,6 +85,12 @@ class RiwayatOrganisasiController extends Controller
     public function destroy($id)
     {
         $this->service->delete($id);
+
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Riwayat Organisasi berhasil dihapus.');
+        }
 
         return redirect()
             ->route('riwayat-organisasi.index')

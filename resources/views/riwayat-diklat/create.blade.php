@@ -13,7 +13,7 @@
                 </p>
             </div>
 
-            <a href="{{ route('riwayat-diklat.index') }}"
+            <a href="{{ auth()->user()->hasRole('pegawai') ? route('pegawai.show', auth()->user()->pegawai_id) : (request('pegawai_id') ? route('pegawai.show', request('pegawai_id')) : route('riwayat-diklat.index')) }}"
                class="inline-flex items-center rounded-lg bg-gray-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-gray-700 transition">
 
                 ← Kembali
@@ -66,6 +66,9 @@
                             <div class="space-y-6">
 
                                 {{-- Pegawai --}}
+                                @if(auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id)
+                                    <input type="hidden" name="pegawai_id" value="{{ auth()->user()->pegawai_id }}">
+                                @else
                                 <div>
 
                                     <label class="block mb-2 text-sm font-semibold text-gray-700">
@@ -87,7 +90,7 @@
 
                                             <option
                                                 value="{{ $p->id }}"
-                                                {{ old('pegawai_id') == $p->id ? 'selected' : '' }}>
+                                                {{ old('pegawai_id', request('pegawai_id')) == $p->id ? 'selected' : '' }}>
 
                                                 {{ $p->nip }}
                                                 -
@@ -110,6 +113,7 @@
                                     @enderror
 
                                 </div>
+                                @endif
 
                                 {{-- Nama Diklat --}}
                                 <div>

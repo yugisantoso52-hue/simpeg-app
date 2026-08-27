@@ -249,7 +249,15 @@
 
                         {{-- 5. RIWAYAT PENDIDIKAN --}}
                         <div>
-                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">5. Riwayat Pendidikan</h4>
+                            <div class="flex items-center justify-between border-b pb-1 mb-2">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">5. Riwayat Pendidikan</h4>
+                                @can('update', $pegawai)
+                                    <a href="{{ route('riwayat-pendidikan.create', ['pegawai_id' => $pegawai->id]) }}"
+                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                        + Tambah Pendidikan
+                                    </a>
+                                @endcan
+                            </div>
                             @if($pegawai->riwayatPendidikan && $pegawai->riwayatPendidikan->count() > 0)
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
@@ -280,7 +288,15 @@
 
                         {{-- 6. RIWAYAT DIKLAT / PELATIHAN --}}
                         <div>
-                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">6. Riwayat Diklat / Pelatihan</h4>
+                            <div class="flex items-center justify-between border-b pb-1 mb-2">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">6. Riwayat Diklat / Pelatihan</h4>
+                                @can('update', $pegawai)
+                                    <a href="{{ route('riwayat-diklat.create', ['pegawai_id' => $pegawai->id]) }}"
+                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                        + Tambah Diklat
+                                    </a>
+                                @endcan
+                            </div>
                             @if($pegawai->riwayatDiklat && $pegawai->riwayatDiklat->count() > 0)
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
@@ -354,12 +370,12 @@
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
                                 <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">8. Legalitas Profesi (STR & SIP)</h4>
-                                @if(Auth::user()->hasRole('admin'))
+                                @can('update', $pegawai)
                                     <a href="{{ route('riwayat-str-sip.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
                                         + Tambah STR/SIP
                                     </a>
-                                @endif
+                                @endcan
                             </div>
                             @if($pegawai->riwayatStrSip && $pegawai->riwayatStrSip->count() > 0)
                                 <div class="overflow-x-auto">
@@ -418,12 +434,12 @@
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
                                 <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">9. Tugas Belajar & Izin Belajar (Studi Lanjut)</h4>
-                                @if(Auth::user()->hasRole('admin'))
+                                @can('update', $pegawai)
                                     <a href="{{ route('tugas-belajar.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
                                         + Tambah Tubel/Ibel
                                     </a>
-                                @endif
+                                @endcan
                             </div>
                             @if($pegawai->tugasBelajar && $pegawai->tugasBelajar->count() > 0)
                                 <div class="overflow-x-auto">
@@ -497,12 +513,12 @@
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-3">
                                 <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">10. Pengarsipan SKP (Sasaran Kinerja Pegawai - 2 Tahun)</h4>
-                                @if(Auth::user()->hasRole('admin'))
+                                @can('update', $pegawai)
                                     <a href="{{ route('riwayat-skp.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
                                         + Tambah Arsip SKP
                                     </a>
-                                @endif
+                                @endcan
                             </div>
 
                             @php
@@ -520,11 +536,13 @@
                                             <span class="text-base font-extrabold text-gray-900">Tahun {{ now()->year }} (N)</span>
                                             <span class="text-[11px] font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">Tahun Berjalan</span>
                                         </div>
-                                        @if($skpN && Auth::user()->hasRole('admin'))
-                                            <a href="{{ route('riwayat-skp.edit', $skpN->id) }}" class="text-xs text-yellow-700 hover:underline">Edit</a>
-                                        @elseif(!$skpN && Auth::user()->hasRole('admin'))
-                                            <a href="{{ route('riwayat-skp.create', ['pegawai_id' => $pegawai->id, 'tahun' => now()->year]) }}" class="text-xs text-blue-600 font-semibold hover:underline">+ Unggah SKP {{ now()->year }}</a>
-                                        @endif
+                                        @can('update', $pegawai)
+                                            @if($skpN)
+                                                <a href="{{ route('riwayat-skp.edit', $skpN->id) }}" class="text-xs text-yellow-700 hover:underline font-semibold">Edit</a>
+                                            @else
+                                                <a href="{{ route('riwayat-skp.create', ['pegawai_id' => $pegawai->id, 'tahun' => now()->year]) }}" class="text-xs text-blue-600 font-semibold hover:underline">+ Unggah SKP {{ now()->year }}</a>
+                                            @endif
+                                        @endcan
                                     </div>
 
                                     @if($skpN)
@@ -572,11 +590,13 @@
                                             <span class="text-base font-extrabold text-gray-900">Tahun {{ now()->year - 1 }} (N-1)</span>
                                             <span class="text-[11px] font-semibold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded">Tahun Sebelumnya</span>
                                         </div>
-                                        @if($skpN1 && Auth::user()->hasRole('admin'))
-                                            <a href="{{ route('riwayat-skp.edit', $skpN1->id) }}" class="text-xs text-yellow-700 hover:underline">Edit</a>
-                                        @elseif(!$skpN1 && Auth::user()->hasRole('admin'))
-                                            <a href="{{ route('riwayat-skp.create', ['pegawai_id' => $pegawai->id, 'tahun' => now()->year - 1]) }}" class="text-xs text-indigo-600 font-semibold hover:underline">+ Unggah SKP {{ now()->year - 1 }}</a>
-                                        @endif
+                                        @can('update', $pegawai)
+                                            @if($skpN1)
+                                                <a href="{{ route('riwayat-skp.edit', $skpN1->id) }}" class="text-xs text-yellow-700 hover:underline font-semibold">Edit</a>
+                                            @else
+                                                <a href="{{ route('riwayat-skp.create', ['pegawai_id' => $pegawai->id, 'tahun' => now()->year - 1]) }}" class="text-xs text-indigo-600 font-semibold hover:underline">+ Unggah SKP {{ now()->year - 1 }}</a>
+                                            @endif
+                                        @endcan
                                     </div>
 
                                     @if($skpN1)
@@ -664,16 +684,18 @@
                                     </div>
                                 </div>
                             @endif
+                        </div>
+
                         {{-- 11. RIWAYAT PENGHARGAAN & TANDA JASA --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
                                 <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">11. Riwayat Penghargaan & Tanda Jasa</h4>
-                                @if(Auth::user()->hasRole('admin'))
+                                @can('update', $pegawai)
                                     <a href="{{ route('riwayat-penghargaan.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
                                         + Tambah Penghargaan
                                     </a>
-                                @endif
+                                @endcan
                             </div>
                             @if($pegawai->riwayatPenghargaan && $pegawai->riwayatPenghargaan->count() > 0)
                                 <div class="overflow-x-auto">
@@ -715,12 +737,12 @@
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
                                 <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">12. Riwayat Keanggotaan Organisasi</h4>
-                                @if(Auth::user()->hasRole('admin'))
+                                @can('update', $pegawai)
                                     <a href="{{ route('riwayat-organisasi.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
                                         + Tambah Organisasi
                                     </a>
-                                @endif
+                                @endcan
                             </div>
                             @if($pegawai->riwayatOrganisasi && $pegawai->riwayatOrganisasi->count() > 0)
                                 <div class="overflow-x-auto">
@@ -758,12 +780,12 @@
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
                                 <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">13. Riwayat Publikasi Ilmiah & Karya</h4>
-                                @if(Auth::user()->hasRole('admin'))
+                                @can('update', $pegawai)
                                     <a href="{{ route('riwayat-publikasi.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
                                         + Tambah Publikasi
                                     </a>
-                                @endif
+                                @endcan
                             </div>
                             @if($pegawai->riwayatPublikasi && $pegawai->riwayatPublikasi->count() > 0)
                                 <div class="overflow-x-auto">

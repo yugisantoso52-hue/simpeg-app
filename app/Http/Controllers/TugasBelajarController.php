@@ -46,6 +46,12 @@ class TugasBelajarController extends Controller
             $request->file('file_laporan_progress')
         );
 
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Data Tugas / Izin Belajar berhasil disimpan.');
+        }
+
         return redirect()
             ->route('tugas-belajar.index')
             ->with('success', 'Data Tugas / Izin Belajar berhasil disimpan dan status pegawai telah disinkronkan.');
@@ -68,6 +74,12 @@ class TugasBelajarController extends Controller
             $request->file('file_laporan_progress')
         );
 
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Data Tugas / Izin Belajar berhasil diperbarui.');
+        }
+
         return redirect()
             ->route('tugas-belajar.index')
             ->with('success', 'Data Tugas / Izin Belajar berhasil diperbarui dan status pegawai telah disinkronkan.');
@@ -76,6 +88,12 @@ class TugasBelajarController extends Controller
     public function destroy(int $id)
     {
         $this->service->delete($id);
+
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Data Tugas / Izin Belajar berhasil dihapus.');
+        }
 
         return redirect()
             ->route('tugas-belajar.index')
