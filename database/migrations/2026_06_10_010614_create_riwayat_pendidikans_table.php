@@ -8,22 +8,24 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('riwayat_pendidikan', function (Blueprint $table) {
-            $table->id();
+        if (!Schema::hasTable('riwayat_pendidikan')) {
+            Schema::create('riwayat_pendidikan', function (Blueprint $table) {
+                $table->id();
 
-            $table->foreignId('pegawai_id')
-                ->constrained('pegawai')
-                ->cascadeOnDelete();
+                $table->foreignId('pegawai_id')
+                    ->constrained('pegawai')
+                    ->cascadeOnDelete();
 
-            $table->string('jenjang');
-            $table->string('institusi');
-            $table->string('fakultas')->nullable();
-            $table->string('jurusan')->nullable();
-            $table->year('tahun_lulus')->nullable(); // FIX: Dibuat nullable agar tidak crash jika kosong
-            $table->string('ijazah')->nullable();
+                $table->string('jenjang');
+                $table->string('institusi');
+                $table->string('fakultas')->nullable();
+                $table->string('jurusan')->nullable();
+                $table->year('tahun_lulus')->nullable(); // FIX: Dibuat nullable agar tidak crash jika kosong
+                $table->string('ijazah')->nullable();
 
-            $table->timestamps();
-        });
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void

@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pegawai', function (Blueprint $table) {
-            $table->id();
-            $table->string('nip', 50)->unique();
+        if (!Schema::hasTable('pegawai')) {
+            Schema::create('pegawai', function (Blueprint $table) {
+                $table->id();
+                $table->string('nip', 50)->unique();
             $table->string('nik', 50)->nullable();
             $table->string('nama', 150);
             
@@ -79,6 +80,7 @@ return new class extends Migration
             $table->string('foto')->nullable();
             $table->timestamps();
         });
+        }
     }
 
     /**

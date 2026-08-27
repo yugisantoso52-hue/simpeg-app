@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('pegawai', function (Blueprint $table) {
-            $table->index('email');
-        });
+        try {
+            Schema::table('pegawai', function (Blueprint $table) {
+                $table->index('email');
+            });
+        } catch (\Throwable $e) {
+            // Index might already exist
+        }
     }
 
     /**

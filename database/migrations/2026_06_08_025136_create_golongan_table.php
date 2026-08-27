@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('golongan', function (Blueprint $table) {
-            $table->id();
-            $table->string('nama_golongan', 50); 
-            $table->string('nama_pangkat', 100);  
-            $table->string('keterangan')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('golongan')) {
+            Schema::create('golongan', function (Blueprint $table) {
+                $table->id();
+                $table->string('nama_golongan', 50); 
+                $table->string('nama_pangkat', 100);  
+                $table->string('keterangan')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

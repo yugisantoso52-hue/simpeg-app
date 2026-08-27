@@ -10,15 +10,17 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-{
-    Schema::create('unit_kerja', function (Blueprint $table) {
-        $table->id();
-        $table->string('kode_unit', 20)->unique();
-        $table->string('nama_unit', 150);
-        $table->text('keterangan')->nullable();
-        $table->timestamps();
-    });
-}
+    {
+        if (!Schema::hasTable('unit_kerja')) {
+            Schema::create('unit_kerja', function (Blueprint $table) {
+                $table->id();
+                $table->string('kode_unit', 20)->unique();
+                $table->string('nama_unit', 150);
+                $table->text('keterangan')->nullable();
+                $table->timestamps();
+            });
+        }
+    }
 
     /**
      * Reverse the migrations.

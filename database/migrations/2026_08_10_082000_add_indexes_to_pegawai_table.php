@@ -11,15 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('pegawai', function (Blueprint $table) {
-            $table->index('status_pegawai');
-            $table->index('jenis_pegawai');
-            $table->index('status_asn');
-            $table->index('tmt_pangkat_terakhir');
-            $table->index('kgb_berikutnya');
-            $table->index('kp_berikutnya');
-            $table->index('satyalancana_berikutnya');
-        });
+        try {
+            Schema::table('pegawai', function (Blueprint $table) {
+                $table->index('status_pegawai');
+                $table->index('jenis_pegawai');
+                $table->index('status_asn');
+                $table->index('tmt_pangkat_terakhir');
+                $table->index('kgb_berikutnya');
+                $table->index('kp_berikutnya');
+                $table->index('satyalancana_berikutnya');
+            });
+        } catch (\Throwable $e) {
+            // Index might already exist
+        }
     }
 
     /**

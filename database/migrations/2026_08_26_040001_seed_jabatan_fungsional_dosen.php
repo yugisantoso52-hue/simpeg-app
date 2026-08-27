@@ -42,10 +42,21 @@ return new class extends Migration
                 ->exists();
 
             if (!$exists) {
-                DB::table('jabatan')->insert(array_merge($jabatan, [
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]));
+                $dataToInsert = [
+                    'nama_jabatan' => $jabatan['nama_jabatan'],
+                    'keterangan'   => $jabatan['keterangan'],
+                    'created_at'   => now(),
+                    'updated_at'   => now(),
+                ];
+
+                if (Schema::hasColumn('jabatan', 'kode_jabatan')) {
+                    $dataToInsert['kode_jabatan'] = $jabatan['kode_jabatan'];
+                }
+                if (Schema::hasColumn('jabatan', 'jenis_jabatan')) {
+                    $dataToInsert['jenis_jabatan'] = 'Fungsional';
+                }
+
+                DB::table('jabatan')->insert($dataToInsert);
             }
         }
     }

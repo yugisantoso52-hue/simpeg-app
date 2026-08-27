@@ -8,24 +8,26 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('riwayat_pangkat', function (Blueprint $table) {
-            $table->id();
+        if (!Schema::hasTable('riwayat_pangkat')) {
+            Schema::create('riwayat_pangkat', function (Blueprint $table) {
+                $table->id();
 
-            $table->foreignId('pegawai_id')
-                ->constrained('pegawai')
-                ->cascadeOnDelete();
+                $table->foreignId('pegawai_id')
+                    ->constrained('pegawai')
+                    ->cascadeOnDelete();
 
-            $table->foreignId('golongan_id')
-                ->constrained('golongan')
-                ->cascadeOnDelete();
+                $table->foreignId('golongan_id')
+                    ->constrained('golongan')
+                    ->cascadeOnDelete();
 
-            $table->date('tmt')->nullable();
-            $table->string('nomor_sk')->nullable();
-            $table->string('file_sk')->nullable(); // Arsip Dokumen SK
-            $table->text('keterangan')->nullable();
+                $table->date('tmt')->nullable();
+                $table->string('nomor_sk')->nullable();
+                $table->string('file_sk')->nullable(); // Arsip Dokumen SK
+                $table->text('keterangan')->nullable();
 
-            $table->timestamps();
-        });
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void
