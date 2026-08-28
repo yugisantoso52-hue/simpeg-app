@@ -17,7 +17,10 @@
     <body class="font-sans text-slate-900 antialiased bg-slate-100">
         <div class="min-h-screen flex flex-col justify-center items-center px-4 py-8 bg-slate-100">
             <div class="w-full sm:max-w-md bg-white shadow-xl rounded-2xl border border-slate-200 p-6 sm:p-8">
-                {{ $slot }}
+                @if(isset($slot))
+                    {{ $slot }}
+                @endif
+                @yield('content')
             </div>
 
             <div class="mt-6 text-center text-xs text-slate-500 font-medium">
