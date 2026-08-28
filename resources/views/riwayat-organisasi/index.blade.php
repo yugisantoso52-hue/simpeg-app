@@ -1,90 +1,88 @@
-@extends('layouts.app')
-
-@section('title', 'Riwayat Keanggotaan Organisasi')
-
-@section('content')
-<div class="px-4 sm:px-6 lg:px-8 py-6">
-    <div class="sm:flex sm:items-center sm:justify-between mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">🏛️ Riwayat Keanggotaan Organisasi</h1>
-            <p class="mt-1 text-sm text-gray-500">Data keanggotaan organisasi profesi seluruh pegawai (PPNI, IDI, dll).</p>
+<x-app-layout>
+    <x-slot name="header">
+        <div class="sm:flex sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">🏛️ Riwayat Keanggotaan Organisasi</h1>
+                <p class="mt-1 text-sm text-gray-500">Data keanggotaan organisasi profesi seluruh pegawai (PPNI, IDI, IBI, dll).</p>
+            </div>
+            @if(Auth::user()->hasRole('admin'))
+            <a href="{{ route('riwayat-organisasi.create') }}"
+               class="mt-4 sm:mt-0 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-500">
+                + Tambah Organisasi
+            </a>
+            @endif
         </div>
-        @can('admin')
-        <a href="{{ route('riwayat-organisasi.create') }}"
-           class="mt-4 sm:mt-0 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-500">
-            + Tambah Organisasi
-        </a>
-        @endcan
+    </x-slot>
+
+    <div class="px-4 sm:px-6 lg:px-8 py-6">
+        {{-- Search --}}
+        <form method="GET" class="mb-4 flex gap-2">
+            <input type="text" name="search" value="{{ request('search') }}"
+                   placeholder="Cari nama organisasi atau nama pegawai..."
+                   class="block w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <button type="submit" class="rounded-lg bg-gray-700 px-4 py-2 text-sm text-white hover:bg-gray-600">Cari</button>
+        </form>
+
+        @if(session('success'))
+            <div class="mb-4 rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-700">{{ session('success') }}</div>
+        @endif
+
+        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600">Pegawai</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600">Nama Organisasi</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600">Jabatan</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600">Periode</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600">Status</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($data as $item)
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3">
+                            <a href="{{ route('pegawai.show', $item->pegawai_id) }}" class="font-medium text-indigo-600 hover:underline">
+                                {{ $item->pegawai->nama ?? '-' }}
+                            </a>
+                            <div class="text-xs text-gray-400">{{ $item->pegawai->nip ?? '' }}</div>
+                        </td>
+                        <td class="px-4 py-3 font-medium text-gray-900">{{ $item->nama_organisasi }}</td>
+                        <td class="px-4 py-3 text-gray-500">{{ $item->jabatan_organisasi ?? '-' }}</td>
+                        <td class="px-4 py-3 text-gray-500">
+                            {{ $item->tahun_mulai ?? '?' }} — {{ $item->tahun_selesai ?? 'sekarang' }}
+                        </td>
+                        <td class="px-4 py-3">
+                            @if($item->masih_aktif)
+                                <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Aktif</span>
+                            @else
+                                <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">Selesai</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-2">
+                                @if(Auth::user()->hasRole('admin'))
+                                <a href="{{ route('riwayat-organisasi.edit', $item->id) }}"
+                                   class="text-xs text-indigo-600 hover:underline">Edit</a>
+                                <form method="POST" action="{{ route('riwayat-organisasi.destroy', $item->id) }}"
+                                      onsubmit="return confirm('Hapus data ini?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-xs text-red-500 hover:underline">Hapus</button>
+                                </form>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-400">Belum ada data keanggotaan organisasi.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4">{{ $data->withQueryString()->links() }}</div>
     </div>
-
-    {{-- Search --}}
-    <form method="GET" class="mb-4 flex gap-2">
-        <input type="text" name="search" value="{{ request('search') }}"
-               placeholder="Cari nama organisasi atau nama pegawai..."
-               class="block w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
-        <button type="submit" class="rounded-lg bg-gray-700 px-4 py-2 text-sm text-white hover:bg-gray-600">Cari</button>
-    </form>
-
-    @if(session('success'))
-        <div class="mb-4 rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-700">{{ session('success') }}</div>
-    @endif
-
-    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <table class="min-w-full divide-y divide-gray-200 text-sm">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-600">Pegawai</th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-600">Nama Organisasi</th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-600">Jabatan</th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-600">Periode</th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-600">Status</th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-600">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-                @forelse($data as $item)
-                <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3">
-                        <a href="{{ route('pegawai.show', $item->pegawai_id) }}" class="font-medium text-indigo-600 hover:underline">
-                            {{ $item->pegawai->nama ?? '-' }}
-                        </a>
-                        <div class="text-xs text-gray-400">{{ $item->pegawai->nip ?? '' }}</div>
-                    </td>
-                    <td class="px-4 py-3 font-medium text-gray-900">{{ $item->nama_organisasi }}</td>
-                    <td class="px-4 py-3 text-gray-500">{{ $item->jabatan_organisasi ?? '-' }}</td>
-                    <td class="px-4 py-3 text-gray-500">
-                        {{ $item->tahun_mulai ?? '?' }} — {{ $item->tahun_selesai ?? 'sekarang' }}
-                    </td>
-                    <td class="px-4 py-3">
-                        @if($item->masih_aktif)
-                            <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Aktif</span>
-                        @else
-                            <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">Selesai</span>
-                        @endif
-                    </td>
-                    <td class="px-4 py-3">
-                        <div class="flex items-center gap-2">
-                            @can('admin')
-                            <a href="{{ route('riwayat-organisasi.edit', $item->id) }}"
-                               class="text-xs text-indigo-600 hover:underline">Edit</a>
-                            <form method="POST" action="{{ route('riwayat-organisasi.destroy', $item->id) }}"
-                                  onsubmit="return confirm('Hapus data ini?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="text-xs text-red-500 hover:underline">Hapus</button>
-                            </form>
-                            @endcan
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="6" class="px-4 py-8 text-center text-gray-400">Belum ada data keanggotaan organisasi.</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div class="mt-4">{{ $data->withQueryString()->links() }}</div>
-</div>
-@endsection
+</x-app-layout>
