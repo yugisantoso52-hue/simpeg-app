@@ -148,6 +148,13 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         /* Approval Pengajuan Cuti */
         Route::post('/pengajuan-cuti/{id}/approve', [PengajuanCutiController::class, 'approve'])->name('pengajuan-cuti.approve');
 
+        /* Data Kepegawaian Berdasarkan Kategori (Dosen, Tendik, PHL) */
+        Route::prefix('kepegawaian')->name('kepegawaian.')->group(function () {
+            Route::get('/dosen', [PegawaiController::class, 'dosen'])->name('dosen.index');
+            Route::get('/tendik', [PegawaiController::class, 'tendik'])->name('tendik.index');
+            Route::get('/phl', [PegawaiController::class, 'phl'])->name('phl.index');
+        });
+
         Route::get('/pegawai', [PegawaiController::class, 'index'])->name('pegawai.index');
         Route::get('/duk', [PegawaiController::class, 'duk'])->name('duk.index');
         Route::get('/reports/duk/pdf', [PegawaiController::class, 'exportDukPdf'])->name('reports.duk.pdf');
@@ -164,6 +171,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/reports/reminder/pdf', [ReportController::class, 'exportReminderPdf'])->name('reports.reminder.pdf');
         Route::get('/reports/reminder/excel', [ReportController::class, 'exportReminderExcel'])->name('reports.reminder.excel');
     });
+
+    /* Fallback Route untuk modul yang masih tahap pengembangan / Coming Soon */
+    Route::get('/feature/coming-soon/{module?}', [PegawaiController::class, 'comingSoon'])->name('coming.soon');
 });
 
 Route::get('/sync-db-production-simpeg-secure', function() {

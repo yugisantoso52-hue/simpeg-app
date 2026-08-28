@@ -324,4 +324,121 @@ class PegawaiController extends Controller
         $avatarUrl = 'https://ui-avatars.com/api/?name=' . urlencode($pegawai->nama_lengkap ?? $pegawai->nama ?? 'User') . '&color=7F9CF5&background=EBF4FF';
         return redirect()->away($avatarUrl);
     }
+
+    /**
+     * Tampilan Khusus Tenaga Pendidik (Dosen)
+     */
+    public function dosen(Request $request)
+    {
+        $search = $request->get('search');
+        $query = Pegawai::dosen()->with(['golongan', 'unitKerja', 'jabatan']);
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%")
+                  ->orWhere('nidn_nuptk', 'like', "%{$search}%");
+            });
+        }
+
+        $pegawai = $query->latest('id')->paginate(10)->withQueryString();
+
+        $statistics = [
+            'total' => Pegawai::dosen()->count(),
+            'aktif' => Pegawai::dosen()->aktif()->count(),
+            'pns'   => Pegawai::dosen()->where('status_asn', 'ASN')->count(),
+            'tubel' => Pegawai::dosen()->where('status_pegawai', 'Tugas Belajar')->count(),
+        ];
+
+        $kategoriTitle = 'Data Tenaga Pendidik / Dosen';
+        $kategoriSubtitle = 'Pencatatan data dosen tetap, NIDN, jabatan fungsional akademik, dan kepangkatan';
+        $kategori = 'Dosen';
+        $badgeColor = 'blue';
+
+        return view('pegawai.kategori', compact('pegawai', 'statistics', 'search', 'kategoriTitle', 'kategoriSubtitle', 'kategori', 'badgeColor'));
+    }
+
+    /**
+     * Tampilan Khusus Tenaga Kependidikan (Tendik)
+     */
+    public function tendik(Request $request)
+    {
+        $search = $request->get('search');
+        $query = Pegawai::tendik()->with(['golongan', 'unitKerja', 'jabatan']);
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%");
+            });
+        }
+
+        $pegawai = $query->latest('id')->paginate(10)->withQueryString();
+
+        $statistics = [
+            'total' => Pegawai::tendik()->count(),
+            'aktif' => Pegawai::tendik()->aktif()->count(),
+            'pns'   => Pegawai::tendik()->where('status_asn', 'ASN')->count(),
+            'tubel' => Pegawai::tendik()->where('status_pegawai', 'Tugas Belajar')->count(),
+        ];
+
+        $kategoriTitle = 'Data Tenaga Kependidikan (Tendik)';
+        $kategoriSubtitle = 'Pencatatan data staf administrasi, laboran, teknisi, dan fungsional umum';
+        $kategori = 'Tendik';
+        $badgeColor = 'emerald';
+
+        return view('pegawai.kategori', compact('pegawai', 'statistics', 'search', 'kategoriTitle', 'kategoriSubtitle', 'kategori', 'badgeColor'));
+    }
+
+    /**
+     * Tampilan Khusus Pegawai Harian Lepas (PHL / Kontrak)
+     */
+    public function phl(Request $request)
+    {
+        $search = $request->get('search');
+        $query = Pegawai::phl()->with(['golongan', 'unitKerja', 'jabatan']);
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%");
+            });
+        }
+
+        $pegawai = $query->latest('id')->paginate(10)->withQueryString();
+
+        $statistics = [
+            'total'   => Pegawai::phl()->count(),
+            'aktif'   => Pegawai::phl()->aktif()->count(),
+            'non_asn' => Pegawai::phl()->where('status_asn', 'Non ASN')->count(),
+            'kontrak' => Pegawai::phl()->whereNotNull('jenis_kontrak')->count(),
+        ];
+
+        $kategoriTitle = 'Data Pegawai Harian Lepas (PHL) & Tenaga Kontrak';
+        $kategoriSubtitle = 'Pencatatan data pegawai non-ASN, honorer, dan kontrak kerja institusi';
+        $kategori = 'PHL';
+        $badgeColor = 'amber';
+
+        return view('pegawai.kategori', compact('pegawai', 'statistics', 'search', 'kategoriTitle', 'kategoriSubtitle', 'kategori', 'badgeColor'));
+    }
+
+    /**
+     * Halaman Fallback / Coming Soon untuk modul yang sedang dikembangkan
+     */
+    public function comingSoon(Request $request, $module = null)
+    {
+        $moduleNames = [
+            'gaji'          => 'Penggajian & Tunjangan Kinerja (Remunerasi)',
+            'evaluasi'      => 'Evaluasi Kinerja & Angka Kredit Otomatis',
+            'presensi'      => 'Integrasi Presensi Fingerprint & GPS',
+            'arsip-digital' => 'E-Arsip Dokumen Kepegawaian Cloud',
+            'konseling'     => 'Konseling & Bimbingan Karir Pegawai',
+            'skp-tahunan'   => 'Penilaian SKP Tahunan Terintegrasi BKN',
+            'beban-kerja'   => 'Beban Kerja Dosen (BKD / SISTER)',
+        ];
+
+        $moduleTitle = $moduleNames[$module] ?? ucwords(str_replace('-', ' ', (string)($module ?? 'Fitur SIKAP Enterprise')));
+
+        return view('pages.coming-soon', compact('moduleTitle'));
+    }
 }

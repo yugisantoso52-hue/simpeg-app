@@ -446,4 +446,94 @@ class Pegawai extends Model
     {
         return $query->where('status_asn', 'Non ASN');
     }
+
+    /**
+     * Scope: Filter data Dosen (Pendidik / Dosen Fungsional)
+     */
+    public function scopeDosen(Builder $query): Builder
+    {
+        return $query->where(function ($q) {
+            $q->where('jenis_pegawai', 'like', '%Dosen%')
+              ->orWhere(function ($sq) {
+                  $sq->whereNotNull('nidn_nuptk')
+                     ->where('nidn_nuptk', '!=', '')
+                     ->where('nidn_nuptk', '!=', '-');
+              })
+              ->orWhereHas('jabatan', function ($jq) {
+                  $jq->where('nama_jabatan', 'like', '%Dosen%')
+                    ->orWhere('nama_jabatan', 'like', '%Lektor%')
+                    ->orWhere('nama_jabatan', 'like', '%Asisten Ahli%')
+                    ->orWhere('nama_jabatan', 'like', '%Guru Besar%')
+                    ->orWhere('nama_jabatan', 'like', '%Profesor%');
+              });
+        });
+    }
+
+    /**
+     * Scope: Filter data Tenaga Kependidikan (Tendik / Staff Administrasi / Laboran / Teknisi)
+     */
+    public function scopeTendik(Builder $query): Builder
+    {
+        return $query->where(function ($q) {
+            // Bukan Dosen dan bukan PHL
+            $q->where(function ($sq) {
+                $sq->whereIn('jenis_pegawai', ['Tendik', 'Tenaga Kependidikan', 'PNS', 'PPPK'])
+                   ->orWhere('jenis_jabatan', 'Pelaksana')
+                   ->orWhere('jenis_jabatan', 'Struktural')
+                   ->orWhere('status_asn', 'ASN');
+            })->where(function ($sq) {
+                $sq->where('jenis_pegawai', 'not like', '%Dosen%')
+                   ->orWhereNull('jenis_pegawai');
+            })->where(function ($sq) {
+                $sq->whereNotIn('jenis_pegawai', ['PHL', 'Honorer', 'Tenaga Kontrak', 'Pegawai Harian Lepas'])
+                   ->orWhereNull('jenis_pegawai');
+            })->where(function ($sq) {
+                $sq->whereNull('nidn_nuptk')
+                   ->orWhere('nidn_nuptk', '')
+                   ->orWhere('nidn_nuptk', '-');
+            });
+        });
+    }
+
+    /**
+     * Scope: Filter data Pegawai Harian Lepas (PHL / Honorer / Tenaga Kontrak Non-ASN)
+     */
+    public function scopePhl(Builder $query): Builder
+    {
+        return $query->where(function ($q) {
+            $q->whereIn('jenis_pegawai', ['PHL', 'Honorer', 'Tenaga Kontrak', 'Pegawai Harian Lepas'])
+              ->orWhere('status_asn', 'Non ASN')
+              ->orWhere('status_asn', 'PHL')
+              ->orWhere('jenis_jabatan', 'Tenaga Kontrak')
+              ->orWhereNotNull('jenis_kontrak');
+        })->where(function ($sq) {
+            $sq->where('jenis_pegawai', 'not like', '%Dosen%')
+               ->orWhereNull('jenis_pegawai');
+        });
+    }
+
+    /**
+     * Accessor: Deteksi Kategori Kepegawaian (Dosen / Tendik / PHL)
+     */
+    protected function kategoriKepegawaian(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $jenis = strtoupper(trim((string)$this->jenis_pegawai));
+                $nidn = trim((string)$this->nidn_nuptk);
+                $statusAsn = strtoupper(trim((string)$this->status_asn));
+                $jabatanNama = strtoupper(trim((string)($this->jabatan->nama_jabatan ?? '')));
+
+                if (str_contains($jenis, 'DOSEN') || ($nidn !== '' && $nidn !== '-') || str_contains($jabatanNama, 'DOSEN') || str_contains($jabatanNama, 'LEKTOR') || str_contains($jabatanNama, 'GURU BESAR')) {
+                    return 'Dosen';
+                }
+
+                if (in_array($jenis, ['PHL', 'HONORER', 'TENAGA KONTRAK', 'PEGAWAI HARIAN LEPAS']) || $statusAsn === 'NON ASN' || $statusAsn === 'PHL' || !empty($this->jenis_kontrak)) {
+                    return 'PHL';
+                }
+
+                return 'Tendik';
+            }
+        );
+    }
 }
