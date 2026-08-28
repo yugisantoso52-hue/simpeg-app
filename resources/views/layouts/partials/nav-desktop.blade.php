@@ -126,6 +126,11 @@
             <x-dropdown-link :href="route('golongan.index')" class="{{ request()->routeIs('golongan.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                 📊 Golongan
             </x-dropdown-link>
+
+            <div class="border-t border-gray-100 my-1"></div>
+            <x-dropdown-link :href="route('cloud-sync.pull-web')" onclick="return confirm('Apakah Anda yakin ingin menarik seluruh data terbaru dari Cloud Railway (https://sikap-app.up.railway.app) ke localhost?')" class="text-blue-600 font-bold hover:bg-blue-50">
+                🔄 Tarik Data dari Cloud
+            </x-dropdown-link>
         </x-slot>
     </x-dropdown>
 @endif

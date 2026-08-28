@@ -6,10 +6,29 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Artisan;
 use Symfony\Component\HttpFoundation\Response;
 
 class CloudSyncController extends Controller
 {
+    /**
+     * Web Trigger: Admin clicks a button to sync live data from Railway to Localhost
+     */
+    public function pullFromWeb(Request $request)
+    {
+        try {
+            $exitCode = Artisan::call('simpeg:pull-cloud');
+            $output = Artisan::output();
+
+            if ($exitCode === 0) {
+                return redirect()->route('dashboard')->with('success', 'Alhamdulillah! Sinkronisasi Data dari Cloud Railway (29 Pegawai) berhasil diperbarui ke Localhost.');
+            } else {
+                return redirect()->back()->with('error', 'Gagal menyinkronkan data: ' . $output);
+            }
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
     /**
      * Secret token validation for secure data synchronization
      */

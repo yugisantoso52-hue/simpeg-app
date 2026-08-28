@@ -111,6 +111,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('/pegawai/import', [PegawaiController::class, 'import'])->name('pegawai.import');
 
         // Tambah & Hapus Pegawai (Khusus Admin)
+        Route::get('/sync-from-cloud', [CloudSyncController::class, 'pullFromWeb'])->name('cloud-sync.pull-web');
         Route::get('/pegawai/create', [PegawaiController::class, 'create'])->name('pegawai.create');
         Route::post('/pegawai', [PegawaiController::class, 'store'])->name('pegawai.store');
         Route::post('/pegawai/bulk-delete', [PegawaiController::class, 'bulkDelete'])->name('pegawai.bulk-delete');
