@@ -20,7 +20,7 @@
 
             </div>
 
-            <a href="{{ route('riwayat-diklat.index') }}"
+            <a href="{{ auth()->user()->hasRole('pegawai') ? route('pegawai.show', auth()->user()->pegawai_id) : route('riwayat-diklat.index') }}"
                class="inline-flex items-center rounded-lg bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 transition">
 
                 ← Kembali
@@ -421,7 +421,7 @@
                             <div class="flex flex-col sm:flex-row justify-end gap-3">
 
                                 <a
-                                    href="{{ route('riwayat-diklat.index') }}"
+                                    href="{{ auth()->user()->hasRole('pegawai') ? route('pegawai.show', auth()->user()->pegawai_id) : route('riwayat-diklat.index') }}"
                                     class="inline-flex items-center justify-center rounded-lg bg-gray-600 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-gray-700 transition">
 
                                     ← Kembali

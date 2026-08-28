@@ -46,6 +46,12 @@ class RiwayatSkpController extends Controller
             $request->file('file_evaluasi_skp')
         );
 
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Dokumen SKP berhasil disimpan.');
+        }
+
         return redirect()
             ->route('riwayat-skp.index')
             ->with('success', 'Dokumen SKP berhasil disimpan.');
@@ -68,6 +74,12 @@ class RiwayatSkpController extends Controller
             $request->file('file_evaluasi_skp')
         );
 
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Dokumen SKP berhasil diperbarui.');
+        }
+
         return redirect()
             ->route('riwayat-skp.index')
             ->with('success', 'Dokumen SKP berhasil diperbarui.');
@@ -76,6 +88,12 @@ class RiwayatSkpController extends Controller
     public function destroy(int $id)
     {
         $this->service->delete($id);
+
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            return redirect()
+                ->route('pegawai.show', auth()->user()->pegawai_id)
+                ->with('success', 'Data SKP berhasil dihapus.');
+        }
 
         return redirect()
             ->route('riwayat-skp.index')

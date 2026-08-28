@@ -9,7 +9,7 @@
                     Perbarui data studi lanjut, semester berjalan, atau status kelulusan pegawai
                 </p>
             </div>
-            <a href="{{ route('tugas-belajar.index') }}"
+            <a href="{{ auth()->user()->hasRole('pegawai') ? route('pegawai.show', auth()->user()->pegawai_id) : route('tugas-belajar.index') }}"
                class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition">
                 ← Kembali
             </a>
@@ -232,7 +232,7 @@
 
                     {{-- Tombol Simpan --}}
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                        <a href="{{ route('tugas-belajar.index') }}"
+                        <a href="{{ auth()->user()->hasRole('pegawai') ? route('pegawai.show', auth()->user()->pegawai_id) : route('tugas-belajar.index') }}"
                            class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg text-sm transition">
                             Batal
                         </a>

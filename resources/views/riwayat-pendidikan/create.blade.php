@@ -73,7 +73,7 @@
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
                         Simpan
                     </button>
-                    <a href="{{ route('riwayat-pendidikan.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+                    <a href="{{ auth()->user()->hasRole('pegawai') ? route('pegawai.show', auth()->user()->pegawai_id) : route('riwayat-pendidikan.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
                         Kembali
                     </a>
                 </div>
