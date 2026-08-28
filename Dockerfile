@@ -1,4 +1,4 @@
-FROM php:8.3-fpm
+FROM public.ecr.aws/docker/library/php:8.3-fpm
 
 # Install dependensi sistem, ekstensi PHP, Node.js, dan Composer langsung via curl
 RUN apt-get update && apt-get install -y \
