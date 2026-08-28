@@ -1,4 +1,4 @@
-FROM php:8.3-fpm
+FROM php:8.3-fpm-bookworm
 
 # Install dependensi sistem, ekstensi PHP, dan Node.js untuk Vite
 RUN apt-get update && apt-get install -y \
@@ -30,8 +30,8 @@ ENV COMPOSER_ALLOW_SUPERUSER=1 \
     COMPOSER_MAX_PARALLEL_HTTP=4 \
     NODE_ENV=production
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Install Composer versi 2.7 stabil spesifik
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www
