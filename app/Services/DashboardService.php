@@ -66,10 +66,12 @@ class DashboardService
     }
 
     /**
-     * Reminder KGB, KP, Satyalancana, dan Pensiun (Real-time)
+     * Reminder KGB, KP, Satyalancana, dan Pensiun (Cache Ringan 3 Menit)
      */
     public function reminder(): array
     {
-        return $this->dashboardRepository->getReminder();
+        return Cache::remember('dashboard_reminder', now()->addMinutes(3), function () {
+            return $this->dashboardRepository->getReminder();
+        });
     }
 }

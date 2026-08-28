@@ -10,20 +10,32 @@ use Carbon\Carbon;
 class DashboardRepository implements DashboardRepositoryInterface
 {
     /**
-     * Mengambil Statistik Utama Pegawai
+     * Mengambil Statistik Utama Pegawai (Dioptimasi 1 Query Cepat)
      */
     public function getStatistics(): array
     {
+        $stats = Pegawai::selectRaw("
+            COUNT(*) as total,
+            COALESCE(SUM(CASE WHEN status_asn = 'ASN' THEN 1 ELSE 0 END), 0) as asn,
+            COALESCE(SUM(CASE WHEN status_asn = 'Non ASN' THEN 1 ELSE 0 END), 0) as non_asn,
+            COALESCE(SUM(CASE WHEN status_pegawai = 'Aktif' THEN 1 ELSE 0 END), 0) as aktif,
+            COALESCE(SUM(CASE WHEN status_pegawai = 'Pensiun' THEN 1 ELSE 0 END), 0) as pensiun,
+            COALESCE(SUM(CASE WHEN jenis_pegawai = 'Dosen' THEN 1 ELSE 0 END), 0) as dosen,
+            COALESCE(SUM(CASE WHEN jenis_pegawai = 'PNS' THEN 1 ELSE 0 END), 0) as pns,
+            COALESCE(SUM(CASE WHEN jenis_pegawai = 'PPPK' THEN 1 ELSE 0 END), 0) as pppk,
+            COALESCE(SUM(CASE WHEN jenis_pegawai IN ('PHL', 'Honorer') THEN 1 ELSE 0 END), 0) as phl
+        ")->first();
+
         return [
-            'total'   => Pegawai::count(),
-            'asn'     => Pegawai::where('status_asn', 'ASN')->count(),
-            'non_asn' => Pegawai::where('status_asn', 'Non ASN')->count(),
-            'aktif'   => Pegawai::where('status_pegawai', 'Aktif')->count(),
-            'pensiun' => Pegawai::where('status_pegawai', 'Pensiun')->count(),
-            'dosen'   => Pegawai::where('jenis_pegawai', 'Dosen')->count(),
-            'pns'     => Pegawai::where('jenis_pegawai', 'PNS')->count(),
-            'pppk'    => Pegawai::where('jenis_pegawai', 'PPPK')->count(),
-            'phl'     => Pegawai::whereIn('jenis_pegawai', ['PHL', 'Honorer'])->count(),
+            'total'   => (int)($stats->total ?? 0),
+            'asn'     => (int)($stats->asn ?? 0),
+            'non_asn' => (int)($stats->non_asn ?? 0),
+            'aktif'   => (int)($stats->aktif ?? 0),
+            'pensiun' => (int)($stats->pensiun ?? 0),
+            'dosen'   => (int)($stats->dosen ?? 0),
+            'pns'     => (int)($stats->pns ?? 0),
+            'pppk'    => (int)($stats->pppk ?? 0),
+            'phl'     => (int)($stats->phl ?? 0),
         ];
     }
 
