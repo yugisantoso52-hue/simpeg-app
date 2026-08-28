@@ -2,72 +2,62 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Daftar Urut Kepangkatan (DUK)</title>
+    <title>Daftar Urut Kepangkatan (DUK) Pegawai</title>
     <style>
         @page {
-            margin: 10mm 8mm;
+            margin: 8mm 6mm;
         }
-        body { font-family: sans-serif; font-size: 8px; color: #333; }
-        .header { text-align: center; margin-bottom: 15px; text-transform: uppercase; }
-        .header h2 { margin: 0; font-size: 13px; }
-        .header h3 { margin: 3px 0 0; font-size: 10px; font-weight: normal; }
-        table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-        th, td { border: 1px solid #444; padding: 4px 3px; vertical-align: middle; word-wrap: break-word; }
-        th { background-color: #f2f2f2; text-align: center; font-weight: bold; font-size: 7.5px; }
+        body { font-family: sans-serif; font-size: 7.5px; color: #222; }
+        .header { text-align: center; margin-bottom: 12px; }
+        .header h2 { margin: 0; font-size: 12px; text-transform: uppercase; font-weight: bold; }
+        .header h3 { margin: 2px 0 0; font-size: 9px; font-weight: normal; color: #444; }
+        
+        .section-header {
+            margin-top: 14px;
+            margin-bottom: 4px;
+            padding: 4px 6px;
+            font-size: 8.5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-left: 3px solid #1e3a8a;
+            background-color: #f1f5f9;
+        }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 2px; margin-bottom: 8px; }
+        th, td { border: 1px solid #64748b; padding: 3px 2px; vertical-align: middle; word-wrap: break-word; }
+        th { background-color: #e2e8f0; text-align: center; font-weight: bold; font-size: 7px; color: #1e293b; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
+        .text-bold { font-weight: bold; }
         
-        .rekap-container { margin-top: 15px; width: 30%; }
-        .rekap-title { font-weight: bold; margin-bottom: 4px; font-size: 9px; }
+        .rekap-container { margin-top: 12px; width: 35%; }
+        .rekap-title { font-weight: bold; margin-bottom: 3px; font-size: 8px; text-transform: uppercase; }
+        .page-break { page-break-before: always; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h2>DAFTAR URUT KEPANGKATAN (DUK) PEGAWAI</h2>
-        <h3>SIMPEG ENTERPRISE</h3>
+        <h3>FAKULTAS KEPERAWATAN UNIVERSITAS RIAU — SIKAP ENTERPRISE</h3>
     </div>
 
-    @php
-        // Pengurutan Bertingkat Sesuai Standar BKN: Jenis Pegawai -> Golongan -> TMT Pangkat -> Tgl Lahir
-        $sortedPegawais = $pegawais->sort(function($a, $b) {
-            $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'DOSEN' => 3, 'PHL' => 4, 'HONORER' => 4];
-            $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 5;
-            $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 5;
-            if ($jenisA !== $jenisB) return $jenisA <=> $jenisB;
-
-            $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
-            $golB = $b->golongan->urutan ?? $b->golongan_id ?? 0;
-            if ($golA !== $golB) return $golB <=> $golA;
-
-            $tmtPangkatA = $a->tmt_pangkat_terakhir ? $a->tmt_pangkat_terakhir->timestamp : 0;
-            $tmtPangkatB = $b->tmt_pangkat_terakhir ? $b->tmt_pangkat_terakhir->timestamp : 0;
-            if ($tmtPangkatA !== $tmtPangkatB) return $tmtPangkatA <=> $tmtPangkatB;
-
-            $tglLahirA = $a->tanggal_lahir ? $a->tanggal_lahir->timestamp : 0;
-            $tglLahirB = $b->tanggal_lahir ? $b->tanggal_lahir->timestamp : 0;
-            return $tglLahirA <=> $tglLahirB;
-        });
-
-        // Hitung Rekapitulasi
-        $totalPns     = $pegawais->where('jenis_pegawai', 'PNS')->count();
-        $totalPppk    = $pegawais->where('jenis_pegawai', 'PPPK')->count();
-        $totalDosen   = $pegawais->where('jenis_pegawai', 'Dosen')->count();
-        $totalPhl     = $pegawais->whereIn('jenis_pegawai', ['PHL', 'Honorer'])->count();
-        $totalLainnya = $pegawais->whereNotIn('jenis_pegawai', ['PNS', 'PPPK', 'Dosen', 'PHL', 'Honorer'])->count();
-    @endphp
-
+    {{-- ========================================================================= --}}
+    {{-- I. DAFTAR URUT KEPANGKATAN DOSEN / TENAGA PENDIDIK                        --}}
+    {{-- ========================================================================= --}}
+    <div class="section-header">
+        I. DAFTAR URUT KEPANGKATAN (DUK) DOSEN / TENAGA PENDIDIK ({{ count($dosenList) }} ORANG)
+    </div>
     <table>
         <thead>
             <tr>
                 <th width="2%">NO</th>
-                <th width="12%">NAMA / NIP</th>
-                <th width="8%">GOL / PANGKAT</th>
-                <th width="10%">JABATAN</th>
-                <th width="9%">UNIT KERJA</th>
+                <th width="14%">NAMA / NIP / NIDN</th>
+                <th width="9%">GOL / PANGKAT</th>
+                <th width="12%">JABATAN</th>
+                <th width="10%">UNIT KERJA</th>
                 <th width="7%">PENDIDIKAN</th>
                 <th width="6%">TGL MASUK</th>
-                <th width="6%">TMT SK 1</th>
                 <th width="10%">TMT PANGKAT<br>(Lama / Depan)</th>
                 <th width="10%">TMT KGB<br>(Lama / Depan)</th>
                 <th width="7%">MASA KERJA</th>
@@ -76,106 +66,192 @@
             </tr>
         </thead>
         <tbody>
-    @forelse($sortedPegawais as $row)
-        @php
-            $tglMasuk = $row->tanggal_masuk ? $row->tanggal_masuk->format('d/m/Y') : '-';
-            $tmtSk1   = $row->tmt_sk_pertama ? $row->tmt_sk_pertama->format('d/m/Y') : '-';
-            
-            $tmtPangkatLama  = $row->tmt_pangkat_terakhir ? $row->tmt_pangkat_terakhir->format('d/m/Y') : '-';
-            $tmtPangkatDepan = $row->kp_berikutnya_kalkulasi ? $row->kp_berikutnya_kalkulasi->format('d/m/Y') : '-';
-            
-            $tmtKgbLama  = $row->tmt_kgb_terakhir ? $row->tmt_kgb_terakhir->format('d/m/Y') : '-';
-            $tmtKgbDepan = $row->kgb_berikutnya_kalkulasi ? $row->kgb_berikutnya_kalkulasi->format('d/m/Y') : '-';
-        @endphp
-        <tr>
-            <td class="text-center">{{ $loop->iteration }}</td>
-            <td>
-                <strong>{{ $row->nama_lengkap ?? $row->nama }}</strong><br>
-                <span style="color: #555;">NIP. {{ $row->nip ?? '-' }}</span>
-            </td>
-            <td class="text-center">
-                {{ $row->golongan->nama_golongan ?? '-' }}<br>
-                <small>{{ $row->golongan->nama_pangkat ?? '' }}</small>
-            </td>
-            <td>{{ $row->jabatan->nama_jabatan ?? '-' }}</td>
-            <td>{{ $row->unitKerja->nama_unit ?? '-' }}</td>
-            <td class="text-center">{{ $row->pendidikan_tampil }}</td>
-            <td class="text-center">{{ $tglMasuk }}</td>
-            
-            {{-- TMT SK 1 + Penanda File --}}
-            <td class="text-center">
-                {{ $tmtSk1 }}
-                @if(!empty($row->file_sk_pertama))
-                    <br><small style="color: green;">(Ada SK)</small>
-                @endif
-            </td>
-            
-            {{-- TMT PANGKAT + Penanda File --}}
-            <td class="text-center">
-                <span style="color: #444;">Terakhir: {{ $tmtPangkatLama }}</span><br>
-                <strong>Kedepan: {{ $tmtPangkatDepan }}</strong>
-                @if(!empty($row->file_sk_pangkat_terakhir))
-                    <br><small style="color: green;">(Ada SK)</small>
-                @endif
-            </td>
-            
-            {{-- TMT KGB + Penanda File --}}
-            <td class="text-center">
-                <span style="color: #444;">Terakhir: {{ $tmtKgbLama }}</span><br>
-                <strong>Kedepan: {{ $tmtKgbDepan }}</strong>
-                @if(!empty($row->file_sk_kgb_terakhir))
-                    <br><small style="color: green;">(Ada SK)</small>
-                @endif
-            </td>
-            
-            <td class="text-center">{{ $row->masa_kerja_formatted }}</td>
-            <td class="text-center">{{ $row->satyalancana_tampil }}</td>
-            <td class="text-center">{{ $row->status_pegawai ?? 'Aktif' }}</td>
-        </tr>
-    @empty
-        <tr>
-            <td colspan="13" class="text-center">Data pegawai belum tersedia.</td>
-        </tr>
-    @endforelse
-</tbody>
+            @forelse($dosenList as $row)
+                @php
+                    $tglMasuk = $row->tanggal_masuk ? $row->tanggal_masuk->format('d/m/Y') : '-';
+                    $tmtPangkatLama  = $row->tmt_pangkat_terakhir ? $row->tmt_pangkat_terakhir->format('d/m/Y') : '-';
+                    $tmtPangkatDepan = $row->kp_berikutnya_kalkulasi ? $row->kp_berikutnya_kalkulasi->format('d/m/Y') : '-';
+                    $tmtKgbLama      = $row->tmt_kgb_terakhir ? $row->tmt_kgb_terakhir->format('d/m/Y') : '-';
+                    $tmtKgbDepan     = $row->kgb_berikutnya_kalkulasi ? $row->kgb_berikutnya_kalkulasi->format('d/m/Y') : '-';
+                @endphp
+                <tr>
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td>
+                        <strong>{{ $row->nama_lengkap ?? $row->nama }}</strong><br>
+                        NIP. {{ $row->nip ?? '-' }}
+                        @if($row->nidn_nuptk)
+                            <br><small style="color: #0369a1;">NIDN: {{ $row->nidn_nuptk }}</small>
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        <strong>{{ $row->golongan->nama_golongan ?? '-' }}</strong><br>
+                        <small>{{ $row->golongan->nama_pangkat ?? '' }}</small>
+                    </td>
+                    <td>{{ $row->jabatan->nama_jabatan ?? '-' }}</td>
+                    <td>{{ $row->unitKerja->nama_unit ?? '-' }}</td>
+                    <td class="text-center">{{ $row->pendidikan_tampil }}</td>
+                    <td class="text-center">{{ $tglMasuk }}</td>
+                    <td class="text-center">
+                        {{ $tmtPangkatLama }}<br>
+                        <strong>{{ $tmtPangkatDepan }}</strong>
+                    </td>
+                    <td class="text-center">
+                        {{ $tmtKgbLama }}<br>
+                        <strong>{{ $tmtKgbDepan }}</strong>
+                    </td>
+                    <td class="text-center">{{ $row->masa_kerja_formatted }}</td>
+                    <td class="text-center">{{ $row->satyalancana_tampil }}</td>
+                    <td class="text-center">{{ $row->status_pegawai ?? 'Aktif' }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="12" class="text-center">Tidak ada data Dosen.</td>
+                </tr>
+            @endforelse
+        </tbody>
     </table>
 
-    {{-- TABEL REKAPITULASI JUMLAH PEGAWAI --}}
+    {{-- ========================================================================= --}}
+    {{-- II. DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK)                  --}}
+    {{-- ========================================================================= --}}
+    <div class="section-header" style="border-left-color: #059669;">
+        II. DAFTAR URUT KEPANGKATAN (DUK) TENAGA KEPENDIDIKAN / TENDIK ({{ count($tendikList) }} ORANG)
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th width="2%">NO</th>
+                <th width="14%">NAMA / NIP</th>
+                <th width="9%">GOL / PANGKAT</th>
+                <th width="12%">JABATAN</th>
+                <th width="10%">UNIT KERJA</th>
+                <th width="7%">PENDIDIKAN</th>
+                <th width="6%">TGL MASUK</th>
+                <th width="10%">TMT PANGKAT<br>(Lama / Depan)</th>
+                <th width="10%">TMT KGB<br>(Lama / Depan)</th>
+                <th width="7%">MASA KERJA</th>
+                <th width="7%">SATYALANCANA</th>
+                <th width="6%">STATUS</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($tendikList as $row)
+                @php
+                    $tglMasuk = $row->tanggal_masuk ? $row->tanggal_masuk->format('d/m/Y') : '-';
+                    $tmtPangkatLama  = $row->tmt_pangkat_terakhir ? $row->tmt_pangkat_terakhir->format('d/m/Y') : '-';
+                    $tmtPangkatDepan = $row->kp_berikutnya_kalkulasi ? $row->kp_berikutnya_kalkulasi->format('d/m/Y') : '-';
+                    $tmtKgbLama      = $row->tmt_kgb_terakhir ? $row->tmt_kgb_terakhir->format('d/m/Y') : '-';
+                    $tmtKgbDepan     = $row->kgb_berikutnya_kalkulasi ? $row->kgb_berikutnya_kalkulasi->format('d/m/Y') : '-';
+                @endphp
+                <tr>
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td>
+                        <strong>{{ $row->nama_lengkap ?? $row->nama }}</strong><br>
+                        NIP. {{ $row->nip ?? '-' }}
+                    </td>
+                    <td class="text-center">
+                        <strong>{{ $row->golongan->nama_golongan ?? '-' }}</strong><br>
+                        <small>{{ $row->golongan->nama_pangkat ?? '' }}</small>
+                    </td>
+                    <td>{{ $row->jabatan->nama_jabatan ?? '-' }}</td>
+                    <td>{{ $row->unitKerja->nama_unit ?? '-' }}</td>
+                    <td class="text-center">{{ $row->pendidikan_tampil }}</td>
+                    <td class="text-center">{{ $tglMasuk }}</td>
+                    <td class="text-center">
+                        {{ $tmtPangkatLama }}<br>
+                        <strong>{{ $tmtPangkatDepan }}</strong>
+                    </td>
+                    <td class="text-center">
+                        {{ $tmtKgbLama }}<br>
+                        <strong>{{ $tmtKgbDepan }}</strong>
+                    </td>
+                    <td class="text-center">{{ $row->masa_kerja_formatted }}</td>
+                    <td class="text-center">{{ $row->satyalancana_tampil }}</td>
+                    <td class="text-center">{{ $row->status_pegawai ?? 'Aktif' }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="12" class="text-center">Tidak ada data Tendik.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    {{-- ========================================================================= --}}
+    {{-- III. DAFTAR URUT PEGAWAI HARIAN LEPAS (PHL) & KONTRAK                     --}}
+    {{-- ========================================================================= --}}
+    <div class="section-header" style="border-left-color: #d97706;">
+        III. DAFTAR URUT PEGAWAI HARIAN LEPAS (PHL) & TENAGA KONTRAK ({{ count($phlList) }} ORANG)
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th width="2%">NO</th>
+                <th width="16%">NAMA / NIK / ID</th>
+                <th width="14%">JENIS KONTRAK / JABATAN</th>
+                <th width="14%">UNIT KERJA</th>
+                <th width="8%">PENDIDIKAN</th>
+                <th width="16%">PERIODE KONTRAK</th>
+                <th width="10%">MASA KERJA</th>
+                <th width="8%">STATUS</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($phlList as $row)
+                @php
+                    $kontrakMulai   = $row->tanggal_kontrak_mulai ? $row->tanggal_kontrak_mulai->format('d/m/Y') : ($row->tanggal_masuk ? $row->tanggal_masuk->format('d/m/Y') : '-');
+                    $kontrakSelesai = $row->tanggal_kontrak_selesai ? $row->tanggal_kontrak_selesai->format('d/m/Y') : 'Aktif';
+                @endphp
+                <tr>
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td>
+                        <strong>{{ $row->nama_lengkap ?? $row->nama }}</strong><br>
+                        ID: {{ $row->nip ?? '-' }}
+                    </td>
+                    <td>
+                        <strong>{{ $row->jabatan->nama_jabatan ?? 'Tenaga Penunjang / PHL' }}</strong><br>
+                        <small style="color: #b45309;">{{ $row->jenis_kontrak ?? 'Kontrak Kerja' }}</small>
+                    </td>
+                    <td>{{ $row->unitKerja->nama_unit ?? '-' }}</td>
+                    <td class="text-center">{{ $row->pendidikan_tampil }}</td>
+                    <td class="text-center">{{ $kontrakMulai }} s/d {{ $kontrakSelesai }}</td>
+                    <td class="text-center">{{ $row->masa_kerja_formatted }}</td>
+                    <td class="text-center">{{ $row->status_pegawai ?? 'Aktif' }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="8" class="text-center">Tidak ada data PHL.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    {{-- REKAPITULASI TOTAL --}}
     <div class="rekap-container">
-        <div class="rekap-title">REKAPITULASI PEGAWAI:</div>
+        <div class="rekap-title">REKAPITULASI DUK PEGAWAI:</div>
         <table>
             <thead>
                 <tr>
-                    <th>JENIS PEGAWAI</th>
-                    <th width="35%">JUMLAH</th>
+                    <th>KATEGORI PEGAWAI</th>
+                    <th width="40%">JUMLAH</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>PNS</td>
-                    <td class="text-center">{{ $totalPns }} Orang</td>
+                    <td>Dosen (Tenaga Pendidik)</td>
+                    <td class="text-center font-bold">{{ count($dosenList) }} Orang</td>
                 </tr>
                 <tr>
-                    <td>PPPK</td>
-                    <td class="text-center">{{ $totalPppk }} Orang</td>
+                    <td>Tendik (Tenaga Kependidikan)</td>
+                    <td class="text-center font-bold">{{ count($tendikList) }} Orang</td>
                 </tr>
                 <tr>
-                    <td>Dosen</td>
-                    <td class="text-center">{{ $totalDosen }} Orang</td>
+                    <td>PHL & Tenaga Kontrak</td>
+                    <td class="text-center font-bold">{{ count($phlList) }} Orang</td>
                 </tr>
-                <tr>
-                    <td>PHL</td>
-                    <td class="text-center">{{ $totalPhl }} Orang</td>
-                </tr>
-                @if($totalLainnya > 0)
-                <tr>
-                    <td>Lainnya</td>
-                    <td class="text-center">{{ $totalLainnya }} Orang</td>
-                </tr>
-                @endif
-                <tr style="background-color: #f9f9f9; font-weight: bold;">
-                    <td>TOTAL PEGAWAI</td>
-                    <td class="text-center">{{ $pegawais->count() }} Orang</td>
+                <tr style="background-color: #f1f5f9; font-weight: bold;">
+                    <td>TOTAL KESELURUHAN</td>
+                    <td class="text-center">{{ count($dosenList) + count($tendikList) + count($phlList) }} Orang</td>
                 </tr>
             </tbody>
         </table>

@@ -46,37 +46,47 @@ class PegawaiController extends Controller
     public function duk(Request $request)
     {
         $search = $request->get('search');
-        $query = Pegawai::with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+        
+        $dosenQuery = Pegawai::dosen()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+        $tendikQuery = Pegawai::tendik()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+        $phlQuery = Pegawai::phl()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('nip', 'like', "%{$search}%");
-            });
+            $filterSearch = function($q) use ($search) {
+                $q->where(function($sq) use ($search) {
+                    $sq->where('nama', 'like', "%{$search}%")
+                       ->orWhere('nip', 'like', "%{$search}%")
+                       ->orWhere('nidn_nuptk', 'like', "%{$search}%");
+                });
+            };
+            $dosenQuery->where($filterSearch);
+            $tendikQuery->where($filterSearch);
+            $phlQuery->where($filterSearch);
         }
 
-        $pegawais = $query->get()->sort(function($a, $b) {
-            $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'DOSEN' => 3, 'PHL' => 4, 'HONORER' => 4];
-            $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 5;
-            $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 5;
-            if ($jenisA !== $jenisB) return $jenisA <=> $jenisB;
+        $sortDuk = function($collection) {
+            return $collection->sort(function($a, $b) {
+                $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
+                $golB = $b->golongan->urutan ?? $b->golongan_id ?? 0;
+                if ($golA !== $golB) return $golB <=> $golA;
 
-            $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
-            $golB = $b->golongan->urutan ?? $b->golongan_id ?? 0;
-            if ($golA !== $golB) return $golB <=> $golA;
+                $tmtPangkatA = $a->tmt_pangkat_terakhir ? $a->tmt_pangkat_terakhir->timestamp : 0;
+                $tmtPangkatB = $b->tmt_pangkat_terakhir ? $b->tmt_pangkat_terakhir->timestamp : 0;
+                if ($tmtPangkatA !== $tmtPangkatB) return $tmtPangkatA <=> $tmtPangkatB;
 
-            $tmtPangkatA = $a->tmt_pangkat_terakhir ? $a->tmt_pangkat_terakhir->timestamp : 0;
-            $tmtPangkatB = $b->tmt_pangkat_terakhir ? $b->tmt_pangkat_terakhir->timestamp : 0;
-            if ($tmtPangkatA !== $tmtPangkatB) return $tmtPangkatA <=> $tmtPangkatB;
+                $tglLahirA = $a->tanggal_lahir ? $a->tanggal_lahir->timestamp : 0;
+                $tglLahirB = $b->tanggal_lahir ? $b->tanggal_lahir->timestamp : 0;
+                return $tglLahirA <=> $tglLahirB;
+            })->values();
+        };
 
-            $tglLahirA = $a->tanggal_lahir ? $a->tanggal_lahir->timestamp : 0;
-            $tglLahirB = $b->tanggal_lahir ? $b->tanggal_lahir->timestamp : 0;
-            return $tglLahirA <=> $tglLahirB;
-        });
+        $dosenList = $sortDuk($dosenQuery->get());
+        $tendikList = $sortDuk($tendikQuery->get());
+        $phlList = $sortDuk($phlQuery->get());
 
         $statistics = $this->pegawaiService->getStatistics();
 
-        return view('pegawai.duk', compact('pegawais', 'statistics', 'search'));
+        return view('pegawai.duk', compact('dosenList', 'tendikList', 'phlList', 'statistics', 'search'));
     }
 
     public function create()
@@ -231,35 +241,45 @@ class PegawaiController extends Controller
     public function exportDukPdf(Request $request)
     {
         $search = $request->get('search');
-        $query = Pegawai::with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+        
+        $dosenQuery = Pegawai::dosen()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+        $tendikQuery = Pegawai::tendik()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+        $phlQuery = Pegawai::phl()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('nip', 'like', "%{$search}%");
-            });
+            $filterSearch = function($q) use ($search) {
+                $q->where(function($sq) use ($search) {
+                    $sq->where('nama', 'like', "%{$search}%")
+                       ->orWhere('nip', 'like', "%{$search}%")
+                       ->orWhere('nidn_nuptk', 'like', "%{$search}%");
+                });
+            };
+            $dosenQuery->where($filterSearch);
+            $tendikQuery->where($filterSearch);
+            $phlQuery->where($filterSearch);
         }
 
-        $pegawais = $query->get()->sort(function($a, $b) {
-            $mapJenis = ['PNS' => 1, 'PPPK' => 2, 'DOSEN' => 3, 'PHL' => 4, 'HONORER' => 4];
-            $jenisA = $mapJenis[strtoupper($a->jenis_pegawai ?? '')] ?? 5;
-            $jenisB = $mapJenis[strtoupper($b->jenis_pegawai ?? '')] ?? 5;
-            if ($jenisA !== $jenisB) return $jenisA <=> $jenisB;
+        $sortDuk = function($collection) {
+            return $collection->sort(function($a, $b) {
+                $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
+                $golB = $b->golongan->urutan ?? $b->golongan_id ?? 0;
+                if ($golA !== $golB) return $golB <=> $golA;
 
-            $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
-            $golB = $b->golongan->urutan ?? $b->golongan_id ?? 0;
-            if ($golA !== $golB) return $golB <=> $golA;
+                $tmtPangkatA = $a->tmt_pangkat_terakhir ? $a->tmt_pangkat_terakhir->timestamp : 0;
+                $tmtPangkatB = $b->tmt_pangkat_terakhir ? $b->tmt_pangkat_terakhir->timestamp : 0;
+                if ($tmtPangkatA !== $tmtPangkatB) return $tmtPangkatA <=> $tmtPangkatB;
 
-            $tmtPangkatA = $a->tmt_pangkat_terakhir ? $a->tmt_pangkat_terakhir->timestamp : 0;
-            $tmtPangkatB = $b->tmt_pangkat_terakhir ? $b->tmt_pangkat_terakhir->timestamp : 0;
-            if ($tmtPangkatA !== $tmtPangkatB) return $tmtPangkatA <=> $tmtPangkatB;
+                $tglLahirA = $a->tanggal_lahir ? $a->tanggal_lahir->timestamp : 0;
+                $tglLahirB = $b->tanggal_lahir ? $b->tanggal_lahir->timestamp : 0;
+                return $tglLahirA <=> $tglLahirB;
+            })->values();
+        };
 
-            $tglLahirA = $a->tanggal_lahir ? $a->tanggal_lahir->timestamp : 0;
-            $tglLahirB = $b->tanggal_lahir ? $b->tanggal_lahir->timestamp : 0;
-            return $tglLahirA <=> $tglLahirB;
-        });
+        $dosenList = $sortDuk($dosenQuery->get());
+        $tendikList = $sortDuk($tendikQuery->get());
+        $phlList = $sortDuk($phlQuery->get());
 
-        $pdf = Pdf::loadView('exports.pdf.duk', compact('pegawais'))
+        $pdf = Pdf::loadView('exports.pdf.duk', compact('dosenList', 'tendikList', 'phlList'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->download('DUK_Pegawai_' . date('Y-m-d') . '.pdf');

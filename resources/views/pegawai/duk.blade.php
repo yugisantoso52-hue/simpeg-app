@@ -2,35 +2,70 @@
     <x-slot name="header">
         <x-enterprise.page-header
             title="Daftar Urut Kepangkatan (DUK)"
-            subtitle="Urutan hierarki kepangkatan dan masa kerja Apratur Sipil Negara" />
+            subtitle="Urutan hierarki kepangkatan dan masa kerja Aparatur Sipil Negara & Tenaga Penunjang" />
     </x-slot>
 
     <div class="py-6">
         <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
 
-            {{-- Flash Message Error --}}
+            {{-- Flash Messages --}}
             @if(session('error'))
                 <x-enterprise.alert type="error" title="Terjadi Kesalahan">
                     {{ session('error') }}
                 </x-enterprise.alert>
             @endif
 
-            {{-- Flash Message Success --}}
             @if(session('success'))
                 <x-enterprise.alert type="success" title="Sukses">
                     {{ session('success') }}
                 </x-enterprise.alert>
             @endif
 
+            {{-- Ringkasan Statistik DUK --}}
+            <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
+                <div class="bg-white rounded-xl border border-blue-200 p-5 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">DUK Dosen</span>
+                        <div class="text-2xl font-black text-slate-800 mt-1">{{ count($dosenList) }} Orang</div>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Tenaga Pendidik / Fungsional Akademik</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl font-bold">
+                        👨‍🏫
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl border border-emerald-200 p-5 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">DUK Tendik</span>
+                        <div class="text-2xl font-black text-slate-800 mt-1">{{ count($tendikList) }} Orang</div>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Staf Administrasi, Laboran, & Teknisi</p>
+                    </div>
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-bold">
+                        🧑‍💼
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl border border-amber-200 p-5 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-amber-600 uppercase tracking-wider">Daftar Urut PHL</span>
+                        <div class="text-2xl font-black text-slate-800 mt-1">{{ count($phlList) }} Orang</div>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Pegawai Harian Lepas & Kontrak</p>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl font-bold">
+                        👷
+                    </div>
+                </div>
+            </div>
+
             {{-- Card Utama DUK --}}
             <x-enterprise.card>
-                <div class="p-6">
+                <div class="p-6 space-y-8">
                     
                     {{-- Action Header & Tombol Export --}}
-                    <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
+                    <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200">
                         <div>
-                            <h3 class="text-lg font-bold text-slate-800">Laporan Resmi DUK</h3>
-                            <p class="text-xs text-slate-500">Urutan otomatis berdasarkan Golongan, TMT Pangkat, dan Usia Pegawai.</p>
+                            <h3 class="text-lg font-bold text-slate-800">Laporan Resmi DUK Terpisah (Dosen, Tendik, PHL)</h3>
+                            <p class="text-xs text-slate-500">Urutan hierarki otomatis berdasarkan Golongan (Tertinggi), TMT Pangkat, dan Usia.</p>
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
                             <a href="{{ route('reports.duk.pdf', request()->query()) }}" target="_blank"
@@ -52,10 +87,10 @@
                     </div>
 
                     {{-- Form Pencarian DUK --}}
-                    <form method="GET" action="{{ route('duk.index') }}" class="mb-6">
+                    <form method="GET" action="{{ route('duk.index') }}">
                         <div class="flex items-center gap-2">
                             <input type="text" name="search" value="{{ request('search') }}" 
-                                   placeholder="Cari NIP atau Nama Pegawai dalam DUK..." 
+                                   placeholder="Cari NIP, NIDN, atau Nama Pegawai..." 
                                    class="w-full max-w-md rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-800 focus:border-blue-500 focus:ring-blue-500" />
                             
                             <button type="submit" 
@@ -75,152 +110,226 @@
                         </div>
                     </form>
 
-                    {{-- Tabel DUK Lengkap --}}
-                    <div class="mt-4 overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
-                        <table class="w-full min-w-full divide-y divide-slate-200 text-left text-xs text-slate-700">
-                            <thead class="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
-                                <tr>
-                                    <th class="px-2 py-3 text-center border-r border-slate-200">NO</th>
-                                    <th class="px-3 py-3 text-left border-r border-slate-200">NAMA / NIP</th>
-                                    <th class="px-3 py-3 text-center border-r border-slate-200">GOL / PANGKAT</th>
-                                    <th class="px-3 py-3 text-center border-r border-slate-200">PENDIDIKAN</th>
-                                    <th class="px-3 py-3 text-center border-r border-slate-200">TGL MASUK</th>
-                                    <th class="px-3 py-3 text-center border-r border-slate-200">TMT SK 1</th>
-                                    <th class="px-3 py-3 text-center border-r border-slate-200">
-                                        TMT PANGKAT<br><span class="text-[10px] text-slate-500 font-normal">(Lama / Depan)</span>
-                                    </th>
-                                    <th class="px-3 py-3 text-center border-r border-slate-200">
-                                        TMT KGB<br><span class="text-[10px] text-slate-500 font-normal">(Lama / Depan)</span>
-                                    </th>
-                                    <th class="px-3 py-3 text-center border-r border-slate-200">MASA KERJA</th>
-                                    <th class="px-3 py-3 text-center border-r border-slate-200">SATYALANCANA</th>
-                                    <th class="px-3 py-3 text-center">STATUS</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-200 bg-white">
-                                @forelse($pegawais as $row)
-                                    @php
-                                        // Format Tanggal
-                                        $tglMasuk = $row->tanggal_masuk ? \Carbon\Carbon::parse($row->tanggal_masuk)->format('d/m/Y') : '-';
-                                        $tmtSk1   = $row->tmt_sk_pertama ? \Carbon\Carbon::parse($row->tmt_sk_pertama)->format('d/m/Y') : '-';
-                                        
-                                        $tmtPangkatLama  = $row->tmt_pangkat_terakhir ? \Carbon\Carbon::parse($row->tmt_pangkat_terakhir)->format('d/m/Y') : '-';
-                                        $tmtPangkatDepan = $row->kp_berikutnya ? \Carbon\Carbon::parse($row->kp_berikutnya)->format('d/m/Y') : ($row->kp_berikutnya_kalkulasi ? \Carbon\Carbon::parse($row->kp_berikutnya_kalkulasi)->format('d/m/Y') : '-');
-                                        
-                                        $tmtKgbLama  = $row->tmt_kgb_terakhir ? \Carbon\Carbon::parse($row->tmt_kgb_terakhir)->format('d/m/Y') : '-';
-                                        $tmtKgbDepan = $row->kgb_berikutnya ? \Carbon\Carbon::parse($row->kgb_berikutnya)->format('d/m/Y') : ($row->kgb_berikutnya_kalkulasi ? \Carbon\Carbon::parse($row->kgb_berikutnya_kalkulasi)->format('d/m/Y') : '-');
-                                    @endphp
+                    {{-- ========================================================================= --}}
+                    {{-- 1. TABEL DUK DOSEN / TENAGA PENDIDIK                                      --}}
+                    {{-- ========================================================================= --}}
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between bg-blue-50 border-l-4 border-blue-600 px-4 py-2.5 rounded-r-lg">
+                            <div class="flex items-center gap-2">
+                                <span class="text-base font-bold text-blue-900">👨‍🏫 I. DAFTAR URUT KEPANGKATAN DOSEN</span>
+                                <span class="px-2 py-0.5 text-xs font-bold bg-blue-600 text-white rounded-full">{{ count($dosenList) }} Orang</span>
+                            </div>
+                            <span class="text-xs text-blue-700 font-medium">Tenaga Pendidik</span>
+                        </div>
 
-                                    <tr class="hover:bg-slate-50 transition">
-                                        {{-- NO --}}
-                                        <td class="px-2 py-3 text-center font-bold text-slate-800 border-r border-slate-100">
-                                            {{ $loop->iteration }}
-                                        </td>
-                                        
-                                        {{-- NAMA / NIP --}}
-                                        <td class="px-3 py-3 border-r border-slate-100 whitespace-nowrap">
-                                            <div class="font-bold text-slate-900">
-                                                {{ $row->nama_lengkap ?? $row->nama }}
-                                            </div>
-                                            <div class="text-[11px] text-slate-500 font-mono">NIP. {{ $row->nip ?? '-' }}</div>
-                                        </td>
-
-                                        {{-- GOL / PANGKAT --}}
-                                        <td class="px-3 py-3 text-center border-r border-slate-100 whitespace-nowrap">
-                                            <span class="font-semibold text-slate-800">
-                                                {{ $row->golongan?->nama_golongan ?? $row->golongan?->golongan ?? '-' }}
-                                            </span>
-                                            @if(!empty($row->golongan?->nama_pangkat ?? $row->golongan?->pangkat))
-                                                <div class="text-[10px] text-slate-500">
-                                                    {{ $row->golongan?->nama_pangkat ?? $row->golongan?->pangkat }}
-                                                </div>
-                                            @endif
-                                        </td>
-
-                                        {{-- PENDIDIKAN --}}
-                                        <td class="px-3 py-3 text-center border-r border-slate-100 whitespace-nowrap">
-                                            {{ $row->pendidikan_tampil ?? $row->pendidikan_terakhir ?? $row->pendidikan ?? '-' }}
-                                        </td>
-
-                                        {{-- TGL MASUK --}}
-                                        <td class="px-3 py-3 text-center border-r border-slate-100 whitespace-nowrap">
-                                            {{ $tglMasuk }}
-                                        </td>
-
-                                        {{-- TMT SK 1 + Link SK --}}
-                                        <td class="px-3 py-3 text-center border-r border-slate-100 whitespace-nowrap">
-                                            <div>{{ $tmtSk1 }}</div>
-                                            @if(!empty($row->file_sk_pertama) && trim($row->file_sk_pertama) !== '')
-                                                <a href="{{ route('document.preview', ['path' => $row->file_sk_pertama]) }}" target="_blank" 
-                                                   class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline mt-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
-                                                    📄 Lihat SK
-                                                </a>
-                                            @else
-                                                <span class="text-[10px] text-slate-400 italic block mt-1">(SK Tidak Ada)</span>
-                                            @endif
-                                        </td>
-
-                                        {{-- TMT PANGKAT (LAMA / DEPAN) + Link SK --}}
-                                        <td class="px-3 py-3 text-center border-r border-slate-100 whitespace-nowrap">
-                                            <div>Terakhir: {{ $tmtPangkatLama }}</div>
-                                            <div class="font-bold text-blue-600">Kedepan: {{ $tmtPangkatDepan }}</div>
-                                            @if(!empty($row->file_sk_pangkat_terakhir) && trim($row->file_sk_pangkat_terakhir) !== '')
-                                                <a href="{{ route('document.preview', ['path' => $row->file_sk_pangkat_terakhir]) }}" target="_blank" 
-                                                   class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline mt-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
-                                                    📄 Lihat SK
-                                                </a>
-                                            @else
-                                                <span class="text-[10px] text-slate-400 italic block mt-1">(SK Tidak Ada)</span>
-                                            @endif
-                                        </td>
-
-                                        {{-- TMT KGB (LAMA / DEPAN) + Link SK --}}
-                                        <td class="px-3 py-3 text-center border-r border-slate-100 whitespace-nowrap">
-                                            <div>Terakhir: {{ $tmtKgbLama }}</div>
-                                            <div class="font-bold text-blue-600">Kedepan: {{ $tmtKgbDepan }}</div>
-                                            @if(!empty($row->file_sk_kgb_terakhir) && trim($row->file_sk_kgb_terakhir) !== '')
-                                                <a href="{{ route('document.preview', ['path' => $row->file_sk_kgb_terakhir]) }}" target="_blank" 
-                                                   class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline mt-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
-                                                    📄 Lihat SK
-                                                </a>
-                                            @else
-                                                <span class="text-[10px] text-slate-400 italic block mt-1">(SK Tidak Ada)</span>
-                                            @endif
-                                        </td>
-
-                                        {{-- MASA KERJA --}}
-                                        <td class="px-3 py-3 text-center border-r border-slate-100 whitespace-nowrap">
-                                            {{ $row->masa_kerja_formatted ?? ($row->masa_kerja_tahun ? $row->masa_kerja_tahun . ' Thn ' . $row->masa_kerja_bulan . ' Bln' : '-') }}
-                                        </td>
-
-                                        {{-- SATYALANCANA --}}
-                                        <td class="px-3 py-3 text-center border-r border-slate-100 whitespace-nowrap">
-                                            {{ $row->satyalancana_tampil ?? $row->satyalancana_terakhir ?? '-' }}
-                                        </td>
-
-                                        {{-- STATUS --}}
-                                        <td class="px-3 py-3 text-center whitespace-nowrap">
-                                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-emerald-100 text-emerald-800">
-                                                {{ $row->status_pegawai ?? 'Aktif' }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                @empty
+                        <div class="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
+                            <table class="w-full min-w-full divide-y divide-slate-200 text-left text-xs text-slate-700">
+                                <thead class="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
                                     <tr>
-                                        <td colspan="11" class="p-8 text-center text-slate-500">
-                                            <x-enterprise.empty-state
-                                                title="Data DUK Tidak Ditemukan"
-                                                description="Tidak ada pegawai yang memenuhi kriteria pengurutan DUK."
-                                            />
-                                        </td>
+                                        <th class="px-2 py-3 text-center border-r border-slate-200 w-10">NO</th>
+                                        <th class="px-3 py-3 text-left border-r border-slate-200">NAMA / NIP / NIDN</th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">GOL / PANGKAT</th>
+                                        <th class="px-3 py-3 text-left border-r border-slate-200">JABATAN</th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">PENDIDIKAN</th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">TMT PANGKAT<br><span class="text-[10px] text-slate-500 font-normal">(Lama / Depan)</span></th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">TMT KGB<br><span class="text-[10px] text-slate-500 font-normal">(Lama / Depan)</span></th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">MASA KERJA</th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">SATYALANCANA</th>
+                                        <th class="px-3 py-3 text-center">STATUS</th>
                                     </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200 bg-white">
+                                    @forelse($dosenList as $row)
+                                        <tr class="hover:bg-blue-50/50 transition">
+                                            <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $loop->iteration }}</td>
+                                            <td class="px-3 py-3 border-r border-slate-200">
+                                                <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-blue-600 hover:underline">
+                                                    {{ $row->nama_lengkap ?? $row->nama }}
+                                                </a>
+                                                <div class="text-[11px] text-slate-500">NIP. {{ $row->nip ?? '-' }}</div>
+                                                @if($row->nidn_nuptk)
+                                                    <div class="text-[10px] font-mono text-emerald-600">NIDN: {{ $row->nidn_nuptk }}</div>
+                                                @endif
+                                            </td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200">
+                                                <div class="font-bold text-slate-800">{{ $row->golongan->nama_golongan ?? '-' }}</div>
+                                                <div class="text-[10px] text-slate-500">{{ $row->golongan->nama_pangkat ?? '' }}</div>
+                                            </td>
+                                            <td class="px-3 py-3 border-r border-slate-200">
+                                                <div class="font-semibold text-slate-800">{{ $row->jabatan->nama_jabatan ?? '-' }}</div>
+                                                <div class="text-[11px] text-slate-500">{{ $row->unitKerja->nama_unit ?? '-' }}</div>
+                                            </td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200">{{ $row->pendidikan_tampil }}</td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200">
+                                                <span class="text-slate-600">{{ $row->tmt_pangkat_terakhir ? $row->tmt_pangkat_terakhir->format('d/m/Y') : '-' }}</span>
+                                                <br>
+                                                <strong class="text-blue-700 text-[11px]">{{ $row->kp_berikutnya_kalkulasi ? $row->kp_berikutnya_kalkulasi->format('d/m/Y') : '-' }}</strong>
+                                            </td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200">
+                                                <span class="text-slate-600">{{ $row->tmt_kgb_terakhir ? $row->tmt_kgb_terakhir->format('d/m/Y') : '-' }}</span>
+                                                <br>
+                                                <strong class="text-emerald-700 text-[11px]">{{ $row->kgb_berikutnya_kalkulasi ? $row->kgb_berikutnya_kalkulasi->format('d/m/Y') : '-' }}</strong>
+                                            </td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200">{{ $row->masa_kerja_formatted }}</td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200 font-medium">{{ $row->satyalancana_tampil }}</td>
+                                            <td class="px-3 py-3 text-center">
+                                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full {{ $row->status_pegawai == 'Aktif' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700' }}">
+                                                    {{ $row->status_pegawai ?? 'Aktif' }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="10" class="px-4 py-4 text-center text-slate-400">Tidak ada data Dosen yang ditemukan.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {{-- ========================================================================= --}}
+                    {{-- 2. TABEL DUK TENAGA KEPENDIDIKAN (TENDIK)                                 --}}
+                    {{-- ========================================================================= --}}
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between bg-emerald-50 border-l-4 border-emerald-600 px-4 py-2.5 rounded-r-lg">
+                            <div class="flex items-center gap-2">
+                                <span class="text-base font-bold text-emerald-900">🧑‍💼 II. DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK)</span>
+                                <span class="px-2 py-0.5 text-xs font-bold bg-emerald-600 text-white rounded-full">{{ count($tendikList) }} Orang</span>
+                            </div>
+                            <span class="text-xs text-emerald-700 font-medium">Staf Administrasi / Laboran</span>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
+                            <table class="w-full min-w-full divide-y divide-slate-200 text-left text-xs text-slate-700">
+                                <thead class="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-2 py-3 text-center border-r border-slate-200 w-10">NO</th>
+                                        <th class="px-3 py-3 text-left border-r border-slate-200">NAMA / NIP</th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">GOL / PANGKAT</th>
+                                        <th class="px-3 py-3 text-left border-r border-slate-200">JABATAN</th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">PENDIDIKAN</th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">TMT PANGKAT<br><span class="text-[10px] text-slate-500 font-normal">(Lama / Depan)</span></th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">TMT KGB<br><span class="text-[10px] text-slate-500 font-normal">(Lama / Depan)</span></th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">MASA KERJA</th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">SATYALANCANA</th>
+                                        <th class="px-3 py-3 text-center">STATUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200 bg-white">
+                                    @forelse($tendikList as $row)
+                                        <tr class="hover:bg-emerald-50/50 transition">
+                                            <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $loop->iteration }}</td>
+                                            <td class="px-3 py-3 border-r border-slate-200">
+                                                <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-emerald-700 hover:underline">
+                                                    {{ $row->nama_lengkap ?? $row->nama }}
+                                                </a>
+                                                <div class="text-[11px] text-slate-500">NIP. {{ $row->nip ?? '-' }}</div>
+                                            </td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200">
+                                                <div class="font-bold text-slate-800">{{ $row->golongan->nama_golongan ?? '-' }}</div>
+                                                <div class="text-[10px] text-slate-500">{{ $row->golongan->nama_pangkat ?? '' }}</div>
+                                            </td>
+                                            <td class="px-3 py-3 border-r border-slate-200">
+                                                <div class="font-semibold text-slate-800">{{ $row->jabatan->nama_jabatan ?? '-' }}</div>
+                                                <div class="text-[11px] text-slate-500">{{ $row->unitKerja->nama_unit ?? '-' }}</div>
+                                            </td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200">{{ $row->pendidikan_tampil }}</td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200">
+                                                <span class="text-slate-600">{{ $row->tmt_pangkat_terakhir ? $row->tmt_pangkat_terakhir->format('d/m/Y') : '-' }}</span>
+                                                <br>
+                                                <strong class="text-blue-700 text-[11px]">{{ $row->kp_berikutnya_kalkulasi ? $row->kp_berikutnya_kalkulasi->format('d/m/Y') : '-' }}</strong>
+                                            </td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200">
+                                                <span class="text-slate-600">{{ $row->tmt_kgb_terakhir ? $row->tmt_kgb_terakhir->format('d/m/Y') : '-' }}</span>
+                                                <br>
+                                                <strong class="text-emerald-700 text-[11px]">{{ $row->kgb_berikutnya_kalkulasi ? $row->kgb_berikutnya_kalkulasi->format('d/m/Y') : '-' }}</strong>
+                                            </td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200">{{ $row->masa_kerja_formatted }}</td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200 font-medium">{{ $row->satyalancana_tampil }}</td>
+                                            <td class="px-3 py-3 text-center">
+                                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full {{ $row->status_pegawai == 'Aktif' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700' }}">
+                                                    {{ $row->status_pegawai ?? 'Aktif' }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="10" class="px-4 py-4 text-center text-slate-400">Tidak ada data Tendik yang ditemukan.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {{-- ========================================================================= --}}
+                    {{-- 3. TABEL DUK PEGAWAI HARIAN LEPAS (PHL) & TENAGA KONTRAK                 --}}
+                    {{-- ========================================================================= --}}
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between bg-amber-50 border-l-4 border-amber-600 px-4 py-2.5 rounded-r-lg">
+                            <div class="flex items-center gap-2">
+                                <span class="text-base font-bold text-amber-900">👷 III. DAFTAR URUT PEGAWAI HARIAN LEPAS (PHL) & TENAGA KONTRAK</span>
+                                <span class="px-2 py-0.5 text-xs font-bold bg-amber-600 text-white rounded-full">{{ count($phlList) }} Orang</span>
+                            </div>
+                            <span class="text-xs text-amber-700 font-medium">Non-ASN & Kontrak Kerja</span>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
+                            <table class="w-full min-w-full divide-y divide-slate-200 text-left text-xs text-slate-700">
+                                <thead class="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-2 py-3 text-center border-r border-slate-200 w-10">NO</th>
+                                        <th class="px-3 py-3 text-left border-r border-slate-200">NAMA / NIK / NIP</th>
+                                        <th class="px-3 py-3 text-left border-r border-slate-200">JENIS KONTRAK / JABATAN</th>
+                                        <th class="px-3 py-3 text-left border-r border-slate-200">UNIT KERJA</th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">PENDIDIKAN</th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">PERIODE KONTRAK</th>
+                                        <th class="px-3 py-3 text-center border-r border-slate-200">MASA KERJA</th>
+                                        <th class="px-3 py-3 text-center">STATUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200 bg-white">
+                                    @forelse($phlList as $row)
+                                        <tr class="hover:bg-amber-50/50 transition">
+                                            <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $loop->iteration }}</td>
+                                            <td class="px-3 py-3 border-r border-slate-200">
+                                                <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-amber-800 hover:underline">
+                                                    {{ $row->nama_lengkap ?? $row->nama }}
+                                                </a>
+                                                <div class="text-[11px] text-slate-500">ID/NIP: {{ $row->nip ?? '-' }}</div>
+                                            </td>
+                                            <td class="px-3 py-3 border-r border-slate-200">
+                                                <div class="font-semibold text-slate-800">{{ $row->jabatan->nama_jabatan ?? 'Tenaga Penunjang / PHL' }}</div>
+                                                <div class="text-[11px] text-amber-700 font-medium">{{ $row->jenis_kontrak ?? 'Kontrak Harian / Tahunan' }}</div>
+                                            </td>
+                                            <td class="px-3 py-3 border-r border-slate-200">{{ $row->unitKerja->nama_unit ?? '-' }}</td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200">{{ $row->pendidikan_tampil }}</td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200">
+                                                <span class="text-slate-700">{{ $row->tanggal_kontrak_mulai ? $row->tanggal_kontrak_mulai->format('d/m/Y') : ($row->tanggal_masuk ? $row->tanggal_masuk->format('d/m/Y') : '-') }}</span>
+                                                <span class="text-slate-400"> s/d </span>
+                                                <span class="text-slate-700 font-semibold">{{ $row->tanggal_kontrak_selesai ? $row->tanggal_kontrak_selesai->format('d/m/Y') : 'Aktif' }}</span>
+                                            </td>
+                                            <td class="px-3 py-3 text-center border-r border-slate-200">{{ $row->masa_kerja_formatted }}</td>
+                                            <td class="px-3 py-3 text-center">
+                                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full {{ $row->status_pegawai == 'Aktif' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700' }}">
+                                                    {{ $row->status_pegawai ?? 'Aktif' }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="8" class="px-4 py-4 text-center text-slate-400">Tidak ada data PHL yang ditemukan.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                 </div>
             </x-enterprise.card>
+
         </div>
     </div>
 </x-app-layout>
