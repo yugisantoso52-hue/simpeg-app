@@ -1,6 +1,6 @@
-FROM php:8.3-fpm-bookworm
+FROM php:8.3-fpm
 
-# Install dependensi sistem, ekstensi PHP, dan Node.js untuk Vite
+# Install dependensi sistem, ekstensi PHP, Node.js, dan Composer langsung via curl
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip opcache \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --version=2.7.7 \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Konfigurasi custom php.ini untuk batas upload & eksekusi aman
@@ -29,9 +30,6 @@ ENV COMPOSER_ALLOW_SUPERUSER=1 \
     COMPOSER_PROCESS_TIMEOUT=600 \
     COMPOSER_MAX_PARALLEL_HTTP=4 \
     NODE_ENV=production
-
-# Install Composer versi 2.7 stabil spesifik
-COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www
