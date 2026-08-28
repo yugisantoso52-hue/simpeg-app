@@ -89,9 +89,12 @@ class PegawaiController extends Controller
         return view('pegawai.duk', compact('dosenList', 'tendikList', 'phlList', 'statistics', 'search'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        $kategori = strtolower((string)$request->get('kategori', 'all'));
+
         return view('pegawai.create', [
+            'kategori'  => $kategori,
             'unitKerja' => UnitKerja::orderBy('nama_unit')->get(),
             'jabatan'   => Jabatan::orderBy('nama_jabatan')->get(),
             'golongan'  => Golongan::orderBy('nama_golongan')->get(),
@@ -106,6 +109,23 @@ class PegawaiController extends Controller
                 $request->allFiles()
             );
         });
+
+        $kategori = strtolower((string)$request->get('kategori', ''));
+        $jenisPegawai = strtoupper((string)$request->get('jenis_pegawai', ''));
+
+        if ($kategori === 'dosen' || $jenisPegawai === 'DOSEN') {
+            return redirect()
+                ->route('kepegawaian.dosen.index')
+                ->with('success', 'Data Dosen berhasil ditambahkan.');
+        } elseif ($kategori === 'tendik' || in_array($jenisPegawai, ['PNS', 'PPPK'])) {
+            return redirect()
+                ->route('kepegawaian.tendik.index')
+                ->with('success', 'Data Tenaga Kependidikan berhasil ditambahkan.');
+        } elseif ($kategori === 'phl' || in_array($jenisPegawai, ['PHL', 'HONORER'])) {
+            return redirect()
+                ->route('kepegawaian.phl.index')
+                ->with('success', 'Data PHL / Kontrak berhasil ditambahkan.');
+        }
 
         return redirect()
             ->route('pegawai.index')
@@ -122,15 +142,19 @@ class PegawaiController extends Controller
         return view('pegawai.show', compact('pegawai'));
     }
 
-    public function edit(int $id)
+    public function edit(Request $request, int $id)
     {
         $pegawai = $this->pegawaiService->find($id);
 
         // OTORISASI POLICY: Cek izin edit data
         $this->authorize('update', $pegawai);
 
+        $defaultKategori = strtolower($pegawai->kategori_kepegawaian ?? 'all');
+        $kategori = strtolower((string)$request->get('kategori', $defaultKategori));
+
         return view('pegawai.edit', [
             'pegawai'   => $pegawai,
+            'kategori'  => $kategori,
             'unitKerja' => UnitKerja::orderBy('nama_unit')->get(),
             'jabatan'   => Jabatan::orderBy('nama_jabatan')->get(),
             'golongan'  => Golongan::orderBy('nama_golongan')->get(),
@@ -154,7 +178,24 @@ class PegawaiController extends Controller
         if (auth()->user()->hasRole('pegawai')) {
             return redirect()
                 ->route('pegawai.show', $id)
-                ->with('success', 'Data pribadi Anda berhasil diperbarui.');
+                ->with('success', 'Data profil pribadi Anda berhasil diperbarui.');
+        }
+
+        $kategori = strtolower((string)$request->get('kategori', $pegawai->kategori_kepegawaian ?? ''));
+        $jenisPegawai = strtoupper((string)$request->get('jenis_pegawai', $pegawai->jenis_pegawai ?? ''));
+
+        if ($kategori === 'dosen' || $jenisPegawai === 'DOSEN') {
+            return redirect()
+                ->route('kepegawaian.dosen.index')
+                ->with('success', 'Data Dosen berhasil diperbarui.');
+        } elseif ($kategori === 'tendik' || in_array($jenisPegawai, ['PNS', 'PPPK'])) {
+            return redirect()
+                ->route('kepegawaian.tendik.index')
+                ->with('success', 'Data Tenaga Kependidikan berhasil diperbarui.');
+        } elseif ($kategori === 'phl' || in_array($jenisPegawai, ['PHL', 'HONORER'])) {
+            return redirect()
+                ->route('kepegawaian.phl.index')
+                ->with('success', 'Data PHL / Kontrak berhasil diperbarui.');
         }
 
         return redirect()

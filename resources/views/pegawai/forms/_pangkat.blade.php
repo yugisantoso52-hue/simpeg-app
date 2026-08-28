@@ -1,4 +1,4 @@
-<div class="mt-6 border-t pt-6 space-y-4">
+<div x-show="kategori !== 'phl'" class="mt-6 border-t pt-6 space-y-4">
     <div class="flex justify-between items-center">
         <h3 class="text-lg font-semibold text-gray-800">Riwayat Pangkat/Golongan</h3>
         <button type="button" id="add-pangkat-btn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition">

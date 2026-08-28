@@ -1,11 +1,11 @@
 <x-enterprise.forms.section
-    title="Data Kepegawaian"
-    description="Unit kerja, jabatan, golongan, jenis pegawai, pendidikan, dan Masa Kerja Golongan">
+    title="Data Kepegawaian & Jabatan"
+    description="Unit kerja, jabatan, golongan, jenis pegawai, dan Angka Kredit PAK">
 
     <x-enterprise.forms.row cols="3">
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="Unit Kerja">
-                <x-enterprise.select name="unit_kerja_id">
+            <x-enterprise.form-group label="Unit Kerja / Program Studi" required>
+                <x-enterprise.select name="unit_kerja_id" required>
                     <option value="">Pilih Unit Kerja</option>
                     @foreach($unitKerja as $item)
                         <option value="{{ $item->id }}" @selected(old('unit_kerja_id', $pegawai->unit_kerja_id ?? '')==$item->id)>
@@ -29,21 +29,24 @@
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
 
+        {{-- Golongan (Disembunyikan jika PHL) --}}
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="Golongan">
-                <x-enterprise.select name="golongan_id">
-                    <option value="">Pilih Golongan</option>
-                    @foreach($golongan as $item)
-                        <option value="{{ $item->id }}" @selected(old('golongan_id', $pegawai->golongan_id ?? '')==$item->id)>
-                            {{ $item->nama_golongan ?? $item->nama }}
-                        </option>
-                    @endforeach
-                </x-enterprise.select>
-            </x-enterprise.form-group>
+            <div x-show="kategori !== 'phl'">
+                <x-enterprise.form-group label="Golongan / Ruang">
+                    <x-enterprise.select name="golongan_id">
+                        <option value="">Pilih Golongan</option>
+                        @foreach($golongan as $item)
+                            <option value="{{ $item->id }}" @selected(old('golongan_id', $pegawai->golongan_id ?? '')==$item->id)>
+                                {{ $item->nama_golongan ?? $item->nama }}
+                            </option>
+                        @endforeach
+                    </x-enterprise.select>
+                </x-enterprise.form-group>
+            </div>
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>
 
-    {{-- Jenis Jabatan & Angka Kredit --}}
+    {{-- Jenis Jabatan & Angka Kredit PAK (Khusus Dosen) --}}
     <x-enterprise.forms.row cols="2">
         <x-enterprise.forms.field>
             <x-enterprise.form-group label="Jenis Jabatan">
@@ -58,15 +61,17 @@
         </x-enterprise.forms.field>
 
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="Angka Kredit Kumulatif (PAK)">
-                <x-enterprise.input
-                    type="number"
-                    step="0.01"
-                    name="angka_kredit"
-                    :value="old('angka_kredit', $pegawai->angka_kredit ?? 0)"
-                    placeholder="Contoh: 150.00"
-                />
-            </x-enterprise.form-group>
+            <div x-show="kategori === 'dosen' || kategori === 'all'">
+                <x-enterprise.form-group label="Angka Kredit Kumulatif (PAK Dosen)">
+                    <x-enterprise.input
+                        type="number"
+                        step="0.01"
+                        name="angka_kredit"
+                        :value="old('angka_kredit', $pegawai->angka_kredit ?? 0)"
+                        placeholder="Contoh: 150.00"
+                    />
+                </x-enterprise.form-group>
+            </div>
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>
 
@@ -107,33 +112,35 @@
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>
 
-    {{-- Masa Kerja Golongan (MKG) --}}
-    <x-enterprise.forms.row cols="2">
-        <x-enterprise.forms.field>
-            <x-enterprise.form-group label="MKG — Masa Kerja Golongan (Tahun)">
-                <x-enterprise.input
-                    type="number"
-                    name="mkg_tahun"
-                    :value="old('mkg_tahun', $pegawai->mkg_tahun ?? 0)"
-                    min="0"
-                    max="40"
-                    placeholder="0"
-                />
-            </x-enterprise.form-group>
-        </x-enterprise.forms.field>
+    {{-- Masa Kerja Golongan (MKG) - Khusus ASN/PNS/Tendik/Dosen --}}
+    <div x-show="kategori !== 'phl'">
+        <x-enterprise.forms.row cols="2">
+            <x-enterprise.forms.field>
+                <x-enterprise.form-group label="MKG — Masa Kerja Golongan (Tahun)">
+                    <x-enterprise.input
+                        type="number"
+                        name="mkg_tahun"
+                        :value="old('mkg_tahun', $pegawai->mkg_tahun ?? 0)"
+                        min="0"
+                        max="40"
+                        placeholder="0"
+                    />
+                </x-enterprise.form-group>
+            </x-enterprise.forms.field>
 
-        <x-enterprise.forms.field>
-            <x-enterprise.form-group label="MKG — Masa Kerja Golongan (Bulan)">
-                <x-enterprise.input
-                    type="number"
-                    name="mkg_bulan"
-                    :value="old('mkg_bulan', $pegawai->mkg_bulan ?? 0)"
-                    min="0"
-                    max="11"
-                    placeholder="0"
-                />
-            </x-enterprise.form-group>
-        </x-enterprise.forms.field>
-    </x-enterprise.forms.row>
+            <x-enterprise.forms.field>
+                <x-enterprise.form-group label="MKG — Masa Kerja Golongan (Bulan)">
+                    <x-enterprise.input
+                        type="number"
+                        name="mkg_bulan"
+                        :value="old('mkg_bulan', $pegawai->mkg_bulan ?? 0)"
+                        min="0"
+                        max="11"
+                        placeholder="0"
+                    />
+                </x-enterprise.form-group>
+            </x-enterprise.forms.field>
+        </x-enterprise.forms.row>
+    </div>
 
 </x-enterprise.forms.section>

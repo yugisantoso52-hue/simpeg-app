@@ -13,10 +13,10 @@
                 :subtitle="$kategoriSubtitle">
 
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('pegawai.create') }}"
+                    <a href="{{ route('pegawai.create', ['kategori' => strtolower($kategori)]) }}"
                        class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        <span>Tambah Pegawai</span>
+                        <span>Tambah {{ $kategori }}</span>
                     </a>
                 </div>
             </x-enterprise.page-header>
@@ -181,7 +181,7 @@
 
                                             {{-- Edit --}}
                                             @if(Auth::user()->hasRole('admin'))
-                                                <a href="{{ route('pegawai.edit', $row) }}" 
+                                                <a href="{{ route('pegawai.edit', ['pegawai' => $row->id, 'kategori' => strtolower($kategori)]) }}" 
                                                    title="Edit Pegawai"
                                                    class="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-amber-600 transition">
                                                     <span>Edit</span>

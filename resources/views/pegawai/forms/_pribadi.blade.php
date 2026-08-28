@@ -1,47 +1,56 @@
 <x-enterprise.forms.section
     title="Data Pribadi"
-    description="Informasi identitas utama dan legalitas pegawai">
+    description="Informasi identitas utama, gelar, dan legalitas pegawai">
 
     <x-enterprise.forms.row cols="3">
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="NIP" required>
-                <x-enterprise.input name="nip" :value="old('nip', $pegawai->nip ?? '')" required />
+            <x-enterprise.form-group label="NIP / NIK" required>
+                <x-enterprise.input name="nip" :value="old('nip', $pegawai->nip ?? '')" required placeholder="Nomor Induk Pegawai / NIK..." />
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
 
+        {{-- Nomor Kartu ASN (Disembunyikan jika PHL) --}}
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="KARPEG / KARIS / KARSU">
-                <x-enterprise.input name="karpeg_karis_karsu"
-                    :value="old('karpeg_karis_karsu', $pegawai->karpeg_karis_karsu ?? '')"
-                    placeholder="Nomor Kartu ASN / KARIS / KARSU" />
-            </x-enterprise.form-group>
+            <div x-show="kategori !== 'phl'">
+                <x-enterprise.form-group label="KARPEG / KARIS / KARSU">
+                    <x-enterprise.input name="karpeg_karis_karsu"
+                        :value="old('karpeg_karis_karsu', $pegawai->karpeg_karis_karsu ?? '')"
+                        placeholder="Nomor Kartu ASN / KARIS / KARSU" />
+                </x-enterprise.form-group>
+            </div>
+            <div x-show="kategori === 'phl'" class="text-xs text-slate-400 pt-7">
+                <span class="italic text-amber-600">Khusus Non-ASN / PHL</span>
+            </div>
         </x-enterprise.forms.field>
 
+        {{-- NIDN / NUPTK (Khusus Dosen / Tendik Terdaftar) --}}
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="NIDN / NUPTK">
-                <x-enterprise.input name="nidn_nuptk"
-                    :value="old('nidn_nuptk', $pegawai->nidn_nuptk ?? '')"
-                    placeholder="NIDN (Dosen) atau NUPTK (Tendik)" />
-            </x-enterprise.form-group>
+            <div x-show="kategori === 'dosen' || kategori === 'all'">
+                <x-enterprise.form-group label="NIDN / NUPTK (Khusus Dosen)">
+                    <x-enterprise.input name="nidn_nuptk"
+                        :value="old('nidn_nuptk', $pegawai->nidn_nuptk ?? '')"
+                        placeholder="Nomor Induk Dosen Nasional..." />
+                </x-enterprise.form-group>
+            </div>
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>
 
     <x-enterprise.forms.row cols="3">
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="Nama Lengkap" required>
-                <x-enterprise.input name="nama" :value="old('nama', $pegawai->nama ?? '')" required />
+            <x-enterprise.form-group label="Nama Lengkap (Tanpa Gelar)" required>
+                <x-enterprise.input name="nama" :value="old('nama', $pegawai->nama ?? '')" required placeholder="Nama lengkap..." />
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
 
         <x-enterprise.forms.field>
             <x-enterprise.form-group label="Gelar Depan">
-                <x-enterprise.input name="gelar_depan" :value="old('gelar_depan', $pegawai->gelar_depan ?? '')" placeholder="Contoh: Dr., Prof." />
+                <x-enterprise.input name="gelar_depan" :value="old('gelar_depan', $pegawai->gelar_depan ?? '')" placeholder="Contoh: Dr., Prof., Ns." />
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
 
         <x-enterprise.forms.field>
             <x-enterprise.form-group label="Gelar Belakang">
-                <x-enterprise.input name="gelar_belakang" :value="old('gelar_belakang', $pegawai->gelar_belakang ?? '')" placeholder="Contoh: M.Kep., Sp.KJ." />
+                <x-enterprise.input name="gelar_belakang" :value="old('gelar_belakang', $pegawai->gelar_belakang ?? '')" placeholder="Contoh: M.Kep., Sp.Kep.J., Ph.D." />
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>
@@ -49,7 +58,7 @@
     <x-enterprise.forms.row cols="3">
         <x-enterprise.forms.field>
             <x-enterprise.form-group label="Tempat Lahir">
-                <x-enterprise.input name="tempat_lahir" :value="old('tempat_lahir', $pegawai->tempat_lahir ?? '')" />
+                <x-enterprise.input name="tempat_lahir" :value="old('tempat_lahir', $pegawai->tempat_lahir ?? '')" placeholder="Kota/Kabupaten lahir..." />
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
 
