@@ -24,12 +24,11 @@ post_max_size = 25M\n\
 memory_limit = 256M\n\
 max_execution_time = 300' > /usr/local/etc/php/conf.d/uploads.ini
 
-# Environment variables Composer & Node
+# Environment variables Composer
 ENV COMPOSER_ALLOW_SUPERUSER=1 \
     COMPOSER_MEMORY_LIMIT=-1 \
     COMPOSER_PROCESS_TIMEOUT=600 \
-    COMPOSER_MAX_PARALLEL_HTTP=4 \
-    NODE_ENV=production
+    COMPOSER_MAX_PARALLEL_HTTP=4
 
 # Set working directory
 WORKDIR /var/www
@@ -42,16 +41,17 @@ RUN composer config --global repo.packagist composer https://packagist.org \
         || (echo "Retrying composer install (attempt 2)..." && sleep 5 && composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist) \
         || (echo "Retrying composer install (attempt 3)..." && sleep 10 && composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist))
 
-# 2. Optimasi Cache: Install dependencies NPM
+# 2. Optimasi Cache: Install dependencies NPM (termasuk Vite)
 COPY package.json package-lock.json ./
-RUN npm ci || npm install
+RUN npm install
 
 # 3. Copy seluruh source code aplikasi
 COPY . /var/www
 
-# 4. Generate optimized autoloader & build asset frontend
+# 4. Generate optimized autoloader & build asset frontend (Vite)
 RUN composer dump-autoload --optimize --no-dev \
-    && npm run build
+    && npm run build \
+    && rm -rf node_modules
 
 # Set permission storage dan bootstrap/cache
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
