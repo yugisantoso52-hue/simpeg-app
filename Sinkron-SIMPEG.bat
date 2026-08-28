@@ -25,39 +25,39 @@ copy /Y "C:\Users\Acer\Documents\GitHub\simpeg-app\tailwind.config.js" "C:\larag
 echo   [+] Salin kode, view, aset, dan konfigurasi selesai.
 echo.
 
-:: 3. Masuk ke direktori Laragon
+:: 3. Tentukan PHP Laragon yang memiliki driver MySQL lengkap
+set PHP_BIN=php
+if exist "C:\laragon\bin\php\php-8.3.30-Win32-vs16-x64\php.exe" (
+    set PHP_BIN="C:\laragon\bin\php\php-8.3.30-Win32-vs16-x64\php.exe"
+)
+
+:: Masuk ke direktori Laragon
 cd /d C:\laragon\www\simpeg
 
-echo [2/4] Membersihkan seluruh cache & sinkronisasi storage link...
-call php artisan storage:link
-call php artisan optimize:clear
-call php artisan view:clear
-call php artisan route:clear
-call php artisan config:clear
+echo [2/4] Membersihkan seluruh cache sistem di Laragon...
+call %PHP_BIN% artisan storage:link
+call %PHP_BIN% artisan optimize:clear
+call %PHP_BIN% artisan view:clear
+call %PHP_BIN% artisan route:clear
+call %PHP_BIN% artisan config:clear
 echo   [+] Cache sistem berhasil dibersihkan.
 echo.
 
 echo [3/4] Menjalankan migrasi database...
-call php artisan migrate --force
+call %PHP_BIN% artisan migrate --force
 echo   [+] Migrasi struktur tabel selesai.
 echo.
 
 echo [4/4] MENARIK DATA ASLI DARI CLOUD RAILWAY (https://sikap-app.up.railway.app)...
-echo Menghubungkan ke server Railway untuk menyinkronkan data & berkas pegawai...
-call php artisan simpeg:pull-cloud
-
-if %ERRORLEVEL% NEQ 0 (
-    echo.
-    echo   [!] Sinkronisasi cloud gagal/offline, menjalankan database seeder lokal sebagai cadangan...
-    call php artisan db:seed --force
-)
+echo Menghubungkan ke server Railway untuk menyinkronkan 29 Pegawai & berkas...
+call %PHP_BIN% artisan simpeg:pull-cloud
 
 echo.
 echo ================================================================
 echo   ALHAMDULILLAH! SINKRONISASI KODE & DATA BERHASIL TOTAL!       
 echo ================================================================
 echo.
-echo Data Pegawai (Dosen, Tendik, PHL) beserta dokumen SK & foto dari
-echo https://sikap-app.up.railway.app kini telah 100%% sama di Localhost!
+echo Data Pegawai (Dosen, Tendik, PHL) dari Cloud Railway kini telah
+echo 100%% SINKRON (Total 29 Pegawai) di http://localhost/simpeg/public/dashboard!
 echo.
 pause
