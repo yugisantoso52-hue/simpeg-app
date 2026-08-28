@@ -23,26 +23,37 @@ post_max_size = 25M\n\
 memory_limit = 256M\n\
 max_execution_time = 300' > /usr/local/etc/php/conf.d/uploads.ini
 
+# Environment variables Composer & Node
+ENV COMPOSER_ALLOW_SUPERUSER=1 \
+    COMPOSER_MEMORY_LIMIT=-1 \
+    COMPOSER_PROCESS_TIMEOUT=600 \
+    COMPOSER_MAX_PARALLEL_HTTP=4 \
+    NODE_ENV=production
+
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www
 
-# Copy source code aplikasi
+# 1. Optimasi Cache: Install dependencies PHP terlebih dahulu
+COPY composer.json composer.lock ./
+
+RUN composer config --global repo.packagist composer https://packagist.org \
+    && (composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist \
+        || (echo "Retrying composer install (attempt 2)..." && sleep 5 && composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist) \
+        || (echo "Retrying composer install (attempt 3)..." && sleep 10 && composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist))
+
+# 2. Optimasi Cache: Install dependencies NPM
+COPY package.json package-lock.json ./
+RUN npm ci || npm install
+
+# 3. Copy seluruh source code aplikasi
 COPY . /var/www
 
-# Konfigurasi Composer agar retry otomatis jika network timeout
-RUN composer config --global repo.packagist composer https://packagist.org \
-    && composer config --global process-timeout 600
-
-# Install dependensi PHP (dengan retry manual jika gagal)
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist \
-    || (echo "Retrying composer install..." && composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist) \
-    || (echo "Second retry composer install..." && composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist)
-
-# Install NPM dan Build Vite (Untuk CSS & JavaScript)
-RUN npm install && npm run build
+# 4. Generate optimized autoloader & build asset frontend
+RUN composer dump-autoload --optimize --no-dev \
+    && npm run build
 
 # Set permission storage dan bootstrap/cache
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
