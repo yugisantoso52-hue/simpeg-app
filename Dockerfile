@@ -32,8 +32,14 @@ WORKDIR /var/www
 # Copy source code aplikasi
 COPY . /var/www
 
-# Install dependensi PHP
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Konfigurasi Composer agar retry otomatis jika network timeout
+RUN composer config --global repo.packagist composer https://packagist.org \
+    && composer config --global process-timeout 600
+
+# Install dependensi PHP (dengan retry manual jika gagal)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist \
+    || (echo "Retrying composer install..." && composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist) \
+    || (echo "Second retry composer install..." && composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist)
 
 # Install NPM dan Build Vite (Untuk CSS & JavaScript)
 RUN npm install && npm run build
