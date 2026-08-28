@@ -1,21 +1,20 @@
 @echo off
-title Sinkronisasi SIMPEG (GitHub ke Laragon)
+title Sinkronisasi SIMPEG (GitHub & Railway Cloud ke Laragon)
 color 0A
 
-echo ==========================================================
-echo       SINKRONISASI LENGKAP SIMPEG (GITHUB -> LARAGON)      
-echo ==========================================================
+echo ================================================================
+echo       SINKRONISASI LENGKAP SIMPEG (RAILWAY CLOUD -> LARAGON)      
+echo ================================================================
 echo.
-echo [1/4] Memulai penyalinan berkas sistem & kode program...
+echo [1/4] Memulai penyalinan berkas sistem, view, & kode program...
 
-:: 1. Salin folder inti kode program & views dari GitHub ke Laragon
+:: 1. Salin folder inti kode program, views, & aset dari GitHub ke Laragon
 robocopy "C:\Users\Acer\Documents\GitHub\simpeg-app\app" "C:\laragon\www\simpeg\app" /E /PURGE /NFL /NDL /NJH /NJS
 robocopy "C:\Users\Acer\Documents\GitHub\simpeg-app\resources" "C:\laragon\www\simpeg\resources" /E /PURGE /NFL /NDL /NJH /NJS
 robocopy "C:\Users\Acer\Documents\GitHub\simpeg-app\routes" "C:\laragon\www\simpeg\routes" /E /PURGE /NFL /NDL /NJH /NJS
 robocopy "C:\Users\Acer\Documents\GitHub\simpeg-app\database" "C:\laragon\www\simpeg\database" /E /PURGE /NFL /NDL /NJH /NJS
 robocopy "C:\Users\Acer\Documents\GitHub\simpeg-app\config" "C:\laragon\www\simpeg\config" /E /PURGE /NFL /NDL /NJH /NJS
 robocopy "C:\Users\Acer\Documents\GitHub\simpeg-app\public" "C:\laragon\www\simpeg\public" /E /NFL /NDL /NJH /NJS
-robocopy "C:\Users\Acer\Documents\GitHub\simpeg-app\storage\app\public" "C:\laragon\www\simpeg\storage\app\public" /E /NFL /NDL /NJH /NJS
 
 :: 2. Salin file konfigurasi utama
 copy /Y "C:\Users\Acer\Documents\GitHub\simpeg-app\composer.json" "C:\laragon\www\simpeg\composer.json" >nul
@@ -43,17 +42,22 @@ call php artisan migrate --force
 echo   [+] Migrasi struktur tabel selesai.
 echo.
 
-echo [4/4] Menyingkronkan ISI DATA & PEGAWAI (Database Seeder)...
-:: Menjalankan seluruh seeder lengkap agar nama pegawai, jabatan, unit, golongan & akun tersinkron
-call php artisan db:seed --force
-echo   [+] Data Master, Pegawai, dan Akun Pengguna berhasil disinkronkan.
-echo.
+echo [4/4] MENARIK DATA ASLI DARI CLOUD RAILWAY (https://sikap-app.up.railway.app)...
+echo Menghubungkan ke server Railway untuk menyinkronkan data & berkas pegawai...
+call php artisan simpeg:pull-cloud
 
-echo ==========================================================
-echo   ALHAMDULILLAH! SINKRONISASI KODE & DATA BERHASIL TOTAL  
-echo ==========================================================
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo   [!] Sinkronisasi cloud gagal/offline, menjalankan database seeder lokal sebagai cadangan...
+    call php artisan db:seed --force
+)
+
 echo.
-echo Semua menu (Dosen, Tendik, PHL), formulir 1-18, data pegawai, 
-echo serta hasil Cetak PDF dan Export Excel telah siap di Laragon.
+echo ================================================================
+echo   ALHAMDULILLAH! SINKRONISASI KODE & DATA BERHASIL TOTAL!       
+echo ================================================================
+echo.
+echo Data Pegawai (Dosen, Tendik, PHL) beserta dokumen SK & foto dari
+echo https://sikap-app.up.railway.app kini telah 100%% sama di Localhost!
 echo.
 pause

@@ -25,6 +25,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RiwayatPenghargaanController;
 use App\Http\Controllers\RiwayatOrganisasiController;
 use App\Http\Controllers\RiwayatPublikasiController;
+use App\Http\Controllers\CloudSyncController;
 
 /*
 |--------------------------------------------------------------------------
@@ -175,6 +176,10 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     /* Fallback Route untuk modul yang masih tahap pengembangan / Coming Soon */
     Route::get('/feature/coming-soon/{module?}', [PegawaiController::class, 'comingSoon'])->name('coming.soon');
 });
+
+/* Endpoint Sinkronisasi Aman Data Cloud (Railway ke Localhost) */
+Route::get('/api/cloud-sync/export', [CloudSyncController::class, 'export'])->name('cloud-sync.export');
+Route::get('/api/cloud-sync/file/{path}', [CloudSyncController::class, 'downloadFile'])->where('path', '.*')->name('cloud-sync.file');
 
 Route::get('/sync-db-production-simpeg-secure', function() {
     $output = "=== SIMPEG PRODUCTION SYNC & MIGRATION TOOL ===\n\n";
