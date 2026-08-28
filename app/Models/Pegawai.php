@@ -75,6 +75,10 @@ class Pegawai extends Model
         'tanggal_kontrak_mulai'   => 'date',
         'tanggal_kontrak_selesai' => 'date',
         'angka_kredit'            => 'decimal:2',
+        'batas_usia_pensiun'      => 'integer',
+        'mkg_tahun'               => 'integer',
+        'mkg_bulan'               => 'integer',
+        'jumlah_anak'             => 'integer',
     ];
 
     /**
@@ -111,7 +115,7 @@ class Pegawai extends Model
             // 4. Auto hitung tanggal pensiun dari BUP + tanggal_lahir
             if (empty($pegawai->tanggal_pensiun) && !empty($pegawai->tanggal_lahir) && !empty($pegawai->batas_usia_pensiun)) {
                 $pegawai->tanggal_pensiun = Carbon::parse($pegawai->tanggal_lahir)
-                    ->addYears($pegawai->batas_usia_pensiun)
+                    ->addYears((int) $pegawai->batas_usia_pensiun)
                     ->toDateString();
             }
         });
