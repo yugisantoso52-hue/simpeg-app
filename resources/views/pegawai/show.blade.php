@@ -66,13 +66,16 @@
 
                     {{-- Data Detail Terstruktur --}}
                     <div class="md:col-span-2 space-y-6">
-                                           {{-- 1. DATA PRIBADI --}}
+
+                        {{-- ========================================================================= --}}
+                        {{-- 1. DATA PRIBADI                                                           --}}
+                        {{-- ========================================================================= --}}
                         <div>
                             <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">1. Data Pribadi</h4>
                             <table class="w-full text-sm text-gray-600">
                                 <tbody>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500 w-48">NIP</td>
+                                        <td class="py-1.5 font-medium text-gray-500 w-48">NIP / NIK</td>
                                         <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->nip ?? '-' }}</td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
@@ -114,7 +117,9 @@
                             </table>
                         </div>
 
-                        {{-- 2. INFORMASI KONTAK & DOMISILI --}}
+                        {{-- ========================================================================= --}}
+                        {{-- 2. INFORMASI KONTAK & DOMISILI                                            --}}
+                        {{-- ========================================================================= --}}
                         <div>
                             <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">2. Informasi Kontak & Domisili</h4>
                             <table class="w-full text-sm text-gray-600">
@@ -163,7 +168,9 @@
                             </table>
                         </div>
 
-                        {{-- 3. DATA KELUARGA --}}
+                        {{-- ========================================================================= --}}
+                        {{-- 3. DATA KELUARGA                                                          --}}
+                        {{-- ========================================================================= --}}
                         <div>
                             <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">3. Data Keluarga</h4>
                             <table class="w-full text-sm text-gray-600">
@@ -184,9 +191,11 @@
                             </table>
                         </div>
 
-                        {{-- 4. DATA KEPEGAWAIAN --}}
+                        {{-- ========================================================================= --}}
+                        {{-- 4. DATA KEPEGAWAIAN & JABATAN                                             --}}
+                        {{-- ========================================================================= --}}
                         <div>
-                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">4. Data Kepegawaian</h4>
+                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">4. Data Kepegawaian & Jabatan</h4>
                             <table class="w-full text-sm text-gray-600">
                                  <tbody>
                                      <tr class="border-b border-gray-50">
@@ -248,95 +257,15 @@
                             </table>
                         </div>
 
-                        {{-- 5. RIWAYAT PENDIDIKAN --}}
+                        {{-- ========================================================================= --}}
+                        {{-- 5. ADMINISTRASI KEPEGAWAIAN & LEGALITAS                                   --}}
+                        {{-- ========================================================================= --}}
                         <div>
-                            <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">5. Riwayat Pendidikan</h4>
-                                @can('update', $pegawai)
-                                    <a href="{{ route('riwayat-pendidikan.create', ['pegawai_id' => $pegawai->id]) }}"
-                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
-                                        + Tambah Pendidikan
-                                    </a>
-                                @endcan
-                            </div>
-                            @if($pegawai->riwayatPendidikan && $pegawai->riwayatPendidikan->count() > 0)
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
-                                        <thead>
-                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
-                                                <th class="py-2 px-3">Tingkat</th>
-                                                <th class="py-2 px-3">Nama Institusi / Sekolah</th>
-                                                <th class="py-2 px-3">Jurusan</th>
-                                                <th class="py-2 px-3 text-center">Tahun Lulus</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($pegawai->riwayatPendidikan as $pendidikan)
-                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
-                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $pendidikan->tingkat_pendidikan ?? $pendidikan->jenjang ?? '-' }}</td>
-                                                    <td class="py-1.5 px-3">{{ $pendidikan->nama_institusi ?? $pendidikan->institusi ?? '-' }}</td>
-                                                    <td class="py-1.5 px-3">{{ $pendidikan->jurusan ?? '-' }}</td>
-                                                    <td class="py-1.5 px-3 text-center font-mono">{{ $pendidikan->tahun_lulus ?? '-' }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @else
-                                <p class="text-sm text-gray-500 italic py-1">Belum ada data riwayat pendidikan.</p>
-                            @endif
-                        </div>
-
-                        {{-- 6. RIWAYAT DIKLAT / PELATIHAN --}}
-                        <div>
-                            <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">6. Riwayat Diklat / Pelatihan</h4>
-                                @can('update', $pegawai)
-                                    <a href="{{ route('riwayat-diklat.create', ['pegawai_id' => $pegawai->id]) }}"
-                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
-                                        + Tambah Diklat
-                                    </a>
-                                @endcan
-                            </div>
-                            @if($pegawai->riwayatDiklat && $pegawai->riwayatDiklat->count() > 0)
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
-                                        <thead>
-                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
-                                                <th class="py-2 px-3">Nama Diklat</th>
-                                                <th class="py-2 px-3">Penyelenggara</th>
-                                                <th class="py-2 px-3 text-center">Tahun</th>
-                                                <th class="py-2 px-3 text-center">Jumlah Jam</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($pegawai->riwayatDiklat as $diklat)
-                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
-                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $diklat->nama_diklat ?? '-' }}</td>
-                                                    <td class="py-1.5 px-3">{{ $diklat->penyelenggara ?? '-' }}</td>
-                                                    <td class="py-1.5 px-3 text-center font-mono">
-                                                        {{ $diklat->tahun ?? ($diklat->tanggal_mulai ? \Carbon\Carbon::parse($diklat->tanggal_mulai)->year : '-') }}
-                                                    </td>
-                                                    <td class="py-1.5 px-3 text-center font-mono">
-                                                        {{ $diklat->jumlah_jam ? $diklat->jumlah_jam . ' JP' : '-' }}
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @else
-                                <p class="text-sm text-gray-500 italic py-1">Belum ada data riwayat diklat.</p>
-                            @endif
-                        </div>
-
-                        {{-- 7. ADMINISTRASI KEPEGAWAIAN --}}
-                        <div>
-                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">7. Administrasi Kepegawaian</h4>
+                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">5. Administrasi Kepegawaian & Legalitas</h4>
                             <table class="w-full text-sm text-gray-600">
                                 <tbody>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500 w-48">Tanggal Masuk</td>
+                                        <td class="py-1.5 font-medium text-gray-500 w-48">Tanggal Masuk / TMT Awal</td>
                                         <td class="py-1.5 text-gray-900">
                                             {{ $pegawai->tanggal_masuk ? (is_string($pegawai->tanggal_masuk) ? \Carbon\Carbon::parse($pegawai->tanggal_masuk)->translatedFormat('d F Y') : $pegawai->tanggal_masuk->translatedFormat('d F Y')) : '-' }}
                                         </td>
@@ -433,10 +362,237 @@
                             </table>
                         </div>
 
-                        {{-- 8. LEGALITAS PROFESI (STR & SIP / SIKP) --}}
+                        {{-- ========================================================================= --}}
+                        {{-- 6. DATA FISIK & KESEHATAN                                                 --}}
+                        {{-- ========================================================================= --}}
+                        <div>
+                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">6. Data Fisik & Kesehatan</h4>
+                            <table class="w-full text-sm text-gray-600">
+                                <tbody>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500 w-48">Tinggi Badan</td>
+                                        <td class="py-1.5 text-gray-900">{{ $pegawai->tinggi_badan ? $pegawai->tinggi_badan . ' cm' : '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Berat Badan</td>
+                                        <td class="py-1.5 text-gray-900">{{ $pegawai->berat_badan ? $pegawai->berat_badan . ' kg' : '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Golongan Darah</td>
+                                        <td class="py-1.5 text-gray-900">{{ $pegawai->golongan_darah ?? '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Ciri-ciri Fisik / Khas</td>
+                                        <td class="py-1.5 text-gray-900">{{ $pegawai->ciri_khas ?? '-' }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {{-- ========================================================================= --}}
+                        {{-- 7. RIWAYAT PANGKAT / GOLONGAN                                             --}}
+                        {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">8. Legalitas Profesi (STR & SIP)</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">7. Riwayat Pangkat / Golongan</h4>
+                                @can('update', $pegawai)
+                                    <a href="{{ route('riwayat-pangkat.create', ['pegawai_id' => $pegawai->id]) }}"
+                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                        + Tambah Pangkat
+                                    </a>
+                                @endcan
+                            </div>
+                            @if($pegawai->riwayatPangkat && $pegawai->riwayatPangkat->count() > 0)
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
+                                                <th class="py-2 px-3">Golongan / Pangkat</th>
+                                                <th class="py-2 px-3 text-center">TMT Pangkat</th>
+                                                <th class="py-2 px-3">Nomor SK</th>
+                                                <th class="py-2 px-3 text-center">Tanggal SK</th>
+                                                <th class="py-2 px-3 text-center">Status</th>
+                                                <th class="py-2 px-3 text-center">Berkas</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pegawai->riwayatPangkat as $rp)
+                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">
+                                                        {{ $rp->golongan->nama_golongan ?? '-' }} ({{ $rp->golongan->nama_pangkat ?? '-' }})
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $rp->tmt ? \Carbon\Carbon::parse($rp->tmt)->format('d/m/Y') : '-' }}</td>
+                                                    <td class="py-1.5 px-3 font-mono text-xs">{{ $rp->nomor_sk ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $rp->tanggal_sk ? \Carbon\Carbon::parse($rp->tanggal_sk)->format('d/m/Y') : '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ strtolower($rp->status ?? '') == 'aktif' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
+                                                            {{ ucfirst($rp->status ?? 'Riwayat') }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        @if($rp->file_sk)
+                                                            <a href="{{ route('document.preview', ['path' => $rp->file_sk]) }}" target="_blank" class="text-blue-600 font-semibold text-xs hover:underline">Lihat SK</a>
+                                                        @else
+                                                            <span class="text-gray-400 text-xs">-</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-500 italic py-1">Belum ada data riwayat pangkat tercatat.</p>
+                            @endif
+                        </div>
+
+                        {{-- ========================================================================= --}}
+                        {{-- 8. RIWAYAT JABATAN                                                        --}}
+                        {{-- ========================================================================= --}}
+                        <div>
+                            <div class="flex items-center justify-between border-b pb-1 mb-2">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">8. Riwayat Jabatan</h4>
+                                @can('update', $pegawai)
+                                    <a href="{{ route('riwayat-jabatan.create', ['pegawai_id' => $pegawai->id]) }}"
+                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                        + Tambah Jabatan
+                                    </a>
+                                @endcan
+                            </div>
+                            @if($pegawai->riwayatJabatan && $pegawai->riwayatJabatan->count() > 0)
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
+                                                <th class="py-2 px-3">Nama Jabatan</th>
+                                                <th class="py-2 px-3">Unit Kerja</th>
+                                                <th class="py-2 px-3 text-center">TMT Jabatan</th>
+                                                <th class="py-2 px-3">Nomor SK</th>
+                                                <th class="py-2 px-3 text-center">Status</th>
+                                                <th class="py-2 px-3 text-center">Berkas</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pegawai->riwayatJabatan as $rj)
+                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $rj->jabatan->nama_jabatan ?? $rj->nama_jabatan ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-xs">{{ $rj->unitKerja->nama_unit ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $rj->tmt_jabatan ? \Carbon\Carbon::parse($rj->tmt_jabatan)->format('d/m/Y') : '-' }}</td>
+                                                    <td class="py-1.5 px-3 font-mono text-xs">{{ $rj->nomor_sk ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ strtolower($rj->status ?? '') == 'aktif' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
+                                                            {{ ucfirst($rj->status ?? 'Riwayat') }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        @if($rj->file_sk)
+                                                            <a href="{{ route('document.preview', ['path' => $rj->file_sk]) }}" target="_blank" class="text-blue-600 font-semibold text-xs hover:underline">Lihat SK</a>
+                                                        @else
+                                                            <span class="text-gray-400 text-xs">-</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-500 italic py-1">Belum ada data riwayat jabatan tercatat.</p>
+                            @endif
+                        </div>
+
+                        {{-- ========================================================================= --}}
+                        {{-- 9. RIWAYAT PENDIDIKAN                                                     --}}
+                        {{-- ========================================================================= --}}
+                        <div>
+                            <div class="flex items-center justify-between border-b pb-1 mb-2">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">9. Riwayat Pendidikan</h4>
+                                @can('update', $pegawai)
+                                    <a href="{{ route('riwayat-pendidikan.create', ['pegawai_id' => $pegawai->id]) }}"
+                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                        + Tambah Pendidikan
+                                    </a>
+                                @endcan
+                            </div>
+                            @if($pegawai->riwayatPendidikan && $pegawai->riwayatPendidikan->count() > 0)
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
+                                                <th class="py-2 px-3">Tingkat</th>
+                                                <th class="py-2 px-3">Nama Institusi / Sekolah</th>
+                                                <th class="py-2 px-3">Jurusan</th>
+                                                <th class="py-2 px-3 text-center">Tahun Lulus</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pegawai->riwayatPendidikan as $pendidikan)
+                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $pendidikan->tingkat_pendidikan ?? $pendidikan->jenjang ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3">{{ $pendidikan->nama_institusi ?? $pendidikan->institusi ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3">{{ $pendidikan->jurusan ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center font-mono">{{ $pendidikan->tahun_lulus ?? '-' }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-500 italic py-1">Belum ada data riwayat pendidikan tercatat.</p>
+                            @endif
+                        </div>
+
+                        {{-- ========================================================================= --}}
+                        {{-- 10. RIWAYAT DIKLAT / PELATIHAN                                            --}}
+                        {{-- ========================================================================= --}}
+                        <div>
+                            <div class="flex items-center justify-between border-b pb-1 mb-2">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">10. Riwayat Diklat / Pelatihan</h4>
+                                @can('update', $pegawai)
+                                    <a href="{{ route('riwayat-diklat.create', ['pegawai_id' => $pegawai->id]) }}"
+                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                        + Tambah Diklat
+                                    </a>
+                                @endcan
+                            </div>
+                            @if($pegawai->riwayatDiklat && $pegawai->riwayatDiklat->count() > 0)
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
+                                                <th class="py-2 px-3">Nama Diklat</th>
+                                                <th class="py-2 px-3">Penyelenggara</th>
+                                                <th class="py-2 px-3 text-center">Tahun</th>
+                                                <th class="py-2 px-3 text-center">Jumlah Jam</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pegawai->riwayatDiklat as $diklat)
+                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $diklat->nama_diklat ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3">{{ $diklat->penyelenggara ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center font-mono">
+                                                        {{ $diklat->tahun ?? ($diklat->tanggal_mulai ? \Carbon\Carbon::parse($diklat->tanggal_mulai)->year : '-') }}
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center font-mono">
+                                                        {{ $diklat->jumlah_jam ? $diklat->jumlah_jam . ' JP' : '-' }}
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-500 italic py-1">Belum ada data riwayat diklat tercatat.</p>
+                            @endif
+                        </div>
+
+                        {{-- ========================================================================= --}}
+                        {{-- 11. LEGALITAS PROFESI (STR & SIP / SIKP)                                  --}}
+                        {{-- ========================================================================= --}}
+                        <div>
+                            <div class="flex items-center justify-between border-b pb-1 mb-2">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">11. Legalitas Profesi (STR & SIP)</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('riwayat-str-sip.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -497,89 +653,12 @@
                             @endif
                         </div>
 
-                        {{-- 9. RIWAYAT TUGAS & IZIN BELAJAR (STUDI LANJUT) --}}
-                        <div>
-                            <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">9. Tugas Belajar & Izin Belajar (Studi Lanjut)</h4>
-                                @can('update', $pegawai)
-                                    <a href="{{ route('tugas-belajar.create', ['pegawai_id' => $pegawai->id]) }}"
-                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
-                                        + Tambah Tubel/Ibel
-                                    </a>
-                                @endcan
-                            </div>
-                            @if($pegawai->tugasBelajar && $pegawai->tugasBelajar->count() > 0)
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
-                                        <thead>
-                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
-                                                <th class="py-2 px-3">Jenis & Jenjang</th>
-                                                <th class="py-2 px-3">Universitas & Prodi</th>
-                                                <th class="py-2 px-3">Beasiswa / SK</th>
-                                                <th class="py-2 px-3 text-center">Semester & Masa Studi</th>
-                                                <th class="py-2 px-3 text-center">Status</th>
-                                                <th class="py-2 px-3 text-center">Berkas</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($pegawai->tugasBelajar as $tb)
-                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
-                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">
-                                                        <span class="inline-block px-1.5 py-0.5 rounded text-[11px] font-bold {{ $tb->jenis_pengembangan === 'Tugas Belajar' ? 'bg-indigo-100 text-indigo-800' : 'bg-teal-100 text-teal-800' }}">
-                                                            {{ $tb->jenis_pengembangan }}
-                                                        </span>
-                                                        <div class="font-bold text-xs mt-0.5">{{ $tb->jenjang_studi }}</div>
-                                                    </td>
-                                                    <td class="py-1.5 px-3">
-                                                        <div class="text-gray-900 font-semibold text-xs">{{ $tb->program_studi }}</div>
-                                                        <div class="text-[11px] text-gray-500">{{ $tb->perguruan_tinggi }} ({{ $tb->negara }})</div>
-                                                    </td>
-                                                    <td class="py-1.5 px-3">
-                                                        <div class="text-xs text-gray-800">{{ $tb->sumber_pembiayaan }}</div>
-                                                        <div class="text-[11px] text-gray-500 font-mono">SK: {{ $tb->nomor_sk }}</div>
-                                                    </td>
-                                                    <td class="py-1.5 px-3 text-center">
-                                                        <div class="text-xs font-bold text-gray-800">Semester {{ $tb->semester_berjalan }}</div>
-                                                        <div class="text-[11px] text-gray-500">
-                                                            {{ $tb->tanggal_mulai ? $tb->tanggal_mulai->format('d/m/Y') : '-' }} s.d. {{ $tb->tanggal_selesai ? $tb->tanggal_selesai->format('d/m/Y') : '-' }}
-                                                        </div>
-                                                    </td>
-                                                    <td class="py-1.5 px-3 text-center">
-                                                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full border {{ $tb->status_badge_class }}">
-                                                            {{ $tb->status_studi }}
-                                                        </span>
-                                                    </td>
-                                                    <td class="py-1.5 px-3 text-center">
-                                                        <div class="flex flex-col items-center gap-1">
-                                                            @if($tb->file_sk_url)
-                                                                <a href="{{ $tb->file_sk_url }}" target="_blank" class="text-indigo-600 hover:underline text-xs font-semibold">
-                                                                    SK
-                                                                </a>
-                                                            @endif
-                                                            @if($tb->file_laporan_progress_url)
-                                                                <a href="{{ $tb->file_laporan_progress_url }}" target="_blank" class="text-teal-600 hover:underline text-xs font-semibold">
-                                                                    KHS
-                                                                </a>
-                                                            @endif
-                                                            @if(!$tb->file_sk_url && !$tb->file_laporan_progress_url)
-                                                                <span class="text-gray-400 italic text-xs">-</span>
-                                                            @endif
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @else
-                                <p class="text-sm text-gray-500 italic py-1">Belum ada riwayat tugas belajar / izin belajar tercatat.</p>
-                            @endif
-                        </div>
-
-                        {{-- 10. PENGARSIPAN SKP (SASARAN KINERJA PEGAWAI - 2 TAHUN) --}}
+                        {{-- ========================================================================= --}}
+                        {{-- 12. PENGARSIPAN SKP (SASARAN KINERJA PEGAWAI - 2 TAHUN)                   --}}
+                        {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-3">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">10. Pengarsipan SKP (Sasaran Kinerja Pegawai - 2 Tahun)</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">12. Pengarsipan SKP (Sasaran Kinerja Pegawai - 2 Tahun)</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('riwayat-skp.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -594,7 +673,6 @@
                                 $skpLainnya = $pegawai->riwayatSkp->filter(fn($s) => !in_array($s->tahun, [now()->year, now()->year - 1]));
                             @endphp
 
-                            {{-- KARTU BERDAMPINGAN: SKP TAHUN N DAN TAHUN N-1 --}}
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 {{-- KARTU TAHUN INI (N) --}}
                                 <div class="rounded-xl border {{ $skpN ? 'border-blue-200 bg-blue-50/30' : 'border-dashed border-gray-300 bg-gray-50/50' }} p-4">
@@ -705,7 +783,6 @@
                                 </div>
                             </div>
 
-                            {{-- TABEL ARSIP SKP TAHUN-TAHUN TERDAHULU --}}
                             @if($skpLainnya->count() > 0)
                                 <div class="mt-3">
                                     <div class="text-[11px] font-bold uppercase text-gray-500 mb-1.5">Arsip SKP Tahun Terdahulu:</div>
@@ -753,10 +830,12 @@
                             @endif
                         </div>
 
-                        {{-- 11. RIWAYAT PENGHARGAAN & TANDA JASA --}}
+                        {{-- ========================================================================= --}}
+                        {{-- 13. RIWAYAT PENGHARGAAN & TANDA JASA                                      --}}
+                        {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">11. Riwayat Penghargaan & Tanda Jasa</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">13. Riwayat Penghargaan & Tanda Jasa</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('riwayat-penghargaan.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -800,10 +879,12 @@
                             @endif
                         </div>
 
-                        {{-- 12. RIWAYAT KEANGGOTAAN ORGANISASI --}}
+                        {{-- ========================================================================= --}}
+                        {{-- 14. RIWAYAT KEANGGOTAAN ORGANISASI                                        --}}
+                        {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">12. Riwayat Keanggotaan Organisasi</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">14. Riwayat Keanggotaan Organisasi</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('riwayat-organisasi.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -843,10 +924,12 @@
                             @endif
                         </div>
 
-                        {{-- 13. RIWAYAT PUBLIKASI ILMIAH & KARYA --}}
+                        {{-- ========================================================================= --}}
+                        {{-- 15. RIWAYAT PUBLIKASI ILMIAH & KARYA                                      --}}
+                        {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">13. Riwayat Publikasi Ilmiah & Karya</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">15. Riwayat Publikasi Ilmiah & Karya</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('riwayat-publikasi.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -902,6 +985,177 @@
                                 </div>
                             @else
                                 <p class="text-sm text-gray-500 italic py-1">Belum ada riwayat publikasi ilmiah tercatat.</p>
+                            @endif
+                        </div>
+
+                        {{-- ========================================================================= --}}
+                        {{-- 16. TUGAS BELAJAR & IZIN BELAJAR                                          --}}
+                        {{-- ========================================================================= --}}
+                        <div>
+                            <div class="flex items-center justify-between border-b pb-1 mb-2">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">16. Tugas Belajar & Izin Belajar (Studi Lanjut)</h4>
+                                @can('update', $pegawai)
+                                    <a href="{{ route('tugas-belajar.create', ['pegawai_id' => $pegawai->id]) }}"
+                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                        + Tambah Tubel/Ibel
+                                    </a>
+                                @endcan
+                            </div>
+                            @if($pegawai->tugasBelajar && $pegawai->tugasBelajar->count() > 0)
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
+                                                <th class="py-2 px-3">Jenis & Jenjang</th>
+                                                <th class="py-2 px-3">Universitas & Prodi</th>
+                                                <th class="py-2 px-3">Beasiswa / SK</th>
+                                                <th class="py-2 px-3 text-center">Semester & Masa Studi</th>
+                                                <th class="py-2 px-3 text-center">Status</th>
+                                                <th class="py-2 px-3 text-center">Berkas</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pegawai->tugasBelajar as $tb)
+                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">
+                                                        <span class="inline-block px-1.5 py-0.5 rounded text-[11px] font-bold {{ $tb->jenis_pengembangan === 'Tugas Belajar' ? 'bg-indigo-100 text-indigo-800' : 'bg-teal-100 text-teal-800' }}">
+                                                            {{ $tb->jenis_pengembangan }}
+                                                        </span>
+                                                        <div class="font-bold text-xs mt-0.5">{{ $tb->jenjang_studi }}</div>
+                                                    </td>
+                                                    <td class="py-1.5 px-3">
+                                                        <div class="text-gray-900 font-semibold text-xs">{{ $tb->program_studi }}</div>
+                                                        <div class="text-[11px] text-gray-500">{{ $tb->perguruan_tinggi }} ({{ $tb->negara }})</div>
+                                                    </td>
+                                                    <td class="py-1.5 px-3">
+                                                        <div class="text-xs text-gray-800">{{ $tb->sumber_pembiayaan }}</div>
+                                                        <div class="text-[11px] text-gray-500 font-mono">SK: {{ $tb->nomor_sk }}</div>
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        <div class="text-xs font-bold text-gray-800">Semester {{ $tb->semester_berjalan }}</div>
+                                                        <div class="text-[11px] text-gray-500">
+                                                            {{ $tb->tanggal_mulai ? $tb->tanggal_mulai->format('d/m/Y') : '-' }} s.d. {{ $tb->tanggal_selesai ? $tb->tanggal_selesai->format('d/m/Y') : '-' }}
+                                                        </div>
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full border {{ $tb->status_badge_class }}">
+                                                            {{ $tb->status_studi }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        <div class="flex flex-col items-center gap-1">
+                                                            @if($tb->file_sk_url)
+                                                                <a href="{{ $tb->file_sk_url }}" target="_blank" class="text-indigo-600 hover:underline text-xs font-semibold">
+                                                                    SK
+                                                                </a>
+                                                            @endif
+                                                            @if($tb->file_laporan_progress_url)
+                                                                <a href="{{ $tb->file_laporan_progress_url }}" target="_blank" class="text-teal-600 hover:underline text-xs font-semibold">
+                                                                    KHS
+                                                                </a>
+                                                            @endif
+                                                            @if(!$tb->file_sk_url && !$tb->file_laporan_progress_url)
+                                                                <span class="text-gray-400 italic text-xs">-</span>
+                                                            @endif
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-500 italic py-1">Belum ada riwayat tugas belajar / izin belajar tercatat.</p>
+                            @endif
+                        </div>
+
+                        {{-- ========================================================================= --}}
+                        {{-- 17. RIWAYAT MUTASI PEGAWAI                                                --}}
+                        {{-- ========================================================================= --}}
+                        <div>
+                            <div class="flex items-center justify-between border-b pb-1 mb-2">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">17. Riwayat Mutasi Pegawai</h4>
+                                @can('update', $pegawai)
+                                    <a href="{{ route('mutasi-pegawai.create', ['pegawai_id' => $pegawai->id]) }}"
+                                       class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                        + Tambah Mutasi
+                                    </a>
+                                @endcan
+                            </div>
+                            @if($pegawai->mutasi && $pegawai->mutasi->count() > 0)
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
+                                                <th class="py-2 px-3">Jenis Mutasi</th>
+                                                <th class="py-2 px-3">Asal</th>
+                                                <th class="py-2 px-3">Tujuan</th>
+                                                <th class="py-2 px-3 text-center">TMT Mutasi</th>
+                                                <th class="py-2 px-3 text-center">No. SK</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pegawai->mutasi as $m)
+                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $m->jenis_mutasi ?? 'Mutasi Internal' }}</td>
+                                                    <td class="py-1.5 px-3 text-xs">{{ $m->unitKerjaAsal->nama_unit ?? $m->instansi_asal ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-xs font-semibold text-blue-700">{{ $m->unitKerjaTujuan->nama_unit ?? $m->instansi_tujuan ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $m->tmt_mutasi ? \Carbon\Carbon::parse($m->tmt_mutasi)->format('d/m/Y') : '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $m->nomor_sk ?? '-' }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-500 italic py-1">Belum ada data riwayat mutasi tercatat.</p>
+                            @endif
+                        </div>
+
+                        {{-- ========================================================================= --}}
+                        {{-- 18. RIWAYAT CUTI PEGAWAI                                                  --}}
+                        {{-- ========================================================================= --}}
+                        <div>
+                            <div class="flex items-center justify-between border-b pb-1 mb-2">
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">18. Riwayat Cuti Pegawai</h4>
+                                <a href="{{ route('pengajuan-cuti.create') }}"
+                                   class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
+                                    + Ajukan Cuti
+                                </a>
+                            </div>
+                            @if($pegawai->pengajuanCuti && $pegawai->pengajuanCuti->count() > 0)
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-gray-600 border border-gray-100 rounded">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
+                                                <th class="py-2 px-3">Jenis Cuti</th>
+                                                <th class="py-2 px-3 text-center">Periode Cuti</th>
+                                                <th class="py-2 px-3 text-center">Jumlah Hari</th>
+                                                <th class="py-2 px-3">Alasan</th>
+                                                <th class="py-2 px-3 text-center">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pegawai->pengajuanCuti as $cuti)
+                                                <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $cuti->jenis_cuti }}</td>
+                                                    <td class="py-1.5 px-3 text-center text-xs font-mono">
+                                                        {{ $cuti->tanggal_mulai ? \Carbon\Carbon::parse($cuti->tanggal_mulai)->format('d/m/Y') : '-' }} s.d. {{ $cuti->tanggal_selesai ? \Carbon\Carbon::parse($cuti->tanggal_selesai)->format('d/m/Y') : '-' }}
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center font-bold">{{ $cuti->jumlah_hari }} Hari</td>
+                                                    <td class="py-1.5 px-3 text-xs text-gray-600">{{ $cuti->alasan ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ $cuti->status === 'Disetujui' ? 'bg-green-100 text-green-800' : ($cuti->status === 'Ditolak' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800') }}">
+                                                            {{ $cuti->status }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-sm text-gray-500 italic py-1">Belum ada riwayat cuti pegawai tercatat.</p>
                             @endif
                         </div>
 

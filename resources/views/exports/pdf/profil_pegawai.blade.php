@@ -5,22 +5,19 @@
 @section('content')
 
     <div class="document-title">
-        <h4>PROFIL PEGAWAI</h4>
+        <h4>PROFIL LENGKAP PEGAWAI</h4>
         <p>NIP: {{ $pegawai->nip ?? '-' }}</p>
     </div>
 
     @php
-        // Logika pencegahan duplikasi Gelar Depan dan Gelar Belakang
         $namaCore = trim($pegawai->nama_lengkap ?? $pegawai->nama);
         $gelarDepan = trim($pegawai->gelar_depan ?? '');
         $gelarBelakang = trim($pegawai->gelar_belakang ?? '');
 
-        // Tambah gelar depan jika belum ada di dalam string nama
         if ($gelarDepan !== '' && !str_starts_with($namaCore, $gelarDepan)) {
             $namaCore = $gelarDepan . ' ' . $namaCore;
         }
 
-        // Tambah gelar belakang jika belum ada di dalam string nama
         if ($gelarBelakang !== '' && !str_contains($namaCore, $gelarBelakang)) {
             $namaCore = $namaCore . ', ' . $gelarBelakang;
         }
@@ -30,7 +27,7 @@
     <div class="section-header">1. DATA PRIBADI</div>
     <table class="form-table">
         <tr>
-            <td style="width: 32%;" class="bold">NIP</td>
+            <td style="width: 32%;" class="bold">NIP / NIK</td>
             <td style="width: 3%;">:</td>
             <td>{{ $pegawai->nip ?? '-' }}</td>
         </tr>
@@ -144,8 +141,8 @@
         </tr>
     </table>
 
-    <!-- 4. DATA KEPEGAWAIAN -->
-    <div class="section-header">4. DATA KEPEGAWAIAN</div>
+    <!-- 4. DATA KEPEGAWAIAN & JABATAN -->
+    <div class="section-header">4. DATA KEPEGAWAIAN & JABATAN</div>
     <table class="form-table">
         <tr>
             <td style="width: 32%;" class="bold">Unit Kerja</td>
@@ -204,65 +201,11 @@
         </tr>
     </table>
 
-    <!-- 5. RIWAYAT PENDIDIKAN -->
-    <div class="section-header">5. RIWAYAT PENDIDIKAN</div>
-    @if($pegawai->riwayatPendidikan && $pegawai->riwayatPendidikan->count() > 0)
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th style="width: 15%;">Tingkat</th>
-                    <th style="width: 45%;">Nama Institusi / Sekolah</th>
-                    <th style="width: 25%;">Jurusan</th>
-                    <th style="width: 15%;">Tahun Lulus</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($pegawai->riwayatPendidikan as $pendidikan)
-                    <tr>
-                        <td class="bold text-center">{{ $pendidikan->tingkat_pendidikan ?? $pendidikan->jenjang ?? '-' }}</td>
-                        <td>{{ $pendidikan->nama_institusi ?? $pendidikan->institusi ?? '-' }}</td>
-                        <td>{{ $pendidikan->jurusan ?? '-' }}</td>
-                        <td class="text-center">{{ $pendidikan->tahun_lulus ?? '-' }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @else
-        <p style="font-size: 10pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat pendidikan yang tercatat.</p>
-    @endif
-
-    <!-- 6. RIWAYAT DIKLAT / PELATIHAN -->
-    <div class="section-header">6. RIWAYAT DIKLAT / PELATIHAN</div>
-    @if($pegawai->riwayatDiklat && $pegawai->riwayatDiklat->count() > 0)
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th style="width: 45%;">Nama Diklat / Pelatihan</th>
-                    <th style="width: 30%;">Penyelenggara</th>
-                    <th style="width: 12%;">Tahun</th>
-                    <th style="width: 13%;">Jumlah Jam</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($pegawai->riwayatDiklat as $diklat)
-                    <tr>
-                        <td class="bold">{{ $diklat->nama_diklat ?? '-' }}</td>
-                        <td>{{ $diklat->penyelenggara ?? '-' }}</td>
-                        <td class="text-center">{{ $diklat->tahun ?? ($diklat->tanggal_mulai ? \Carbon\Carbon::parse($diklat->tanggal_mulai)->year : '-') }}</td>
-                        <td class="text-center">{{ $diklat->jumlah_jam ? $diklat->jumlah_jam . ' JP' : '-' }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @else
-        <p style="font-size: 10pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat diklat / pelatihan yang tercatat.</p>
-    @endif
-
-    <!-- 7. ADMINISTRASI KEPEGAWAIAN -->
-    <div class="section-header">7. ADMINISTRASI KEPEGAWAIAN</div>
+    <!-- 5. ADMINISTRASI KEPEGAWAIAN & LEGALITAS -->
+    <div class="section-header">5. ADMINISTRASI KEPEGAWAIAN & LEGALITAS</div>
     <table class="form-table">
         <tr>
-            <td style="width: 32%;" class="bold">Tanggal Masuk</td>
+            <td style="width: 32%;" class="bold">Tanggal Masuk / TMT Awal</td>
             <td style="width: 3%;">:</td>
             <td>{{ $pegawai->tanggal_masuk ? (is_string($pegawai->tanggal_masuk) ? \Carbon\Carbon::parse($pegawai->tanggal_masuk)->translatedFormat('d F Y') : $pegawai->tanggal_masuk->translatedFormat('d F Y')) : '-' }}</td>
         </tr>
@@ -276,9 +219,7 @@
             <td>:</td>
             <td>
                 {{ $pegawai->tmt_sk_pertama ? (is_string($pegawai->tmt_sk_pertama) ? \Carbon\Carbon::parse($pegawai->tmt_sk_pertama)->translatedFormat('d F Y') : $pegawai->tmt_sk_pertama->translatedFormat('d F Y')) : '-' }}
-                @if($pegawai->nomor_sk_pertama || $pegawai->tanggal_sk_pertama)
-                    <br><span style="font-size: 9pt; color: #333;">(No. SK: {{ $pegawai->nomor_sk_pertama ?? '-' }} {{ $pegawai->tanggal_sk_pertama ? 'tgl ' . (is_string($pegawai->tanggal_sk_pertama) ? \Carbon\Carbon::parse($pegawai->tanggal_sk_pertama)->translatedFormat('d/m/Y') : $pegawai->tanggal_sk_pertama->translatedFormat('d/m/Y')) : '' }})</span>
-                @endif
+                @if($pegawai->nomor_sk_pertama) (No. SK: {{ $pegawai->nomor_sk_pertama }}) @endif
             </td>
         </tr>
         <tr>
@@ -286,9 +227,7 @@
             <td>:</td>
             <td>
                 {{ $pegawai->tmt_pangkat_terakhir ? (is_string($pegawai->tmt_pangkat_terakhir) ? \Carbon\Carbon::parse($pegawai->tmt_pangkat_terakhir)->translatedFormat('d F Y') : $pegawai->tmt_pangkat_terakhir->translatedFormat('d F Y')) : '-' }}
-                @if($pegawai->nomor_sk_pangkat_terakhir || $pegawai->tanggal_sk_pangkat_terakhir)
-                    <br><span style="font-size: 9pt; color: #333;">(No. SK: {{ $pegawai->nomor_sk_pangkat_terakhir ?? '-' }} {{ $pegawai->tanggal_sk_pangkat_terakhir ? 'tgl ' . (is_string($pegawai->tanggal_sk_pangkat_terakhir) ? \Carbon\Carbon::parse($pegawai->tanggal_sk_pangkat_terakhir)->translatedFormat('d/m/Y') : $pegawai->tanggal_sk_pangkat_terakhir->translatedFormat('d/m/Y')) : '' }})</span>
-                @endif
+                @if($pegawai->nomor_sk_pangkat_terakhir) (No. SK: {{ $pegawai->nomor_sk_pangkat_terakhir }}) @endif
             </td>
         </tr>
         <tr>
@@ -319,67 +258,179 @@
                 {{ $pegawai->tanggal_kontrak_mulai ? (is_string($pegawai->tanggal_kontrak_mulai) ? \Carbon\Carbon::parse($pegawai->tanggal_kontrak_mulai)->format('d/m/Y') : $pegawai->tanggal_kontrak_mulai->format('d/m/Y')) : '?' }} 
                 s.d. 
                 {{ $pegawai->tanggal_kontrak_selesai ? (is_string($pegawai->tanggal_kontrak_selesai) ? \Carbon\Carbon::parse($pegawai->tanggal_kontrak_selesai)->format('d/m/Y') : $pegawai->tanggal_kontrak_selesai->format('d/m/Y')) : '?' }}
-                @if($pegawai->status_kontrak)
-                    - [{{ $pegawai->status_kontrak }}]
-                @endif
             </td>
         </tr>
         @endif
     </table>
 
-    <!-- 8. LEGALITAS PROFESI (STR & SIP / SIKP) -->
-    <div class="section-header">8. LEGALITAS PROFESI (STR & SIP / SIKP)</div>
-    @if($pegawai->riwayatStrSip && $pegawai->riwayatStrSip->count() > 0)
+    <!-- 6. DATA FISIK & KESEHATAN -->
+    <div class="section-header">6. DATA FISIK & KESEHATAN</div>
+    <table class="form-table">
+        <tr>
+            <td style="width: 32%;" class="bold">Tinggi Badan</td>
+            <td style="width: 3%;">:</td>
+            <td>{{ $pegawai->tinggi_badan ? $pegawai->tinggi_badan . ' cm' : '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Berat Badan</td>
+            <td>:</td>
+            <td>{{ $pegawai->berat_badan ? $pegawai->berat_badan . ' kg' : '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Golongan Darah</td>
+            <td>:</td>
+            <td>{{ $pegawai->golongan_darah ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Ciri-ciri Fisik / Khas</td>
+            <td>:</td>
+            <td>{{ $pegawai->ciri_khas ?? '-' }}</td>
+        </tr>
+    </table>
+
+    <!-- 7. RIWAYAT PANGKAT / GOLONGAN -->
+    <div class="section-header">7. RIWAYAT PANGKAT / GOLONGAN</div>
+    @if($pegawai->riwayatPangkat && $pegawai->riwayatPangkat->count() > 0)
         <table class="data-table">
             <thead>
                 <tr>
-                    <th style="width: 20%;">Jenis Dokumen</th>
-                    <th style="width: 30%;">Nomor Registrasi</th>
-                    <th style="width: 25%;">Kualifikasi / Instansi</th>
-                    <th style="width: 15%;">Masa Berlaku</th>
-                    <th style="width: 10%;">Status</th>
+                    <th style="width: 25%;">Golongan / Pangkat</th>
+                    <th style="width: 15%;">TMT Pangkat</th>
+                    <th style="width: 30%;">Nomor SK</th>
+                    <th style="width: 15%;">Tanggal SK</th>
+                    <th style="width: 15%;">Status</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($pegawai->riwayatStrSip as $str)
+                @foreach($pegawai->riwayatPangkat as $rp)
                     <tr>
-                        <td class="bold">{{ $str->jenis_dokumen }}</td>
-                        <td>{{ $str->nomor_registrasi }}</td>
-                        <td>{{ $str->nama_dokumen ?? $str->instansi_penerbit ?? '-' }}</td>
-                        <td class="text-center">
-                            {{ $str->is_seumur_hidup ? 'Seumur Hidup' : ($str->tanggal_berakhir ? (is_string($str->tanggal_berakhir) ? \Carbon\Carbon::parse($str->tanggal_berakhir)->translatedFormat('d/m/Y') : $str->tanggal_berakhir->translatedFormat('d/m/Y')) : '-') }}
-                        </td>
-                        <td class="text-center">{{ $str->status_label }}</td>
+                        <td class="bold">{{ $rp->golongan->nama_golongan ?? '-' }} ({{ $rp->golongan->nama_pangkat ?? '-' }})</td>
+                        <td class="text-center">{{ $rp->tmt ? \Carbon\Carbon::parse($rp->tmt)->format('d/m/Y') : '-' }}</td>
+                        <td>{{ $rp->nomor_sk ?? '-' }}</td>
+                        <td class="text-center">{{ $rp->tanggal_sk ? \Carbon\Carbon::parse($rp->tanggal_sk)->format('d/m/Y') : '-' }}</td>
+                        <td class="text-center">{{ ucfirst($rp->status ?? 'Riwayat') }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     @else
-        <p style="font-size: 10pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat STR / SIP yang tercatat.</p>
+        <p style="font-size: 9pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat pangkat yang tercatat.</p>
     @endif
 
-    <!-- 9. TUGAS BELAJAR & IZIN BELAJAR -->
-    <div class="section-header">9. TUGAS BELAJAR & IZIN BELAJAR (STUDI LANJUT)</div>
-    @if($pegawai->tugasBelajar && $pegawai->tugasBelajar->count() > 0)
-        <table class="form-table">
-            @foreach($pegawai->tugasBelajar as $tb)
+    <!-- 8. RIWAYAT JABATAN -->
+    <div class="section-header">8. RIWAYAT JABATAN</div>
+    @if($pegawai->riwayatJabatan && $pegawai->riwayatJabatan->count() > 0)
+        <table class="data-table">
+            <thead>
                 <tr>
-                    <td style="width: 32%;" class="bold">{{ $tb->jenis_pengembangan }} ({{ $tb->jenjang_studi }})</td>
-                    <td style="width: 3%;">:</td>
-                    <td>
-                        <strong>{{ $tb->program_studi }}</strong> - {{ $tb->perguruan_tinggi }} ({{ $tb->negara }})<br>
-                        Beasiswa: {{ $tb->sumber_pembiayaan }} | Semester: {{ $tb->semester_berjalan }} | Status: <strong>{{ $tb->status_studi }}</strong><br>
-                        Masa Studi: {{ $tb->tanggal_mulai ? (is_string($tb->tanggal_mulai) ? \Carbon\Carbon::parse($tb->tanggal_mulai)->translatedFormat('d F Y') : $tb->tanggal_mulai->translatedFormat('d F Y')) : '-' }} s.d. {{ $tb->tanggal_selesai ? (is_string($tb->tanggal_selesai) ? \Carbon\Carbon::parse($tb->tanggal_selesai)->translatedFormat('d F Y') : $tb->tanggal_selesai->translatedFormat('d F Y')) : '-' }} (SK: {{ $tb->nomor_sk }})
-                    </td>
+                    <th style="width: 30%;">Nama Jabatan</th>
+                    <th style="width: 25%;">Unit Kerja</th>
+                    <th style="width: 15%;">TMT Jabatan</th>
+                    <th style="width: 20%;">Nomor SK</th>
+                    <th style="width: 10%;">Status</th>
                 </tr>
-            @endforeach
+            </thead>
+            <tbody>
+                @foreach($pegawai->riwayatJabatan as $rj)
+                    <tr>
+                        <td class="bold">{{ $rj->jabatan->nama_jabatan ?? $rj->nama_jabatan ?? '-' }}</td>
+                        <td>{{ $rj->unitKerja->nama_unit ?? '-' }}</td>
+                        <td class="text-center">{{ $rj->tmt_jabatan ? \Carbon\Carbon::parse($rj->tmt_jabatan)->format('d/m/Y') : '-' }}</td>
+                        <td>{{ $rj->nomor_sk ?? '-' }}</td>
+                        <td class="text-center">{{ ucfirst($rj->status ?? 'Riwayat') }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
         </table>
     @else
-        <p style="font-size: 10pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat tugas belajar / izin belajar yang tercatat.</p>
+        <p style="font-size: 9pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat jabatan yang tercatat.</p>
     @endif
 
-    <!-- 10. EVALUASI KINERJA (SASARAN KINERJA PEGAWAI) -->
-    <div class="section-header">10. PENGARSIPAN SKP (SASARAN KINERJA PEGAWAI)</div>
+    <!-- 9. RIWAYAT PENDIDIKAN -->
+    <div class="section-header">9. RIWAYAT PENDIDIKAN</div>
+    @if($pegawai->riwayatPendidikan && $pegawai->riwayatPendidikan->count() > 0)
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Tingkat</th>
+                    <th style="width: 45%;">Nama Institusi / Sekolah</th>
+                    <th style="width: 25%;">Jurusan</th>
+                    <th style="width: 15%;">Tahun Lulus</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($pegawai->riwayatPendidikan as $pendidikan)
+                    <tr>
+                        <td class="bold text-center">{{ $pendidikan->tingkat_pendidikan ?? $pendidikan->jenjang ?? '-' }}</td>
+                        <td>{{ $pendidikan->nama_institusi ?? $pendidikan->institusi ?? '-' }}</td>
+                        <td>{{ $pendidikan->jurusan ?? '-' }}</td>
+                        <td class="text-center">{{ $pendidikan->tahun_lulus ?? '-' }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @else
+        <p style="font-size: 9pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat pendidikan yang tercatat.</p>
+    @endif
+
+    <!-- 10. RIWAYAT DIKLAT / PELATIHAN -->
+    <div class="section-header">10. RIWAYAT DIKLAT / PELATIHAN</div>
+    @if($pegawai->riwayatDiklat && $pegawai->riwayatDiklat->count() > 0)
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 45%;">Nama Diklat / Pelatihan</th>
+                    <th style="width: 30%;">Penyelenggara</th>
+                    <th style="width: 12%;">Tahun</th>
+                    <th style="width: 13%;">Jumlah Jam</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($pegawai->riwayatDiklat as $diklat)
+                    <tr>
+                        <td class="bold">{{ $diklat->nama_diklat ?? '-' }}</td>
+                        <td>{{ $diklat->penyelenggara ?? '-' }}</td>
+                        <td class="text-center">{{ $diklat->tahun ?? ($diklat->tanggal_mulai ? \Carbon\Carbon::parse($diklat->tanggal_mulai)->year : '-') }}</td>
+                        <td class="text-center">{{ $diklat->jumlah_jam ? $diklat->jumlah_jam . ' JP' : '-' }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @else
+        <p style="font-size: 9pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat diklat yang tercatat.</p>
+    @endif
+
+    <!-- 11. LEGALITAS PROFESI (STR & SIP) -->
+    <div class="section-header">11. LEGALITAS PROFESI (STR & SIP)</div>
+    @if($pegawai->riwayatStrSip && $pegawai->riwayatStrSip->count() > 0)
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Jenis</th>
+                    <th style="width: 25%;">Nomor Registrasi</th>
+                    <th style="width: 30%;">Kualifikasi / Penerbit</th>
+                    <th style="width: 15%;">Masa Berlaku</th>
+                    <th style="width: 15%;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($pegawai->riwayatStrSip as $doc)
+                    <tr>
+                        <td class="bold">{{ $doc->jenis_dokumen }}</td>
+                        <td>{{ $doc->nomor_registrasi }}</td>
+                        <td>{{ $doc->nama_dokumen ?? $doc->instansi_penerbit ?? '-' }}</td>
+                        <td class="text-center">{{ $doc->is_seumur_hidup ? 'Seumur Hidup' : ($doc->tanggal_berakhir ? $doc->tanggal_berakhir->format('d/m/Y') : '-') }}</td>
+                        <td class="text-center">{{ $doc->status_label }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @else
+        <p style="font-size: 9pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada data STR / SIP tercatat.</p>
+    @endif
+
+    <!-- 12. PENGARSIPAN SKP (SASARAN KINERJA PEGAWAI - 2 TAHUN) -->
+    <div class="section-header">12. PENGARSIPAN SKP (SASARAN KINERJA PEGAWAI - 2 TAHUN)</div>
     @if($pegawai->riwayatSkp && $pegawai->riwayatSkp->count() > 0)
         <table class="data-table">
             <thead>
@@ -387,7 +438,7 @@
                     <th style="width: 15%;">Tahun</th>
                     <th style="width: 25%;">Predikat Kinerja</th>
                     <th style="width: 35%;">Pejabat Penilai</th>
-                    <th style="width: 25%;">Kelengkapan Berkas</th>
+                    <th style="width: 25%;">Status Berkas</th>
                 </tr>
             </thead>
             <tbody>
@@ -396,25 +447,33 @@
                         <td class="bold text-center">{{ $skp->tahun }}</td>
                         <td class="text-center">{{ $skp->predikat_kinerja ?: 'Sedang Berjalan' }}</td>
                         <td>{{ $skp->pejabat_penilai ?: '-' }}</td>
-                        <td class="text-center">{{ $skp->is_lengkap ? 'Lengkap (Rencana & Evaluasi)' : ($skp->file_rencana_skp ? 'Rencana Saja' : ($skp->file_evaluasi_skp ? 'Evaluasi Saja' : 'Belum Ada')) }}</td>
+                        <td class="text-center">
+                            @if($skp->file_rencana_skp && $skp->file_evaluasi_skp)
+                                Lengkap (Rencana & Evaluasi)
+                            @elseif($skp->file_rencana_skp)
+                                Rencana Terunggah
+                            @else
+                                Belum Lengkap
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     @else
-        <p style="font-size: 10pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada pengarsipan SKP yang tercatat.</p>
+        <p style="font-size: 9pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada arsip SKP yang tercatat.</p>
     @endif
 
-    <!-- 11. RIWAYAT PENGHARGAAN & TANDA JASA -->
-    <div class="section-header">11. RIWAYAT PENGHARGAAN & TANDA JASA</div>
+    <!-- 13. RIWAYAT PENGHARGAAN & TANDA JASA -->
+    <div class="section-header">13. RIWAYAT PENGHARGAAN & TANDA JASA</div>
     @if($pegawai->riwayatPenghargaan && $pegawai->riwayatPenghargaan->count() > 0)
         <table class="data-table">
             <thead>
                 <tr>
                     <th style="width: 35%;">Nama Penghargaan</th>
-                    <th style="width: 25%;">Jenis</th>
+                    <th style="width: 20%;">Jenis</th>
                     <th style="width: 25%;">Instansi Pemberi</th>
-                    <th style="width: 15%;">Tanggal Terima</th>
+                    <th style="width: 20%;">Tanggal Terima</th>
                 </tr>
             </thead>
             <tbody>
@@ -423,24 +482,24 @@
                         <td class="bold">{{ $p->nama_penghargaan }}</td>
                         <td>{{ $p->jenis_penghargaan ?? '-' }}</td>
                         <td>{{ $p->instansi_pemberi ?? '-' }}</td>
-                        <td class="text-center">{{ $p->tanggal_terima ? (is_string($p->tanggal_terima) ? \Carbon\Carbon::parse($p->tanggal_terima)->translatedFormat('d/m/Y') : $p->tanggal_terima->translatedFormat('d/m/Y')) : '-' }}</td>
+                        <td class="text-center">{{ $p->tanggal_terima ? $p->tanggal_terima->format('d/m/Y') : '-' }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     @else
-        <p style="font-size: 10pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat penghargaan / tanda jasa yang tercatat.</p>
+        <p style="font-size: 9pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat penghargaan yang tercatat.</p>
     @endif
 
-    <!-- 12. RIWAYAT KEANGGOTAAN ORGANISASI -->
-    <div class="section-header">12. RIWAYAT KEANGGOTAAN ORGANISASI</div>
+    <!-- 14. RIWAYAT KEANGGOTAAN ORGANISASI -->
+    <div class="section-header">14. RIWAYAT KEANGGOTAAN ORGANISASI</div>
     @if($pegawai->riwayatOrganisasi && $pegawai->riwayatOrganisasi->count() > 0)
         <table class="data-table">
             <thead>
                 <tr>
                     <th style="width: 40%;">Nama Organisasi</th>
-                    <th style="width: 30%;">Jabatan / Peran</th>
-                    <th style="width: 15%;">Periode</th>
+                    <th style="width: 25%;">Jabatan / Peran</th>
+                    <th style="width: 20%;">Periode</th>
                     <th style="width: 15%;">Status</th>
                 </tr>
             </thead>
@@ -449,46 +508,124 @@
                     <tr>
                         <td class="bold">{{ $org->nama_organisasi }}</td>
                         <td>{{ $org->jabatan_organisasi ?? '-' }}</td>
-                        <td class="text-center">{{ $org->tahun_mulai ?? '?' }} - {{ $org->tahun_selesai ?? 'Sekarang' }}</td>
+                        <td class="text-center">{{ $org->tahun_mulai ?? '?' }} - {{ $org->tahun_selesai ?? 'sekarang' }}</td>
                         <td class="text-center">{{ $org->masih_aktif ? 'Aktif' : 'Selesai' }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     @else
-        <p style="font-size: 10pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat keanggotaan organisasi yang tercatat.</p>
+        <p style="font-size: 9pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat organisasi yang tercatat.</p>
     @endif
 
-    <!-- 13. RIWAYAT PUBLIKASI ILMIAH & KARYA -->
-    <div class="section-header">13. RIWAYAT PUBLIKASI ILMIAH & KARYA</div>
+    <!-- 15. RIWAYAT PUBLIKASI ILMIAH & KARYA -->
+    <div class="section-header">15. RIWAYAT PUBLIKASI ILMIAH & KARYA</div>
     @if($pegawai->riwayatPublikasi && $pegawai->riwayatPublikasi->count() > 0)
         <table class="data-table">
             <thead>
                 <tr>
-                    <th style="width: 45%;">Judul Publikasi / Karya</th>
-                    <th style="width: 20%;">Kategori</th>
-                    <th style="width: 25%;">Penerbit / Jurnal</th>
-                    <th style="width: 10%;">Tahun</th>
+                    <th style="width: 40%;">Judul Publikasi</th>
+                    <th style="width: 20%;">Jenis & Indeksasi</th>
+                    <th style="width: 28%;">Jurnal / Penerbit</th>
+                    <th style="width: 12%;">Tahun</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($pegawai->riwayatPublikasi as $pub)
                     <tr>
-                        <td class="bold">
-                            {{ $pub->judul_publikasi }}
-                            @if($pub->doi_link_publikasi)
-                                <br><span style="font-size: 8.5pt; font-weight: normal; color: #444;">DOI/Link: {{ $pub->doi_link_publikasi }}</span>
-                            @endif
-                        </td>
-                        <td>{{ $pub->kategori_publikasi ?? '-' }}</td>
-                        <td>{{ $pub->penerbit_jurnal ?? '-' }}</td>
-                        <td class="text-center">{{ $pub->tahun_publikasi ?? '-' }}</td>
+                        <td class="bold">{{ $pub->judul_publikasi }}</td>
+                        <td>{{ $pub->jenis_publikasi }} @if($pub->indeksasi) ({{ $pub->indeksasi }}) @endif</td>
+                        <td>{{ $pub->nama_jurnal ?? $pub->penerbit ?? '-' }}</td>
+                        <td class="text-center">{{ $pub->tahun_terbit ?? '-' }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     @else
-        <p style="font-size: 10pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat publikasi ilmiah / karya yang tercatat.</p>
+        <p style="font-size: 9pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat publikasi yang tercatat.</p>
+    @endif
+
+    <!-- 16. TUGAS BELAJAR & IZIN BELAJAR -->
+    <div class="section-header">16. TUGAS BELAJAR & IZIN BELAJAR (STUDI LANJUT)</div>
+    @if($pegawai->tugasBelajar && $pegawai->tugasBelajar->count() > 0)
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Jenis & Jenjang</th>
+                    <th style="width: 35%;">Universitas & Prodi</th>
+                    <th style="width: 20%;">Beasiswa / SK</th>
+                    <th style="width: 20%;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($pegawai->tugasBelajar as $tb)
+                    <tr>
+                        <td class="bold">{{ $tb->jenis_pengembangan }} ({{ $tb->jenjang_studi }})</td>
+                        <td>{{ $tb->program_studi }} - {{ $tb->perguruan_tinggi }}</td>
+                        <td>{{ $tb->sumber_pembiayaan }} ({{ $tb->nomor_sk }})</td>
+                        <td class="text-center">{{ $tb->status_studi }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @else
+        <p style="font-size: 9pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat tugas belajar / izin belajar yang tercatat.</p>
+    @endif
+
+    <!-- 17. RIWAYAT MUTASI PEGAWAI -->
+    <div class="section-header">17. RIWAYAT MUTASI PEGAWAI</div>
+    @if($pegawai->mutasi && $pegawai->mutasi->count() > 0)
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Jenis Mutasi</th>
+                    <th style="width: 25%;">Asal</th>
+                    <th style="width: 25%;">Tujuan</th>
+                    <th style="width: 25%;">TMT Mutasi & No. SK</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($pegawai->mutasi as $m)
+                    <tr>
+                        <td class="bold">{{ $m->jenis_mutasi ?? 'Mutasi Internal' }}</td>
+                        <td>{{ $m->unitKerjaAsal->nama_unit ?? $m->instansi_asal ?? '-' }}</td>
+                        <td>{{ $m->unitKerjaTujuan->nama_unit ?? $m->instansi_tujuan ?? '-' }}</td>
+                        <td class="text-center">{{ $m->tmt_mutasi ? \Carbon\Carbon::parse($m->tmt_mutasi)->format('d/m/Y') : '-' }} ({{ $m->nomor_sk ?? '-' }})</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @else
+        <p style="font-size: 9pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada data mutasi yang tercatat.</p>
+    @endif
+
+    <!-- 18. RIWAYAT CUTI PEGAWAI -->
+    <div class="section-header">18. RIWAYAT CUTI PEGAWAI</div>
+    @if($pegawai->pengajuanCuti && $pegawai->pengajuanCuti->count() > 0)
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Jenis Cuti</th>
+                    <th style="width: 30%;">Periode Cuti</th>
+                    <th style="width: 15%;">Jumlah Hari</th>
+                    <th style="width: 15%;">Alasan</th>
+                    <th style="width: 15%;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($pegawai->pengajuanCuti as $cuti)
+                    <tr>
+                        <td class="bold">{{ $cuti->jenis_cuti }}</td>
+                        <td class="text-center">{{ $cuti->tanggal_mulai ? \Carbon\Carbon::parse($cuti->tanggal_mulai)->format('d/m/Y') : '-' }} s.d. {{ $cuti->tanggal_selesai ? \Carbon\Carbon::parse($cuti->tanggal_selesai)->format('d/m/Y') : '-' }}</td>
+                        <td class="text-center">{{ $cuti->jumlah_hari }} Hari</td>
+                        <td>{{ $cuti->alasan ?? '-' }}</td>
+                        <td class="text-center">{{ $cuti->status }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @else
+        <p style="font-size: 9pt; font-style: italic; color: #555; margin: 4px 0 10px 0;">Belum ada riwayat cuti yang tercatat.</p>
     @endif
 
 @endsection
