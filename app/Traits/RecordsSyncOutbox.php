@@ -34,7 +34,7 @@ trait RecordsSyncOutbox
             'record_id' => $model->id,
             'sync_uuid' => $model->sync_uuid,
             'action' => $action,
-            'payload' => json_encode($model->toArray()),
+            'payload' => json_encode($model->getAttributes()),
             'status' => 'PENDING',
             'created_at' => now(),
             'updated_at' => now(),
