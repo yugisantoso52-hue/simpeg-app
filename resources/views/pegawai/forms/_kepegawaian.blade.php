@@ -46,23 +46,30 @@
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>
 
-    {{-- Jenis Jabatan & Angka Kredit PAK (Khusus Dosen) --}}
-    <x-enterprise.forms.row cols="2">
+    {{-- Jenis Jabatan --}}
+    <x-enterprise.forms.row cols="1">
         <x-enterprise.forms.field>
             <x-enterprise.form-group label="Jenis Jabatan">
                 <x-enterprise.select name="jenis_jabatan">
                     <option value="">Pilih Jenis Jabatan</option>
-                    <option value="Fungsional" @selected(old('jenis_jabatan', $pegawai->jenis_jabatan ?? '')=='Fungsional')>Fungsional (Dosen/Pranata Laboratorium/dll)</option>
+                    <option value="Fungsional" @selected(old('jenis_jabatan', $pegawai->jenis_jabatan ?? '')=='Fungsional')>Fungsional (Dosen / Pranata Laboratorium Pendidikan / PLP)</option>
                     <option value="Struktural" @selected(old('jenis_jabatan', $pegawai->jenis_jabatan ?? '')=='Struktural')>Struktural (Dekan/Kajur/Kaprodi/KTU)</option>
                     <option value="Pelaksana"  @selected(old('jenis_jabatan', $pegawai->jenis_jabatan ?? '')=='Pelaksana')>Pelaksana / Staf Administrasi</option>
                     <option value="Lainnya"    @selected(old('jenis_jabatan', $pegawai->jenis_jabatan ?? '')=='Lainnya')>Lainnya</option>
                 </x-enterprise.select>
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
+    </x-enterprise.forms.row>
 
-        <x-enterprise.forms.field>
-            <div x-show="kategori === 'dosen' || kategori === 'all'">
-                <x-enterprise.form-group label="Angka Kredit Kumulatif (PAK Dosen)">
+    {{-- Penilaian Angka Kredit (PAK) - Khusus Dosen & Pranata Laboratorium Pendidikan (PLP) --}}
+    <div x-show="kategori !== 'phl'" class="p-4 bg-blue-50/50 rounded-xl border border-blue-200 my-4 space-y-4">
+        <div class="font-bold text-blue-900 text-sm flex items-center justify-between">
+            <span class="flex items-center gap-2">📊 Penilaian Angka Kredit (PAK) — Khusus Dosen & Pranata Laboratorium Pendidikan (PLP)</span>
+            <span class="text-xs text-blue-600 font-normal">*Syarat Wajib Usulan Kenaikan Pangkat Fungsional</span>
+        </div>
+        <x-enterprise.forms.row cols="4">
+            <x-enterprise.forms.field>
+                <x-enterprise.form-group label="Angka Kredit Kumulatif">
                     <x-enterprise.input
                         type="number"
                         step="0.01"
@@ -71,9 +78,37 @@
                         placeholder="Contoh: 150.00"
                     />
                 </x-enterprise.form-group>
-            </div>
-        </x-enterprise.forms.field>
-    </x-enterprise.forms.row>
+            </x-enterprise.forms.field>
+
+            <x-enterprise.forms.field>
+                <x-enterprise.form-group label="Nomor SK PAK">
+                    <x-enterprise.input
+                        name="nomor_pak"
+                        :value="old('nomor_pak', $pegawai->nomor_pak ?? '')"
+                        placeholder="Nomor SK PAK..."
+                    />
+                </x-enterprise.form-group>
+            </x-enterprise.forms.field>
+
+            <x-enterprise.forms.field>
+                <x-enterprise.form-group label="Tanggal SK PAK">
+                    <x-enterprise.date-picker
+                        name="tanggal_pak"
+                        :value="old('tanggal_pak', (isset($pegawai->tanggal_pak) && $pegawai->tanggal_pak) ? \Carbon\Carbon::parse($pegawai->tanggal_pak)->format('Y-m-d') : '')"
+                    />
+                </x-enterprise.form-group>
+            </x-enterprise.forms.field>
+
+            <x-enterprise.forms.field>
+                <x-enterprise.form-group label="Upload Dokumen/SK PAK (PDF/Gambar)">
+                    <x-enterprise.file-upload name="file_pak" accept=".pdf,.jpg,.jpeg,.png"/>
+                    @if(isset($pegawai->file_pak) && $pegawai->file_pak)
+                        <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ route('document.preview', ['path' => $pegawai->file_pak]) }}" target="_blank" class="text-blue-600 underline font-semibold">Lihat Berkas PAK</a></p>
+                    @endif
+                </x-enterprise.form-group>
+            </x-enterprise.forms.field>
+        </x-enterprise.forms.row>
+    </div>
 
     <x-enterprise.forms.row cols="3">
         <x-enterprise.forms.field>

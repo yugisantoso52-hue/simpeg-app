@@ -57,9 +57,12 @@ class Pegawai extends Model
         'jenis_jabatan', 'angka_kredit', 'batas_usia_pensiun', 'tanggal_pensiun',
         'no_sk_pensiun', 'tmt_pensiun', 'jenis_kontrak',
         'tanggal_kontrak_mulai', 'tanggal_kontrak_selesai',
+        // Berkas KARPEG & PAK (Syarat KP)
+        'file_karpeg', 'file_pak', 'nomor_pak', 'tanggal_pak',
     ];
 
     protected $casts = [
+        'tanggal_pak'             => 'date',
         'tanggal_lahir'           => 'date',
         'tanggal_masuk'           => 'date',
         'tmt_sk_pertama'          => 'date',
@@ -376,6 +379,20 @@ class Pegawai extends Model
         );
     }
 
+    protected function fileKarpegUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->file_karpeg ? route('document.preview', ['path' => $this->file_karpeg]) : null
+        );
+    }
+
+    protected function filePakUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->file_pak ? route('document.preview', ['path' => $this->file_pak]) : null
+        );
+    }
+
     /**
      * Accessor: TMT Pangkat Kedepan (+4 Tahun)
      */
@@ -540,5 +557,127 @@ class Pegawai extends Model
                 return 'Tendik';
             }
         );
+    }
+
+    /**
+     * Cek apakah pegawai adalah Dosen
+     */
+    public function isDosen(): bool
+    {
+        $jenis = strtoupper(trim((string)$this->jenis_pegawai));
+        $nidn = trim((string)$this->nidn_nuptk);
+        $jabatanNama = strtoupper(trim((string)($this->jabatan->nama_jabatan ?? '')));
+
+        return str_contains($jenis, 'DOSEN')
+            || ($nidn !== '' && $nidn !== '-')
+            || str_contains($jabatanNama, 'DOSEN')
+            || str_contains($jabatanNama, 'LEKTOR')
+            || str_contains($jabatanNama, 'ASISTEN AHLI')
+            || str_contains($jabatanNama, 'GURU BESAR')
+            || str_contains($jabatanNama, 'PROFESOR');
+    }
+
+    /**
+     * Cek apakah pegawai adalah Pranata Laboratorium Pendidikan (PLP) / Tenaga Laboran
+     */
+    public function isPlp(): bool
+    {
+        $jabatanNama = strtoupper(trim((string)($this->jabatan->nama_jabatan ?? '')));
+        $unitNama = strtoupper(trim((string)($this->unitKerja->nama_unit ?? $this->unitKerja->nama_unit_kerja ?? $this->unitKerja->nama ?? '')));
+
+        return str_contains($jabatanNama, 'PLP')
+            || str_contains($jabatanNama, 'LABORAT')
+            || str_contains($jabatanNama, 'LABORAN')
+            || str_contains($jabatanNama, 'PRANATA LABORATORIUM')
+            || str_contains($unitNama, 'LABORAT')
+            || str_contains($unitNama, 'LABORATORIUM');
+    }
+
+    /**
+     * Apakah pegawai wajib menyertakan PAK (Dosen atau PLP)
+     */
+    public function wajibPak(): bool
+    {
+        return $this->isDosen() || $this->isPlp();
+    }
+
+    /**
+     * Evaluasi Kelengkapan 5 Persyaratan Usulan Kenaikan Pangkat (KP)
+     */
+    public function evaluasiSyaratKp(): array
+    {
+        // 1. SK Pangkat Terakhir
+        $hasSkPangkat = !empty($this->file_sk_pangkat_terakhir) || ($this->riwayatPangkat()->whereNotNull('file_sk')->exists());
+        $skPangkatUrl = $this->file_sk_pangkat_terakhir_url;
+        if (!$skPangkatUrl) {
+            $latestRp = $this->riwayatPangkat()->whereNotNull('file_sk')->latest('tmt')->first();
+            if ($latestRp && $latestRp->file_sk) {
+                $skPangkatUrl = route('document.preview', ['path' => $latestRp->file_sk]);
+            }
+        }
+
+        // 2. SKP 2 Tahun Terakhir (Evaluasi SKP tahun N dan N-1 atau minimal 2 arsip SKP dengan file)
+        $skpRecords = $this->riwayatSkp()->orderBy('tahun', 'desc')->get();
+        $skpValid = $skpRecords->filter(fn($s) => !empty($s->file_evaluasi_skp) || !empty($s->file_rencana_skp));
+        $hasSkp2Tahun = $skpValid->count() >= 2;
+
+        // 3. Surat KGB Terakhir
+        $hasSkKgb = !empty($this->file_sk_kgb_terakhir);
+        $skKgbUrl = $this->file_sk_kgb_terakhir_url;
+
+        // 4. Fotocopy KARPEG
+        $hasKarpeg = !empty($this->file_karpeg);
+        $karpegUrl = $this->file_karpeg_url;
+
+        // 5. PAK (Khusus Dosen & PLP)
+        $isWajibPak = $this->wajibPak();
+        $hasPak = !empty($this->file_pak) || (!empty($this->angka_kredit) && (float)$this->angka_kredit > 0);
+        $pakUrl = $this->file_pak_url;
+
+        $isLengkap = $hasSkPangkat && $hasSkp2Tahun && $hasSkKgb && $hasKarpeg && (!$isWajibPak || $hasPak);
+
+        $syaratLengkapCount = ($hasSkPangkat ? 1 : 0) 
+            + ($hasSkp2Tahun ? 1 : 0) 
+            + ($hasSkKgb ? 1 : 0) 
+            + ($hasKarpeg ? 1 : 0) 
+            + ($isWajibPak ? ($hasPak ? 1 : 0) : 1);
+        $totalSyarat = 5;
+
+        return [
+            'is_lengkap'         => $isLengkap,
+            'skor'               => "$syaratLengkapCount / $totalSyarat",
+            'is_wajib_pak'       => $isWajibPak,
+            'sk_pangkat'         => [
+                'status'   => $hasSkPangkat,
+                'file_url' => $skPangkatUrl,
+                'label'    => 'SK Pangkat Terakhir',
+            ],
+            'skp_2_tahun'        => [
+                'status'   => $hasSkp2Tahun,
+                'count'    => $skpValid->count(),
+                'label'    => 'SKP 2 Tahun Terakhir',
+                'records'  => $skpValid->take(2)->values(),
+            ],
+            'sk_kgb'             => [
+                'status'   => $hasSkKgb,
+                'file_url' => $skKgbUrl,
+                'label'    => 'Surat KGB Terakhir',
+            ],
+            'karpeg'             => [
+                'status'    => $hasKarpeg,
+                'file_url'  => $karpegUrl,
+                'no_karpeg' => $this->karpeg_karis_karsu,
+                'label'     => 'Fotocopy KARPEG',
+            ],
+            'pak'                => [
+                'wajib'        => $isWajibPak,
+                'status'       => $hasPak,
+                'file_url'     => $pakUrl,
+                'angka_kredit' => $this->angka_kredit,
+                'nomor_pak'    => $this->nomor_pak,
+                'tanggal_pak'  => $this->tanggal_pak ? $this->tanggal_pak->format('d-m-Y') : null,
+                'label'        => 'PAK (Penilaian Angka Kredit)',
+            ],
+        ];
     }
 }

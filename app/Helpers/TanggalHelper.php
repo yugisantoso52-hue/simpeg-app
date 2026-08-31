@@ -12,7 +12,7 @@ class TanggalHelper
         try {
             $awal = Carbon::parse($tanggalAwal);
             $akhir = $tanggalAkhir ? Carbon::parse($tanggalAkhir) : Carbon::now();
-            return $awal->diffInYears($akhir);
+            return (int) $awal->diffInYears($akhir);
         } catch (\Exception $e) {
             Log::error("Gagal menghitung selisih tahun: " . $e->getMessage());
             return 0; // Kembalikan nilai aman

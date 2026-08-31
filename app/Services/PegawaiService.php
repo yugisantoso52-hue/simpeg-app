@@ -178,6 +178,12 @@ class PegawaiService
             if (!empty($files['file_sk_kgb_terakhir'])) {
                 $data['file_sk_kgb_terakhir'] = $this->uploadSK($files['file_sk_kgb_terakhir']);
             }
+            if (!empty($files['file_karpeg'])) {
+                $data['file_karpeg'] = $this->uploadSK($files['file_karpeg']);
+            }
+            if (!empty($files['file_pak'])) {
+                $data['file_pak'] = $this->uploadSK($files['file_pak']);
+            }
 
             $data['kgb_berikutnya'] = $this->generateKGB($data['tmt_kgb_terakhir'] ?? null);
             $data['kp_berikutnya'] = $this->generateKP($data['tmt_pangkat_terakhir'] ?? null);
@@ -367,6 +373,20 @@ class PegawaiService
                 $data['file_sk_kgb_terakhir'] = $this->uploadSK($files['file_sk_kgb_terakhir']);
             } else {
                 unset($data['file_sk_kgb_terakhir']);
+            }
+
+            if (!empty($files['file_karpeg'])) {
+                $this->deleteSK($pegawai->file_karpeg);
+                $data['file_karpeg'] = $this->uploadSK($files['file_karpeg']);
+            } else {
+                unset($data['file_karpeg']);
+            }
+
+            if (!empty($files['file_pak'])) {
+                $this->deleteSK($pegawai->file_pak);
+                $data['file_pak'] = $this->uploadSK($files['file_pak']);
+            } else {
+                unset($data['file_pak']);
             }
 
             $data['kgb_berikutnya'] = $this->generateKGB($data['tmt_kgb_terakhir'] ?? null);
@@ -586,6 +606,8 @@ class PegawaiService
             $this->deleteSK($pegawai->file_sk_pertama);
             $this->deleteSK($pegawai->file_sk_pangkat_terakhir);
             $this->deleteSK($pegawai->file_sk_kgb_terakhir);
+            $this->deleteSK($pegawai->file_karpeg);
+            $this->deleteSK($pegawai->file_pak);
 
             // Hapus akun user pegawai jika ada
             User::where('pegawai_id', $pegawai->id)->delete();
@@ -657,6 +679,8 @@ class PegawaiService
                 Pegawai::whereIn('id', $ids)->pluck('file_sk_pertama')->filter()->toArray(),
                 Pegawai::whereIn('id', $ids)->pluck('file_sk_pangkat_terakhir')->filter()->toArray(),
                 Pegawai::whereIn('id', $ids)->pluck('file_sk_kgb_terakhir')->filter()->toArray(),
+                Pegawai::whereIn('id', $ids)->pluck('file_karpeg')->filter()->toArray(),
+                Pegawai::whereIn('id', $ids)->pluck('file_pak')->filter()->toArray(),
                 RiwayatPendidikan::whereIn('pegawai_id', $ids)->pluck('ijazah')->filter()->toArray(),
                 RiwayatJabatan::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray(),
                 RiwayatPangkat::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray(),

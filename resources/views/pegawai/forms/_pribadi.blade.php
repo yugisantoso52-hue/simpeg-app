@@ -17,6 +17,14 @@
                         :value="old('karpeg_karis_karsu', $pegawai->karpeg_karis_karsu ?? '')"
                         placeholder="Nomor Kartu ASN / KARIS / KARSU" />
                 </x-enterprise.form-group>
+                <div class="mt-2">
+                    <x-enterprise.form-group label="Upload Fotocopy KARPEG (PDF/Gambar)">
+                        <x-enterprise.file-upload name="file_karpeg" accept=".pdf,.jpg,.jpeg,.png"/>
+                        @if(isset($pegawai->file_karpeg) && $pegawai->file_karpeg)
+                            <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ route('document.preview', ['path' => $pegawai->file_karpeg]) }}" target="_blank" class="text-blue-600 underline font-semibold">Lihat Berkas KARPEG</a></p>
+                        @endif
+                    </x-enterprise.form-group>
+                </div>
             </div>
             <div x-show="kategori === 'phl'" class="text-xs text-slate-400 pt-7">
                 <span class="italic text-amber-600">Khusus Non-ASN / PHL</span>

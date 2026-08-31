@@ -80,7 +80,14 @@
                                     </tr>
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">KARPEG / KARIS / KARSU</td>
-                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->karpeg_karis_karsu ?? '-' }}</td>
+                                        <td class="py-1.5 text-gray-900 font-mono">
+                                            {{ $pegawai->karpeg_karis_karsu ?? '-' }}
+                                            @if($pegawai->file_karpeg)
+                                                <a href="{{ route('document.preview', ['path' => $pegawai->file_karpeg]) }}" target="_blank" class="ml-2 inline-flex items-center text-xs text-blue-600 hover:underline font-sans font-semibold">
+                                                    📄 Lihat Berkas KARPEG
+                                                </a>
+                                            @endif
+                                        </td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">NIDN / NUPTK</td>
@@ -230,8 +237,18 @@
                                          </td>
                                      </tr>
                                      <tr class="border-b border-gray-50">
-                                         <td class="py-1.5 font-medium text-gray-500">Angka Kredit Kumulatif (PAK)</td>
-                                         <td class="py-1.5 text-gray-900 font-mono font-semibold">{{ number_format($pegawai->angka_kredit ?? 0, 2, ',', '.') }}</td>
+                                         <td class="py-1.5 font-medium text-gray-500">Penilaian Angka Kredit (PAK)</td>
+                                         <td class="py-1.5 text-gray-900">
+                                             <span class="font-mono font-semibold">{{ number_format($pegawai->angka_kredit ?? 0, 2, ',', '.') }}</span>
+                                             @if($pegawai->nomor_pak)
+                                                 <span class="text-xs text-slate-500 ml-2 font-mono">(No: {{ $pegawai->nomor_pak }})</span>
+                                             @endif
+                                             @if($pegawai->file_pak)
+                                                 <a href="{{ route('document.preview', ['path' => $pegawai->file_pak]) }}" target="_blank" class="ml-2 inline-flex items-center text-xs text-emerald-600 hover:underline font-sans font-semibold">
+                                                     📄 Lihat Berkas PAK
+                                                 </a>
+                                             @endif
+                                         </td>
                                      </tr>
                                      <tr class="border-b border-gray-50">
                                          <td class="py-1.5 font-medium text-gray-500">Jenis Pegawai</td>

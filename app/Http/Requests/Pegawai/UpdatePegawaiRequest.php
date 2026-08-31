@@ -99,6 +99,10 @@ class UpdatePegawaiRequest extends FormRequest
             'file_sk_pertama'          => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'file_sk_pangkat_terakhir' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'file_sk_kgb_terakhir'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'file_karpeg'              => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'file_pak'                 => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'nomor_pak'                => 'nullable|string|max:100',
+            'tanggal_pak'              => 'nullable|date',
 
             // Validasi Input Multi-Riwayat Pendidikan (Opsional)
             'riwayat_pendidikan'                       => 'nullable|array',
