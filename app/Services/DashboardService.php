@@ -70,8 +70,28 @@ class DashboardService
      */
     public function reminder(): array
     {
-        return Cache::remember('dashboard_reminder', now()->addMinutes(3), function () {
-            return $this->dashboardRepository->getReminder();
-        });
+        try {
+            $data = Cache::remember('dashboard_reminder', now()->addMinutes(3), function () {
+                return $this->dashboardRepository->getReminder();
+            });
+        } catch (\Throwable $e) {
+            Cache::forget('dashboard_reminder');
+            $data = $this->dashboardRepository->getReminder();
+        }
+
+        // Fail-safe sanitization against incomplete class or corrupted cache
+        $keys = ['kgb', 'kp', 'pensiun', 'satyalancana', 'str_sip'];
+        $clean = [];
+        foreach ($keys as $k) {
+            $val = $data[$k] ?? [];
+            if (!is_countable($val) || (is_object($val) && get_class($val) === '__PHP_Incomplete_Class')) {
+                Cache::forget('dashboard_reminder');
+                $clean[$k] = collect();
+            } else {
+                $clean[$k] = $val;
+            }
+        }
+
+        return $clean;
     }
 }

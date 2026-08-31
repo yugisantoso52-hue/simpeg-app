@@ -93,9 +93,9 @@
                                     <span>Gaji Berkala (KGB)</span>
                                     <span class="block text-[10px] text-amber-600 font-normal">3 Bulan ke Depan</span>
                                 </div>
-                                <span class="bg-amber-200 text-amber-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ count($reminder['kgb'] ?? []) }}</span>
+                                <span class="bg-amber-200 text-amber-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ is_countable($reminder['kgb'] ?? null) ? count($reminder['kgb']) : 0 }}</span>
                             </h4>
-                            @if(isset($reminder['kgb']) && count($reminder['kgb']) > 0)
+                            @if(!empty($reminder['kgb']) && is_countable($reminder['kgb']) && count($reminder['kgb']) > 0)
                                 <ul class="text-xs text-amber-900 divide-y divide-amber-200 max-h-48 overflow-y-auto">
                                     @foreach($reminder['kgb'] as $r)
                                         <li class="py-1.5 flex justify-between items-center">
@@ -118,9 +118,9 @@
                                     <span>Kenaikan Pangkat (KP)</span>
                                     <span class="block text-[10px] text-emerald-600 font-normal">3 Bulan ke Depan</span>
                                 </div>
-                                <span class="bg-emerald-200 text-emerald-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ count($reminder['kp'] ?? []) }}</span>
+                                <span class="bg-emerald-200 text-emerald-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ is_countable($reminder['kp'] ?? null) ? count($reminder['kp']) : 0 }}</span>
                             </h4>
-                            @if(isset($reminder['kp']) && count($reminder['kp']) > 0)
+                            @if(!empty($reminder['kp']) && is_countable($reminder['kp']) && count($reminder['kp']) > 0)
                                 <ul class="text-xs text-emerald-900 divide-y divide-emerald-200 max-h-48 overflow-y-auto">
                                     @foreach($reminder['kp'] as $r)
                                         <li class="py-1.5 flex justify-between items-center">
@@ -143,9 +143,9 @@
                                     <span>Satyalancana</span>
                                     <span class="block text-[10px] text-indigo-600 font-normal">3 Bulan ke Depan</span>
                                 </div>
-                                <span class="bg-indigo-200 text-indigo-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ count($reminder['satyalancana'] ?? []) }}</span>
+                                <span class="bg-indigo-200 text-indigo-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ is_countable($reminder['satyalancana'] ?? null) ? count($reminder['satyalancana']) : 0 }}</span>
                             </h4>
-                            @if(isset($reminder['satyalancana']) && count($reminder['satyalancana']) > 0)
+                            @if(!empty($reminder['satyalancana']) && is_countable($reminder['satyalancana']) && count($reminder['satyalancana']) > 0)
                                 <ul class="text-xs text-indigo-900 divide-y divide-indigo-200 max-h-48 overflow-y-auto">
                                     @foreach($reminder['satyalancana'] as $r)
                                         <li class="py-1.5 flex justify-between items-center">
@@ -168,9 +168,9 @@
                                     <span>Masa Pensiun (BUP 58)</span>
                                     <span class="block text-[10px] text-rose-600 font-semibold">1 Tahun ke Depan</span>
                                 </div>
-                                <span class="bg-rose-200 text-rose-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ count($reminder['pensiun'] ?? []) }}</span>
+                                <span class="bg-rose-200 text-rose-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ is_countable($reminder['pensiun'] ?? null) ? count($reminder['pensiun']) : 0 }}</span>
                             </h4>
-                            @if(isset($reminder['pensiun']) && count($reminder['pensiun']) > 0)
+                            @if(!empty($reminder['pensiun']) && is_countable($reminder['pensiun']) && count($reminder['pensiun']) > 0)
                                 <ul class="text-xs text-rose-900 divide-y divide-rose-200 max-h-48 overflow-y-auto">
                                     @foreach($reminder['pensiun'] as $r)
                                         <li class="py-1.5 flex justify-between items-center">
@@ -193,9 +193,9 @@
                                     <span>STR & SIP (Ners/Klinis)</span>
                                     <span class="block text-[10px] text-sky-600 font-semibold">6 Bulan ke Depan</span>
                                 </div>
-                                <span class="bg-sky-200 text-sky-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ count($reminder['str_sip'] ?? []) }}</span>
+                                <span class="bg-sky-200 text-sky-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ is_countable($reminder['str_sip'] ?? null) ? count($reminder['str_sip']) : 0 }}</span>
                             </h4>
-                            @if(isset($reminder['str_sip']) && count($reminder['str_sip']) > 0)
+                            @if(!empty($reminder['str_sip']) && is_countable($reminder['str_sip']) && count($reminder['str_sip']) > 0)
                                 <ul class="text-xs text-sky-900 divide-y divide-sky-200 max-h-48 overflow-y-auto">
                                     @foreach($reminder['str_sip'] as $r)
                                         <li class="py-1.5 flex justify-between items-center">

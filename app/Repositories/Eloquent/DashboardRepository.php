@@ -112,69 +112,89 @@ class DashboardRepository implements DashboardRepositoryInterface
         $tahunLahirPensiunMaks = Carbon::now()->subYears(58)->addYear()->endOfDay()->toDateTimeString();
 
         // 1. KGB (Filter SQL Direct - 3 Bulan ke Depan)
-        $kgb = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])
-            ->where('status_pegawai', 'Aktif')
+        $kgb = Pegawai::where('status_pegawai', 'Aktif')
             ->whereBetween('kgb_berikutnya', [$hariIni, $hariTarget])
             ->orderBy('kgb_berikutnya', 'asc')
             ->take(20)
             ->get()
             ->map(function ($pegawai) {
-                $pegawai->tanggal_kegiatan = $pegawai->kgb_berikutnya ? Carbon::parse($pegawai->kgb_berikutnya)->format('d-m-Y') : '-';
-                return $pegawai;
+                return (object) [
+                    'id'               => $pegawai->id,
+                    'nama'             => $pegawai->nama,
+                    'nama_lengkap'     => $pegawai->nama_lengkap ?? $pegawai->nama,
+                    'nip'              => $pegawai->nip,
+                    'tanggal_kegiatan' => $pegawai->kgb_berikutnya ? Carbon::parse($pegawai->kgb_berikutnya)->format('d-m-Y') : '-',
+                ];
             });
 
         // 2. Kenaikan Pangkat (KP - Filter SQL Direct - 3 Bulan ke Depan)
-        $kp = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])
-            ->where('status_pegawai', 'Aktif')
+        $kp = Pegawai::where('status_pegawai', 'Aktif')
             ->whereBetween('kp_berikutnya', [$hariIni, $hariTarget])
             ->orderBy('kp_berikutnya', 'asc')
             ->take(20)
             ->get()
             ->map(function ($pegawai) {
-                $pegawai->tanggal_kegiatan = $pegawai->kp_berikutnya ? Carbon::parse($pegawai->kp_berikutnya)->format('d-m-Y') : '-';
-                return $pegawai;
+                return (object) [
+                    'id'               => $pegawai->id,
+                    'nama'             => $pegawai->nama,
+                    'nama_lengkap'     => $pegawai->nama_lengkap ?? $pegawai->nama,
+                    'nip'              => $pegawai->nip,
+                    'tanggal_kegiatan' => $pegawai->kp_berikutnya ? Carbon::parse($pegawai->kp_berikutnya)->format('d-m-Y') : '-',
+                ];
             });
 
         // 3. Pensiun (BUP 58 Tahun - Filter SQL Direct - 1 Tahun ke Depan)
-        $pensiun = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])
-            ->where('status_pegawai', 'Aktif')
+        $pensiun = Pegawai::where('status_pegawai', 'Aktif')
             ->whereNotNull('tanggal_lahir')
             ->whereBetween('tanggal_lahir', [$tahunLahirPensiunMin, $tahunLahirPensiunMaks])
             ->orderBy('tanggal_lahir', 'asc')
             ->take(20)
             ->get()
             ->map(function ($pegawai) {
-                $pegawai->tanggal_kegiatan = Carbon::parse($pegawai->tanggal_lahir)->addYears(58)->format('d-m-Y');
-                return $pegawai;
+                return (object) [
+                    'id'               => $pegawai->id,
+                    'nama'             => $pegawai->nama,
+                    'nama_lengkap'     => $pegawai->nama_lengkap ?? $pegawai->nama,
+                    'nip'              => $pegawai->nip,
+                    'tanggal_kegiatan' => Carbon::parse($pegawai->tanggal_lahir)->addYears(58)->format('d-m-Y'),
+                ];
             });
 
         // 4. Satyalancana (Filter SQL Direct)
-        $satyalancana = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])
-            ->where('status_pegawai', 'Aktif')
+        $satyalancana = Pegawai::where('status_pegawai', 'Aktif')
             ->whereBetween('satyalancana_berikutnya', [$hariIni, $hariTarget])
             ->orderBy('satyalancana_berikutnya', 'asc')
             ->take(20)
             ->get()
             ->map(function ($pegawai) {
-                $pegawai->tanggal_kegiatan = $pegawai->satyalancana_berikutnya ? Carbon::parse($pegawai->satyalancana_berikutnya)->format('d-m-Y') : '-';
-                return $pegawai;
+                return (object) [
+                    'id'               => $pegawai->id,
+                    'nama'             => $pegawai->nama,
+                    'nama_lengkap'     => $pegawai->nama_lengkap ?? $pegawai->nama,
+                    'nip'              => $pegawai->nip,
+                    'tanggal_kegiatan' => $pegawai->satyalancana_berikutnya ? Carbon::parse($pegawai->satyalancana_berikutnya)->format('d-m-Y') : '-',
+                ];
             });
 
         // 5. Legalitas Profesi (STR & SIP - Radar 6 Bulan ke Depan)
         $strSip = collect();
         if (\Illuminate\Support\Facades\Schema::hasTable('riwayat_str_sip')) {
             $hariTarget6Bulan = Carbon::now()->addMonths(6)->endOfDay()->toDateTimeString();
-            $strSip = \App\Models\RiwayatStrSip::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])
+            $strSip = \App\Models\RiwayatStrSip::with(['pegawai'])
                 ->where('is_seumur_hidup', false)
                 ->whereBetween('tanggal_berakhir', [$hariIni, $hariTarget6Bulan])
                 ->orderBy('tanggal_berakhir', 'asc')
                 ->take(20)
                 ->get()
                 ->map(function ($item) {
-                    $item->nama = $item->pegawai->nama_lengkap ?? $item->pegawai->nama ?? '-';
-                    $item->nama_lengkap = $item->nama;
-                    $item->tanggal_kegiatan = $item->tanggal_berakhir ? Carbon::parse($item->tanggal_berakhir)->format('d-m-Y') : '-';
-                    return $item;
+                    $nama = $item->pegawai->nama_lengkap ?? $item->pegawai->nama ?? '-';
+                    return (object) [
+                        'id'               => $item->id,
+                        'nama'             => $nama,
+                        'nama_lengkap'     => $nama,
+                        'jenis_dokumen'    => $item->jenis_dokumen ?? 'STR/SIP',
+                        'tanggal_kegiatan' => $item->tanggal_berakhir ? Carbon::parse($item->tanggal_berakhir)->format('d-m-Y') : '-',
+                    ];
                 });
         }
 
