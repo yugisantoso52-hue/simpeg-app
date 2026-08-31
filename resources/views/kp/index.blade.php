@@ -47,9 +47,30 @@
                 </div>
             </div>
 
+            {{-- Tabs Filter Navigasi --}}
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm">
+                <div class="flex flex-wrap items-center gap-2">
+                    <a href="{{ route('kp.index', ['filter' => 'reminder']) }}" 
+                       class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 {{ ($filter ?? '') === 'reminder' ? 'bg-emerald-600 text-white shadow' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-300' }}">
+                        <span>🎯 Jatuh Tempo 3 Bulan (Sesuai Dashboard)</span>
+                        <span class="px-2 py-0.5 rounded-full text-[11px] {{ ($filter ?? '') === 'reminder' ? 'bg-emerald-700 text-white' : 'bg-emerald-200 text-emerald-900' }} font-mono font-bold">{{ count($reminderKp ?? []) }}</span>
+                    </a>
+                    <a href="{{ route('kp.index', ['filter' => 'all']) }}" 
+                       class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 {{ ($filter ?? 'all') === 'all' ? 'bg-blue-600 text-white shadow' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-300' }}">
+                        <span>Semua Layak KP</span>
+                        <span class="px-2 py-0.5 rounded-full text-[11px] {{ ($filter ?? 'all') === 'all' ? 'bg-blue-700 text-white' : 'bg-gray-200 text-gray-800' }} font-mono font-bold">{{ count($allLayakKp ?? []) }}</span>
+                    </a>
+                    <a href="{{ route('kp.index', ['filter' => 'overdue']) }}" 
+                       class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 {{ ($filter ?? '') === 'overdue' ? 'bg-amber-600 text-white shadow' : 'bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-300' }}">
+                        <span>⚠️ Sudah Lewat Waktu / Belum Diproses</span>
+                        <span class="px-2 py-0.5 rounded-full text-[11px] {{ ($filter ?? '') === 'overdue' ? 'bg-amber-700 text-white' : 'bg-amber-200 text-amber-900' }} font-mono font-bold">{{ count($overdueKp ?? []) }}</span>
+                    </a>
+                </div>
+            </div>
+
             <x-enterprise.card>
                 <div class="p-6">
-                    <x-enterprise.data-table title="Pegawai Layak Naik Pangkat (Masa Kerja >= 4 Tahun)">
+                    <x-enterprise.data-table title="{{ ($filter ?? '') === 'reminder' ? 'Pegawai Jatuh Tempo 3 Bulan ke Depan (Sesuai Dashboard)' : (($filter ?? '') === 'overdue' ? 'Pegawai Belum Diproses Kenaikan Pangkat (Lewat Waktu)' : 'Semua Pegawai Layak Naik Pangkat') }}">
                         <x-slot name="head">
                             <tr>
                                 <th class="w-12 px-3 py-3 text-center">No</th>

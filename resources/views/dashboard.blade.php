@@ -109,8 +109,8 @@
                             @endif
                         @if(Auth::user()->hasRole('admin'))
                             <div class="mt-3 pt-2 border-t border-amber-200/60 text-right">
-                                <a href="{{ route('kgb.index') }}" class="text-[11px] font-semibold text-amber-800 hover:text-amber-950 hover:underline inline-flex items-center gap-1">
-                                    Buka Monitoring KGB &rarr;
+                                <a href="{{ route('kgb.index', ['filter' => 'reminder']) }}" class="text-[11px] font-semibold text-amber-800 hover:text-amber-950 hover:underline inline-flex items-center gap-1">
+                                    Buka Monitoring KGB ({{ is_countable($reminder['kgb'] ?? null) ? count($reminder['kgb']) : 0 }} Pegawai) &rarr;
                                 </a>
                             </div>
                         @endif
@@ -141,8 +141,8 @@
                             @endif
                         @if(Auth::user()->hasRole('admin'))
                             <div class="mt-3 pt-2 border-t border-emerald-200/60 text-right">
-                                <a href="{{ route('kp.index') }}" class="text-[11px] font-semibold text-emerald-800 hover:text-emerald-950 hover:underline inline-flex items-center gap-1">
-                                    Buka Monitoring KP (5 Syarat) &rarr;
+                                <a href="{{ route('kp.index', ['filter' => 'reminder']) }}" class="text-[11px] font-semibold text-emerald-800 hover:text-emerald-950 hover:underline inline-flex items-center gap-1">
+                                    Buka Monitoring KP ({{ is_countable($reminder['kp'] ?? null) ? count($reminder['kp']) : 0 }} Pegawai) &rarr;
                                 </a>
                             </div>
                         @endif
