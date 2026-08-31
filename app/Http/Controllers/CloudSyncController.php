@@ -16,6 +16,8 @@ class CloudSyncController extends Controller
      */
     public function pullFromWeb(Request $request)
     {
+        return abort(403, 'SYSTEM HALTED: Fitur sinkronisasi lama dinonaktifkan demi keamanan data. Sistem sinkronisasi baru sedang dikembangkan.');
+
         try {
             $exitCode = Artisan::call('simpeg:pull-cloud');
             $output = Artisan::output();

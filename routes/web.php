@@ -183,6 +183,8 @@ Route::get('/api/cloud-sync/export', [CloudSyncController::class, 'export'])->na
 Route::get('/api/cloud-sync/file/{path}', [CloudSyncController::class, 'downloadFile'])->where('path', '.*')->name('cloud-sync.file');
 
 Route::get('/sync-db-production-simpeg-secure', function() {
+    return abort(403, 'SYSTEM HALTED: Fitur sinkronisasi lama dinonaktifkan demi keamanan data. Sistem sinkronisasi baru sedang dikembangkan.');
+
     $output = "=== SIMPEG PRODUCTION SYNC & MIGRATION TOOL ===\n\n";
 
     // 1. Run Migrations

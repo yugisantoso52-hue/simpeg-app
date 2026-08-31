@@ -18,6 +18,9 @@ class PullCloudDataCommand extends Command
 
     public function handle(): int
     {
+        $this->error('SYSTEM HALTED: Fitur sinkronisasi lama dinonaktifkan demi keamanan data. Sistem sinkronisasi baru sedang dikembangkan.');
+        return 1;
+
         $this->info('===========================================================');
         $this->info('  SIMPEG ENTERPRISE - CLOUD DATA PULL (RAILWAY -> LOCAL)  ');
         $this->info('===========================================================');
