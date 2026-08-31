@@ -83,4 +83,67 @@ class SyncController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Endpoint untuk export delta perubahan data (Pull Sync)
+     */
+    public function changes(Request $request)
+    {
+        if ($request->header('X-Sync-Secret') !== env('SYNC_SECRET_KEY', 'default_secret_key_123!')) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $since = $request->query('since');
+
+        // Urutan dependensi: entitas utama dulu, baru riwayat
+        $tableOrder = [
+            'pegawai',
+            'users',
+            'riwayat_jabatan',
+            'riwayat_pangkat',
+            'riwayat_pendidikan',
+            'riwayat_diklat',
+            'mutasi_pegawai',
+            'pengajuan_cuti',
+            'tugas_belajar',
+            'riwayat_str_sip',
+            'riwayat_skp',
+            'riwayat_penghargaan',
+            'riwayat_organisasi',
+            'riwayat_publikasi',
+        ];
+
+        $changes = [];
+
+        foreach ($tableOrder as $table) {
+            $modelClass = $this->modelMap[$table] ?? null;
+            if (!$modelClass) {
+                continue;
+            }
+
+            $query = $modelClass::query();
+
+            if (!empty($since)) {
+                $query->where('updated_at', '>', $since);
+            }
+
+            // Hanya ambil data yang memiliki sync_uuid valid
+            $query->whereNotNull('sync_uuid');
+
+            $records = $query->orderBy('updated_at', 'asc')->get();
+
+            if ($records->isNotEmpty()) {
+                $changes[$table] = $records->map(function ($record) {
+                    return $record->getAttributes();
+                })->all();
+            }
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'server_time' => now()->toDateTimeString(),
+            'total_tables_changed' => count($changes),
+            'changes' => $changes,
+        ]);
+    }
 }
