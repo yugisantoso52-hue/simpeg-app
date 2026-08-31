@@ -49,31 +49,34 @@ class SyncController extends Controller
         unset($payload['id']); 
 
         try {
-            if ($validated['action'] === 'DELETE') {
-                $modelClass::where('sync_uuid', $validated['sync_uuid'])->delete();
-            } else {
-                $existing = $modelClass::where('sync_uuid', $validated['sync_uuid'])->first();
-
-                if (!$existing) {
-                    if ($validated['table_name'] === 'users' && !empty($payload['email'])) {
-                        $existing = $modelClass::where('email', $payload['email'])->first();
-                    } elseif ($validated['table_name'] === 'pegawai' && !empty($payload['nip'])) {
-                        $existing = $modelClass::where('nip', $payload['nip'])->first();
-                    }
-                }
-
-                $payload['sync_uuid'] = $validated['sync_uuid'];
-                $payload['last_synced_at'] = now();
-
-                if ($existing) {
-                    $existing->fill($payload)->save();
+            $modelClass::withoutEvents(function () use ($modelClass, $validated, $payload) {
+                if ($validated['action'] === 'DELETE') {
+                    $modelClass::where('sync_uuid', $validated['sync_uuid'])->delete();
                 } else {
-                    if ($validated['table_name'] === 'users' && empty($payload['password'])) {
-                        $payload['password'] = \Illuminate\Support\Facades\Hash::make('password');
+                    $existing = $modelClass::where('sync_uuid', $validated['sync_uuid'])->first();
+
+                    if (!$existing) {
+                        if ($validated['table_name'] === 'users' && !empty($payload['email'])) {
+                            $existing = $modelClass::where('email', $payload['email'])->first();
+                        } elseif ($validated['table_name'] === 'pegawai' && !empty($payload['nip'])) {
+                            $existing = $modelClass::where('nip', $payload['nip'])->first();
+                        }
                     }
-                    $modelClass::create($payload);
+
+                    $payload['sync_uuid'] = $validated['sync_uuid'];
+                    $payload['last_synced_at'] = now();
+
+                    if ($existing) {
+                        $existing->fill($payload)->save();
+                    } else {
+                        if ($validated['table_name'] === 'users' && empty($payload['password'])) {
+                            $payload['password'] = \Illuminate\Support\Facades\Hash::make('password');
+                        }
+                        $modelClass::create($payload);
+                    }
                 }
-            }
+            });
+
             return response()->json(['status' => 'success']);
         } catch (\Exception $e) {
             Log::error('Sync Error: ' . $e->getMessage());
