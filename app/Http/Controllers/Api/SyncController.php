@@ -67,12 +67,13 @@ class SyncController extends Controller
                     $payload['last_synced_at'] = now();
 
                     if ($existing) {
-                        $existing->fill($payload)->save();
+                        $existing->forceFill($payload)->save();
                     } else {
                         if ($validated['table_name'] === 'users' && empty($payload['password'])) {
                             $payload['password'] = \Illuminate\Support\Facades\Hash::make('password');
                         }
-                        $modelClass::create($payload);
+                        $instance = new $modelClass;
+                        $instance->forceFill($payload)->save();
                     }
                 }
             });

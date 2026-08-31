@@ -107,13 +107,14 @@ class PullSyncCommand extends Command
                         $row['last_synced_at'] = now();
 
                         if ($existing) {
-                            $existing->fill($row)->save();
+                            $existing->forceFill($row)->save();
                             $totalUpdated++;
                         } else {
                             if ($tableName === 'users' && empty($row['password'])) {
                                 $row['password'] = \Illuminate\Support\Facades\Hash::make('password');
                             }
-                            $modelClass::create($row);
+                            $instance = new $modelClass;
+                            $instance->forceFill($row)->save();
                             $totalInserted++;
                         }
                     }
