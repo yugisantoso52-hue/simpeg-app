@@ -11,10 +11,19 @@ use Carbon\Carbon;
 class KpService
 {
     /**
-     * Cek apakah pegawai sudah layak naik pangkat (>= 4 tahun dari TMT pangkat terakhir / pegawai)
+     * Cek apakah pegawai sudah layak naik pangkat (>= 4 tahun atau jatuh tempo dalam radar 6 bulan ke depan)
      */
-    public function cekKelayakanKp(Pegawai $pegawai): bool
+    public function cekKelayakanKp(Pegawai $pegawai, int $radarBulan = 6): bool
     {
+        // 1. Cek jika tanggal kp_berikutnya sudah ada dan jatuh tempo dalam radar bulan ke depan atau sudah lewat
+        if ($pegawai->kp_berikutnya) {
+            $tglKp = Carbon::parse($pegawai->kp_berikutnya);
+            if ($tglKp->lte(Carbon::now()->addMonths($radarBulan)->endOfDay())) {
+                return true;
+            }
+        }
+
+        // 2. Cek selisih tahun dari TMT pangkat terakhir / tanggal masuk
         $tanggalAcuan = $pegawai->tmt_pangkat_terakhir ?? $pegawai->tanggal_masuk;
 
         if (!$tanggalAcuan) {
@@ -22,7 +31,8 @@ class KpService
         }
 
         $tanggalStr = is_string($tanggalAcuan) ? $tanggalAcuan : $tanggalAcuan->format('Y-m-d');
-        return TanggalHelper::hitungSelisihTahun($tanggalStr) >= 4;
+        $tglTmt = Carbon::parse($tanggalStr);
+        return $tglTmt->diffInMonths(Carbon::now()) >= (48 - $radarBulan);
     }
 
     /**

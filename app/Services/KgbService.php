@@ -39,17 +39,26 @@ class KgbService
     }
 
     /**
-     * Memeriksa apakah seorang pegawai sudah berhak mendapatkan KGB baru.
+     * Memeriksa apakah seorang pegawai sudah berhak mendapatkan KGB baru atau jatuh tempo dalam radar 6 bulan ke depan.
      */
-    public function cekKelayakanKgb(Pegawai $pegawai): bool
+    public function cekKelayakanKgb(Pegawai $pegawai, int $radarBulan = 6): bool
     {
+        // 1. Cek tanggal kgb_berikutnya
+        if ($pegawai->kgb_berikutnya) {
+            $tglKgb = Carbon::parse($pegawai->kgb_berikutnya);
+            if ($tglKgb->lte(Carbon::now()->addMonths($radarBulan)->endOfDay())) {
+                return true;
+            }
+        }
+
+        // 2. Cek selisih waktu dari TMT KGB terakhir
         $tanggalAcuan = $pegawai->tmt_kgb_terakhir;
-        
         if (!$tanggalAcuan) {
             return false;
         }
 
-        return TanggalHelper::hitungSelisihTahun($tanggalAcuan) >= 2;
+        $tglTmt = Carbon::parse($tanggalAcuan);
+        return $tglTmt->diffInMonths(Carbon::now()) >= (24 - $radarBulan);
     }
 
     /**

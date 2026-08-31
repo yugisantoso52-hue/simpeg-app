@@ -24,7 +24,9 @@ class KpController extends Controller
 
         $layakKp = $allPegawai->filter(function ($pegawai) {
             return $this->kpService->cekKelayakanKp($pegawai);
-        });
+        })->sortBy(function ($pegawai) {
+            return $pegawai->kp_berikutnya ?? '9999-12-31';
+        })->values();
 
         $golongans = Golongan::all();
 

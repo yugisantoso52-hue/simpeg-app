@@ -25,14 +25,11 @@ class KgbController extends Controller
             ->where('status_pegawai', 'Aktif')
             ->get();
             
-        $layakKgb = [];
-
-        foreach ($allPegawai as $pegawai) {
-            // Memanfaatkan KgbService untuk mengecek kelayakan gaji berkala pegawai
-            if ($this->kgbService->cekKelayakanKgb($pegawai)) {
-                $layakKgb[] = $pegawai;
-            }
-        }
+        $layakKgb = $allPegawai->filter(function ($pegawai) {
+            return $this->kgbService->cekKelayakanKgb($pegawai);
+        })->sortBy(function ($pegawai) {
+            return $pegawai->kgb_berikutnya ?? '9999-12-31';
+        })->values();
 
         return view('kgb.index', compact('layakKgb'));
     }

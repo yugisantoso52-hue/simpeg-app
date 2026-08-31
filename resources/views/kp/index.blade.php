@@ -87,6 +87,13 @@
                                     <x-enterprise.badge color="blue">
                                         {{ $row->tmt_pangkat_terakhir ? \Carbon\Carbon::parse($row->tmt_pangkat_terakhir)->format('d-m-Y') : ($row->tmt_kp_terakhir ? \Carbon\Carbon::parse($row->tmt_kp_terakhir)->format('d-m-Y') : '-') }}
                                     </x-enterprise.badge>
+                                    @if($row->kp_berikutnya)
+                                        <div class="mt-1">
+                                            <span class="text-[10px] font-bold text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 inline-flex items-center gap-1">
+                                                🎯 Jatuh Tempo: {{ \Carbon\Carbon::parse($row->kp_berikutnya)->format('d-m-Y') }}
+                                            </span>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="space-y-2">

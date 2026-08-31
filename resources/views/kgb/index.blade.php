@@ -43,6 +43,13 @@
                                     <x-enterprise.badge color="amber">
                                         {{ $row->tmt_kgb_terakhir ? \Carbon\Carbon::parse($row->tmt_kgb_terakhir)->format('d-m-Y') : '-' }}
                                     </x-enterprise.badge>
+                                    @if($row->kgb_berikutnya)
+                                        <div class="mt-1">
+                                            <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-flex items-center gap-1">
+                                                🎯 Jatuh Tempo: {{ \Carbon\Carbon::parse($row->kgb_berikutnya)->format('d-m-Y') }}
+                                            </span>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     <button 
