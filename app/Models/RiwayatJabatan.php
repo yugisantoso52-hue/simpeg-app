@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\RecordsSyncOutbox;
 use Illuminate\Database\Eloquent\Model;
 
 class RiwayatJabatan extends Model
 {
+    use RecordsSyncOutbox;
     // Mengunci nama tabel sesuai database
     protected $table = 'riwayat_jabatan';
 

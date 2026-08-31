@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\RecordsSyncOutbox;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +16,7 @@ use App\Models\RiwayatPublikasi;
 
 class Pegawai extends Model
 {
-    use HasFactory;
+    use HasFactory, RecordsSyncOutbox;
 
     protected $table = 'pegawai';
 

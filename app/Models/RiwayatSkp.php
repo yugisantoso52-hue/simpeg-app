@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\RecordsSyncOutbox;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class RiwayatSkp extends Model
 {
-    use HasFactory;
+    use HasFactory, RecordsSyncOutbox;
 
     protected $table = 'riwayat_skp';
 

@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\RecordsSyncOutbox;
 use Illuminate\Database\Eloquent\Model;
 
 class MutasiPegawai extends Model
 {
+    use RecordsSyncOutbox;
     protected $table = 'mutasi_pegawai';
 
     protected $fillable = [

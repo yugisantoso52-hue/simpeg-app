@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\RecordsSyncOutbox;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
 class TugasBelajar extends Model
 {
-    use HasFactory;
+    use HasFactory, RecordsSyncOutbox;
 
     protected $table = 'tugas_belajar';
 
