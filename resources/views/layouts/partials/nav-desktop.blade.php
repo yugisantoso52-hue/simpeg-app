@@ -50,6 +50,15 @@
             <x-dropdown-link :href="route('duk.index')" class="{{ request()->routeIs('duk.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                 📊 Daftar Urut Kepangkatan (DUK)
             </x-dropdown-link>
+            <x-dropdown-link :href="route('kp.index')" class="{{ request()->routeIs('kp.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
+                🎖️ Kenaikan Pangkat (KP)
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('kgb.index')" class="{{ request()->routeIs('kgb.*') ? 'bg-amber-50 text-amber-700 font-semibold' : '' }}">
+                💵 Kenaikan Gaji Berkala (KGB)
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('satyalancana.index')" class="{{ request()->routeIs('satyalancana.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
+                🏅 Satyalancana
+            </x-dropdown-link>
             @if(Auth::user()->hasRole('admin'))
                 <x-dropdown-link :href="route('mutasi-pegawai.index')" class="{{ request()->routeIs('mutasi-pegawai.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                     🔄 Mutasi Pegawai

@@ -36,6 +36,15 @@
         <x-responsive-nav-link :href="route('duk.index')" :active="request()->routeIs('duk.*')">
             📊 Daftar Urut Kepangkatan (DUK)
         </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('kp.index')" :active="request()->routeIs('kp.*')">
+            🎖️ Kenaikan Pangkat (KP)
+        </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('kgb.index')" :active="request()->routeIs('kgb.*')">
+            💵 Kenaikan Gaji Berkala (KGB)
+        </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('satyalancana.index')" :active="request()->routeIs('satyalancana.*')">
+            🏅 Satyalancana
+        </x-responsive-nav-link>
         @if(Auth::user()->hasRole('admin'))
             <x-responsive-nav-link :href="route('mutasi-pegawai.index')" :active="request()->routeIs('mutasi-pegawai.*')">
                 🔄 Mutasi Pegawai

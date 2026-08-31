@@ -107,6 +107,13 @@
                             @else
                                 <p class="text-xs text-amber-600 mt-2 italic">Aman. Tidak ada jatuh tempo.</p>
                             @endif
+                        @if(Auth::user()->hasRole('admin'))
+                            <div class="mt-3 pt-2 border-t border-amber-200/60 text-right">
+                                <a href="{{ route('kgb.index') }}" class="text-[11px] font-semibold text-amber-800 hover:text-amber-950 hover:underline inline-flex items-center gap-1">
+                                    Buka Monitoring KGB &rarr;
+                                </a>
+                            </div>
+                        @endif
                         </div>
                     </div>
 
@@ -132,6 +139,13 @@
                             @else
                                 <p class="text-xs text-emerald-600 mt-2 italic">Aman. Tidak ada jatuh tempo.</p>
                             @endif
+                        @if(Auth::user()->hasRole('admin'))
+                            <div class="mt-3 pt-2 border-t border-emerald-200/60 text-right">
+                                <a href="{{ route('kp.index') }}" class="text-[11px] font-semibold text-emerald-800 hover:text-emerald-950 hover:underline inline-flex items-center gap-1">
+                                    Buka Monitoring KP (5 Syarat) &rarr;
+                                </a>
+                            </div>
+                        @endif
                         </div>
                     </div>
 
@@ -157,6 +171,13 @@
                             @else
                                 <p class="text-xs text-indigo-600 mt-2 italic">Aman. Tidak ada jatuh tempo.</p>
                             @endif
+                        @if(Auth::user()->hasRole('admin'))
+                            <div class="mt-3 pt-2 border-t border-indigo-200/60 text-right">
+                                <a href="{{ route('satyalancana.index') }}" class="text-[11px] font-semibold text-indigo-800 hover:text-indigo-950 hover:underline inline-flex items-center gap-1">
+                                    Buka Monitoring Satyalancana &rarr;
+                                </a>
+                            </div>
+                        @endif
                         </div>
                     </div>
 
