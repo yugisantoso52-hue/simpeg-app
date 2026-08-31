@@ -38,13 +38,20 @@ class RiwayatPangkatController extends Controller
 
     public function store(StoreRiwayatPangkatRequest $request)
     {
+        $data = $request->validated();
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            $data['pegawai_id'] = auth()->user()->pegawai_id;
+        }
+
         $this->service->create(
-            $request->validated(),
+            $data,
             $request->file('file_sk')
         );
 
+        $targetPegawaiId = $data['pegawai_id'] ?? auth()->user()->pegawai_id;
+
         return redirect()
-            ->route('riwayat-pangkat.index')
+            ->route('pegawai.show', $targetPegawaiId)
             ->with('success', 'Riwayat pangkat berhasil disimpan.');
     }
 
@@ -59,6 +66,9 @@ class RiwayatPangkatController extends Controller
 
     public function update(UpdateRiwayatPangkatRequest $request, $id)
     {
+        $existing = $this->service->find($id);
+        $pegawaiId = $existing->pegawai_id ?? $request->input('pegawai_id', auth()->user()->pegawai_id);
+
         $this->service->update(
             $id,
             $request->validated(),
@@ -66,16 +76,19 @@ class RiwayatPangkatController extends Controller
         );
 
         return redirect()
-            ->route('riwayat-pangkat.index')
+            ->route('pegawai.show', $pegawaiId)
             ->with('success', 'Riwayat pangkat berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
+        $existing = $this->service->find($id);
+        $pegawaiId = $existing->pegawai_id ?? auth()->user()->pegawai_id;
+
         $this->service->delete($id);
 
         return redirect()
-            ->route('riwayat-pangkat.index')
+            ->route('pegawai.show', $pegawaiId)
             ->with('success', 'Riwayat pangkat berhasil dihapus.');
     }
 }

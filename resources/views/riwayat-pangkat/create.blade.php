@@ -36,18 +36,26 @@
                                 <label class="block font-semibold mb-2">
                                     Pegawai <span class="text-red-500">*</span>
                                 </label>
-                                <select
-                                    name="pegawai_id"
-                                    class="w-full rounded-lg border px-4 py-2 @error('pegawai_id') border-red-500 ring-red-300 @else border-gray-300 @enderror">
-                                    <option value="">-- Pilih Pegawai --</option>
-                                    @foreach($pegawai as $p)
-                                        <option
-                                            value="{{ $p->id }}"
-                                            {{ old('pegawai_id') == $p->id ? 'selected' : '' }}>
-                                            {{ $p->nip }} - {{ $p->nama }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                @if(auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id)
+                                    @php
+                                        $currentPegawai = $pegawai->firstWhere('id', auth()->user()->pegawai_id);
+                                    @endphp
+                                    <input type="hidden" name="pegawai_id" value="{{ auth()->user()->pegawai_id }}">
+                                    <input type="text" readonly disabled value="{{ $currentPegawai ? $currentPegawai->nip . ' - ' . ($currentPegawai->nama_lengkap ?? $currentPegawai->nama) : 'Data Pegawai Anda' }}" class="w-full rounded-lg border px-4 py-2 border-gray-300 bg-gray-100 text-gray-700">
+                                @else
+                                    <select
+                                        name="pegawai_id"
+                                        class="w-full rounded-lg border px-4 py-2 @error('pegawai_id') border-red-500 ring-red-300 @else border-gray-300 @enderror">
+                                        <option value="">-- Pilih Pegawai --</option>
+                                        @foreach($pegawai as $p)
+                                            <option
+                                                value="{{ $p->id }}"
+                                                {{ (old('pegawai_id', request('pegawai_id')) == $p->id) ? 'selected' : '' }}>
+                                                {{ $p->nip }} - {{ $p->nama_lengkap ?? $p->nama }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                @endif
                                 @error('pegawai_id')
                                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                                 @enderror
@@ -180,11 +188,18 @@
 
                     {{-- FOOTER --}}
                     <div class="border-t bg-gray-50 px-6 py-4 flex justify-end gap-3">
-                        <a
-                            href="{{ route('riwayat-pangkat.index') }}"
-                            class="px-5 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition">
-                            ← Kembali
-                        </a>
+                        @php
+                            $backPegawaiId = request('pegawai_id', auth()->user()->pegawai_id);
+                        @endphp
+                        @if($backPegawaiId)
+                            <a href="{{ route('pegawai.show', $backPegawaiId) }}" class="px-5 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition">
+                                ← Kembali ke Profil
+                            </a>
+                        @else
+                            <a href="{{ url()->previous() }}" class="px-5 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition">
+                                ← Kembali
+                            </a>
+                        @endif
                         <button
                             type="submit"
                             id="btnSubmit"

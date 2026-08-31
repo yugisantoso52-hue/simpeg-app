@@ -44,13 +44,20 @@ class RiwayatJabatanController extends Controller
      */
     public function store(StoreRiwayatJabatanRequest $request)
     {
+        $data = $request->validated();
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            $data['pegawai_id'] = auth()->user()->pegawai_id;
+        }
+
         $this->service->create(
-            $request->validated(),
+            $data,
             $request->file('file_sk')
         );
 
+        $targetPegawaiId = $data['pegawai_id'] ?? auth()->user()->pegawai_id;
+
         return redirect()
-            ->route('riwayat-jabatan.index')
+            ->route('pegawai.show', $targetPegawaiId)
             ->with('success', 'Riwayat Jabatan berhasil disimpan.');
     }
 
@@ -74,19 +81,17 @@ class RiwayatJabatanController extends Controller
         UpdateRiwayatJabatanRequest $request,
         int $id
     ) {
+        $existing = $this->service->find($id);
+        $pegawaiId = $existing->pegawai_id ?? $request->input('pegawai_id', auth()->user()->pegawai_id);
 
         $this->service->update(
-
             $id,
-
             $request->validated(),
-
             $request->file('file_sk')
-
         );
 
         return redirect()
-            ->route('riwayat-jabatan.index')
+            ->route('pegawai.show', $pegawaiId)
             ->with('success', 'Riwayat Jabatan berhasil diperbarui.');
     }
 
@@ -95,10 +100,13 @@ class RiwayatJabatanController extends Controller
      */
     public function destroy(int $id)
     {
+        $existing = $this->service->find($id);
+        $pegawaiId = $existing->pegawai_id ?? auth()->user()->pegawai_id;
+
         $this->service->delete($id);
 
         return redirect()
-            ->route('riwayat-jabatan.index')
+            ->route('pegawai.show', $pegawaiId)
             ->with('success', 'Riwayat Jabatan berhasil dihapus.');
     }
 

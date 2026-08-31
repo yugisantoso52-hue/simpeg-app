@@ -380,38 +380,11 @@
                         </div>
 
                         {{-- ========================================================================= --}}
-                        {{-- 6. DATA FISIK & KESEHATAN                                                 --}}
-                        {{-- ========================================================================= --}}
-                        <div>
-                            <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider mb-2 border-b pb-1">6. Data Fisik & Kesehatan</h4>
-                            <table class="w-full text-sm text-gray-600">
-                                <tbody>
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500 w-48">Tinggi Badan</td>
-                                        <td class="py-1.5 text-gray-900">{{ $pegawai->tinggi_badan ? $pegawai->tinggi_badan . ' cm' : '-' }}</td>
-                                    </tr>
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Berat Badan</td>
-                                        <td class="py-1.5 text-gray-900">{{ $pegawai->berat_badan ? $pegawai->berat_badan . ' kg' : '-' }}</td>
-                                    </tr>
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Golongan Darah</td>
-                                        <td class="py-1.5 text-gray-900">{{ $pegawai->golongan_darah ?? '-' }}</td>
-                                    </tr>
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Ciri-ciri Fisik / Khas</td>
-                                        <td class="py-1.5 text-gray-900">{{ $pegawai->ciri_khas ?? '-' }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {{-- ========================================================================= --}}
-                        {{-- 7. RIWAYAT PANGKAT / GOLONGAN                                             --}}
+                        {{-- 6. RIWAYAT PANGKAT / GOLONGAN                                             --}}
                         {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">7. Riwayat Pangkat / Golongan</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">6. Riwayat Pangkat / Golongan</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('riwayat-pangkat.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -464,11 +437,11 @@
                         </div>
 
                         {{-- ========================================================================= --}}
-                        {{-- 8. RIWAYAT JABATAN                                                        --}}
+                        {{-- 7. RIWAYAT JABATAN                                                        --}}
                         {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">8. Riwayat Jabatan</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">7. Riwayat Jabatan</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('riwayat-jabatan.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -519,11 +492,11 @@
                         </div>
 
                         {{-- ========================================================================= --}}
-                        {{-- 9. RIWAYAT PENDIDIKAN                                                     --}}
+                        {{-- 8. RIWAYAT PENDIDIKAN                                                     --}}
                         {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">9. Riwayat Pendidikan</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">8. Riwayat Pendidikan</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('riwayat-pendidikan.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -560,11 +533,11 @@
                         </div>
 
                         {{-- ========================================================================= --}}
-                        {{-- 10. RIWAYAT DIKLAT / PELATIHAN                                            --}}
+                        {{-- 9. RIWAYAT DIKLAT / PELATIHAN                                             --}}
                         {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">10. Riwayat Diklat / Pelatihan</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">9. Riwayat Diklat / Pelatihan</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('riwayat-diklat.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -605,11 +578,11 @@
                         </div>
 
                         {{-- ========================================================================= --}}
-                        {{-- 11. LEGALITAS PROFESI (STR & SIP / SIKP)                                  --}}
+                        {{-- 10. LEGALITAS PROFESI (STR & SIP / SIKP)                                  --}}
                         {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">11. Legalitas Profesi (STR & SIP)</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">10. Legalitas Profesi (STR & SIP)</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('riwayat-str-sip.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -671,11 +644,11 @@
                         </div>
 
                         {{-- ========================================================================= --}}
-                        {{-- 12. PENGARSIPAN SKP (SASARAN KINERJA PEGAWAI - 2 TAHUN)                   --}}
+                        {{-- 11. PENGARSIPAN SKP (SASARAN KINERJA PEGAWAI - 2 TAHUN)                   --}}
                         {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-3">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">12. Pengarsipan SKP (Sasaran Kinerja Pegawai - 2 Tahun)</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">11. Pengarsipan SKP (Sasaran Kinerja Pegawai - 2 Tahun)</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('riwayat-skp.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -848,11 +821,11 @@
                         </div>
 
                         {{-- ========================================================================= --}}
-                        {{-- 13. RIWAYAT PENGHARGAAN & TANDA JASA                                      --}}
+                        {{-- 12. RIWAYAT PENGHARGAAN & TANDA JASA                                      --}}
                         {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">13. Riwayat Penghargaan & Tanda Jasa</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">12. Riwayat Penghargaan & Tanda Jasa</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('riwayat-penghargaan.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -897,11 +870,11 @@
                         </div>
 
                         {{-- ========================================================================= --}}
-                        {{-- 14. RIWAYAT KEANGGOTAAN ORGANISASI                                        --}}
+                        {{-- 13. RIWAYAT KEANGGOTAAN ORGANISASI                                        --}}
                         {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">14. Riwayat Keanggotaan Organisasi</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">13. Riwayat Keanggotaan Organisasi</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('riwayat-organisasi.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -942,11 +915,11 @@
                         </div>
 
                         {{-- ========================================================================= --}}
-                        {{-- 15. RIWAYAT PUBLIKASI ILMIAH & KARYA                                      --}}
+                        {{-- 14. RIWAYAT PUBLIKASI ILMIAH & KARYA                                      --}}
                         {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">15. Riwayat Publikasi Ilmiah & Karya</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">14. Riwayat Publikasi Ilmiah & Karya</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('riwayat-publikasi.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -1006,11 +979,11 @@
                         </div>
 
                         {{-- ========================================================================= --}}
-                        {{-- 16. TUGAS BELAJAR & IZIN BELAJAR                                          --}}
+                        {{-- 15. TUGAS BELAJAR & IZIN BELAJAR                                          --}}
                         {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">16. Tugas Belajar & Izin Belajar (Studi Lanjut)</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">15. Tugas Belajar & Izin Belajar (Studi Lanjut)</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('tugas-belajar.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -1087,11 +1060,11 @@
                         </div>
 
                         {{-- ========================================================================= --}}
-                        {{-- 17. RIWAYAT MUTASI PEGAWAI                                                --}}
+                        {{-- 16. RIWAYAT MUTASI PEGAWAI                                                --}}
                         {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">17. Riwayat Mutasi Pegawai</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">16. Riwayat Mutasi Pegawai</h4>
                                 @can('update', $pegawai)
                                     <a href="{{ route('mutasi-pegawai.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -1130,11 +1103,11 @@
                         </div>
 
                         {{-- ========================================================================= --}}
-                        {{-- 18. RIWAYAT CUTI PEGAWAI                                                  --}}
+                        {{-- 17. RIWAYAT CUTI PEGAWAI                                                  --}}
                         {{-- ========================================================================= --}}
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
-                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">18. Riwayat Cuti Pegawai</h4>
+                                <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">17. Riwayat Cuti Pegawai</h4>
                                 <a href="{{ route('pengajuan-cuti.create') }}"
                                    class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
                                     + Ajukan Cuti

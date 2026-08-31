@@ -73,7 +73,11 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/pegawai/{pegawai}/edit', [PegawaiController::class, 'edit'])->name('pegawai.edit');
         Route::put('/pegawai/{pegawai}', [PegawaiController::class, 'update'])->name('pegawai.update');
 
-        // CRUD Riwayat Mandiri Pegawai (STR/SIP, Tubel, SKP, Penghargaan, Organisasi, Publikasi, Pendidikan, Diklat)
+        // CRUD Riwayat Mandiri Pegawai (Pangkat, Jabatan, Mutasi, STR/SIP, Tubel, SKP, Penghargaan, Organisasi, Publikasi, Pendidikan, Diklat)
+        Route::resource('riwayat-pangkat', RiwayatPangkatController::class)->except(['index', 'show']);
+        Route::resource('riwayat-jabatan', RiwayatJabatanController::class)->except(['index', 'show']);
+        Route::resource('mutasi-pegawai', MutasiPegawaiController::class)->parameters(['mutasi-pegawai' => 'mutasi_pegawai'])->except(['index', 'show']);
+        Route::get('/pegawai-mutasi/{id}', [MutasiPegawaiController::class, 'getPegawai'])->name('pegawai-mutasi');
         Route::resource('riwayat-pendidikan', RiwayatPendidikanController::class)->except(['index', 'show']);
         Route::resource('riwayat-diklat', RiwayatDiklatController::class)->except(['index', 'show']);
         Route::resource('riwayat-str-sip', RiwayatStrSipController::class)->except(['index', 'show']);
@@ -93,9 +97,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::resource('jabatan', JabatanController::class)->parameters(['jabatan' => 'jabatan']);
         Route::resource('golongan', GolonganController::class)->parameters(['golongan' => 'golongan']);
 
-        // Mutasi
-        Route::resource('mutasi-pegawai', MutasiPegawaiController::class)->parameters(['mutasi-pegawai' => 'mutasi_pegawai']);
-        Route::get('/pegawai-mutasi/{id}', [MutasiPegawaiController::class, 'getPegawai'])->name('pegawai-mutasi');
+        // Mutasi (Index & Management Khusus Admin)
+        Route::get('/mutasi-pegawai', [MutasiPegawaiController::class, 'index'])->name('mutasi-pegawai.index');
 
         // KGB & KP & Satyalancana
         Route::get('/kgb', [KgbController::class, 'index'])->name('kgb.index');
@@ -116,10 +119,6 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('/pegawai', [PegawaiController::class, 'store'])->name('pegawai.store');
         Route::post('/pegawai/bulk-delete', [PegawaiController::class, 'bulkDelete'])->name('pegawai.bulk-delete');
         Route::delete('/pegawai/{pegawai}', [PegawaiController::class, 'destroy'])->name('pegawai.destroy');
-
-        // Riwayat Khusus Admin (Struktural / Kepangkatan)
-        Route::resource('riwayat-jabatan', RiwayatJabatanController::class)->except(['index', 'show']);
-        Route::resource('riwayat-pangkat', RiwayatPangkatController::class)->except(['index', 'show']);
         Route::delete('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'destroy'])->name('pengajuan-cuti.destroy');
     });
 
