@@ -29,7 +29,7 @@ class Pegawai extends Model
 
     protected $fillable = [
         // Identitas Utama
-        'nip', 'karpeg_karis_karsu', 'nidn_nuptk', 'nama', 'gelar_depan', 'gelar_belakang',
+        'sync_uuid', 'nip', 'karpeg_karis_karsu', 'nidn_nuptk', 'nama', 'gelar_depan', 'gelar_belakang',
         // Data Pribadi
         'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'agama',
         // Kontak
