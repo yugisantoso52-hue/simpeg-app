@@ -26,6 +26,7 @@ use App\Http\Controllers\RiwayatPenghargaanController;
 use App\Http\Controllers\RiwayatOrganisasiController;
 use App\Http\Controllers\RiwayatPublikasiController;
 use App\Http\Controllers\CloudSyncController;
+use App\Http\Controllers\BackupController;
 
 /*
 |--------------------------------------------------------------------------
@@ -120,6 +121,11 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('/pegawai/bulk-delete', [PegawaiController::class, 'bulkDelete'])->name('pegawai.bulk-delete');
         Route::delete('/pegawai/{pegawai}', [PegawaiController::class, 'destroy'])->name('pegawai.destroy');
         Route::delete('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'destroy'])->name('pengajuan-cuti.destroy');
+
+        // Backup & Restore Database
+        Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
+        Route::get('/backup/export', [BackupController::class, 'export'])->name('backup.export');
+        Route::post('/backup/restore', [BackupController::class, 'restore'])->name('backup.restore');
     });
 
     // ======================================================================
