@@ -39,7 +39,7 @@
             @endif
 
             {{-- Kartu Statistik (6 Kartu Interaktif: Klik untuk Memfilter Data) --}}
-            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 items-stretch">
+            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
                 <x-enterprise.stat-card
                     title="Total Pegawai"
                     :value="$statistics['total']"
