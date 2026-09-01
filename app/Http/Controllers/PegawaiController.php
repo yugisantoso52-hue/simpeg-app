@@ -9,6 +9,7 @@ use App\Http\Requests\Pegawai\StorePegawaiRequest;
 use App\Http\Requests\Pegawai\UpdatePegawaiRequest;
 use App\Models\Golongan;
 use App\Models\Jabatan;
+use App\Models\JenisJabatan;
 use App\Models\Pegawai;
 use App\Models\UnitKerja;
 use App\Services\PegawaiService;
@@ -94,10 +95,11 @@ class PegawaiController extends Controller
         $kategori = strtolower((string)$request->get('kategori', 'all'));
 
         return view('pegawai.create', [
-            'kategori'  => $kategori,
-            'unitKerja' => UnitKerja::orderBy('nama_unit')->get(),
-            'jabatan'   => Jabatan::orderBy('nama_jabatan')->get(),
-            'golongan'  => Golongan::orderBy('nama_golongan')->get(),
+            'kategori'     => $kategori,
+            'unitKerja'    => UnitKerja::orderBy('nama_unit')->get(),
+            'jabatan'      => Jabatan::orderBy('nama_jabatan')->get(),
+            'golongan'     => Golongan::orderBy('nama_golongan')->get(),
+            'jenisJabatan' => JenisJabatan::orderBy('nama_jenis_jabatan')->get(),
         ]);
     }
 
@@ -153,11 +155,12 @@ class PegawaiController extends Controller
         $kategori = strtolower((string)$request->get('kategori', $defaultKategori));
 
         return view('pegawai.edit', [
-            'pegawai'   => $pegawai,
-            'kategori'  => $kategori,
-            'unitKerja' => UnitKerja::orderBy('nama_unit')->get(),
-            'jabatan'   => Jabatan::orderBy('nama_jabatan')->get(),
-            'golongan'  => Golongan::orderBy('nama_golongan')->get(),
+            'pegawai'      => $pegawai,
+            'kategori'     => $kategori,
+            'unitKerja'    => UnitKerja::orderBy('nama_unit')->get(),
+            'jabatan'      => Jabatan::orderBy('nama_jabatan')->get(),
+            'golongan'     => Golongan::orderBy('nama_golongan')->get(),
+            'jenisJabatan' => JenisJabatan::orderBy('nama_jenis_jabatan')->get(),
         ]);
     }
 

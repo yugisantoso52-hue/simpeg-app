@@ -68,7 +68,7 @@ class UpdatePegawaiRequest extends FormRequest
             'provinsi'                 => 'nullable|string|max:100',
 
             // Kepegawaian Teknis
-            'jenis_jabatan'            => 'nullable|in:Struktural,Fungsional,Pelaksana,Lainnya',
+            'jenis_jabatan'            => 'nullable|string|max:100',
             'angka_kredit'             => 'nullable|numeric|min:0',
             'batas_usia_pensiun'       => 'nullable|integer|in:56,58,60,65',
             'tanggal_pensiun'          => 'nullable|date',

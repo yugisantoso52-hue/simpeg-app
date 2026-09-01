@@ -103,6 +103,9 @@
         <x-responsive-nav-link :href="route('golongan.index')" :active="request()->routeIs('golongan.*')">
             📊 Golongan
         </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('jenis-jabatan.index')" :active="request()->routeIs('jenis-jabatan.*')">
+            🏷️ Jenis Jabatan
+        </x-responsive-nav-link>
         <x-responsive-nav-link :href="route('backup.index')" :active="request()->routeIs('backup.*')">
             💾 Backup & Restore DB
         </x-responsive-nav-link>

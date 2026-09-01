@@ -65,6 +65,7 @@ class CloudSyncController extends Controller
             'unit_kerja',
             'jabatan',
             'golongan',
+            'jenis_jabatan',
             'users',
             'pegawai',
             'riwayat_pendidikan',

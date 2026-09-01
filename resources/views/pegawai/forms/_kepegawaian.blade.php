@@ -52,10 +52,18 @@
             <x-enterprise.form-group label="Jenis Jabatan">
                 <x-enterprise.select name="jenis_jabatan">
                     <option value="">Pilih Jenis Jabatan</option>
-                    <option value="Fungsional" @selected(old('jenis_jabatan', $pegawai->jenis_jabatan ?? '')=='Fungsional')>Fungsional (Dosen / Pranata Laboratorium Pendidikan / PLP)</option>
-                    <option value="Struktural" @selected(old('jenis_jabatan', $pegawai->jenis_jabatan ?? '')=='Struktural')>Struktural (Dekan/Kajur/Kaprodi/KTU)</option>
-                    <option value="Pelaksana"  @selected(old('jenis_jabatan', $pegawai->jenis_jabatan ?? '')=='Pelaksana')>Pelaksana / Staf Administrasi</option>
-                    <option value="Lainnya"    @selected(old('jenis_jabatan', $pegawai->jenis_jabatan ?? '')=='Lainnya')>Lainnya</option>
+                    @php
+                        $listJenisJabatan = $jenisJabatan ?? \App\Models\JenisJabatan::orderBy('nama_jenis_jabatan')->get();
+                        $currentVal = old('jenis_jabatan', $pegawai->jenis_jabatan ?? '');
+                    @endphp
+                    @foreach($listJenisJabatan as $item)
+                        <option value="{{ $item->nama_jenis_jabatan }}" @selected($currentVal == $item->nama_jenis_jabatan)>
+                            {{ $item->nama_jenis_jabatan }}
+                        </option>
+                    @endforeach
+                    @if($currentVal && !$listJenisJabatan->contains('nama_jenis_jabatan', $currentVal))
+                        <option value="{{ $currentVal }}" selected>{{ $currentVal }}</option>
+                    @endif
                 </x-enterprise.select>
             </x-enterprise.form-group>
         </x-enterprise.forms.field>

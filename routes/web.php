@@ -27,6 +27,7 @@ use App\Http\Controllers\RiwayatOrganisasiController;
 use App\Http\Controllers\RiwayatPublikasiController;
 use App\Http\Controllers\CloudSyncController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\JenisJabatanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,6 +98,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::resource('unit-kerja', UnitKerjaController::class)->parameters(['unit-kerja' => 'unit_kerja']);
         Route::resource('jabatan', JabatanController::class)->parameters(['jabatan' => 'jabatan']);
         Route::resource('golongan', GolonganController::class)->parameters(['golongan' => 'golongan']);
+        Route::resource('jenis-jabatan', JenisJabatanController::class)->parameters(['jenis-jabatan' => 'jenis_jabatan']);
 
         // Mutasi (Index & Management Khusus Admin)
         Route::get('/mutasi-pegawai', [MutasiPegawaiController::class, 'index'])->name('mutasi-pegawai.index');

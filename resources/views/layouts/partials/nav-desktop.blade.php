@@ -118,7 +118,7 @@
 @if(Auth::user()->hasRole('admin'))
     <x-dropdown align="left" width="48">
         <x-slot name="trigger">
-            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('unit-kerja.*', 'jabatan.*', 'golongan.*') ? 'border-blue-600 text-blue-700 font-bold' : '' }}">
+            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('unit-kerja.*', 'jabatan.*', 'golongan.*', 'jenis-jabatan.*') ? 'border-blue-600 text-blue-700 font-bold' : '' }}">
                 <span>Master Data</span>
                 <svg class="ms-1.5 h-4 w-4 fill-current text-gray-400" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -134,6 +134,9 @@
             </x-dropdown-link>
             <x-dropdown-link :href="route('golongan.index')" class="{{ request()->routeIs('golongan.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                 📊 Golongan
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('jenis-jabatan.index')" class="{{ request()->routeIs('jenis-jabatan.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                🏷️ Jenis Jabatan
             </x-dropdown-link>
 
             <div class="border-t border-gray-100 my-1"></div>
