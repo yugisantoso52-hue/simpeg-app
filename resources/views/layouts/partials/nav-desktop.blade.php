@@ -143,9 +143,6 @@
             <x-dropdown-link :href="route('backup.index')" class="{{ request()->routeIs('backup.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                 💾 Backup & Restore DB
             </x-dropdown-link>
-            <x-dropdown-link :href="route('cloud-sync.pull-web')" onclick="return confirm('Apakah Anda yakin ingin menarik seluruh data terbaru dari Cloud Railway (https://sikap-app.up.railway.app) ke localhost?')" class="text-blue-600 font-bold hover:bg-blue-50">
-                🔄 Tarik Data dari Cloud
-            </x-dropdown-link>
         </x-slot>
     </x-dropdown>
 @endif
