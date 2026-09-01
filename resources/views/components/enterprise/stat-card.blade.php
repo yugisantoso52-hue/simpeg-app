@@ -12,86 +12,88 @@
 $colors = [
     'blue' => [
         'card' => 'bg-blue-600',
-        'icon' => 'bg-blue-500',
-        'ring' => 'ring-blue-600/50',
+        'icon' => 'bg-blue-500/80',
+        'ring' => 'ring-blue-600',
     ],
 
     'green' => [
         'card' => 'bg-green-600',
-        'icon' => 'bg-green-500',
-        'ring' => 'ring-green-600/50',
+        'icon' => 'bg-green-500/80',
+        'ring' => 'ring-green-600',
     ],
 
     'emerald' => [
         'card' => 'bg-emerald-600',
-        'icon' => 'bg-emerald-500',
-        'ring' => 'ring-emerald-600/50',
+        'icon' => 'bg-emerald-500/80',
+        'ring' => 'ring-emerald-600',
     ],
 
     'amber' => [
         'card' => 'bg-amber-500',
-        'icon' => 'bg-amber-400',
-        'ring' => 'ring-amber-500/50',
+        'icon' => 'bg-amber-400/80',
+        'ring' => 'ring-amber-500',
     ],
 
     'red' => [
         'card' => 'bg-red-600',
-        'icon' => 'bg-red-500',
-        'ring' => 'ring-red-600/50',
+        'icon' => 'bg-red-500/80',
+        'ring' => 'ring-red-600',
     ],
 
     'purple' => [
         'card' => 'bg-purple-600',
-        'icon' => 'bg-purple-500',
-        'ring' => 'ring-purple-600/50',
+        'icon' => 'bg-purple-500/80',
+        'ring' => 'ring-purple-600',
     ],
 
     'indigo' => [
         'card' => 'bg-indigo-600',
-        'icon' => 'bg-indigo-500',
-        'ring' => 'ring-indigo-600/50',
+        'icon' => 'bg-indigo-500/80',
+        'ring' => 'ring-indigo-600',
     ],
 ];
 
 $theme = $colors[$color] ?? $colors['blue'];
-$activeClass = $active ? 'ring-4 ring-offset-2 ' . $theme['ring'] . ' shadow-2xl scale-[1.03] z-10' : 'hover:scale-[1.02] hover:shadow-xl opacity-90 hover:opacity-100';
+$activeClass = $active ? 'ring-4 ring-offset-2 ' . $theme['ring'] . ' shadow-2xl z-10' : 'hover:shadow-xl';
 
 @endphp
 
 @if($href)
-<a href="{{ $href }}" class="block no-underline select-none transition-all duration-200 group focus:outline-none">
+<a href="{{ $href }}" class="block h-full no-underline select-none transition-all duration-150 group focus:outline-none">
 @endif
 
-<div class="{{ $theme['card'] }} {{ $activeClass }} rounded-xl shadow-lg overflow-hidden transition-all duration-200 relative">
+<div class="{{ $theme['card'] }} {{ $activeClass }} h-full min-h-[110px] rounded-xl shadow-md transition-shadow duration-150 relative overflow-hidden flex flex-col justify-between p-4 xl:p-5">
 
-    <div class="flex items-center justify-between p-4 xl:p-5 min-h-[110px]">
+    {{-- Badge Absolute: Tidak merubah tinggi ataupun lebar kartu --}}
+    @if($active)
+        <div class="absolute top-2.5 right-2.5 flex items-center gap-1 bg-white/90 text-slate-900 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+            <span>Aktif</span>
+        </div>
+    @endif
 
-        <div class="pr-2">
+    <div class="flex items-center justify-between w-full h-full">
 
-            <p class="text-xs xl:text-sm text-white/90 font-semibold uppercase tracking-wide">
+        <div class="pr-2 flex flex-col justify-center">
+
+            <p class="text-xs font-bold text-white/90 uppercase tracking-wide truncate">
                 {{ $title }}
             </p>
 
-            <h2 class="mt-1 xl:mt-2 text-2xl xl:text-3xl font-extrabold text-white">
+            <h2 class="mt-1 text-2xl xl:text-3xl font-extrabold text-white leading-none">
                 {{ number_format($value) }}
             </h2>
 
-            @if($active)
-                <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-white/20 text-white tracking-wider">
-                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Terpilih
-                </span>
-            @endif
-
         </div>
 
-        <div class="{{ $theme['icon'] }} w-12 h-12 xl:w-14 xl:h-14 rounded-xl flex-shrink-0 flex items-center justify-center shadow-inner">
+        <div class="{{ $theme['icon'] }} w-11 h-11 xl:w-13 xl:h-13 rounded-xl flex-shrink-0 flex items-center justify-center shadow-inner">
 
             @switch($icon)
 
                 @case('users')
 
                     <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-6 h-6 xl:w-7 xl:h-7 text-white"
+                         class="w-6 h-6 text-white"
                          fill="none"
                          viewBox="0 0 24 24"
                          stroke="currentColor">
@@ -109,7 +111,7 @@ $activeClass = $active ? 'ring-4 ring-offset-2 ' . $theme['ring'] . ' shadow-2xl
                 @case('academic-cap')
 
                     <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-6 h-6 xl:w-7 xl:h-7 text-white"
+                         class="w-6 h-6 text-white"
                          fill="none"
                          viewBox="0 0 24 24"
                          stroke="currentColor">
@@ -130,7 +132,7 @@ $activeClass = $active ? 'ring-4 ring-offset-2 ' . $theme['ring'] . ' shadow-2xl
                 @case('briefcase')
 
                     <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-6 h-6 xl:w-7 xl:h-7 text-white"
+                         class="w-6 h-6 text-white"
                          fill="none"
                          viewBox="0 0 24 24"
                          stroke="currentColor">
@@ -147,7 +149,7 @@ $activeClass = $active ? 'ring-4 ring-offset-2 ' . $theme['ring'] . ' shadow-2xl
                 @case('user-group')
 
                     <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-6 h-6 xl:w-7 xl:h-7 text-white"
+                         class="w-6 h-6 text-white"
                          fill="none"
                          viewBox="0 0 24 24"
                          stroke="currentColor">
@@ -164,7 +166,7 @@ $activeClass = $active ? 'ring-4 ring-offset-2 ' . $theme['ring'] . ' shadow-2xl
                 @case('clipboard')
 
                     <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-6 h-6 xl:w-7 xl:h-7 text-white"
+                         class="w-6 h-6 text-white"
                          fill="none"
                          viewBox="0 0 24 24"
                          stroke="currentColor">
@@ -181,7 +183,7 @@ $activeClass = $active ? 'ring-4 ring-offset-2 ' . $theme['ring'] . ' shadow-2xl
                 @case('check-circle')
 
                     <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-6 h-6 xl:w-7 xl:h-7 text-white"
+                         class="w-6 h-6 text-white"
                          fill="none"
                          viewBox="0 0 24 24"
                          stroke="currentColor">
@@ -198,7 +200,7 @@ $activeClass = $active ? 'ring-4 ring-offset-2 ' . $theme['ring'] . ' shadow-2xl
                 @default
 
                     <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-6 h-6 xl:w-7 xl:h-7 text-white"
+                         class="w-6 h-6 text-white"
                          fill="none"
                          viewBox="0 0 24 24"
                          stroke="currentColor">
