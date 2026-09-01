@@ -3,6 +3,8 @@
     'value' => 0,
     'icon' => 'users',
     'color' => 'blue',
+    'href' => null,
+    'active' => false,
 ])
 
 @php
@@ -11,71 +13,85 @@ $colors = [
     'blue' => [
         'card' => 'bg-blue-600',
         'icon' => 'bg-blue-500',
+        'ring' => 'ring-blue-600/50',
     ],
 
     'green' => [
         'card' => 'bg-green-600',
         'icon' => 'bg-green-500',
+        'ring' => 'ring-green-600/50',
     ],
 
     'emerald' => [
         'card' => 'bg-emerald-600',
         'icon' => 'bg-emerald-500',
+        'ring' => 'ring-emerald-600/50',
     ],
 
     'amber' => [
         'card' => 'bg-amber-500',
         'icon' => 'bg-amber-400',
+        'ring' => 'ring-amber-500/50',
     ],
 
     'red' => [
         'card' => 'bg-red-600',
         'icon' => 'bg-red-500',
+        'ring' => 'ring-red-600/50',
     ],
 
     'purple' => [
         'card' => 'bg-purple-600',
         'icon' => 'bg-purple-500',
+        'ring' => 'ring-purple-600/50',
     ],
 
     'indigo' => [
         'card' => 'bg-indigo-600',
         'icon' => 'bg-indigo-500',
+        'ring' => 'ring-indigo-600/50',
     ],
 ];
 
 $theme = $colors[$color] ?? $colors['blue'];
+$activeClass = $active ? 'ring-4 ring-offset-2 ' . $theme['ring'] . ' shadow-2xl scale-[1.03] z-10' : 'hover:scale-[1.02] hover:shadow-xl opacity-90 hover:opacity-100';
 
 @endphp
 
-<div class="{{ $theme['card'] }} rounded-xl shadow-lg overflow-hidden">
+@if($href)
+<a href="{{ $href }}" class="block no-underline select-none transition-all duration-200 group focus:outline-none">
+@endif
 
-    <div class="flex items-center justify-between p-6 min-h-[120px]">
+<div class="{{ $theme['card'] }} {{ $activeClass }} rounded-xl shadow-lg overflow-hidden transition-all duration-200 relative">
 
-        <div>
+    <div class="flex items-center justify-between p-4 xl:p-5 min-h-[110px]">
 
-            <p class="text-sm text-white/80 font-medium uppercase tracking-wide">
+        <div class="pr-2">
 
+            <p class="text-xs xl:text-sm text-white/90 font-semibold uppercase tracking-wide">
                 {{ $title }}
-
             </p>
 
-            <h2 class="mt-3 text-4xl font-bold text-white">
-
+            <h2 class="mt-1 xl:mt-2 text-2xl xl:text-3xl font-extrabold text-white">
                 {{ number_format($value) }}
-
             </h2>
+
+            @if($active)
+                <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-white/20 text-white tracking-wider">
+                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Terpilih
+                </span>
+            @endif
 
         </div>
 
-        <div class="{{ $theme['icon'] }} w-16 h-16 rounded-xl flex items-center justify-center">
+        <div class="{{ $theme['icon'] }} w-12 h-12 xl:w-14 xl:h-14 rounded-xl flex-shrink-0 flex items-center justify-center shadow-inner">
 
             @switch($icon)
 
                 @case('users')
 
                     <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-8 h-8 text-white"
+                         class="w-6 h-6 xl:w-7 xl:h-7 text-white"
                          fill="none"
                          viewBox="0 0 24 24"
                          stroke="currentColor">
@@ -89,10 +105,32 @@ $theme = $colors[$color] ?? $colors['blue'];
 
                 @break
 
+                @case('academic')
+                @case('academic-cap')
+
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="w-6 h-6 xl:w-7 xl:h-7 text-white"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M12 14l9-5-9-5-9 5 9 5z"/>
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+
+                    </svg>
+
+                @break
+
                 @case('briefcase')
 
                     <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-8 h-8 text-white"
+                         class="w-6 h-6 xl:w-7 xl:h-7 text-white"
                          fill="none"
                          viewBox="0 0 24 24"
                          stroke="currentColor">
@@ -109,7 +147,7 @@ $theme = $colors[$color] ?? $colors['blue'];
                 @case('user-group')
 
                     <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-8 h-8 text-white"
+                         class="w-6 h-6 xl:w-7 xl:h-7 text-white"
                          fill="none"
                          viewBox="0 0 24 24"
                          stroke="currentColor">
@@ -123,10 +161,27 @@ $theme = $colors[$color] ?? $colors['blue'];
 
                 @break
 
+                @case('clipboard')
+
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="w-6 h-6 xl:w-7 xl:h-7 text-white"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+
+                    </svg>
+
+                @break
+
                 @case('check-circle')
 
                     <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-8 h-8 text-white"
+                         class="w-6 h-6 xl:w-7 xl:h-7 text-white"
                          fill="none"
                          viewBox="0 0 24 24"
                          stroke="currentColor">
@@ -143,7 +198,7 @@ $theme = $colors[$color] ?? $colors['blue'];
                 @default
 
                     <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-8 h-8 text-white"
+                         class="w-6 h-6 xl:w-7 xl:h-7 text-white"
                          fill="none"
                          viewBox="0 0 24 24"
                          stroke="currentColor">
@@ -162,3 +217,7 @@ $theme = $colors[$color] ?? $colors['blue'];
     </div>
 
 </div>
+
+@if($href)
+</a>
+@endif

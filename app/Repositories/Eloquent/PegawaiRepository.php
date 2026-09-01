@@ -19,13 +19,66 @@ class PegawaiRepository extends BaseRepository implements PegawaiRepositoryInter
      */
     public function search(?string $search, int $perPage = 10): LengthAwarePaginator
     {
+        return $this->searchFiltered($search, null, $perPage);
+    }
+
+    /**
+     * Pencarian pegawai dengan filter kategori (Dosen, PNS, PPPK, PHL, Aktif)
+     */
+    public function searchFiltered(?string $search, ?string $filter = null, int $perPage = 10): LengthAwarePaginator
+    {
         return $this->model
             ->with(['unitKerja', 'jabatan', 'golongan'])
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('nip', 'like', "%{$search}%")
-                      ->orWhere('nama', 'like', "%{$search}%");
+                      ->orWhere('nama', 'like', "%{$search}%")
+                      ->orWhere('nidn_nuptk', 'like', "%{$search}%");
                 });
+            })
+            ->when($filter, function ($query) use ($filter) {
+                switch (strtolower($filter)) {
+                    case 'dosen':
+                        $query->where(function ($q) {
+                            $q->where('jenis_pegawai', 'Dosen')
+                              ->orWhere('jenis_pegawai', 'like', '%Dosen%')
+                              ->orWhereNotNull('nidn_nuptk');
+                        });
+                        break;
+                    case 'pns':
+                        $query->where(function ($q) {
+                            $q->where('jenis_pegawai', 'PNS')
+                              ->orWhere(function ($sq) {
+                                  $sq->where('status_asn', 'ASN')
+                                     ->where(function ($ssq) {
+                                         $ssq->whereNull('jenis_pegawai')
+                                             ->orWhere('jenis_pegawai', 'not like', '%PPPK%')
+                                             ->where('jenis_pegawai', 'not like', '%Dosen%');
+                                     });
+                              });
+                        });
+                        break;
+                    case 'pppk':
+                        $query->where(function ($q) {
+                            $q->where('jenis_pegawai', 'PPPK')
+                              ->orWhere('status_asn', 'PPPK');
+                        });
+                        break;
+                    case 'phl':
+                    case 'honorer':
+                        $query->where(function ($q) {
+                            $q->whereIn('jenis_pegawai', ['PHL', 'Honorer', 'Tenaga Kontrak', 'Pegawai Harian Lepas'])
+                              ->orWhere('status_asn', 'Non ASN')
+                              ->orWhere('status_asn', 'PHL');
+                        });
+                        break;
+                    case 'aktif':
+                        $query->where('status_pegawai', 'Aktif');
+                        break;
+                    case 'pensiun':
+                        $query->where('status_pegawai', 'Pensiun');
+                        break;
+                }
             })
             ->latest()
             ->paginate($perPage)

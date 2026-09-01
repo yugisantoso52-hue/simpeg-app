@@ -130,9 +130,9 @@ class PegawaiService
         ];
     }
 
-    public function search(?string $search)
+    public function search(?string $search, ?string $filter = null)
     {
-        return $this->pegawaiRepository->search($search);
+        return $this->pegawaiRepository->searchFiltered($search, $filter);
     }
 
     public function find(string|int $id): Pegawai

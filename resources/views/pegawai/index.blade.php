@@ -38,23 +38,111 @@
                 </div>
             @endif
 
-            {{-- Kartu Statistik --}}
-            <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-                <x-enterprise.stat-card title="Total Pegawai" :value="$statistics['total']" color="blue" icon="users" />
-                <x-enterprise.stat-card title="PNS" :value="$statistics['pns']" color="green" icon="briefcase" />
-                <x-enterprise.stat-card title="PPPK" :value="$statistics['pppk']" color="amber" icon="user-group" />
-                <x-enterprise.stat-card title="Pegawai Aktif" :value="$statistics['aktif']" color="emerald" icon="check-circle" />
+            {{-- Kartu Statistik (6 Kartu Interaktif: Klik untuk Memfilter Data) --}}
+            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+                <x-enterprise.stat-card
+                    title="Total Pegawai"
+                    :value="$statistics['total']"
+                    color="blue"
+                    icon="users"
+                    :href="route('pegawai.index', array_filter(['search' => request('search')]))"
+                    :active="empty($filter) || $filter === 'total'"
+                />
+
+                <x-enterprise.stat-card
+                    title="Dosen"
+                    :value="$statistics['dosen']"
+                    color="purple"
+                    icon="academic"
+                    :href="route('pegawai.index', array_filter(['filter' => 'dosen', 'search' => request('search')]))"
+                    :active="$filter === 'dosen'"
+                />
+
+                <x-enterprise.stat-card
+                    title="PNS"
+                    :value="$statistics['pns']"
+                    color="green"
+                    icon="briefcase"
+                    :href="route('pegawai.index', array_filter(['filter' => 'pns', 'search' => request('search')]))"
+                    :active="$filter === 'pns'"
+                />
+
+                <x-enterprise.stat-card
+                    title="PPPK"
+                    :value="$statistics['pppk']"
+                    color="amber"
+                    icon="user-group"
+                    :href="route('pegawai.index', array_filter(['filter' => 'pppk', 'search' => request('search')]))"
+                    :active="$filter === 'pppk'"
+                />
+
+                <x-enterprise.stat-card
+                    title="PHL / Honorer"
+                    :value="$statistics['phl']"
+                    color="red"
+                    icon="clipboard"
+                    :href="route('pegawai.index', array_filter(['filter' => 'phl', 'search' => request('search')]))"
+                    :active="$filter === 'phl'"
+                />
+
+                <x-enterprise.stat-card
+                    title="Pegawai Aktif"
+                    :value="$statistics['aktif']"
+                    color="emerald"
+                    icon="check-circle"
+                    :href="route('pegawai.index', array_filter(['filter' => 'aktif', 'search' => request('search')]))"
+                    :active="$filter === 'aktif'"
+                />
             </div>
 
             {{-- Card & Tabel Utama --}}
             <x-enterprise.card>
                 <div class="p-6">
                     
-                    {{-- Header Sub-Section --}}
+                    {{-- Header Sub-Section & Filter Indicator --}}
                     <div class="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-200">
                         <div>
-                            <h3 class="text-lg font-bold text-slate-800">Daftar Pegawai Active</h3>
-                            <p class="text-xs text-slate-500">Gunakan bilah pencarian di bawah untuk memfilter berdasarkan NIP atau Nama.</p>
+                            <div class="flex items-center gap-2.5">
+                                <h3 class="text-lg font-bold text-slate-800">
+                                    @switch($filter)
+                                        @case('dosen')
+                                            Daftar Dosen
+                                            @break
+                                        @case('pns')
+                                            Daftar Pegawai PNS
+                                            @break
+                                        @case('pppk')
+                                            Daftar Pegawai PPPK
+                                            @break
+                                        @case('phl')
+                                            Daftar Pegawai PHL / Honorer
+                                            @break
+                                        @case('aktif')
+                                            Daftar Pegawai Aktif
+                                            @break
+                                        @default
+                                            Daftar Seluruh Pegawai
+                                    @endswitch
+                                </h3>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+                                    {{ $pegawai->total() }} Pegawai
+                                </span>
+
+                                @if(!empty($filter) && $filter !== 'total')
+                                    <a href="{{ route('pegawai.index', array_filter(['search' => request('search')])) }}" 
+                                       class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-700 transition"
+                                       title="Hapus filter kategori">
+                                        ✕ Reset Filter
+                                    </a>
+                                @endif
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">
+                                @if(!empty($filter) && $filter !== 'total')
+                                    Sedang menampilkan kategori <strong class="uppercase text-blue-700 font-bold">{{ $filter }}</strong>. Klik kartu di atas untuk berganti kategori.
+                                @else
+                                    Klik salah satu kartu statistik di atas untuk memfilter data langsung berdasarkan kategori (Dosen, PNS, PPPK, PHL, Aktif).
+                                @endif
+                            </p>
                         </div>
                         <div class="flex items-center space-x-3">
                             <a href="{{ route('duk.index') }}" class="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline mr-2">

@@ -121,6 +121,10 @@
         method="GET"
         class="flex gap-2">
 
+        @if(request('filter'))
+            <input type="hidden" name="filter" value="{{ request('filter') }}">
+        @endif
+
         <input
             type="text"
             name="search"

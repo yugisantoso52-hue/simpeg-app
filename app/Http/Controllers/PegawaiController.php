@@ -34,13 +34,15 @@ class PegawaiController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search');
-        $pegawai = $this->pegawaiService->search($search);
+        $filter = strtolower(trim((string)$request->get('filter', '')));
+        $pegawai = $this->pegawaiService->search($search, $filter);
         $statistics = $this->pegawaiService->getStatistics();
 
         return view('pegawai.index', compact(
             'pegawai',
             'statistics',
-            'search'
+            'search',
+            'filter'
         ));
     }
 
