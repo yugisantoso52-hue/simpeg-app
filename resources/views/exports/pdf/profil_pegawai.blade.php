@@ -4,10 +4,54 @@
 
 @section('content')
 
-    <div class="document-title">
-        <h4>PROFIL LENGKAP PEGAWAI</h4>
-        <p>NIP: {{ $pegawai->nip ?? '-' }}</p>
-    </div>
+    @php
+        $fotoBase64 = null;
+        if (!empty($pegawai->foto)) {
+            $cleanFoto = ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $pegawai->foto), DIRECTORY_SEPARATOR);
+            $candidateFotoPaths = [
+                storage_path('app/public/' . $cleanFoto),
+                storage_path('app/' . $cleanFoto),
+                public_path('storage/' . $cleanFoto),
+                public_path($cleanFoto),
+            ];
+            foreach ($candidateFotoPaths as $path) {
+                if (file_exists($path) && is_file($path)) {
+                    $mime = mime_content_type($path) ?: 'image/jpeg';
+                    $fotoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($path));
+                    break;
+                }
+            }
+        }
+        if (!$fotoBase64) {
+            $defaultAvatar = public_path('images/default-avatar.png');
+            if (file_exists($defaultAvatar)) {
+                $fotoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($defaultAvatar));
+            }
+        }
+    @endphp
+
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+        <tr>
+            <td style="width: 85px;">
+                {{-- Penyeimbang lebar kiri agar judul tetap berada tepat di tengah --}}
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+                <div class="document-title" style="margin-bottom: 0;">
+                    <h4 style="margin: 0; font-size: 12pt; font-weight: bold; text-decoration: underline; text-transform: uppercase;">PROFIL LENGKAP PEGAWAI</h4>
+                    <p style="margin: 3px 0 0 0; font-size: 10.5pt; font-weight: bold;">NIP: {{ $pegawai->nip ?? '-' }}</p>
+                </div>
+            </td>
+            <td style="width: 85px; text-align: right; vertical-align: middle;">
+                @if($fotoBase64)
+                    <img src="{{ $fotoBase64 }}" style="width: 75px; height: 100px; object-fit: cover; border: 1px solid #333; padding: 1px; background: #fff;" alt="Foto Pegawai">
+                @else
+                    <div style="width: 75px; height: 100px; border: 1px dashed #999; text-align: center; font-size: 8pt; color: #777; padding-top: 38px; box-sizing: border-box; display: inline-block;">
+                        Foto 3x4
+                    </div>
+                @endif
+            </td>
+        </tr>
+    </table>
 
     @php
         $namaCore = trim($pegawai->nama_lengkap ?? $pegawai->nama);
@@ -27,23 +71,8 @@
     <div class="section-header">1. DATA PRIBADI</div>
     <table class="form-table">
         <tr>
-            <td style="width: 32%;" class="bold">NIP / NIK</td>
+            <td style="width: 32%;" class="bold">Nama Lengkap</td>
             <td style="width: 3%;">:</td>
-            <td>{{ $pegawai->nip ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td class="bold">KARPEG / KARIS / KARSU</td>
-            <td>:</td>
-            <td>{{ $pegawai->karpeg_karis_karsu ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td class="bold">NIDN / NUPTK</td>
-            <td>:</td>
-            <td>{{ $pegawai->nidn_nuptk ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td class="bold">Nama Lengkap</td>
-            <td>:</td>
             <td>{{ $namaCore }}</td>
         </tr>
         <tr>
@@ -205,8 +234,18 @@
     <div class="section-header">5. ADMINISTRASI KEPEGAWAIAN & LEGALITAS</div>
     <table class="form-table">
         <tr>
-            <td style="width: 32%;" class="bold">Tanggal Masuk / TMT Awal</td>
+            <td style="width: 32%;" class="bold">KARPEG / KARIS / KARSU</td>
             <td style="width: 3%;">:</td>
+            <td>{{ $pegawai->karpeg_karis_karsu ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">NIDN / NUPTK</td>
+            <td>:</td>
+            <td>{{ $pegawai->nidn_nuptk ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Tanggal Masuk / TMT Awal</td>
+            <td>:</td>
             <td>{{ $pegawai->tanggal_masuk ? (is_string($pegawai->tanggal_masuk) ? \Carbon\Carbon::parse($pegawai->tanggal_masuk)->translatedFormat('d F Y') : $pegawai->tanggal_masuk->translatedFormat('d F Y')) : '-' }}</td>
         </tr>
         <tr>

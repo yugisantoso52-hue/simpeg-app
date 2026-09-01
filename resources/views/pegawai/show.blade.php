@@ -79,21 +79,6 @@
                                         <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->nip ?? '-' }}</td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">KARPEG / KARIS / KARSU</td>
-                                        <td class="py-1.5 text-gray-900 font-mono">
-                                            {{ $pegawai->karpeg_karis_karsu ?? '-' }}
-                                            @if($pegawai->file_karpeg)
-                                                <a href="{{ route('document.preview', ['path' => $pegawai->file_karpeg]) }}" target="_blank" class="ml-2 inline-flex items-center text-xs text-blue-600 hover:underline font-sans font-semibold">
-                                                    📄 Lihat Berkas KARPEG
-                                                </a>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">NIDN / NUPTK</td>
-                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->nidn_nuptk ?? '-' }}</td>
-                                    </tr>
-                                    <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">Nama Lengkap</td>
                                         <td class="py-1.5 text-gray-900 font-semibold">{{ $pegawai->nama_lengkap ?? $pegawai->nama }}</td>
                                     </tr>
@@ -282,7 +267,22 @@
                             <table class="w-full text-sm text-gray-600">
                                 <tbody>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500 w-48">Tanggal Masuk / TMT Awal</td>
+                                        <td class="py-1.5 font-medium text-gray-500 w-48">KARPEG / KARIS / KARSU</td>
+                                        <td class="py-1.5 text-gray-900 font-mono">
+                                            {{ $pegawai->karpeg_karis_karsu ?? '-' }}
+                                            @if($pegawai->file_karpeg)
+                                                <a href="{{ route('document.preview', ['path' => $pegawai->file_karpeg]) }}" target="_blank" class="ml-2 inline-flex items-center text-xs text-blue-600 hover:underline font-sans font-semibold">
+                                                    📄 Lihat Berkas KARPEG
+                                                </a>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">NIDN / NUPTK</td>
+                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->nidn_nuptk ?? '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Tanggal Masuk / TMT Awal</td>
                                         <td class="py-1.5 text-gray-900">
                                             {{ $pegawai->tanggal_masuk ? (is_string($pegawai->tanggal_masuk) ? \Carbon\Carbon::parse($pegawai->tanggal_masuk)->translatedFormat('d F Y') : $pegawai->tanggal_masuk->translatedFormat('d F Y')) : '-' }}
                                         </td>
