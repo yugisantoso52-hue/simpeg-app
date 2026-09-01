@@ -47,7 +47,6 @@
                             <x-slot name="head">
                                 <tr>
                                     <th class="w-16 px-4 py-3 text-center">No</th>
-                                    <th class="w-32 px-4 py-3 text-left">Kode</th>
                                     <th class="px-4 py-3 text-left">Nama Jabatan</th>
                                     <th class="px-4 py-3 text-left">Keterangan</th>
                                     <th class="px-4 py-3 text-center whitespace-nowrap">Aksi</th>
@@ -62,9 +61,6 @@
                                         @else
                                             {{ $loop->iteration }}
                                         @endif
-                                    </td>
-                                    <td class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">
-                                        {{ $row->kode_jabatan }}
                                     </td>
                                     <td class="px-4 py-3 font-medium text-slate-900">
                                         {{ $row->nama_jabatan }}
@@ -99,7 +95,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5">
+                                    <td colspan="4">
                                         <x-enterprise.empty-state
                                             title="Belum ada data jabatan"
                                             description="Silakan tambahkan data jabatan terlebih dahulu."

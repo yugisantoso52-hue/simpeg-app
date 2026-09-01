@@ -13,8 +13,8 @@ class UnitKerjaRepository implements UnitKerjaRepositoryInterface
     {
         return UnitKerja::query()
             ->when($search, function ($query) use ($search) {
-                $query->where('kode_unit', 'like', "%{$search}%")
-                      ->orWhere('nama_unit', 'like', "%{$search}%");
+                $query->where('nama_unit', 'like', "%{$search}%")
+                      ->orWhere('keterangan', 'like', "%{$search}%");
             })
             ->latest()
             ->paginate($perPage)
@@ -39,6 +39,9 @@ class UnitKerjaRepository implements UnitKerjaRepositoryInterface
     public function update(int|string $id, array $data): UnitKerja
     {
         $unit = $this->findOrFail($id);
+        if (array_key_exists('kode_unit', $data) && is_null($data['kode_unit'])) {
+            unset($data['kode_unit']);
+        }
         $unit->update($data);
         return $unit->fresh();
     }

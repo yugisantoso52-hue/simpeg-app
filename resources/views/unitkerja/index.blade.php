@@ -38,7 +38,7 @@
                         :create="route('unit-kerja.create')"
                         :searchAction="route('unit-kerja.index')"
                         :searchValue="request('search')"
-                        placeholder="Cari Kode atau Nama Unit Kerja..."
+                        placeholder="Cari Nama Unit Kerja..."
                         createLabel="Tambah Unit Kerja"
                     />
 
@@ -47,7 +47,6 @@
                             <x-slot name="head">
                                 <tr>
                                     <th class="w-16 px-4 py-3 text-center">No</th>
-                                    <th class="w-32 px-4 py-3 text-left">Kode</th>
                                     <th class="px-4 py-3 text-left">Nama Unit</th>
                                     <th class="px-4 py-3 text-left">Keterangan</th>
                                     <th class="px-4 py-3 text-center whitespace-nowrap">Aksi</th>
@@ -58,13 +57,10 @@
                                 <tr class="hover:bg-slate-50 transition">
                                     <td class="px-4 py-3 text-center font-medium">
                                         @if(method_exists($unitKerja, 'currentPage'))
-                                            {{ ($unitKerja->currentPage() - 1) * $unitKerja->perPage() + $loop->iteration }}
+                                             {{ ($unitKerja->currentPage() - 1) * $unitKerja->perPage() + $loop->iteration }}
                                         @else
-                                            {{ $loop->iteration }}
+                                             {{ $loop->iteration }}
                                         @endif
-                                    </td>
-                                    <td class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">
-                                        {{ $row->kode_unit }}
                                     </td>
                                     <td class="px-4 py-3 font-medium text-slate-900">
                                         {{ $row->nama_unit }}
@@ -99,7 +95,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5">
+                                    <td colspan="4">
                                         <x-enterprise.empty-state
                                             title="Belum ada data unit kerja"
                                             description="Silakan tambahkan data unit kerja terlebih dahulu."

@@ -15,19 +15,6 @@
                         @csrf
 
                         <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-semibold mb-2" for="kode_unit">Kode Unit</label>
-                            <input type="text"
-                                   name="kode_unit"
-                                   id="kode_unit"
-                                   value="{{ old('kode_unit') }}"
-                                   class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 px-3 py-2 text-sm text-gray-900 @error('kode_unit') border-red-500 @enderror"
-                                   placeholder="Contoh: UK-001">
-                            @error('kode_unit')
-                                <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-semibold mb-2" for="nama_unit">Nama Unit Kerja</label>
                             <input type="text"
                                    name="nama_unit"

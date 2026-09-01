@@ -25,7 +25,7 @@ class UpdateUnitKerjaRequest extends FormRequest
 
         return [
             'kode_unit' => [
-                'required',
+                'nullable',
                 'string',
                 'max:20',
                 Rule::unique('unit_kerja', 'kode_unit')->ignore($id),

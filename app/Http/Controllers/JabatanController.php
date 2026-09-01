@@ -12,8 +12,8 @@ class JabatanController extends Controller
         $query = Jabatan::query();
 
         if ($request->search) {
-            $query->where('kode_jabatan', 'like', '%'.$request->search.'%')
-                  ->orWhere('nama_jabatan', 'like', '%'.$request->search.'%');
+            $query->where('nama_jabatan', 'like', '%'.$request->search.'%')
+                  ->orWhere('keterangan', 'like', '%'.$request->search.'%');
         }
 
         $jabatan = $query->latest()->paginate(10);
@@ -28,12 +28,17 @@ class JabatanController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'kode_jabatan' => 'required|unique:jabatan',
-            'nama_jabatan' => 'required'
+        $validated = $request->validate([
+            'kode_jabatan' => 'nullable|string|max:50|unique:jabatan,kode_jabatan',
+            'nama_jabatan' => 'required|string|max:150',
+            'keterangan'   => 'nullable|string|max:255',
         ]);
 
-        Jabatan::create($request->all());
+        if (empty($validated['kode_jabatan'])) {
+            $validated['kode_jabatan'] = 'JAB-' . strtoupper(substr(uniqid(), -6));
+        }
+
+        Jabatan::create($validated);
 
         return redirect()
             ->route('jabatan.index')
@@ -51,12 +56,17 @@ class JabatanController extends Controller
     {
         $jabatan = Jabatan::findOrFail($id);
 
-        $request->validate([
-            'kode_jabatan' => 'required|unique:jabatan,kode_jabatan,'.$id,
-            'nama_jabatan' => 'required'
+        $validated = $request->validate([
+            'kode_jabatan' => 'nullable|string|max:50|unique:jabatan,kode_jabatan,'.$id,
+            'nama_jabatan' => 'required|string|max:150',
+            'keterangan'   => 'nullable|string|max:255',
         ]);
 
-        $jabatan->update($request->all());
+        if (empty($validated['kode_jabatan'])) {
+            unset($validated['kode_jabatan']);
+        }
+
+        $jabatan->update($validated);
 
         return redirect()
             ->route('jabatan.index')

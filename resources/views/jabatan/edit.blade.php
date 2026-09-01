@@ -16,18 +16,6 @@
                         @method('PUT')
 
                         <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-semibold mb-2" for="kode_jabatan">Kode Jabatan</label>
-                            <input type="text"
-                                   name="kode_jabatan"
-                                   id="kode_jabatan"
-                                   value="{{ old('kode_jabatan', $jabatan->kode_jabatan) }}"
-                                   class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 px-3 py-2 text-sm text-gray-900 @error('kode_jabatan') border-red-500 @enderror">
-                            @error('kode_jabatan')
-                                <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-semibold mb-2" for="nama_jabatan">Nama Jabatan</label>
                             <input type="text"
                                    name="nama_jabatan"

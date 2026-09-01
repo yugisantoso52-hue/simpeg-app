@@ -15,12 +15,24 @@ class StoreUnitKerjaRequest extends FormRequest
     }
 
     /**
+     * Persiapkan data sebelum validasi.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (empty($this->kode_unit)) {
+            $this->merge([
+                'kode_unit' => 'UK-' . strtoupper(substr(uniqid(), -6)),
+            ]);
+        }
+    }
+
+    /**
      * Aturan validasi yang berlaku untuk request.
      */
     public function rules(): array
     {
         return [
-            'kode_unit'  => 'required|string|max:20|unique:unit_kerja,kode_unit',
+            'kode_unit'  => 'nullable|string|max:20|unique:unit_kerja,kode_unit',
             'nama_unit'  => 'required|string|max:150',
             'keterangan' => 'nullable|string|max:255',
         ];
