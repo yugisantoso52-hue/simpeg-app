@@ -25,3 +25,9 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Google Service Account Credentials
+/storage/credentials/
+/storage/credentials/*
+*service-account*.json
+*google-credentials*.json
