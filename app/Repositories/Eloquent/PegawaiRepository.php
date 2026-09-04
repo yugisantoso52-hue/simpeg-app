@@ -147,51 +147,35 @@ class PegawaiRepository extends BaseRepository implements PegawaiRepositoryInter
             ->whereYear('kp_berikutnya', Carbon::now()->year)
             ->count();
     }
-/**
- * Statistik Pegawai
- */
-public function getStatistics(): array
-{
-    return [
 
-        'total' => $this->model->count(),
+    /**
+     * Statistik Pegawai
+     */
+    public function getStatistics(): array
+    {
+        $stats = $this->model->selectRaw("
+            COUNT(*) as total,
+            COALESCE(SUM(CASE WHEN status_pegawai = 'Aktif' THEN 1 ELSE 0 END), 0) as aktif,
+            COALESCE(SUM(CASE WHEN status_pegawai = 'Pensiun' THEN 1 ELSE 0 END), 0) as pensiun,
+            COALESCE(SUM(CASE WHEN status_asn = 'ASN' THEN 1 ELSE 0 END), 0) as asn,
+            COALESCE(SUM(CASE WHEN status_asn = 'Non ASN' THEN 1 ELSE 0 END), 0) as non_asn,
+            COALESCE(SUM(CASE WHEN jenis_pegawai = 'PNS' THEN 1 ELSE 0 END), 0) as pns,
+            COALESCE(SUM(CASE WHEN jenis_pegawai = 'PPPK' THEN 1 ELSE 0 END), 0) as pppk,
+            COALESCE(SUM(CASE WHEN (jenis_pegawai LIKE '%Dosen%' OR (nidn_nuptk IS NOT NULL AND nidn_nuptk != '' AND nidn_nuptk != '-')) THEN 1 ELSE 0 END), 0) as dosen,
+            COALESCE(SUM(CASE WHEN jenis_pegawai IN ('PHL', 'Honorer', 'Tenaga Kontrak') OR status_asn = 'Non ASN' THEN 1 ELSE 0 END), 0) as phl
+        ")->first();
 
-        'aktif' => $this->model
-            ->where('status_pegawai', 'Aktif')
-            ->count(),
-
-        'pensiun' => $this->model
-            ->where('status_pegawai', 'Pensiun')
-            ->count(),
-
-        'asn' => $this->model
-            ->where('status_asn', 'ASN')
-            ->count(),
-
-        'non_asn' => $this->model
-            ->where('status_asn', 'Non ASN')
-            ->count(),
-
-        'pns' => $this->model
-            ->where('jenis_pegawai', 'PNS')
-            ->count(),
-
-        'pppk' => $this->model
-            ->where('jenis_pegawai', 'PPPK')
-            ->count(),
-
-        'dosen' => $this->model
-            ->where('jenis_pegawai', 'Dosen')
-            ->count(),
-
-        'phl' => $this->model
-            ->whereIn('jenis_pegawai', ['PHL', 'Honorer'])
-            ->count(),
-
-        'honorer' => $this->model
-            ->whereIn('jenis_pegawai', ['PHL', 'Honorer'])
-            ->count(),
-
-    ];
-}
+        return [
+            'total'   => (int)($stats->total ?? 0),
+            'aktif'   => (int)($stats->aktif ?? 0),
+            'pensiun' => (int)($stats->pensiun ?? 0),
+            'asn'     => (int)($stats->asn ?? 0),
+            'non_asn' => (int)($stats->non_asn ?? 0),
+            'pns'     => (int)($stats->pns ?? 0),
+            'pppk'    => (int)($stats->pppk ?? 0),
+            'dosen'   => (int)($stats->dosen ?? 0),
+            'phl'     => (int)($stats->phl ?? 0),
+            'honorer' => (int)($stats->phl ?? 0),
+        ];
+    }
 }
