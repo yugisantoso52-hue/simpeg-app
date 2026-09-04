@@ -19,7 +19,7 @@
 
                 @if($p)
                 {{-- Banner Ucapan Selamat Datang Personal --}}
-                <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 rounded-2xl p-6 shadow-lg text-white relative overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 rounded-2xl p-6 shadow-lg text-white relative overflow-hidden" style="background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #1e3a8a 100%) !important; color: #ffffff !important;">
                     <div class="absolute -right-10 -bottom-10 opacity-15 pointer-events-none">
                         <svg class="w-64 h-64 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                     </div>
@@ -29,33 +29,33 @@
                             @if(isset($p->foto) && $p->foto)
                                 <img src="{{ $p->foto_url }}" alt="{{ $p->nama }}" class="w-20 h-24 object-cover rounded-xl border-2 border-white/40 shadow-md">
                             @else
-                                <div class="w-20 h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl font-bold border border-white/30 shadow-md">
+                                <div class="w-20 h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl font-bold border border-white/30 shadow-md" style="background-color: rgba(255, 255, 255, 0.2) !important;">
                                     👤
                                 </div>
                             @endif
                             <div>
-                                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-semibold backdrop-blur-md mb-1.5 border border-white/20">
+                                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-1.5 border border-white/20" style="background-color: rgba(255, 255, 255, 0.2) !important; color: #ffffff !important;">
                                     <span>● {{ $p->status_pegawai ?? 'Aktif' }}</span>
                                     <span>•</span>
                                     <span>{{ $p->jenis_pegawai ?? 'Pegawai' }}</span>
                                 </div>
-                                <h1 class="text-xl md:text-2xl font-bold tracking-tight">Selamat Datang, {{ $p->nama_lengkap ?? $p->nama ?? Auth::user()->name }}!</h1>
-                                <p class="text-xs md:text-sm text-blue-100 mt-1">
-                                    NIP: <strong class="font-mono">{{ $p->nip ?? '-' }}</strong> | {{ $p->jabatan?->nama_jabatan ?? 'Pegawai' }} - {{ $p->unitKerja?->nama_unit ?? 'Fakultas Keperawatan' }}
+                                <h1 class="text-xl md:text-2xl font-bold tracking-tight" style="color: #ffffff !important;">Selamat Datang, {{ $p->nama_lengkap ?? $p->nama ?? Auth::user()->name }}!</h1>
+                                <p class="text-xs md:text-sm mt-1" style="color: #dbeafe !important;">
+                                    NIP: <strong class="font-mono" style="color: #ffffff !important;">{{ $p->nip ?? '-' }}</strong> | {{ $p->jabatan?->nama_jabatan ?? 'Pegawai' }} - {{ $p->unitKerja?->nama_unit ?? 'Fakultas Keperawatan' }}
                                 </p>
                             </div>
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto shrink-0">
                             @if(isset($p->id))
-                                <a href="{{ route('pegawai.show', $p->id) }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-blue-900 rounded-xl font-bold text-xs hover:bg-blue-50 transition shadow-sm">
+                                <a href="{{ route('pegawai.show', $p->id) }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs transition shadow-sm" style="background-color: #ffffff !important; color: #1e3a8a !important;">
                                     👤 Profil Saya
                                 </a>
-                                <a href="{{ route('pegawai.edit', $p->id) }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600/60 hover:bg-blue-600 text-white rounded-xl font-semibold text-xs transition border border-white/30 backdrop-blur-md">
+                                <a href="{{ route('pegawai.edit', $p->id) }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs transition border border-white/30" style="background-color: rgba(255, 255, 255, 0.25) !important; color: #ffffff !important;">
                                     📝 Edit Data
                                 </a>
                             @endif
-                            <a href="{{ route('pengajuan-cuti.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-xs transition shadow-sm">
+                            <a href="{{ route('pengajuan-cuti.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs transition shadow-sm" style="background-color: #f59e0b !important; color: #ffffff !important;">
                                 🏖️ Ajukan Cuti
                             </a>
                         </div>
