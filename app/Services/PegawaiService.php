@@ -198,6 +198,23 @@ class PegawaiService
             // 1. Simpan data pegawai utama
             $pegawai = $this->pegawaiRepository->create($this->filterPegawaiColumns($data));
 
+            // Otomatisasi Sinkronisasi Berkas Utama ke Google Drive SIKAP-ARSIP
+            if (!empty($files['file_sk_pertama'])) {
+                $this->syncFileToDrive($pegawai, $files['file_sk_pertama'], 'SK CPNS', '02_RIWAYAT_SK');
+            }
+            if (!empty($files['file_sk_pangkat_terakhir'])) {
+                $this->syncFileToDrive($pegawai, $files['file_sk_pangkat_terakhir'], 'SK PANGKAT', '02_RIWAYAT_SK');
+            }
+            if (!empty($files['file_sk_kgb_terakhir'])) {
+                $this->syncFileToDrive($pegawai, $files['file_sk_kgb_terakhir'], 'SK KGB', '02_RIWAYAT_SK');
+            }
+            if (!empty($files['file_karpeg'])) {
+                $this->syncFileToDrive($pegawai, $files['file_karpeg'], 'KARPEG', '01_DOKUMEN_UTAMA');
+            }
+            if (!empty($files['file_pak'])) {
+                $this->syncFileToDrive($pegawai, $files['file_pak'], 'PAK', '04_KINERJA_PENILAIAN');
+            }
+
             // 2. OTOMATISASI: Buat Akun User Login untuk Pegawai Baru (NIP Tanpa Spasi)
             $rolePegawai = Role::where('name', 'pegawai')->first();
             if ($rolePegawai) {
@@ -398,6 +415,23 @@ class PegawaiService
 
             // Update tabel pegawai utama
             $pegawaiUpdated = $this->pegawaiRepository->update($pegawai->id, $this->filterPegawaiColumns($data));
+
+            // Otomatisasi Sinkronisasi Berkas Terunggah ke Google Drive SIKAP-ARSIP saat edit data
+            if (!empty($files['file_sk_pertama'])) {
+                $this->syncFileToDrive($pegawaiUpdated, $files['file_sk_pertama'], 'SK CPNS', '02_RIWAYAT_SK');
+            }
+            if (!empty($files['file_sk_pangkat_terakhir'])) {
+                $this->syncFileToDrive($pegawaiUpdated, $files['file_sk_pangkat_terakhir'], 'SK PANGKAT', '02_RIWAYAT_SK');
+            }
+            if (!empty($files['file_sk_kgb_terakhir'])) {
+                $this->syncFileToDrive($pegawaiUpdated, $files['file_sk_kgb_terakhir'], 'SK KGB', '02_RIWAYAT_SK');
+            }
+            if (!empty($files['file_karpeg'])) {
+                $this->syncFileToDrive($pegawaiUpdated, $files['file_karpeg'], 'KARPEG', '01_DOKUMEN_UTAMA');
+            }
+            if (!empty($files['file_pak'])) {
+                $this->syncFileToDrive($pegawaiUpdated, $files['file_pak'], 'PAK', '04_KINERJA_PENILAIAN');
+            }
 
             if ($oldNip !== $pegawaiUpdated->nip) {
                 $user = User::where('pegawai_id', $pegawaiUpdated->id)->first();
@@ -865,5 +899,21 @@ class PegawaiService
     protected function hasPegawaiColumn(string $column, array $columns): bool
     {
         return empty($columns) || in_array($column, $columns, true);
+    }
+
+    /**
+     * Otomatisasi Sinkronisasi Berkas Terunggah ke Google Drive (SIKAP-ARSIP) via GAS Proxy
+     */
+    private function syncFileToDrive(Pegawai $pegawai, ?UploadedFile $file, string $jenisDokumen, string $subFolderCategory): void
+    {
+        if (!$file) return;
+
+        try {
+            /** @var \App\Services\GoogleDriveGasService $driveService */
+            $driveService = app(\App\Services\GoogleDriveGasService::class);
+            $driveService->uploadDokumen($pegawai, $file, $jenisDokumen, $subFolderCategory, 'Auto-sync dari form SIMPEG');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Drive Auto Sync Failed for Pegawai ID {$pegawai->id}: " . $e->getMessage());
+        }
     }
 }
