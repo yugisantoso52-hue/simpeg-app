@@ -21,67 +21,52 @@
                 </x-enterprise.alert>
             @endif
 
-            {{-- Ringkasan Statistik DUK Interaktif --}}
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                <a href="{{ route('duk.index', array_merge(request()->except('filter'), ['filter' => $filter === 'dosen_pns' ? '' : 'dosen_pns'])) }}"
-                   class="bg-white rounded-xl border p-4 shadow-sm flex items-center justify-between transition hover:shadow-md hover:scale-[1.01] cursor-pointer {{ $filter === 'dosen_pns' ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/20' : 'border-blue-200' }}">
-                    <div>
-                        <span class="text-[11px] font-bold text-blue-600 uppercase tracking-wider">DUK Dosen PNS</span>
-                        <div class="text-xl font-black text-slate-800 mt-0.5">{{ $statistics['dosen_pns'] }} Orang</div>
-                        <p class="text-[10px] text-slate-500 mt-0.5">Tenaga Pendidik PNS</p>
-                    </div>
-                    <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-lg font-bold">
-                        👨‍🏫
-                    </div>
-                </a>
+            {{-- Ringkasan Statistik DUK Interaktif (Desain Enterprise Seragam) --}}
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+                <x-enterprise.stat-card
+                    title="DOSEN PNS"
+                    :value="$statistics['dosen_pns']"
+                    color="purple"
+                    icon="academic"
+                    :href="route('duk.index', array_merge(request()->except('filter'), ['filter' => $filter === 'dosen_pns' ? '' : 'dosen_pns']))"
+                    :active="$filter === 'dosen_pns'"
+                />
 
-                <a href="{{ route('duk.index', array_merge(request()->except('filter'), ['filter' => $filter === 'dosen_pppk' ? '' : 'dosen_pppk'])) }}"
-                   class="bg-white rounded-xl border p-4 shadow-sm flex items-center justify-between transition hover:shadow-md hover:scale-[1.01] cursor-pointer {{ $filter === 'dosen_pppk' ? 'border-indigo-500 ring-2 ring-indigo-500/20 bg-indigo-50/20' : 'border-indigo-200' }}">
-                    <div>
-                        <span class="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">DUK Dosen PPPK</span>
-                        <div class="text-xl font-black text-slate-800 mt-0.5">{{ $statistics['dosen_pppk'] }} Orang</div>
-                        <p class="text-[10px] text-slate-500 mt-0.5">Tenaga Pendidik PPPK</p>
-                    </div>
-                    <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center text-lg font-bold">
-                        🎓
-                    </div>
-                </a>
+                <x-enterprise.stat-card
+                    title="DOSEN PPPK"
+                    :value="$statistics['dosen_pppk']"
+                    color="purple"
+                    icon="academic"
+                    :href="route('duk.index', array_merge(request()->except('filter'), ['filter' => $filter === 'dosen_pppk' ? '' : 'dosen_pppk']))"
+                    :active="$filter === 'dosen_pppk'"
+                />
 
-                <a href="{{ route('duk.index', array_merge(request()->except('filter'), ['filter' => $filter === 'tendik_pns' ? '' : 'tendik_pns'])) }}"
-                   class="bg-white rounded-xl border p-4 shadow-sm flex items-center justify-between transition hover:shadow-md hover:scale-[1.01] cursor-pointer {{ $filter === 'tendik_pns' ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-emerald-200' }}">
-                    <div>
-                        <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">DUK Tendik PNS</span>
-                        <div class="text-xl font-black text-slate-800 mt-0.5">{{ $statistics['tendik_pns'] }} Orang</div>
-                        <p class="text-[10px] text-slate-500 mt-0.5">Tenaga Kependidikan PNS</p>
-                    </div>
-                    <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-lg font-bold">
-                        🧑‍💼
-                    </div>
-                </a>
+                <x-enterprise.stat-card
+                    title="TENDIK PNS"
+                    :value="$statistics['tendik_pns']"
+                    color="green"
+                    icon="briefcase"
+                    :href="route('duk.index', array_merge(request()->except('filter'), ['filter' => $filter === 'tendik_pns' ? '' : 'tendik_pns']))"
+                    :active="$filter === 'tendik_pns'"
+                />
 
-                <a href="{{ route('duk.index', array_merge(request()->except('filter'), ['filter' => $filter === 'tendik_pppk' ? '' : 'tendik_pppk'])) }}"
-                   class="bg-white rounded-xl border p-4 shadow-sm flex items-center justify-between transition hover:shadow-md hover:scale-[1.01] cursor-pointer {{ $filter === 'tendik_pppk' ? 'border-teal-500 ring-2 ring-teal-500/20 bg-teal-50/20' : 'border-teal-200' }}">
-                    <div>
-                        <span class="text-[11px] font-bold text-teal-600 uppercase tracking-wider">DUK Tendik PPPK</span>
-                        <div class="text-xl font-black text-slate-800 mt-0.5">{{ $statistics['tendik_pppk'] }} Orang</div>
-                        <p class="text-[10px] text-slate-500 mt-0.5">Tenaga Kependidikan PPPK</p>
-                    </div>
-                    <div class="w-10 h-10 bg-teal-50 text-teal-600 rounded-lg flex items-center justify-center text-lg font-bold">
-                        📑
-                    </div>
-                </a>
+                <x-enterprise.stat-card
+                    title="TENDIK PPPK"
+                    :value="$statistics['tendik_pppk']"
+                    color="amber"
+                    icon="user-group"
+                    :href="route('duk.index', array_merge(request()->except('filter'), ['filter' => $filter === 'tendik_pppk' ? '' : 'tendik_pppk']))"
+                    :active="$filter === 'tendik_pppk'"
+                />
 
-                <a href="{{ route('duk.index', array_merge(request()->except('filter'), ['filter' => $filter === 'phl' ? '' : 'phl'])) }}"
-                   class="bg-white rounded-xl border p-4 shadow-sm flex items-center justify-between transition hover:shadow-md hover:scale-[1.01] cursor-pointer {{ $filter === 'phl' ? 'border-amber-500 ring-2 ring-amber-500/20 bg-amber-50/20' : 'border-amber-200' }}">
-                    <div>
-                        <span class="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Daftar Urut PHL</span>
-                        <div class="text-xl font-black text-slate-800 mt-0.5">{{ $statistics['phl'] }} Orang</div>
-                        <p class="text-[10px] text-slate-500 mt-0.5">Pegawai Harian Lepas & Kontrak</p>
-                    </div>
-                    <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-lg font-bold">
-                        👷
-                    </div>
-                </a>
+                <x-enterprise.stat-card
+                    title="PHL / HONOR"
+                    :value="$statistics['phl']"
+                    color="red"
+                    icon="clipboard"
+                    :href="route('duk.index', array_merge(request()->except('filter'), ['filter' => $filter === 'phl' ? '' : 'phl']))"
+                    :active="$filter === 'phl'"
+                />
             </div>
 
             {{-- Card Utama DUK --}}
