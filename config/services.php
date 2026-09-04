@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'gas_drive' => [
+        'web_app_url'    => env('GAS_DRIVE_WEBAPP_URL'),
+        'api_key'        => env('GAS_DRIVE_API_KEY', 'SIKAP_UNRI_SECURE_KEY_2026'),
+        'root_folder_id' => env('GAS_DRIVE_ROOT_FOLDER_ID', '1Q1pGfeA2brd3KPmErFNiRnzwGnjw0gex'),
+    ],
+
 ];
