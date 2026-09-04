@@ -62,6 +62,64 @@
                     </div>
                 </div>
 
+                {{-- 📊 KARTU PERSENTASE KELENGKAPAN DATA PEGAWAI MANDIRI --}}
+                @if(isset($completenessData))
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-4">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl">📊</span>
+                                    <h3 class="font-bold text-base text-slate-800">Persentase Kelengkapan Data Profil Saya</h3>
+                                    <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $completenessData['badge_color'] }}">
+                                        {{ $completenessData['status_label'] }}
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-1">
+                                    Telah memenuhi {{ $completenessData['completed_count'] }} dari {{ $completenessData['total_count'] }} indikator kelengkapan data & berkas kepegawaian.
+                                </p>
+                            </div>
+                            <div class="text-right w-full md:w-auto shrink-0">
+                                <span class="text-3xl font-black text-slate-900">{{ $completenessData['score'] }}%</span>
+                            </div>
+                        </div>
+
+                        {{-- Progress Bar --}}
+                        <div class="w-full bg-slate-100 rounded-full h-3.5 p-0.5 overflow-hidden border border-slate-200 mb-4">
+                            <div class="{{ $completenessData['progress_color'] }} h-2.5 rounded-full transition-all duration-500 shadow-sm" style="width: {{ $completenessData['score'] }}%"></div>
+                        </div>
+
+                        {{-- Checklist Panduan Item yang Belum Dilengkapi --}}
+                        @if(count($completenessData['missing_items']) > 0)
+                            <div class="bg-amber-50/70 border border-amber-200/80 rounded-xl p-4">
+                                <h4 class="text-xs font-bold text-amber-900 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                                    <span>⚠️</span> Harap Lengkapi {{ count($completenessData['missing_items']) }} Item Berikut Agar Data Anda 100% Terverifikasi:
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                                    @foreach($completenessData['missing_items'] as $item)
+                                        <div class="flex items-center justify-between p-2.5 rounded-lg bg-white border border-amber-200/60 shadow-2xs">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-rose-500 text-sm font-bold">❌</span>
+                                                <span class="text-xs font-medium text-slate-700">{{ $item['label'] }}</span>
+                                            </div>
+                                            <a href="{{ $item['action_url'] }}" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-[11px] font-bold transition shrink-0">
+                                                {{ $item['action_label'] }} &rarr;
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @else
+                            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-emerald-900 flex items-center gap-3">
+                                <span class="text-2xl">🎉</span>
+                                <div>
+                                    <h4 class="font-bold text-xs">Selamat! Data Profil Anda Sudah 100% Lengkap.</h4>
+                                    <p class="text-[11px] text-emerald-700 mt-0.5">Seluruh berkas SK, identitas, dan riwayat karir Anda telah memenuhi standar kelengkapan dokumen SIMPEG.</p>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
                 {{-- 4 KARTU STATISTIK PROFIL SAYA --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                     
@@ -344,6 +402,110 @@
                         </div>
                     </a>
                 </div>
+
+                {{-- 📊 MONITORING KELENGKAPAN DATA PEGAWAI FAKULTAS (KHUSUS ADMIN & PIMPINAN) 📊 --}}
+                @if(isset($facultyCompleteness))
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-4 mb-4 gap-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">📊</span>
+                                <div>
+                                    <h3 class="text-lg font-bold text-slate-800">Monitoring Kelengkapan Data Pegawai Fakultas</h3>
+                                    <p class="text-xs text-slate-500">Evaluasi pemenuhan dokumen SK & data profil seluruh pegawai</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shrink-0">
+                                <span class="text-xs font-bold text-slate-600">Rata-Rata Fakultas:</span>
+                                <span class="text-xl font-black text-blue-600">{{ $facultyCompleteness['average_score'] }}%</span>
+                            </div>
+                        </div>
+
+                        {{-- Ringkasan 3 Kategori --}}
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-800">100% Lengkap (Sempurna)</span>
+                                    <h4 class="text-2xl font-black text-emerald-700 mt-1">{{ $facultyCompleteness['total_complete'] }} Pegawai</h4>
+                                </div>
+                                <div class="w-10 h-10 rounded-lg bg-emerald-200 text-emerald-800 flex items-center justify-center text-lg font-bold">💎</div>
+                            </div>
+                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-bold uppercase tracking-wider text-amber-800">Cukup Lengkap (50% - 99%)</span>
+                                    <h4 class="text-2xl font-black text-amber-700 mt-1">{{ $facultyCompleteness['total_moderate'] }} Pegawai</h4>
+                                </div>
+                                <div class="w-10 h-10 rounded-lg bg-amber-200 text-amber-800 flex items-center justify-center text-lg font-bold">🟡</div>
+                            </div>
+                            <div class="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-bold uppercase tracking-wider text-rose-800">Perlu Dilengkapi (&lt; 50%)</span>
+                                    <h4 class="text-2xl font-black text-rose-700 mt-1">{{ $facultyCompleteness['total_low'] }} Pegawai</h4>
+                                </div>
+                                <div class="w-10 h-10 rounded-lg bg-rose-200 text-rose-800 flex items-center justify-center text-lg font-bold">🔴</div>
+                            </div>
+                        </div>
+
+                        {{-- Tabel Monitoring Kelengkapan Pegawai --}}
+                        <div class="overflow-x-auto max-h-80 overflow-y-auto border border-slate-200 rounded-xl">
+                            <table class="w-full text-xs text-left text-slate-600">
+                                <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-[10px] sticky top-0 border-b border-slate-200 shadow-2xs">
+                                    <tr>
+                                        <th class="px-4 py-2.5">Nama Pegawai & NIP</th>
+                                        <th class="px-4 py-2.5">Unit Kerja / Jabatan</th>
+                                        <th class="px-4 py-2.5">Persentase</th>
+                                        <th class="px-4 py-2.5">Status Kelengkapan</th>
+                                        <th class="px-4 py-2.5 text-center">Item Belum Lengkap</th>
+                                        <th class="px-4 py-2.5 text-right">Aksi Detail</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    @foreach($facultyCompleteness['pegawai_scores'] as $item)
+                                        @php $peg = $item['pegawai']; @endphp
+                                        <tr class="hover:bg-slate-50 transition">
+                                            <td class="px-4 py-3">
+                                                <div class="font-bold text-slate-900">{{ $peg->nama_lengkap ?? $peg->nama }}</div>
+                                                <div class="text-[10px] text-slate-500 font-mono">NIP: {{ $peg->nip ?? '-' }}</div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="font-semibold text-slate-800">{{ $peg->jabatan?->nama_jabatan ?? '-' }}</div>
+                                                <div class="text-[10px] text-slate-500">{{ $peg->unitKerja?->nama_unit ?? '-' }}</div>
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-24 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+                                                        <div class="{{ $item['progress_color'] }} h-2 rounded-full" style="width: {{ $item['score'] }}%"></div>
+                                                    </div>
+                                                    <span class="font-black text-slate-900 text-xs">{{ $item['score'] }}%</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border {{ $item['badge_color'] }}">
+                                                    {{ $item['status_label'] }}
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-3 text-center">
+                                                @if($item['missing_count'] > 0)
+                                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-900">
+                                                        ⚠️ {{ $item['missing_count'] }} Item Belum
+                                                    </span>
+                                                @else
+                                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-900">
+                                                        ✅ Complete
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-3 text-right">
+                                                <a href="{{ route('pegawai.show', $peg->id) }}" class="inline-flex items-center px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold transition border border-slate-300">
+                                                    Lihat Profil &rarr;
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @endif
 
                 {{-- 🔔 BARIS 2: PUSAT REMINDER TRANSAKSI KEPEGAWAIAN (GRID 4 KOLOM) 🔔 --}}
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">

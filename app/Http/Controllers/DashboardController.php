@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pegawai;
 use App\Models\PengajuanCuti;
 use App\Services\DashboardService;
+use App\Services\PegawaiCompletenessService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -36,12 +37,27 @@ class DashboardController extends Controller
         ];
 
         // Jika user yang login adalah Pegawai Perorangan (Bukan Admin/Pimpinan)
-        if ($user->hasRole('pegawai') && $user->pegawai_id) {
-            $myPegawai = Pegawai::with(['unitKerja', 'jabatan', 'golongan', 'riwayatStrSip'])->find($user->pegawai_id);
-            $myCuti    = PengajuanCuti::where('pegawai_id', $user->pegawai_id)->latest()->take(5)->get();
-            
-            $data['myPegawai'] = $myPegawai;
-            $data['myCuti']    = $myCuti;
+        if ($user->hasRole('pegawai')) {
+            $pegawaiId = $user->pegawai_id;
+
+            if (!$pegawaiId) {
+                $p = Pegawai::where('email', $user->email)->orWhere('nip', $user->name)->first();
+                $pegawaiId = $p?->id;
+            }
+
+            if ($pegawaiId) {
+                $myPegawai = Pegawai::with(['unitKerja', 'jabatan', 'golongan', 'riwayatStrSip', 'riwayatPendidikan', 'riwayatDiklat', 'riwayatSkp'])->find($pegawaiId);
+                $myCuti    = PengajuanCuti::where('pegawai_id', $pegawaiId)->latest()->take(5)->get();
+
+                $data['myPegawai']        = $myPegawai;
+                $data['myCuti']           = $myCuti;
+                $data['completenessData'] = PegawaiCompletenessService::calculate($myPegawai);
+            }
+        }
+
+        // Jika user yang login adalah Admin / Pimpinan
+        if ($user->hasRole(['admin', 'pimpinan'])) {
+            $data['facultyCompleteness'] = PegawaiCompletenessService::getFacultyCompleteness();
         }
 
         return view('dashboard', $data);
