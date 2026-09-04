@@ -243,6 +243,7 @@ class PegawaiService
                     $fileIjazah = null;
                     if (isset($files['riwayat_pendidikan'][$index]['ijazah'])) {
                         $fileIjazah = $files['riwayat_pendidikan'][$index]['ijazah']->store('ijazah', 'local');
+                        $this->syncFileToDrive($pegawai, $files['riwayat_pendidikan'][$index]['ijazah'], 'IJAZAH ' . strtoupper($row['jenjang'] ?? 'S1'), '03_PENDIDIKAN_DIKLAT');
                     }
                     $pegawai->riwayatPendidikan()->create([
                         'jenjang'     => $row['jenjang'] ?? 'S1',
@@ -264,6 +265,7 @@ class PegawaiService
                     $fileSertifikat = null;
                     if (isset($files['riwayat_diklat'][$index]['file_sertifikat'])) {
                         $fileSertifikat = $files['riwayat_diklat'][$index]['file_sertifikat']->store('sertifikat_diklat', 'local');
+                        $this->syncFileToDrive($pegawai, $files['riwayat_diklat'][$index]['file_sertifikat'], 'SERTIFIKAT DIKLAT', '03_PENDIDIKAN_DIKLAT');
                     }
                     $tanggalMulai   = !empty($row['tanggal_mulai']) ? $row['tanggal_mulai'] : date('Y-m-d');
                     $tanggalSelesai = !empty($row['tanggal_selesai']) ? $row['tanggal_selesai'] : $tanggalMulai;
@@ -299,6 +301,7 @@ class PegawaiService
                     $fileSk = null;
                     if (isset($files['riwayat_jabatan'][$index]['file_sk'])) {
                         $fileSk = $files['riwayat_jabatan'][$index]['file_sk']->store('sk_jabatan', 'local');
+                        $this->syncFileToDrive($pegawai, $files['riwayat_jabatan'][$index]['file_sk'], 'SK JABATAN', '02_RIWAYAT_SK');
                     }
                     $status = ($lastActiveIndex !== null && $index === $lastActiveIndex) ? 'aktif' : 'nonaktif';
                     $pegawai->riwayatJabatan()->create([
@@ -331,6 +334,7 @@ class PegawaiService
                     $fileSk = null;
                     if (isset($files['riwayat_pangkat'][$index]['file_sk'])) {
                         $fileSk = $files['riwayat_pangkat'][$index]['file_sk']->store('sk_pangkat', 'local');
+                        $this->syncFileToDrive($pegawai, $files['riwayat_pangkat'][$index]['file_sk'], 'SK PANGKAT', '02_RIWAYAT_SK');
                     }
                     $status = ($lastActiveIndex !== null && $index === $lastActiveIndex) ? 'aktif' : 'nonaktif';
                     $pegawai->riwayatPangkat()->create([
@@ -478,6 +482,7 @@ class PegawaiService
                 $fileIjazah = null;
                 if (isset($files['riwayat_pendidikan'][$index]['ijazah'])) {
                     $fileIjazah = $files['riwayat_pendidikan'][$index]['ijazah']->store('ijazah', 'local');
+                    $this->syncFileToDrive($pegawaiUpdated, $files['riwayat_pendidikan'][$index]['ijazah'], 'IJAZAH ' . strtoupper($row['jenjang'] ?? 'S1'), '03_PENDIDIKAN_DIKLAT');
                 }
                 
                 $payload = [
@@ -510,6 +515,7 @@ class PegawaiService
                 $fileSertifikat = null;
                 if (isset($files['riwayat_diklat'][$index]['file_sertifikat'])) {
                     $fileSertifikat = $files['riwayat_diklat'][$index]['file_sertifikat']->store('sertifikat_diklat', 'local');
+                    $this->syncFileToDrive($pegawaiUpdated, $files['riwayat_diklat'][$index]['file_sertifikat'], 'SERTIFIKAT DIKLAT', '03_PENDIDIKAN_DIKLAT');
                 }
                 $tanggalMulai   = !empty($row['tanggal_mulai']) ? $row['tanggal_mulai'] : date('Y-m-d');
                 $tanggalSelesai = !empty($row['tanggal_selesai']) ? $row['tanggal_selesai'] : $tanggalMulai;
@@ -556,6 +562,7 @@ class PegawaiService
                 $fileSk = null;
                 if (isset($files['riwayat_jabatan'][$index]['file_sk'])) {
                     $fileSk = $files['riwayat_jabatan'][$index]['file_sk']->store('sk_jabatan', 'local');
+                    $this->syncFileToDrive($pegawaiUpdated, $files['riwayat_jabatan'][$index]['file_sk'], 'SK JABATAN', '02_RIWAYAT_SK');
                 }
 
                 $status = ($lastActiveJabatanIndex !== null && $index === $lastActiveJabatanIndex) ? 'aktif' : 'nonaktif';
@@ -601,6 +608,7 @@ class PegawaiService
                 $fileSk = null;
                 if (isset($files['riwayat_pangkat'][$index]['file_sk'])) {
                     $fileSk = $files['riwayat_pangkat'][$index]['file_sk']->store('sk_pangkat', 'local');
+                    $this->syncFileToDrive($pegawaiUpdated, $files['riwayat_pangkat'][$index]['file_sk'], 'SK PANGKAT', '02_RIWAYAT_SK');
                 }
 
                 $status = ($lastActivePangkatIndex !== null && $index === $lastActivePangkatIndex) ? 'aktif' : 'nonaktif';
