@@ -28,6 +28,7 @@ use App\Http\Controllers\RiwayatPublikasiController;
 use App\Http\Controllers\CloudSyncController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\JenisJabatanController;
+use App\Http\Controllers\AuditLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -179,6 +180,10 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/reports/kgb/{id}/pdf', [ReportController::class, 'exportKgbPdf'])->name('reports.kgb.pdf');
         Route::get('/reports/reminder/pdf', [ReportController::class, 'exportReminderPdf'])->name('reports.reminder.pdf');
         Route::get('/reports/reminder/excel', [ReportController::class, 'exportReminderExcel'])->name('reports.reminder.excel');
+
+        /* Audit Log & Monitoring Rekam Aktivitas System */
+        Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+        Route::post('/audit-logs/prune', [AuditLogController::class, 'prune'])->name('audit-logs.prune');
     });
 
     /* Fallback Route untuk modul yang masih tahap pengembangan / Coming Soon */

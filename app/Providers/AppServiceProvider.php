@@ -33,5 +33,22 @@ class AppServiceProvider extends ServiceProvider
         */
 
         Paginator::defaultView('vendor.pagination.enterprise');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Automatic Non-Blocking Audit Logging
+        |--------------------------------------------------------------------------
+        */
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, function ($event) {
+            if (isset($event->user) && $event->user instanceof \App\Models\User) {
+                \App\Services\ActivityLoggerService::logLogin($event->user);
+            }
+        });
+
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Logout::class, function ($event) {
+            if (isset($event->user) && $event->user instanceof \App\Models\User) {
+                \App\Services\ActivityLoggerService::logLogout($event->user);
+            }
+        });
     }
 }

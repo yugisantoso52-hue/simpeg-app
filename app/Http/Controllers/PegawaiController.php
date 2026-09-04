@@ -147,12 +147,19 @@ class PegawaiController extends Controller
 
     public function store(StorePegawaiRequest $request)
     {
-        DB::transaction(function () use ($request) {
-            $this->pegawaiService->createPegawai(
+        $newPegawai = null;
+        DB::transaction(function () use ($request, &$newPegawai) {
+            $newPegawai = $this->pegawaiService->createPegawai(
                 $request->validated(),
                 $request->allFiles()
             );
         });
+
+        \App\Services\ActivityLoggerService::logCreate(
+            'Pegawai',
+            $newPegawai->id ?? 0,
+            "Menambahkan pegawai baru: " . ($request->input('nama') ?? 'Pegawai Baru')
+        );
 
         $kategori = strtolower((string)$request->get('kategori', ''));
         $jenisPegawai = strtoupper((string)$request->get('jenis_pegawai', ''));
@@ -219,6 +226,12 @@ class PegawaiController extends Controller
             $request->allFiles()
         );
 
+        \App\Services\ActivityLoggerService::logUpdate(
+            'Pegawai',
+            $id,
+            "Memperbarui data profil pegawai: " . ($pegawai->nama ?? 'Pegawai')
+        );
+
         // Pengarahan halaman berdasarkan Role
         if (auth()->user()->hasRole('pegawai')) {
             return redirect()
@@ -254,6 +267,12 @@ class PegawaiController extends Controller
 
         // OTORISASI POLICY: Cek izin hapus data
         $this->authorize('delete', $pegawai);
+
+        \App\Services\ActivityLoggerService::logDelete(
+            'Pegawai',
+            $id,
+            "Menghapus data pegawai ID {$id}: " . ($pegawai->nama ?? '-')
+        );
 
         $this->pegawaiService->deletePegawai($id);
 

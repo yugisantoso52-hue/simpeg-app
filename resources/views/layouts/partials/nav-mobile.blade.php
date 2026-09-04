@@ -106,6 +106,9 @@
         <x-responsive-nav-link :href="route('jenis-jabatan.index')" :active="request()->routeIs('jenis-jabatan.*')">
             🏷️ Jenis Jabatan
         </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('audit-logs.index')" :active="request()->routeIs('audit-logs.*')">
+            🛡️ Audit Log System
+        </x-responsive-nav-link>
         <x-responsive-nav-link :href="route('backup.index')" :active="request()->routeIs('backup.*')">
             💾 Backup & Restore DB
         </x-responsive-nav-link>

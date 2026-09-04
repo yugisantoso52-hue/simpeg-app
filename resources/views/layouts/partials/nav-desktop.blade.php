@@ -140,6 +140,9 @@
             </x-dropdown-link>
 
             <div class="border-t border-gray-100 my-1"></div>
+            <x-dropdown-link :href="route('audit-logs.index')" class="{{ request()->routeIs('audit-logs.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                🛡️ Audit Log System
+            </x-dropdown-link>
             <x-dropdown-link :href="route('backup.index')" class="{{ request()->routeIs('backup.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                 💾 Backup & Restore DB
             </x-dropdown-link>
