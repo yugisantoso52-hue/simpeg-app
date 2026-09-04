@@ -17,6 +17,7 @@
                     $p = $myPegawai ?? Auth::user()->pegawai;
                 @endphp
 
+                @if($p)
                 {{-- Banner Ucapan Selamat Datang Personal --}}
                 <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 rounded-2xl p-6 shadow-lg text-white relative overflow-hidden">
                     <div class="absolute -right-10 -bottom-10 opacity-15 pointer-events-none">
@@ -40,7 +41,7 @@
                                 </div>
                                 <h1 class="text-xl md:text-2xl font-bold tracking-tight">Selamat Datang, {{ $p->nama_lengkap ?? $p->nama ?? Auth::user()->name }}!</h1>
                                 <p class="text-xs md:text-sm text-blue-100 mt-1">
-                                    NIP: <strong class="font-mono">{{ $p->nip ?? '-' }}</strong> | {{ $p->jabatan->nama_jabatan ?? 'Pegawai' }} - {{ $p->unitKerja->nama_unit ?? 'Fakultas Keperawatan' }}
+                                    NIP: <strong class="font-mono">{{ $p->nip ?? '-' }}</strong> | {{ $p->jabatan?->nama_jabatan ?? 'Pegawai' }} - {{ $p->unitKerja?->nama_unit ?? 'Fakultas Keperawatan' }}
                                 </p>
                             </div>
                         </div>
@@ -80,8 +81,8 @@
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
                             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Jabatan Terkini</span>
-                            <h4 class="text-base font-bold text-slate-800 mt-1 line-clamp-1" title="{{ $p->jabatan->nama_jabatan ?? '-' }}">{{ $p->jabatan->nama_jabatan ?? '-' }}</h4>
-                            <p class="text-xs text-slate-500 truncate mt-0.5" title="{{ $p->unitKerja->nama_unit ?? '-' }}">{{ $p->unitKerja->nama_unit ?? '-' }}</p>
+                            <h4 class="text-base font-bold text-slate-800 mt-1 line-clamp-1" title="{{ $p->jabatan?->nama_jabatan ?? '-' }}">{{ $p->jabatan?->nama_jabatan ?? '-' }}</h4>
+                            <p class="text-xs text-slate-500 truncate mt-0.5" title="{{ $p->unitKerja?->nama_unit ?? '-' }}">{{ $p->unitKerja?->nama_unit ?? '-' }}</p>
                         </div>
                         <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
                             🧑‍💼
@@ -92,7 +93,7 @@
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
                             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Pangkat / Golongan</span>
-                            <h4 class="text-base font-bold text-slate-800 mt-1">{{ $p->golongan->nama_golongan ?? '-' }}</h4>
+                            <h4 class="text-base font-bold text-slate-800 mt-1">{{ $p->golongan?->nama_golongan ?? '-' }}</h4>
                             <p class="text-xs text-slate-500 font-mono mt-0.5">TMT: {{ isset($p->tmt_pangkat_terakhir) ? \Carbon\Carbon::parse($p->tmt_pangkat_terakhir)->format('d-m-Y') : '-' }}</p>
                         </div>
                         <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
@@ -204,11 +205,17 @@
                                     <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-sky-200 text-sky-900">Legalitas</span>
                                 </div>
                                 @php
-                                    $activeStr = isset($p->riwayatStrSip) ? $p->riwayatStrSip->first() : null;
+                                    $activeStr = (isset($p->riwayatStrSip) && $p->riwayatStrSip->count() > 0) ? $p->riwayatStrSip->first() : null;
                                 @endphp
                                 <div class="text-xs space-y-1 text-slate-700">
-                                    <p>Jenis: <strong class="text-slate-900">{{ $activeStr->jenis_dokumen ?? 'STR/SIP' }}</strong></p>
-                                    <p>Berakhir: <strong class="font-mono text-sky-800">{{ isset($activeStr->tanggal_berakhir) ? \Carbon\Carbon::parse($activeStr->tanggal_berakhir)->format('d-m-Y') : ($activeStr->is_seumur_hidup ? 'Seumur Hidup' : '-') }}</strong></p>
+                                    <p>Jenis: <strong class="text-slate-900">{{ $activeStr?->jenis_dokumen ?? 'STR/SIP' }}</strong></p>
+                                    <p>Berakhir: <strong class="font-mono text-sky-800">
+                                        @if($activeStr)
+                                            {{ $activeStr->is_seumur_hidup ? 'Seumur Hidup' : (isset($activeStr->tanggal_berakhir) ? \Carbon\Carbon::parse($activeStr->tanggal_berakhir)->format('d-m-Y') : '-') }}
+                                        @else
+                                            -
+                                        @endif
+                                    </strong></p>
                                 </div>
                             </div>
                             <div class="mt-3 text-[11px] font-semibold text-sky-800 bg-sky-100 p-2 rounded-lg text-center">
@@ -269,6 +276,18 @@
                         </div>
                     @endif
                 </div>
+
+                @else
+                    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-amber-800">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">⚠️</span>
+                            <div>
+                                <h3 class="font-bold text-base">Profil Pegawai Belum Terhubung</h3>
+                                <p class="text-xs mt-1 text-amber-700">Akun pengguna Anda ({{ Auth::user()->email }}) belum terhubung dengan data profil pegawai. Silakan hubungi Administrator untuk menghubungkan NIP/ID Pegawai Anda.</p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
             @else
                 {{-- ========================================================================= --}}

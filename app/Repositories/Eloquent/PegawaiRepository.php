@@ -46,7 +46,7 @@ class PegawaiRepository extends BaseRepository implements PegawaiRepositoryInter
                             $q->where('jenis_pegawai', 'not like', '%PPPK%')
                               ->where(function ($sq) {
                                   $sq->where('status_asn', 'ASN')
-                                     ->orWhereRaw('CHAR_LENGTH(nip) = 18');
+                                     ->orWhereRaw('LENGTH(nip) = 18');
                               });
                         });
                         break;
@@ -54,7 +54,7 @@ class PegawaiRepository extends BaseRepository implements PegawaiRepositoryInter
                         $query->dosen()->where(function ($q) {
                             $q->where('jenis_pegawai', 'like', '%PPPK%')
                               ->orWhere('status_asn', 'PPPK')
-                              ->orWhereRaw('CHAR_LENGTH(nip) = 21');
+                              ->orWhereRaw('LENGTH(nip) = 21');
                         });
                         break;
                     case 'tendik':
@@ -88,7 +88,7 @@ class PegawaiRepository extends BaseRepository implements PegawaiRepositoryInter
                         $query->where(function ($q) {
                             $q->where('jenis_pegawai', 'PPPK')
                               ->orWhere('status_asn', 'PPPK')
-                              ->orWhereRaw('CHAR_LENGTH(nip) = 21');
+                              ->orWhereRaw('LENGTH(nip) = 21');
                         });
                         break;
                     case 'phl':
