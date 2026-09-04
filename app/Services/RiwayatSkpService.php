@@ -48,7 +48,23 @@ class RiwayatSkpService
                 $data['file_evaluasi_skp'] = $fileEvaluasi->store('pegawai/skp', 'local');
             }
 
-            return $this->repository->create($data);
+            $skp = $this->repository->create($data);
+
+            if (!empty($data['pegawai_id'])) {
+                $pegawai = Pegawai::find($data['pegawai_id']);
+                if ($pegawai) {
+                    $tahun = $data['tahun'] ?? date('Y');
+                    $driveService = app(GoogleDriveGasService::class);
+                    if ($fileRencana) {
+                        $driveService->uploadDokumen($pegawai, $fileRencana, "SKP_RENCANA_{$tahun}", '04_KINERJA_PENILAIAN', "Form SKP Rencana Tahun {$tahun}");
+                    }
+                    if ($fileEvaluasi) {
+                        $driveService->uploadDokumen($pegawai, $fileEvaluasi, "SKP_EVALUASI_{$tahun}", '04_KINERJA_PENILAIAN', "Form SKP Evaluasi Tahun {$tahun}");
+                    }
+                }
+            }
+
+            return $skp;
         });
     }
 
@@ -71,7 +87,22 @@ class RiwayatSkpService
                 $data['file_evaluasi_skp'] = $fileEvaluasi->store('pegawai/skp', 'local');
             }
 
-            return $this->repository->update($id, $data);
+            $updated = $this->repository->update($id, $data);
+
+            $pegawaiId = $data['pegawai_id'] ?? $updated->pegawai_id;
+            $pegawai = Pegawai::find($pegawaiId);
+            if ($pegawai) {
+                $tahun = $data['tahun'] ?? $updated->tahun ?? date('Y');
+                $driveService = app(GoogleDriveGasService::class);
+                if ($fileRencana) {
+                    $driveService->uploadDokumen($pegawai, $fileRencana, "SKP_RENCANA_{$tahun}", '04_KINERJA_PENILAIAN', "Update SKP Rencana Tahun {$tahun}");
+                }
+                if ($fileEvaluasi) {
+                    $driveService->uploadDokumen($pegawai, $fileEvaluasi, "SKP_EVALUASI_{$tahun}", '04_KINERJA_PENILAIAN', "Update SKP Evaluasi Tahun {$tahun}");
+                }
+            }
+
+            return $updated;
         });
     }
 

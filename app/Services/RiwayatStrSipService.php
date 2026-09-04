@@ -67,7 +67,17 @@ class RiwayatStrSipService
                 }
             }
 
-            return $this->repository->create($data);
+            $strSip = $this->repository->create($data);
+
+            if ($file && !empty($data['pegawai_id'])) {
+                $pegawai = Pegawai::find($data['pegawai_id']);
+                if ($pegawai) {
+                    $jenisDok = 'STR_SIP_' . strtoupper($data['jenis'] ?? 'PROFESI');
+                    app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, $jenisDok, '01_DOKUMEN_UTAMA', 'Auto-sync dari Legalitas STR / SIP');
+                }
+            }
+
+            return $strSip;
         });
     }
 
@@ -98,7 +108,18 @@ class RiwayatStrSipService
                 }
             }
 
-            return $this->repository->update($id, $data);
+            $updated = $this->repository->update($id, $data);
+
+            if ($file) {
+                $pegawaiId = $data['pegawai_id'] ?? $updated->pegawai_id;
+                $pegawai = Pegawai::find($pegawaiId);
+                if ($pegawai) {
+                    $jenisDok = 'STR_SIP_' . strtoupper($data['jenis'] ?? 'PROFESI');
+                    app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, $jenisDok, '01_DOKUMEN_UTAMA', 'Auto-sync update dari Legalitas STR / SIP');
+                }
+            }
+
+            return $updated;
         });
     }
 

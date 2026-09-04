@@ -52,7 +52,17 @@ class RiwayatPenghargaanService
         if ($file) {
             $data['file_sk'] = $this->uploadFile($file);
         }
-        return $this->repository->createRiwayat($data);
+        $penghargaan = $this->repository->createRiwayat($data);
+
+        if ($file && !empty($data['pegawai_id'])) {
+            $pegawai = Pegawai::find($data['pegawai_id']);
+            if ($pegawai) {
+                $namaPenghargaan = strtoupper(str_replace(' ', '_', $data['nama_penghargaan'] ?? 'PENGHARGAAN'));
+                app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, "SK_PENGHARGAAN_{$namaPenghargaan}", '05_DOKUMEN_LAINNYA', 'Riwayat Penghargaan');
+            }
+        }
+
+        return $penghargaan;
     }
 
     public function update(int $id, array $data, ?UploadedFile $file = null): RiwayatPenghargaan
@@ -66,7 +76,18 @@ class RiwayatPenghargaanService
             unset($data['file_sk']);
         }
 
-        return $this->repository->updateRiwayat($id, $data);
+        $updated = $this->repository->updateRiwayat($id, $data);
+
+        if ($file) {
+            $pegawaiId = $data['pegawai_id'] ?? $updated->pegawai_id;
+            $pegawai = Pegawai::find($pegawaiId);
+            if ($pegawai) {
+                $namaPenghargaan = strtoupper(str_replace(' ', '_', $data['nama_penghargaan'] ?? $updated->nama_penghargaan ?? 'PENGHARGAAN'));
+                app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, "SK_PENGHARGAAN_{$namaPenghargaan}", '05_DOKUMEN_LAINNYA', 'Update Riwayat Penghargaan');
+            }
+        }
+
+        return $updated;
     }
 
     public function delete(int $id): bool

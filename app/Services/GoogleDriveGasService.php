@@ -64,7 +64,7 @@ class GoogleDriveGasService
     }
 
     /**
-     * Upload Dokumen Pegawai ke Google Drive via GAS Proxy & Simpan Record ArsipDokumen
+     * Upload Dokumen Pegawai ke Google Drive via GAS Proxy & Simpan Record ArsipDokumen secara Non-Blocking (Background Sync)
      */
     public function uploadDokumen(
         Pegawai $pegawai,
@@ -91,7 +91,7 @@ class GoogleDriveGasService
         $kategoriFolder    = $this->resolveKategoriFolder($pegawai);
         $namaFolderPegawai = $this->resolvePegawaiFolderName($pegawai);
 
-        // Buat DRAFT Record di DB Database
+        // 1. Buat DRAFT Record di DB Database (PENDING)
         $arsip = ArsipDokumen::create([
             'sync_uuid'            => (string) Str::uuid(),
             'pegawai_sync_uuid'    => $pegawai->sync_uuid ?? (string) Str::uuid(),
@@ -111,52 +111,62 @@ class GoogleDriveGasService
             'is_active'            => true,
         ]);
 
-        // Jika URL WebApp GAS sudah dikonfigurasi, lakukan sync langsung ke Google Drive
+        // 2. Jika URL WebApp GAS dikonfigurasi, lakukan sync ke Google Drive via Shutdown Function / FastCGI Finish Request
         if (!empty($this->webAppUrl) && filter_var($this->webAppUrl, FILTER_VALIDATE_URL)) {
-            try {
-                $payload = [
-                    'api_key'              => $this->apiKey,
-                    'root_folder_id'       => $this->rootFolderId,
-                    'kategori_kepegawaian' => $kategoriFolder,
-                    'nama_folder_pegawai'  => $namaFolderPegawai,
-                    'sub_folder_dokumen'   => $subFolderCategory,
-                    'nama_file'            => $namaFileSistem,
-                    'mime_type'            => $mimeType,
-                    'file_base64'          => base64_encode($fileBytes),
-                ];
+            $webAppUrl    = $this->webAppUrl;
+            $apiKey       = $this->apiKey;
+            $rootFolderId = $this->rootFolderId;
 
-                $response = Http::timeout(60)
-                    ->withHeaders(['Content-Type' => 'application/json'])
-                    ->post($this->webAppUrl, $payload);
+            register_shutdown_function(function () use ($arsip, $webAppUrl, $apiKey, $rootFolderId, $kategoriFolder, $namaFolderPegawai, $subFolderCategory, $namaFileSistem, $mimeType, $fileBytes) {
+                if (function_exists('fastcgi_finish_request')) {
+                    @fastcgi_finish_request();
+                }
 
-                if ($response->successful()) {
-                    $json = $response->json();
-                    if (isset($json['success']) && $json['success'] === true) {
-                        $arsip->update([
-                            'google_drive_file_id'   => $json['file_id'] ?? null,
-                            'google_drive_folder_id' => $json['folder_id'] ?? null,
-                            'status_sync'            => 'SYNCED',
-                            'sync_error'             => null,
-                        ]);
+                try {
+                    $payload = [
+                        'api_key'              => $apiKey,
+                        'root_folder_id'       => $rootFolderId,
+                        'kategori_kepegawaian' => $kategoriFolder,
+                        'nama_folder_pegawai'  => $namaFolderPegawai,
+                        'sub_folder_dokumen'   => $subFolderCategory,
+                        'nama_file'            => $namaFileSistem,
+                        'mime_type'            => $mimeType,
+                        'file_base64'          => base64_encode($fileBytes),
+                    ];
+
+                    $response = Http::timeout(60)
+                        ->withHeaders(['Content-Type' => 'application/json'])
+                        ->post($webAppUrl, $payload);
+
+                    if ($response->successful()) {
+                        $json = $response->json();
+                        if (isset($json['success']) && $json['success'] === true) {
+                            $arsip->update([
+                                'google_drive_file_id'   => $json['file_id'] ?? null,
+                                'google_drive_folder_id' => $json['folder_id'] ?? null,
+                                'status_sync'            => 'SYNCED',
+                                'sync_error'             => null,
+                            ]);
+                        } else {
+                            $arsip->update([
+                                'status_sync' => 'FAILED',
+                                'sync_error'  => $json['message'] ?? 'Remote GAS returned unsuccessful status',
+                            ]);
+                        }
                     } else {
                         $arsip->update([
                             'status_sync' => 'FAILED',
-                            'sync_error'  => $json['message'] ?? 'Remote GAS returned unsuccessful status',
+                            'sync_error'  => 'HTTP Response Error: ' . $response->status(),
                         ]);
                     }
-                } else {
+                } catch (\Exception $e) {
+                    Log::error('GAS Upload Failed for Arsip ID ' . $arsip->id . ': ' . $e->getMessage());
                     $arsip->update([
                         'status_sync' => 'FAILED',
-                        'sync_error'  => 'HTTP Response Error: ' . $response->status(),
+                        'sync_error'  => $e->getMessage(),
                     ]);
                 }
-            } catch (\Exception $e) {
-                Log::error('GAS Upload Failed: ' . $e->getMessage());
-                $arsip->update([
-                    'status_sync' => 'FAILED',
-                    'sync_error'  => $e->getMessage(),
-                ]);
-            }
+            });
         }
 
         return $arsip;

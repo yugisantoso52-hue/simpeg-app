@@ -67,6 +67,10 @@ class MutasiPegawaiController extends Controller
                     'unit_kerja_id' => $request->unit_baru_id,
                     'jabatan_id'    => $request->jabatan_baru_id,
                 ]);
+
+                if ($request->hasFile('file_sk')) {
+                    app(\App\Services\GoogleDriveGasService::class)->uploadDokumen($pegawai, $request->file('file_sk'), 'SK_MUTASI', '02_RIWAYAT_SK', 'Riwayat Mutasi Pegawai');
+                }
             });
 
             return redirect()
@@ -133,6 +137,10 @@ class MutasiPegawaiController extends Controller
                     'unit_kerja_id' => $request->unit_baru_id,
                     'jabatan_id'    => $request->jabatan_baru_id,
                 ]);
+
+                if ($request->hasFile('file_sk')) {
+                    app(\App\Services\GoogleDriveGasService::class)->uploadDokumen($pegawai, $request->file('file_sk'), 'SK_MUTASI', '02_RIWAYAT_SK', 'Update Riwayat Mutasi Pegawai');
+                }
             });
 
             return redirect()

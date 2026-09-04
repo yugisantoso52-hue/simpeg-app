@@ -53,6 +53,20 @@ class TugasBelajarService
             // Sinkronisasi status_pegawai
             $this->syncPegawaiStatus((int)$data['pegawai_id']);
 
+            if (!empty($data['pegawai_id'])) {
+                $pegawai = Pegawai::find($data['pegawai_id']);
+                if ($pegawai) {
+                    $jenisPengembangan = strtoupper(str_replace(' ', '_', $data['jenis_pengembangan'] ?? 'TUBEL_IBEL'));
+                    $driveService = app(GoogleDriveGasService::class);
+                    if ($fileSk) {
+                        $driveService->uploadDokumen($pegawai, $fileSk, "SK_{$jenisPengembangan}", '03_PENDIDIKAN_DIKLAT', "SK {$data['jenis_pengembangan']}");
+                    }
+                    if ($fileProgress) {
+                        $driveService->uploadDokumen($pegawai, $fileProgress, "KHS_LAPORAN_PROGRESS", '03_PENDIDIKAN_DIKLAT', "Laporan Progress KHS {$data['jenis_pengembangan']}");
+                    }
+                }
+            }
+
             return $tugasBelajar;
         });
     }
@@ -80,6 +94,19 @@ class TugasBelajarService
 
             // Sinkronisasi status_pegawai
             $this->syncPegawaiStatus((int)$data['pegawai_id']);
+
+            $pegawaiId = $data['pegawai_id'] ?? $tugasBelajar->pegawai_id;
+            $pegawai = Pegawai::find($pegawaiId);
+            if ($pegawai) {
+                $jenis = strtoupper(str_replace(' ', '_', $data['jenis_pengembangan'] ?? $tugasBelajar->jenis_pengembangan ?? 'TUBEL_IBEL'));
+                $driveService = app(GoogleDriveGasService::class);
+                if ($fileSk) {
+                    $driveService->uploadDokumen($pegawai, $fileSk, "SK_{$jenis}", '03_PENDIDIKAN_DIKLAT', "Update SK {$jenis}");
+                }
+                if ($fileProgress) {
+                    $driveService->uploadDokumen($pegawai, $fileProgress, "KHS_LAPORAN_PROGRESS", '03_PENDIDIKAN_DIKLAT', "Update Laporan Progress KHS");
+                }
+            }
 
             return $tugasBelajar;
         });

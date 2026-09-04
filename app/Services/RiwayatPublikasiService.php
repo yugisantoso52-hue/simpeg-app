@@ -52,7 +52,16 @@ class RiwayatPublikasiService
         if ($file) {
             $data['file_publikasi'] = $this->uploadFile($file);
         }
-        return $this->repository->createRiwayat($data);
+        $publikasi = $this->repository->createRiwayat($data);
+
+        if ($file && !empty($data['pegawai_id'])) {
+            $pegawai = Pegawai::find($data['pegawai_id']);
+            if ($pegawai) {
+                app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, 'PUBLIKASI_ILMIAH', '05_DOKUMEN_LAINNYA', 'Dokumen Publikasi Ilmiah');
+            }
+        }
+
+        return $publikasi;
     }
 
     public function update(int $id, array $data, ?UploadedFile $file = null): RiwayatPublikasi
@@ -66,7 +75,17 @@ class RiwayatPublikasiService
             unset($data['file_publikasi']);
         }
 
-        return $this->repository->updateRiwayat($id, $data);
+        $updated = $this->repository->updateRiwayat($id, $data);
+
+        if ($file) {
+            $pegawaiId = $data['pegawai_id'] ?? $updated->pegawai_id;
+            $pegawai = Pegawai::find($pegawaiId);
+            if ($pegawai) {
+                app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, 'PUBLIKASI_ILMIAH', '05_DOKUMEN_LAINNYA', 'Update Dokumen Publikasi Ilmiah');
+            }
+        }
+
+        return $updated;
     }
 
     public function delete(int $id): bool

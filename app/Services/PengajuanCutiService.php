@@ -99,7 +99,14 @@ class PengajuanCutiService
             $data['jumlah_hari'] = $jumlahHari;
             $data['status']      = 'Menunggu Persetujuan';
 
-            return $this->repository->create($data);
+            $cuti = $this->repository->create($data);
+
+            if ($file && $pegawai) {
+                $jenisCuti = strtoupper(str_replace(' ', '_', $data['jenis_cuti'] ?? 'CUTI'));
+                app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, "SURAT_LAMPIRAN_{$jenisCuti}", '05_DOKUMEN_LAINNYA', "Permohonan {$data['jenis_cuti']}");
+            }
+
+            return $cuti;
         });
     }
 
