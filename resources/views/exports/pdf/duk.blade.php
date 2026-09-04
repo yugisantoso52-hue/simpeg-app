@@ -43,10 +43,10 @@
     </div>
 
     {{-- ========================================================================= --}}
-    {{-- I. DAFTAR URUT KEPANGKATAN DOSEN / TENAGA PENDIDIK                        --}}
+    {{-- I. DAFTAR URUT KEPANGKATAN DOSEN PNS                                      --}}
     {{-- ========================================================================= --}}
     <div class="section-header">
-        I. DAFTAR URUT KEPANGKATAN (DUK) DOSEN / TENAGA PENDIDIK ({{ count($dosenList) }} ORANG)
+        I. DAFTAR URUT KEPANGKATAN (DUK) DOSEN PNS ({{ count($dosenPnsList) }} ORANG)
     </div>
     <table>
         <thead>
@@ -66,7 +66,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($dosenList as $row)
+            @forelse($dosenPnsList as $row)
                 @php
                     $tglMasuk = $row->tanggal_masuk ? $row->tanggal_masuk->format('d/m/Y') : '-';
                     $tmtPangkatLama  = $row->tmt_pangkat_terakhir ? $row->tmt_pangkat_terakhir->format('d/m/Y') : '-';
@@ -105,17 +105,86 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="12" class="text-center">Tidak ada data Dosen.</td>
+                    <td colspan="12" class="text-center">Tidak ada data Dosen PNS.</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
 
     {{-- ========================================================================= --}}
-    {{-- II. DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK)                  --}}
+    {{-- II. DAFTAR URUT KEPANGKATAN DOSEN PPPK                                    --}}
+    {{-- ========================================================================= --}}
+    <div class="section-header" style="border-left-color: #0284c7;">
+        II. DAFTAR URUT KEPANGKATAN (DUK) DOSEN PPPK ({{ count($dosenPppkList) }} ORANG)
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th width="2%">NO</th>
+                <th width="14%">NAMA / NIP / NIDN</th>
+                <th width="9%">GOL / PANGKAT</th>
+                <th width="12%">JABATAN</th>
+                <th width="10%">UNIT KERJA</th>
+                <th width="7%">PENDIDIKAN</th>
+                <th width="6%">TGL MASUK</th>
+                <th width="10%">TMT PANGKAT<br>(Lama / Depan)</th>
+                <th width="10%">TMT KGB<br>(Lama / Depan)</th>
+                <th width="7%">MASA KERJA</th>
+                <th width="7%">SATYALANCANA</th>
+                <th width="6%">STATUS</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($dosenPppkList as $row)
+                @php
+                    $tglMasuk = $row->tanggal_masuk ? $row->tanggal_masuk->format('d/m/Y') : '-';
+                    $tmtPangkatLama  = $row->tmt_pangkat_terakhir ? $row->tmt_pangkat_terakhir->format('d/m/Y') : '-';
+                    $tmtPangkatDepan = $row->kp_berikutnya_kalkulasi ? $row->kp_berikutnya_kalkulasi->format('d/m/Y') : '-';
+                    $tmtKgbLama      = $row->tmt_kgb_terakhir ? $row->tmt_kgb_terakhir->format('d/m/Y') : '-';
+                    $tmtKgbDepan     = $row->kgb_berikutnya_kalkulasi ? $row->kgb_berikutnya_kalkulasi->format('d/m/Y') : '-';
+                @endphp
+                <tr>
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td>
+                        <strong>{{ $row->nama_lengkap ?? $row->nama }}</strong><br>
+                        NIP. {{ $row->nip ?? '-' }}
+                        @if($row->nidn_nuptk)
+                            <br><small style="color: #0369a1;">NIDN: {{ $row->nidn_nuptk }}</small>
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        <strong>{{ $row->golongan->nama_golongan ?? '-' }}</strong><br>
+                        <small>{{ $row->golongan->nama_pangkat ?? '' }}</small>
+                    </td>
+                    <td>{{ $row->jabatan->nama_jabatan ?? '-' }}</td>
+                    <td>{{ $row->unitKerja->nama_unit ?? '-' }}</td>
+                    <td class="text-center">{{ $row->pendidikan_tampil }}</td>
+                    <td class="text-center">{{ $tglMasuk }}</td>
+                    <td class="text-center">
+                        {{ $tmtPangkatLama }}<br>
+                        <strong>{{ $tmtPangkatDepan }}</strong>
+                    </td>
+                    <td class="text-center">
+                        {{ $tmtKgbLama }}<br>
+                        <strong>{{ $tmtKgbDepan }}</strong>
+                    </td>
+                    <td class="text-center">{{ $row->masa_kerja_formatted }}</td>
+                    <td class="text-center">{{ $row->satyalancana_tampil }}</td>
+                    <td class="text-center">{{ $row->status_pegawai ?? 'Aktif' }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="12" class="text-center">Tidak ada data Dosen PPPK.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    {{-- ========================================================================= --}}
+    {{-- III. DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK) PNS             --}}
     {{-- ========================================================================= --}}
     <div class="section-header" style="border-left-color: #059669;">
-        II. DAFTAR URUT KEPANGKATAN (DUK) TENAGA KEPENDIDIKAN / TENDIK ({{ count($tendikList) }} ORANG)
+        III. DAFTAR URUT KEPANGKATAN (DUK) TENAGA KEPENDIDIKAN / TENDIK PNS ({{ count($tendikPnsList) }} ORANG)
     </div>
     <table>
         <thead>
@@ -135,7 +204,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($tendikList as $row)
+            @forelse($tendikPnsList as $row)
                 @php
                     $tglMasuk = $row->tanggal_masuk ? $row->tanggal_masuk->format('d/m/Y') : '-';
                     $tmtPangkatLama  = $row->tmt_pangkat_terakhir ? $row->tmt_pangkat_terakhir->format('d/m/Y') : '-';
@@ -171,17 +240,83 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="12" class="text-center">Tidak ada data Tendik.</td>
+                    <td colspan="12" class="text-center">Tidak ada data Tendik PNS.</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
 
     {{-- ========================================================================= --}}
-    {{-- III. DAFTAR URUT PEGAWAI HARIAN LEPAS (PHL) & KONTRAK                     --}}
+    {{-- IV. DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK) PPPK            --}}
+    {{-- ========================================================================= --}}
+    <div class="section-header" style="border-left-color: #0d9488;">
+        IV. DAFTAR URUT KEPANGKATAN (DUK) TENAGA KEPENDIDIKAN / TENDIK PPPK ({{ count($tendikPppkList) }} ORANG)
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th width="2%">NO</th>
+                <th width="14%">NAMA / NIP</th>
+                <th width="9%">GOL / PANGKAT</th>
+                <th width="12%">JABATAN</th>
+                <th width="10%">UNIT KERJA</th>
+                <th width="7%">PENDIDIKAN</th>
+                <th width="6%">TGL MASUK</th>
+                <th width="10%">TMT PANGKAT<br>(Lama / Depan)</th>
+                <th width="10%">TMT KGB<br>(Lama / Depan)</th>
+                <th width="7%">MASA KERJA</th>
+                <th width="7%">SATYALANCANA</th>
+                <th width="6%">STATUS</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($tendikPppkList as $row)
+                @php
+                    $tglMasuk = $row->tanggal_masuk ? $row->tanggal_masuk->format('d/m/Y') : '-';
+                    $tmtPangkatLama  = $row->tmt_pangkat_terakhir ? $row->tmt_pangkat_terakhir->format('d/m/Y') : '-';
+                    $tmtPangkatDepan = $row->kp_berikutnya_kalkulasi ? $row->kp_berikutnya_kalkulasi->format('d/m/Y') : '-';
+                    $tmtKgbLama      = $row->tmt_kgb_terakhir ? $row->tmt_kgb_terakhir->format('d/m/Y') : '-';
+                    $tmtKgbDepan     = $row->kgb_berikutnya_kalkulasi ? $row->kgb_berikutnya_kalkulasi->format('d/m/Y') : '-';
+                @endphp
+                <tr>
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td>
+                        <strong>{{ $row->nama_lengkap ?? $row->nama }}</strong><br>
+                        NIP. {{ $row->nip ?? '-' }}
+                    </td>
+                    <td class="text-center">
+                        <strong>{{ $row->golongan->nama_golongan ?? '-' }}</strong><br>
+                        <small>{{ $row->golongan->nama_pangkat ?? '' }}</small>
+                    </td>
+                    <td>{{ $row->jabatan->nama_jabatan ?? '-' }}</td>
+                    <td>{{ $row->unitKerja->nama_unit ?? '-' }}</td>
+                    <td class="text-center">{{ $row->pendidikan_tampil }}</td>
+                    <td class="text-center">{{ $tglMasuk }}</td>
+                    <td class="text-center">
+                        {{ $tmtPangkatLama }}<br>
+                        <strong>{{ $tmtPangkatDepan }}</strong>
+                    </td>
+                    <td class="text-center">
+                        {{ $tmtKgbLama }}<br>
+                        <strong>{{ $tmtKgbDepan }}</strong>
+                    </td>
+                    <td class="text-center">{{ $row->masa_kerja_formatted }}</td>
+                    <td class="text-center">{{ $row->satyalancana_tampil }}</td>
+                    <td class="text-center">{{ $row->status_pegawai ?? 'Aktif' }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="12" class="text-center">Tidak ada data Tendik PPPK.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    {{-- ========================================================================= --}}
+    {{-- V. DAFTAR URUT PEGAWAI HARIAN LEPAS (PHL) & KONTRAK                      --}}
     {{-- ========================================================================= --}}
     <div class="section-header" style="border-left-color: #d97706;">
-        III. DAFTAR URUT PEGAWAI HARIAN LEPAS (PHL) & TENAGA KONTRAK ({{ count($phlList) }} ORANG)
+        V. DAFTAR URUT PEGAWAI HARIAN LEPAS (PHL) & TENAGA KONTRAK ({{ count($phlList) }} ORANG)
     </div>
     <table>
         <thead>
@@ -227,23 +362,31 @@
     </table>
 
     {{-- REKAPITULASI TOTAL --}}
-    <div class="rekap-container">
+    <div class="rekap-container" style="width: 45%;">
         <div class="rekap-title">REKAPITULASI DUK PEGAWAI:</div>
         <table>
             <thead>
                 <tr>
                     <th>KATEGORI PEGAWAI</th>
-                    <th width="40%">JUMLAH</th>
+                    <th width="35%">JUMLAH</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>Dosen (Tenaga Pendidik)</td>
-                    <td class="text-center font-bold">{{ count($dosenList) }} Orang</td>
+                    <td>Dosen PNS (Tenaga Pendidik PNS)</td>
+                    <td class="text-center font-bold">{{ count($dosenPnsList) }} Orang</td>
                 </tr>
                 <tr>
-                    <td>Tendik (Tenaga Kependidikan)</td>
-                    <td class="text-center font-bold">{{ count($tendikList) }} Orang</td>
+                    <td>Dosen PPPK (Tenaga Pendidik PPPK)</td>
+                    <td class="text-center font-bold">{{ count($dosenPppkList) }} Orang</td>
+                </tr>
+                <tr>
+                    <td>Tendik PNS (Tenaga Kependidikan PNS)</td>
+                    <td class="text-center font-bold">{{ count($tendikPnsList) }} Orang</td>
+                </tr>
+                <tr>
+                    <td>Tendik PPPK (Tenaga Kependidikan PPPK)</td>
+                    <td class="text-center font-bold">{{ count($tendikPppkList) }} Orang</td>
                 </tr>
                 <tr>
                     <td>PHL & Tenaga Kontrak</td>
@@ -251,7 +394,7 @@
                 </tr>
                 <tr style="background-color: #f1f5f9; font-weight: bold;">
                     <td>TOTAL KESELURUHAN</td>
-                    <td class="text-center">{{ count($dosenList) + count($tendikList) + count($phlList) }} Orang</td>
+                    <td class="text-center">{{ count($dosenPnsList) + count($dosenPppkList) + count($tendikPnsList) + count($tendikPppkList) + count($phlList) }} Orang</td>
                 </tr>
             </tbody>
         </table>

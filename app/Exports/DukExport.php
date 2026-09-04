@@ -12,16 +12,43 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class DukExport implements FromCollection, WithMapping, WithHeadings, ShouldAutoSize, WithStyles
 {
-    protected $dosenList;
-    protected $tendikList;
+    protected $dosenPnsList;
+    protected $dosenPppkList;
+    protected $tendikPnsList;
+    protected $tendikPppkList;
     protected $phlList;
     protected $headerRows = [];
 
     public function __construct(?string $search = null)
     {
-        $dosenQuery = Pegawai::dosen()->with(['golongan', 'unitKerja', 'jabatan']);
-        $tendikQuery = Pegawai::tendik()->with(['golongan', 'unitKerja', 'jabatan']);
-        $phlQuery = Pegawai::phl()->with(['golongan', 'unitKerja', 'jabatan']);
+        $baseQuery = function($type, $asnType = null) {
+            $q = Pegawai::$type()->with(['golongan', 'unitKerja', 'jabatan']);
+            if ($asnType === 'pns') {
+                $q->where(function ($sq) {
+                    $sq->where('jenis_pegawai', 'PNS')
+                       ->orWhere(function ($ssq) {
+                           $ssq->where('jenis_pegawai', 'not like', '%PPPK%')
+                               ->where(function ($sssq) {
+                                   $sssq->where('status_asn', 'ASN')
+                                        ->orWhereRaw('LENGTH(nip) = 18');
+                               });
+                       });
+                });
+            } elseif ($asnType === 'pppk') {
+                $q->where(function ($sq) {
+                    $sq->where('jenis_pegawai', 'like', '%PPPK%')
+                       ->orWhere('status_asn', 'PPPK')
+                       ->orWhereRaw('LENGTH(nip) = 21');
+                });
+            }
+            return $q;
+        };
+
+        $dosenPnsQuery   = $baseQuery('dosen', 'pns');
+        $dosenPppkQuery  = $baseQuery('dosen', 'pppk');
+        $tendikPnsQuery  = $baseQuery('tendik', 'pns');
+        $tendikPppkQuery = $baseQuery('tendik', 'pppk');
+        $phlQuery        = Pegawai::phl()->with(['golongan', 'unitKerja', 'jabatan']);
 
         if ($search) {
             $filterSearch = function($q) use ($search) {
@@ -31,8 +58,10 @@ class DukExport implements FromCollection, WithMapping, WithHeadings, ShouldAuto
                        ->orWhere('nidn_nuptk', 'like', "%{$search}%");
                 });
             };
-            $dosenQuery->where($filterSearch);
-            $tendikQuery->where($filterSearch);
+            $dosenPnsQuery->where($filterSearch);
+            $dosenPppkQuery->where($filterSearch);
+            $tendikPnsQuery->where($filterSearch);
+            $tendikPppkQuery->where($filterSearch);
             $phlQuery->where($filterSearch);
         }
 
@@ -52,9 +81,11 @@ class DukExport implements FromCollection, WithMapping, WithHeadings, ShouldAuto
             })->values();
         };
 
-        $this->dosenList = $sortDuk($dosenQuery->get());
-        $this->tendikList = $sortDuk($tendikQuery->get());
-        $this->phlList = $sortDuk($phlQuery->get());
+        $this->dosenPnsList   = $sortDuk($dosenPnsQuery->get());
+        $this->dosenPppkList  = $sortDuk($dosenPppkQuery->get());
+        $this->tendikPnsList  = $sortDuk($tendikPnsQuery->get());
+        $this->tendikPppkList = $sortDuk($tendikPppkQuery->get());
+        $this->phlList        = $sortDuk($phlQuery->get());
     }
 
     public function collection()
@@ -63,44 +94,70 @@ class DukExport implements FromCollection, WithMapping, WithHeadings, ShouldAuto
         $currentRow = 2; // Data starts at row 2 (after heading)
 
         // ==========================================
-        // 1. BAGIAN I: DOSEN / TENAGA PENDIDIK
+        // 1. BAGIAN I: DOSEN PNS
         // ==========================================
         $this->headerRows[] = $currentRow;
-        $rows->push(['I. DAFTAR URUT KEPANGKATAN DOSEN / TENAGA PENDIDIK (' . count($this->dosenList) . ' ORANG)', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['I. DAFTAR URUT KEPANGKATAN DOSEN PNS (' . count($this->dosenPnsList) . ' ORANG)', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
         $currentRow++;
 
         $no = 1;
-        foreach ($this->dosenList as $row) {
-            $rows->push($this->formatRow($no++, $row, 'Dosen'));
+        foreach ($this->dosenPnsList as $row) {
+            $rows->push($this->formatRow($no++, $row, 'Dosen PNS'));
             $currentRow++;
         }
-
-        // Pemisah
         $rows->push(array_fill(0, 17, ''));
         $currentRow++;
 
         // ==========================================
-        // 2. BAGIAN II: TENAGA KEPENDIDIKAN (TENDIK)
+        // 2. BAGIAN II: DOSEN PPPK
         // ==========================================
         $this->headerRows[] = $currentRow;
-        $rows->push(['II. DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN / TENDIK (' . count($this->tendikList) . ' ORANG)', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['II. DAFTAR URUT KEPANGKATAN DOSEN PPPK (' . count($this->dosenPppkList) . ' ORANG)', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
         $currentRow++;
 
         $no = 1;
-        foreach ($this->tendikList as $row) {
-            $rows->push($this->formatRow($no++, $row, 'Tendik'));
+        foreach ($this->dosenPppkList as $row) {
+            $rows->push($this->formatRow($no++, $row, 'Dosen PPPK'));
             $currentRow++;
         }
-
-        // Pemisah
         $rows->push(array_fill(0, 17, ''));
         $currentRow++;
 
         // ==========================================
-        // 3. BAGIAN III: PEGAWAI HARIAN LEPAS (PHL)
+        // 3. BAGIAN III: TENAGA KEPENDIDIKAN (TENDIK) PNS
         // ==========================================
         $this->headerRows[] = $currentRow;
-        $rows->push(['III. DAFTAR URUT PEGAWAI HARIAN LEPAS (PHL) & TENAGA KONTRAK (' . count($this->phlList) . ' ORANG)', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['III. DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN / TENDIK PNS (' . count($this->tendikPnsList) . ' ORANG)', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $currentRow++;
+
+        $no = 1;
+        foreach ($this->tendikPnsList as $row) {
+            $rows->push($this->formatRow($no++, $row, 'Tendik PNS'));
+            $currentRow++;
+        }
+        $rows->push(array_fill(0, 17, ''));
+        $currentRow++;
+
+        // ==========================================
+        // 4. BAGIAN IV: TENAGA KEPENDIDIKAN (TENDIK) PPPK
+        // ==========================================
+        $this->headerRows[] = $currentRow;
+        $rows->push(['IV. DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN / TENDIK PPPK (' . count($this->tendikPppkList) . ' ORANG)', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $currentRow++;
+
+        $no = 1;
+        foreach ($this->tendikPppkList as $row) {
+            $rows->push($this->formatRow($no++, $row, 'Tendik PPPK'));
+            $currentRow++;
+        }
+        $rows->push(array_fill(0, 17, ''));
+        $currentRow++;
+
+        // ==========================================
+        // 5. BAGIAN V: PEGAWAI HARIAN LEPAS (PHL)
+        // ==========================================
+        $this->headerRows[] = $currentRow;
+        $rows->push(['V. DAFTAR URUT PEGAWAI HARIAN LEPAS (PHL) & TENAGA KONTRAK (' . count($this->phlList) . ' ORANG)', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
         $currentRow++;
 
         $no = 1;
@@ -108,20 +165,22 @@ class DukExport implements FromCollection, WithMapping, WithHeadings, ShouldAuto
             $rows->push($this->formatRow($no++, $row, 'PHL'));
             $currentRow++;
         }
-
-        // Pemisah
         $rows->push(array_fill(0, 17, ''));
         $currentRow++;
 
         // ==========================================
-        // 4. REKAPITULASI TOTAL
+        // 6. REKAPITULASI TOTAL DUK PEGAWAI
         // ==========================================
         $this->headerRows[] = $currentRow;
-        $rows->push(['REKAPITULASI TOTAL DUK', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-        $rows->push(['1. Dosen (Tenaga Pendidik)', count($this->dosenList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-        $rows->push(['2. Tendik (Tenaga Kependidikan)', count($this->tendikList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-        $rows->push(['3. PHL & Tenaga Kontrak', count($this->phlList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-        $rows->push(['TOTAL KESELURUHAN PEGAWAI', (count($this->dosenList) + count($this->tendikList) + count($this->phlList)) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['REKAPITULASI TOTAL DUK PEGAWAI', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['1. Dosen PNS (Tenaga Pendidik PNS)', count($this->dosenPnsList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['2. Dosen PPPK (Tenaga Pendidik PPPK)', count($this->dosenPppkList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['3. Tendik PNS (Tenaga Kependidikan PNS)', count($this->tendikPnsList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['4. Tendik PPPK (Tenaga Kependidikan PPPK)', count($this->tendikPppkList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['5. PHL & Tenaga Kontrak', count($this->phlList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        
+        $totalKeseluruhan = count($this->dosenPnsList) + count($this->dosenPppkList) + count($this->tendikPnsList) + count($this->tendikPppkList) + count($this->phlList);
+        $rows->push(['TOTAL KESELURUHAN PEGAWAI', $totalKeseluruhan . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
 
         return $rows;
     }

@@ -49,10 +49,36 @@ class PegawaiController extends Controller
     public function duk(Request $request)
     {
         $search = $request->get('search');
+        $filter = strtolower(trim((string)$request->get('filter', '')));
         
-        $dosenQuery = Pegawai::dosen()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
-        $tendikQuery = Pegawai::tendik()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
-        $phlQuery = Pegawai::phl()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+        $baseQuery = function($type, $asnType = null) {
+            $q = Pegawai::$type()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+            if ($asnType === 'pns') {
+                $q->where(function ($sq) {
+                    $sq->where('jenis_pegawai', 'PNS')
+                       ->orWhere(function ($ssq) {
+                           $ssq->where('jenis_pegawai', 'not like', '%PPPK%')
+                               ->where(function ($sssq) {
+                                   $sssq->where('status_asn', 'ASN')
+                                        ->orWhereRaw('LENGTH(nip) = 18');
+                               });
+                       });
+                });
+            } elseif ($asnType === 'pppk') {
+                $q->where(function ($sq) {
+                    $sq->where('jenis_pegawai', 'like', '%PPPK%')
+                       ->orWhere('status_asn', 'PPPK')
+                       ->orWhereRaw('LENGTH(nip) = 21');
+                });
+            }
+            return $q;
+        };
+
+        $dosenPnsQuery   = $baseQuery('dosen', 'pns');
+        $dosenPppkQuery  = $baseQuery('dosen', 'pppk');
+        $tendikPnsQuery  = $baseQuery('tendik', 'pns');
+        $tendikPppkQuery = $baseQuery('tendik', 'pppk');
+        $phlQuery        = Pegawai::phl()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
 
         if ($search) {
             $filterSearch = function($q) use ($search) {
@@ -62,8 +88,10 @@ class PegawaiController extends Controller
                        ->orWhere('nidn_nuptk', 'like', "%{$search}%");
                 });
             };
-            $dosenQuery->where($filterSearch);
-            $tendikQuery->where($filterSearch);
+            $dosenPnsQuery->where($filterSearch);
+            $dosenPppkQuery->where($filterSearch);
+            $tendikPnsQuery->where($filterSearch);
+            $tendikPppkQuery->where($filterSearch);
             $phlQuery->where($filterSearch);
         }
 
@@ -83,13 +111,25 @@ class PegawaiController extends Controller
             })->values();
         };
 
-        $dosenList = $sortDuk($dosenQuery->get());
-        $tendikList = $sortDuk($tendikQuery->get());
-        $phlList = $sortDuk($phlQuery->get());
+        $dosenPnsList   = $sortDuk($dosenPnsQuery->get());
+        $dosenPppkList  = $sortDuk($dosenPppkQuery->get());
+        $tendikPnsList  = $sortDuk($tendikPnsQuery->get());
+        $tendikPppkList = $sortDuk($tendikPppkQuery->get());
+        $phlList        = $sortDuk($phlQuery->get());
 
-        $statistics = $this->pegawaiService->getStatistics();
+        $statistics = [
+            'dosen_pns'   => count($dosenPnsList),
+            'dosen_pppk'  => count($dosenPppkList),
+            'tendik_pns'  => count($tendikPnsList),
+            'tendik_pppk' => count($tendikPppkList),
+            'phl'         => count($phlList),
+            'total'       => count($dosenPnsList) + count($dosenPppkList) + count($tendikPnsList) + count($tendikPppkList) + count($phlList),
+        ];
 
-        return view('pegawai.duk', compact('dosenList', 'tendikList', 'phlList', 'statistics', 'search'));
+        return view('pegawai.duk', compact(
+            'dosenPnsList', 'dosenPppkList', 'tendikPnsList', 'tendikPppkList', 'phlList',
+            'statistics', 'search', 'filter'
+        ));
     }
 
     public function create(Request $request)
@@ -288,9 +328,34 @@ class PegawaiController extends Controller
     {
         $search = $request->get('search');
         
-        $dosenQuery = Pegawai::dosen()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
-        $tendikQuery = Pegawai::tendik()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
-        $phlQuery = Pegawai::phl()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+        $baseQuery = function($type, $asnType = null) {
+            $q = Pegawai::$type()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+            if ($asnType === 'pns') {
+                $q->where(function ($sq) {
+                    $sq->where('jenis_pegawai', 'PNS')
+                       ->orWhere(function ($ssq) {
+                           $ssq->where('jenis_pegawai', 'not like', '%PPPK%')
+                               ->where(function ($sssq) {
+                                   $sssq->where('status_asn', 'ASN')
+                                        ->orWhereRaw('LENGTH(nip) = 18');
+                               });
+                       });
+                });
+            } elseif ($asnType === 'pppk') {
+                $q->where(function ($sq) {
+                    $sq->where('jenis_pegawai', 'like', '%PPPK%')
+                       ->orWhere('status_asn', 'PPPK')
+                       ->orWhereRaw('LENGTH(nip) = 21');
+                });
+            }
+            return $q;
+        };
+
+        $dosenPnsQuery   = $baseQuery('dosen', 'pns');
+        $dosenPppkQuery  = $baseQuery('dosen', 'pppk');
+        $tendikPnsQuery  = $baseQuery('tendik', 'pns');
+        $tendikPppkQuery = $baseQuery('tendik', 'pppk');
+        $phlQuery        = Pegawai::phl()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
 
         if ($search) {
             $filterSearch = function($q) use ($search) {
@@ -300,8 +365,10 @@ class PegawaiController extends Controller
                        ->orWhere('nidn_nuptk', 'like', "%{$search}%");
                 });
             };
-            $dosenQuery->where($filterSearch);
-            $tendikQuery->where($filterSearch);
+            $dosenPnsQuery->where($filterSearch);
+            $dosenPppkQuery->where($filterSearch);
+            $tendikPnsQuery->where($filterSearch);
+            $tendikPppkQuery->where($filterSearch);
             $phlQuery->where($filterSearch);
         }
 
@@ -321,11 +388,13 @@ class PegawaiController extends Controller
             })->values();
         };
 
-        $dosenList = $sortDuk($dosenQuery->get());
-        $tendikList = $sortDuk($tendikQuery->get());
-        $phlList = $sortDuk($phlQuery->get());
+        $dosenPnsList   = $sortDuk($dosenPnsQuery->get());
+        $dosenPppkList  = $sortDuk($dosenPppkQuery->get());
+        $tendikPnsList  = $sortDuk($tendikPnsQuery->get());
+        $tendikPppkList = $sortDuk($tendikPppkQuery->get());
+        $phlList        = $sortDuk($phlQuery->get());
 
-        $pdf = Pdf::loadView('exports.pdf.duk', compact('dosenList', 'tendikList', 'phlList'))
+        $pdf = Pdf::loadView('exports.pdf.duk', compact('dosenPnsList', 'dosenPppkList', 'tendikPnsList', 'tendikPppkList', 'phlList'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->download('DUK_Pegawai_' . date('Y-m-d') . '.pdf');
