@@ -39,10 +39,40 @@ class PegawaiRepository extends BaseRepository implements PegawaiRepositoryInter
             ->when($filter, function ($query) use ($filter) {
                 switch (strtolower($filter)) {
                     case 'dosen':
-                        $query->where(function ($q) {
-                            $q->where('jenis_pegawai', 'Dosen')
-                              ->orWhere('jenis_pegawai', 'like', '%Dosen%')
-                              ->orWhereNotNull('nidn_nuptk');
+                        $query->dosen();
+                        break;
+                    case 'dosen_pns':
+                        $query->dosen()->where(function ($q) {
+                            $q->where('jenis_pegawai', 'not like', '%PPPK%')
+                              ->where(function ($sq) {
+                                  $sq->where('status_asn', 'ASN')
+                                     ->orWhereRaw('CHAR_LENGTH(nip) = 18');
+                              });
+                        });
+                        break;
+                    case 'dosen_pppk':
+                        $query->dosen()->where(function ($q) {
+                            $q->where('jenis_pegawai', 'like', '%PPPK%')
+                              ->orWhere('status_asn', 'PPPK')
+                              ->orWhereRaw('CHAR_LENGTH(nip) = 21');
+                        });
+                        break;
+                    case 'tendik':
+                        $query->tendik();
+                        break;
+                    case 'tendik_pns':
+                        $query->tendik()->where(function ($q) {
+                            $q->where('jenis_pegawai', 'PNS')
+                              ->orWhere(function ($sq) {
+                                  $sq->where('status_asn', 'ASN')
+                                     ->where('jenis_pegawai', 'not like', '%PPPK%');
+                              });
+                        });
+                        break;
+                    case 'tendik_pppk':
+                        $query->tendik()->where(function ($q) {
+                            $q->where('jenis_pegawai', 'PPPK')
+                              ->orWhere('status_asn', 'PPPK');
                         });
                         break;
                     case 'pns':
@@ -50,30 +80,23 @@ class PegawaiRepository extends BaseRepository implements PegawaiRepositoryInter
                             $q->where('jenis_pegawai', 'PNS')
                               ->orWhere(function ($sq) {
                                   $sq->where('status_asn', 'ASN')
-                                     ->where(function ($ssq) {
-                                         $ssq->whereNull('jenis_pegawai')
-                                             ->orWhere('jenis_pegawai', 'not like', '%PPPK%')
-                                             ->where('jenis_pegawai', 'not like', '%Dosen%');
-                                     });
+                                     ->where('jenis_pegawai', 'not like', '%PPPK%');
                               });
                         });
                         break;
                     case 'pppk':
                         $query->where(function ($q) {
                             $q->where('jenis_pegawai', 'PPPK')
-                              ->orWhere('status_asn', 'PPPK');
+                              ->orWhere('status_asn', 'PPPK')
+                              ->orWhereRaw('CHAR_LENGTH(nip) = 21');
                         });
                         break;
                     case 'phl':
                     case 'honorer':
-                        $query->where(function ($q) {
-                            $q->whereIn('jenis_pegawai', ['PHL', 'Honorer', 'Tenaga Kontrak', 'Pegawai Harian Lepas'])
-                              ->orWhere('status_asn', 'Non ASN')
-                              ->orWhere('status_asn', 'PHL');
-                        });
+                        $query->phl();
                         break;
                     case 'aktif':
-                        $query->where('status_pegawai', 'Aktif');
+                        $query->aktif();
                         break;
                     case 'pensiun':
                         $query->where('status_pegawai', 'Pensiun');

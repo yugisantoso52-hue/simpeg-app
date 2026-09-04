@@ -20,22 +20,36 @@ class DashboardRepository implements DashboardRepositoryInterface
             COALESCE(SUM(CASE WHEN status_asn = 'Non ASN' THEN 1 ELSE 0 END), 0) as non_asn,
             COALESCE(SUM(CASE WHEN status_pegawai = 'Aktif' THEN 1 ELSE 0 END), 0) as aktif,
             COALESCE(SUM(CASE WHEN status_pegawai = 'Pensiun' THEN 1 ELSE 0 END), 0) as pensiun,
-            COALESCE(SUM(CASE WHEN jenis_pegawai = 'Dosen' THEN 1 ELSE 0 END), 0) as dosen,
-            COALESCE(SUM(CASE WHEN jenis_pegawai = 'PNS' THEN 1 ELSE 0 END), 0) as pns,
-            COALESCE(SUM(CASE WHEN jenis_pegawai = 'PPPK' THEN 1 ELSE 0 END), 0) as pppk,
-            COALESCE(SUM(CASE WHEN jenis_pegawai IN ('PHL', 'Honorer') THEN 1 ELSE 0 END), 0) as phl
+            COALESCE(SUM(CASE WHEN (jenis_pegawai LIKE '%Dosen%' OR (nidn_nuptk IS NOT NULL AND nidn_nuptk != '' AND nidn_nuptk != '-')) THEN 1 ELSE 0 END), 0) as dosen_total,
+            COALESCE(SUM(CASE WHEN (jenis_pegawai LIKE '%Dosen%' OR (nidn_nuptk IS NOT NULL AND nidn_nuptk != '' AND nidn_nuptk != '-')) AND (jenis_pegawai NOT LIKE '%PPPK%' AND (status_asn = 'ASN' OR CHAR_LENGTH(nip) = 18)) THEN 1 ELSE 0 END), 0) as dosen_pns,
+            COALESCE(SUM(CASE WHEN (jenis_pegawai LIKE '%Dosen%' OR (nidn_nuptk IS NOT NULL AND nidn_nuptk != '' AND nidn_nuptk != '-')) AND (jenis_pegawai LIKE '%PPPK%' OR status_asn = 'PPPK' OR CHAR_LENGTH(nip) = 21) THEN 1 ELSE 0 END), 0) as dosen_pppk,
+            COALESCE(SUM(CASE WHEN NOT (jenis_pegawai LIKE '%Dosen%' OR (nidn_nuptk IS NOT NULL AND nidn_nuptk != '' AND nidn_nuptk != '-')) AND (jenis_pegawai NOT IN ('PHL', 'Honorer', 'Tenaga Kontrak') OR jenis_pegawai IS NULL) THEN 1 ELSE 0 END), 0) as tendik_total,
+            COALESCE(SUM(CASE WHEN NOT (jenis_pegawai LIKE '%Dosen%' OR (nidn_nuptk IS NOT NULL AND nidn_nuptk != '' AND nidn_nuptk != '-')) AND (jenis_pegawai = 'PNS' OR (status_asn = 'ASN' AND jenis_pegawai NOT LIKE '%PPPK%')) THEN 1 ELSE 0 END), 0) as tendik_pns,
+            COALESCE(SUM(CASE WHEN NOT (jenis_pegawai LIKE '%Dosen%' OR (nidn_nuptk IS NOT NULL AND nidn_nuptk != '' AND nidn_nuptk != '-')) AND (jenis_pegawai = 'PPPK' OR status_asn = 'PPPK') THEN 1 ELSE 0 END), 0) as tendik_pppk,
+            COALESCE(SUM(CASE WHEN jenis_pegawai IN ('PHL', 'Honorer', 'Tenaga Kontrak') OR status_asn = 'Non ASN' THEN 1 ELSE 0 END), 0) as phl
         ")->first();
 
+        $dosenPns = (int)($stats->dosen_pns ?? 0);
+        $dosenPppk = (int)($stats->dosen_pppk ?? 0);
+        $tendikPns = (int)($stats->tendik_pns ?? 0);
+        $tendikPppk = (int)($stats->tendik_pppk ?? 0);
+
         return [
-            'total'   => (int)($stats->total ?? 0),
-            'asn'     => (int)($stats->asn ?? 0),
-            'non_asn' => (int)($stats->non_asn ?? 0),
-            'aktif'   => (int)($stats->aktif ?? 0),
-            'pensiun' => (int)($stats->pensiun ?? 0),
-            'dosen'   => (int)($stats->dosen ?? 0),
-            'pns'     => (int)($stats->pns ?? 0),
-            'pppk'    => (int)($stats->pppk ?? 0),
-            'phl'     => (int)($stats->phl ?? 0),
+            'total'       => (int)($stats->total ?? 0),
+            'asn'         => (int)($stats->asn ?? 0),
+            'non_asn'     => (int)($stats->non_asn ?? 0),
+            'aktif'       => (int)($stats->aktif ?? 0),
+            'pensiun'     => (int)($stats->pensiun ?? 0),
+            'dosen'       => (int)($stats->dosen_total ?? 0),
+            'dosen_total' => (int)($stats->dosen_total ?? 0),
+            'dosen_pns'   => $dosenPns,
+            'dosen_pppk'  => $dosenPppk,
+            'tendik_total'=> (int)($stats->tendik_total ?? 0),
+            'tendik_pns'  => $tendikPns,
+            'tendik_pppk' => $tendikPppk,
+            'pns'         => $dosenPns + $tendikPns,
+            'pppk'        => $dosenPppk + $tendikPppk,
+            'phl'         => (int)($stats->phl ?? 0),
         ];
     }
 

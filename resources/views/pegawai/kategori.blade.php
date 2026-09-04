@@ -55,20 +55,54 @@
                 </div>
             @endif
 
-            {{-- Kartu Statistik Kategori --}}
-            <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-                <x-enterprise.stat-card :title="'Total ' . $kategori" :value="$statistics['total'] ?? 0" :color="$badgeColor ?? 'blue'" icon="users" />
-                <x-enterprise.stat-card title="Status Aktif" :value="$statistics['aktif'] ?? 0" color="emerald" icon="check-circle" />
-                @if(isset($statistics['pns']))
-                    <x-enterprise.stat-card title="Aparatur Sipil Negara (ASN)" :value="$statistics['pns'] ?? 0" color="green" icon="briefcase" />
+            {{-- Kartu Statistik Kategori Interaktif (Klik untuk Memfilter Data) --}}
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <x-enterprise.stat-card 
+                    :title="'Total ' . $kategori" 
+                    :value="$statistics['total'] ?? 0" 
+                    :color="$badgeColor ?? 'blue'" 
+                    icon="users"
+                    :href="url()->current()"
+                    :active="empty($filter)"
+                />
+                
+                @if(isset($statistics['pns']) && isset($statistics['pppk']))
+                    <x-enterprise.stat-card 
+                        :title="$kategori . ' PNS'" 
+                        :value="$statistics['pns'] ?? 0" 
+                        color="blue" 
+                        icon="briefcase" 
+                        :href="url()->current() . '?filter=pns'"
+                        :active="($filter ?? '') === 'pns'"
+                    />
+
+                    <x-enterprise.stat-card 
+                        :title="$kategori . ' PPPK'" 
+                        :value="$statistics['pppk'] ?? 0" 
+                        color="purple" 
+                        icon="user-group" 
+                        :href="url()->current() . '?filter=pppk'"
+                        :active="($filter ?? '') === 'pppk'"
+                    />
                 @elseif(isset($statistics['non_asn']))
-                    <x-enterprise.stat-card title="Status Non ASN" :value="$statistics['non_asn'] ?? 0" color="amber" icon="briefcase" />
+                    <x-enterprise.stat-card 
+                        title="Status Non ASN" 
+                        :value="$statistics['non_asn'] ?? 0" 
+                        color="amber" 
+                        icon="briefcase"
+                        :href="url()->current() . '?filter=non_asn'"
+                        :active="($filter ?? '') === 'non_asn'"
+                    />
                 @endif
-                @if(isset($statistics['tubel']))
-                    <x-enterprise.stat-card title="Tugas Belajar" :value="$statistics['tubel'] ?? 0" color="indigo" icon="academic-cap" />
-                @elseif(isset($statistics['kontrak']))
-                    <x-enterprise.stat-card title="Tenaga Kontrak" :value="$statistics['kontrak'] ?? 0" color="purple" icon="document-text" />
-                @endif
+
+                <x-enterprise.stat-card 
+                    title="Status Aktif" 
+                    :value="$statistics['aktif'] ?? 0" 
+                    color="emerald" 
+                    icon="check-circle"
+                    :href="url()->current() . '?filter=aktif'"
+                    :active="($filter ?? '') === 'aktif'"
+                />
             </div>
 
             {{-- Card & Tabel Kategori --}}

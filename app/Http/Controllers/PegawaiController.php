@@ -397,6 +397,7 @@ class PegawaiController extends Controller
     public function dosen(Request $request)
     {
         $search = $request->get('search');
+        $filter = strtolower(trim((string)$request->get('filter', '')));
         $query = Pegawai::dosen()->with(['golongan', 'unitKerja', 'jabatan']);
 
         if ($search) {
@@ -407,12 +408,43 @@ class PegawaiController extends Controller
             });
         }
 
+        if ($filter === 'pns') {
+            $query->where(function ($q) {
+                $q->where('jenis_pegawai', 'not like', '%PPPK%')
+                  ->where(function ($sq) {
+                      $sq->where('status_asn', 'ASN')
+                         ->orWhereRaw('CHAR_LENGTH(nip) = 18');
+                  });
+            });
+        } elseif ($filter === 'pppk') {
+            $query->where(function ($q) {
+                $q->where('jenis_pegawai', 'like', '%PPPK%')
+                  ->orWhere('status_asn', 'PPPK')
+                  ->orWhereRaw('CHAR_LENGTH(nip) = 21');
+            });
+        } elseif ($filter === 'aktif') {
+            $query->aktif();
+        } elseif ($filter === 'tubel') {
+            $query->where('status_pegawai', 'Tugas Belajar');
+        }
+
         $pegawai = $query->latest('id')->paginate(10)->withQueryString();
 
         $statistics = [
             'total' => Pegawai::dosen()->count(),
             'aktif' => Pegawai::dosen()->aktif()->count(),
-            'pns'   => Pegawai::dosen()->where('status_asn', 'ASN')->count(),
+            'pns'   => Pegawai::dosen()->where(function ($q) {
+                $q->where('jenis_pegawai', 'not like', '%PPPK%')
+                  ->where(function ($sq) {
+                      $sq->where('status_asn', 'ASN')
+                         ->orWhereRaw('CHAR_LENGTH(nip) = 18');
+                  });
+            })->count(),
+            'pppk'  => Pegawai::dosen()->where(function ($q) {
+                $q->where('jenis_pegawai', 'like', '%PPPK%')
+                  ->orWhere('status_asn', 'PPPK')
+                  ->orWhereRaw('CHAR_LENGTH(nip) = 21');
+            })->count(),
             'tubel' => Pegawai::dosen()->where('status_pegawai', 'Tugas Belajar')->count(),
         ];
 
@@ -421,7 +453,7 @@ class PegawaiController extends Controller
         $kategori = 'Dosen';
         $badgeColor = 'blue';
 
-        return view('pegawai.kategori', compact('pegawai', 'statistics', 'search', 'kategoriTitle', 'kategoriSubtitle', 'kategori', 'badgeColor'));
+        return view('pegawai.kategori', compact('pegawai', 'statistics', 'search', 'filter', 'kategoriTitle', 'kategoriSubtitle', 'kategori', 'badgeColor'));
     }
 
     /**
@@ -430,6 +462,7 @@ class PegawaiController extends Controller
     public function tendik(Request $request)
     {
         $search = $request->get('search');
+        $filter = strtolower(trim((string)$request->get('filter', '')));
         $query = Pegawai::tendik()->with(['golongan', 'unitKerja', 'jabatan']);
 
         if ($search) {
@@ -439,12 +472,41 @@ class PegawaiController extends Controller
             });
         }
 
+        if ($filter === 'pns') {
+            $query->where(function ($q) {
+                $q->where('jenis_pegawai', 'PNS')
+                  ->orWhere(function ($sq) {
+                      $sq->where('status_asn', 'ASN')
+                         ->where('jenis_pegawai', 'not like', '%PPPK%');
+                  });
+            });
+        } elseif ($filter === 'pppk') {
+            $query->where(function ($q) {
+                $q->where('jenis_pegawai', 'PPPK')
+                  ->orWhere('status_asn', 'PPPK');
+            });
+        } elseif ($filter === 'aktif') {
+            $query->aktif();
+        } elseif ($filter === 'tubel') {
+            $query->where('status_pegawai', 'Tugas Belajar');
+        }
+
         $pegawai = $query->latest('id')->paginate(10)->withQueryString();
 
         $statistics = [
             'total' => Pegawai::tendik()->count(),
             'aktif' => Pegawai::tendik()->aktif()->count(),
-            'pns'   => Pegawai::tendik()->where('status_asn', 'ASN')->count(),
+            'pns'   => Pegawai::tendik()->where(function ($q) {
+                $q->where('jenis_pegawai', 'PNS')
+                  ->orWhere(function ($sq) {
+                      $sq->where('status_asn', 'ASN')
+                         ->where('jenis_pegawai', 'not like', '%PPPK%');
+                  });
+            })->count(),
+            'pppk'  => Pegawai::tendik()->where(function ($q) {
+                $q->where('jenis_pegawai', 'PPPK')
+                  ->orWhere('status_asn', 'PPPK');
+            })->count(),
             'tubel' => Pegawai::tendik()->where('status_pegawai', 'Tugas Belajar')->count(),
         ];
 
@@ -453,7 +515,7 @@ class PegawaiController extends Controller
         $kategori = 'Tendik';
         $badgeColor = 'emerald';
 
-        return view('pegawai.kategori', compact('pegawai', 'statistics', 'search', 'kategoriTitle', 'kategoriSubtitle', 'kategori', 'badgeColor'));
+        return view('pegawai.kategori', compact('pegawai', 'statistics', 'search', 'filter', 'kategoriTitle', 'kategoriSubtitle', 'kategori', 'badgeColor'));
     }
 
     /**
@@ -462,6 +524,7 @@ class PegawaiController extends Controller
     public function phl(Request $request)
     {
         $search = $request->get('search');
+        $filter = strtolower(trim((string)$request->get('filter', '')));
         $query = Pegawai::phl()->with(['golongan', 'unitKerja', 'jabatan']);
 
         if ($search) {
@@ -469,6 +532,14 @@ class PegawaiController extends Controller
                 $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('nip', 'like', "%{$search}%");
             });
+        }
+
+        if ($filter === 'aktif') {
+            $query->aktif();
+        } elseif ($filter === 'non_asn') {
+            $query->where('status_asn', 'Non ASN');
+        } elseif ($filter === 'kontrak') {
+            $query->whereNotNull('jenis_kontrak');
         }
 
         $pegawai = $query->latest('id')->paginate(10)->withQueryString();
@@ -485,7 +556,7 @@ class PegawaiController extends Controller
         $kategori = 'PHL';
         $badgeColor = 'amber';
 
-        return view('pegawai.kategori', compact('pegawai', 'statistics', 'search', 'kategoriTitle', 'kategoriSubtitle', 'kategori', 'badgeColor'));
+        return view('pegawai.kategori', compact('pegawai', 'statistics', 'search', 'filter', 'kategoriTitle', 'kategoriSubtitle', 'kategori', 'badgeColor'));
     }
 
     /**

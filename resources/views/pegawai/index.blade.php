@@ -38,8 +38,8 @@
                 </div>
             @endif
 
-            {{-- Kartu Statistik (6 Kartu Interaktif: Klik untuk Memfilter Data) --}}
-            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+            {{-- Kartu Statistik (7 Kartu Interaktif: Klik untuk Memfilter Data) --}}
+            <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
                 <x-enterprise.stat-card
                     title="Total Pegawai"
                     :value="$statistics['total']"
@@ -50,34 +50,43 @@
                 />
 
                 <x-enterprise.stat-card
-                    title="Dosen"
-                    :value="$statistics['dosen']"
+                    title="Dosen PNS"
+                    :value="$statistics['dosen_pns'] ?? $statistics['dosen']"
                     color="purple"
                     icon="academic"
-                    :href="route('pegawai.index', array_filter(['filter' => 'dosen', 'search' => request('search')]))"
-                    :active="$filter === 'dosen'"
+                    :href="route('pegawai.index', array_filter(['filter' => 'dosen_pns', 'search' => request('search')]))"
+                    :active="$filter === 'dosen_pns'"
                 />
 
                 <x-enterprise.stat-card
-                    title="PNS"
-                    :value="$statistics['pns']"
+                    title="Dosen PPPK"
+                    :value="$statistics['dosen_pppk'] ?? 0"
+                    color="purple"
+                    icon="academic"
+                    :href="route('pegawai.index', array_filter(['filter' => 'dosen_pppk', 'search' => request('search')]))"
+                    :active="$filter === 'dosen_pppk'"
+                />
+
+                <x-enterprise.stat-card
+                    title="Tendik PNS"
+                    :value="$statistics['tendik_pns'] ?? $statistics['pns']"
                     color="green"
                     icon="briefcase"
-                    :href="route('pegawai.index', array_filter(['filter' => 'pns', 'search' => request('search')]))"
-                    :active="$filter === 'pns'"
+                    :href="route('pegawai.index', array_filter(['filter' => 'tendik_pns', 'search' => request('search')]))"
+                    :active="$filter === 'tendik_pns'"
                 />
 
                 <x-enterprise.stat-card
-                    title="PPPK"
-                    :value="$statistics['pppk']"
+                    title="Tendik PPPK"
+                    :value="$statistics['tendik_pppk'] ?? $statistics['pppk']"
                     color="amber"
                     icon="user-group"
-                    :href="route('pegawai.index', array_filter(['filter' => 'pppk', 'search' => request('search')]))"
-                    :active="$filter === 'pppk'"
+                    :href="route('pegawai.index', array_filter(['filter' => 'tendik_pppk', 'search' => request('search')]))"
+                    :active="$filter === 'tendik_pppk'"
                 />
 
                 <x-enterprise.stat-card
-                    title="PHL / Honorer"
+                    title="PHL / Honor"
                     :value="$statistics['phl']"
                     color="red"
                     icon="clipboard"
