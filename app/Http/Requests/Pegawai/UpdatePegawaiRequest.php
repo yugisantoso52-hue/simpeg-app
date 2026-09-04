@@ -95,12 +95,12 @@ class UpdatePegawaiRequest extends FormRequest
             'status_pegawai'       => 'nullable|in:Aktif,Tugas Belajar,Non Aktif,Pensiun',
             
             // Upload Berkas (Opsional)
-            'foto'                 => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
-            'file_sk_pertama'          => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'file_sk_pangkat_terakhir' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'file_sk_kgb_terakhir'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'file_karpeg'              => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'file_pak'                 => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'foto'                 => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:10240',
+            'file_sk_pertama'          => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'file_sk_pangkat_terakhir' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'file_sk_kgb_terakhir'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'file_karpeg'              => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'file_pak'                 => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'nomor_pak'                => 'nullable|string|max:100',
             'tanggal_pak'              => 'nullable|date',
 
@@ -112,7 +112,7 @@ class UpdatePegawaiRequest extends FormRequest
             'riwayat_pendidikan.*.fakultas'            => 'nullable|string|max:150',
             'riwayat_pendidikan.*.jurusan'             => 'nullable|string|max:150',
             'riwayat_pendidikan.*.tahun_lulus'         => 'nullable|integer',
-            'riwayat_pendidikan.*.ijazah'              => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'riwayat_pendidikan.*.ijazah'              => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
 
             // Validasi Input Multi-Riwayat Pangkat (Opsional)
             'riwayat_pangkat'                          => 'nullable|array',
@@ -122,7 +122,7 @@ class UpdatePegawaiRequest extends FormRequest
             'riwayat_pangkat.*.nomor_sk'               => 'nullable|string|max:100',
             'riwayat_pangkat.*.tanggal_sk'             => 'nullable|date',
             'riwayat_pangkat.*.status'                 => 'nullable|string|max:50',
-            'riwayat_pangkat.*.file_sk'                => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'riwayat_pangkat.*.file_sk'                => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
 
             // Validasi Input Multi-Riwayat Jabatan (Opsional)
             'riwayat_jabatan'                          => 'nullable|array',
@@ -133,7 +133,7 @@ class UpdatePegawaiRequest extends FormRequest
             'riwayat_jabatan.*.nomor_sk'               => 'nullable|string|max:100',
             'riwayat_jabatan.*.tanggal_sk'             => 'nullable|date',
             'riwayat_jabatan.*.status'                 => 'nullable|string|max:50',
-            'riwayat_jabatan.*.file_sk'                => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'riwayat_jabatan.*.file_sk'                => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
 
             // Validasi Input Multi-Riwayat Diklat (Opsional)
             'riwayat_diklat'                           => 'nullable|array',
@@ -146,7 +146,7 @@ class UpdatePegawaiRequest extends FormRequest
             'riwayat_diklat.*.jumlah_jam'              => 'nullable|integer|min:0',
             'riwayat_diklat.*.status'                  => 'nullable|string|max:50',
             'riwayat_diklat.*.keterangan'              => 'nullable|string',
-            'riwayat_diklat.*.file_sertifikat'         => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'riwayat_diklat.*.file_sertifikat'         => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ];
     }
 
