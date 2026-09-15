@@ -4,6 +4,26 @@
 Dokumen ini adalah panduan kerja resmi bagi administrator sistem dalam mengoperasikan, mengembangkan, menyinkronkan data, dan memelihara aplikasi **SIKAP FKP UNRI**.
 
 ---
+                 [ 💻 Kodingan di PC Kantor ]
+                             │
+            ┌────────────────┴────────────────┐
+            │  Double-click:                  │
+            │  sync-to-github.ps1             │
+            ▼                                 ▼
+    [ 🐙 GitHub Repo ]                [ 🖥️ Laragon Lokal ]
+            │                         (Apache + MySQL 8.4)
+            │ (Auto CI/CD Deploy)             │
+            ▼                                 ├─► Data Teks ──► [ MySQL: simpeg ]
+  [ ☁️ Cloud Railway ]                        ├─► Foto/SK/PDF ──► [ Harddisk: storage/app/public ]
+  (sikap-app.up.railway.app)                  │
+            ▲                                 ├─► Akses PC Admin ──► http://sikap.fkpunri.test
+            │                                 └─► Akses WiFi HP/Laptop ──► http://172.30.22.156
+            │
+            └─────────── [ 🔄 Double-click: sync-database.bat ] ───────────┘
+                               (Sinkronisasi Data Dua Arah)
+
+
+
 
 ## 1. Arsitektur Sistem Menyeluruh
 
