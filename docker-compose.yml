@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # Docker Compose - SIMPEG-APP Local Server
 # Dibuat untuk: PC Lokal Windows 11 + Tailscale VPN
 # =============================================================================
@@ -44,7 +44,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      APP_NAME: "SIKAP"
+      APP_NAME: "SIKAP FKP UNRI"
       APP_ENV: production
       APP_DEBUG: "false"
       APP_URL: "http://localhost"
