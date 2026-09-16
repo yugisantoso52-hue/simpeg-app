@@ -44,9 +44,9 @@ WORKDIR /var/www
 COPY composer.json composer.lock ./
 
 RUN composer config --global repo.packagist composer https://packagist.org \
-    && (composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist \
-        || (echo "Retrying composer install (attempt 2)..." && sleep 5 && composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist) \
-        || (echo "Retrying composer install (attempt 3)..." && sleep 10 && composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist))
+    && (composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist --ignore-platform-req=php \
+        || (echo "Retrying composer install (attempt 2)..." && sleep 5 && composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist --ignore-platform-req=php) \
+        || (echo "Retrying composer install (attempt 3)..." && sleep 10 && composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist --ignore-platform-req=php))
 
 # 2. Optimasi Cache: Install dependencies NPM (termasuk Vite)
 COPY package.json package-lock.json ./
@@ -56,7 +56,7 @@ RUN npm install
 COPY . /var/www
 
 # 4. Generate optimized autoloader & build asset frontend (Vite)
-RUN composer dump-autoload --optimize --no-dev \
+RUN composer dump-autoload --optimize --no-dev --ignore-platform-req=php \
     && npm run build \
     && rm -rf node_modules
 
