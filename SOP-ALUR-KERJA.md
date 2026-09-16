@@ -1,104 +1,94 @@
-# 📋 Standar Operasional Prosedur (SOP) & Ringkasan Alur Kerja
+# 📋 Standar Operasional Prosedur (SOP) & Panduan Arsitektur
 ## SIKAP (Sistem Informasi Kepegawaian) - Fakultas Keperawatan Universitas Riau
+### Arsitektur Struktur 2: Cloud-as-Primary + Cloudflare R2 + One-Way Local Backup
 
-Dokumen ini adalah panduan kerja resmi bagi administrator sistem dalam mengoperasikan, mengembangkan, menyinkronkan data, dan memelihara aplikasi **SIKAP FKP UNRI**.
+Dokumen ini adalah panduan kerja resmi bagi administrator sistem dalam mengoperasikan, mengembangkan, mencadangkan data, dan memelihara aplikasi **SIKAP FKP UNRI**.
 
 ---
-                 [ 💻 Kodingan di PC Kantor ]
-                             │
-            ┌────────────────┴────────────────┐
-            │  Double-click:                  │
-            │  sync-to-github.ps1             │
-            ▼                                 ▼
-    [ 🐙 GitHub Repo ]                [ 🖥️ Laragon Lokal ]
-            │                         (Apache + MySQL 8.4)
-            │ (Auto CI/CD Deploy)             │
-            ▼                                 ├─► Data Teks ──► [ MySQL: simpeg ]
-  [ ☁️ Cloud Railway ]                        ├─► Foto/SK/PDF ──► [ Harddisk: storage/app/public ]
-  (sikap-app.up.railway.app)                  │
-            ▲                                 ├─► Akses PC Admin ──► http://sikap.fkpunri.test
-            │                                 └─► Akses WiFi HP/Laptop ──► http://172.30.22.156
-            │
-            └─────────── [ 🔄 Double-click: sync-database.bat ] ───────────┘
-                               (Sinkronisasi Data Dua Arah)
 
+## 1. Diagram Alur Kerja & Arsitektur Sistem
 
-
-
-## 1. Arsitektur Sistem Menyeluruh
-
-Aplikasi ini menggunakan arsitektur **Hybrid (Offline-First & Cloud)**:
+```
+[ 💻 PC Kantor / Local Dev ]
+  │
+  ├─► Coding / Testing (Laragon Lokal)
+  │      │
+  │      ▼ (Push Git: sync-to-github.ps1)
+  │   [ 🐙 GitHub Repo ]
+  │      │
+  │      ▼ (Auto Deploy CI/CD)
+  │   [ ☁️ Cloud Railway ] ── (Production App: sikap-app.up.railway.app)
+  │          │
+  │          ├─► Database Utama ──► [ MySQL Cloud Railway ]
+  │          │
+  │          └─► File SK / PDF / Ijazah ──► [ ☁️ Cloudflare R2 (S3-Compatible) ]
+  │                                                   ▲
+  └─► [ 📥 Backup Script (One-Way Pull) ]             │
+         ├─► Download SQL Dump dari Railway ──────────┤ (Hanya membaca / backup)
+         └─► Download file arsip dari R2 ke Harddisk PC
+```
 
 ```mermaid
 flowchart TD
-    subgraph PC_Kantor ["🖥️ PC Server Lokal (Fakultas Keperawatan)"]
-        Laragon["Laragon (Apache + MySQL 8.4)"]
-        HDD_Uploads["Harddisk PC (storage/app/public)<br/>Foto, Ijazah, SK, Sertifikat"]
-        LocalDB[("MySQL Database: simpeg<br/>(32 Tabel Data Teks)")]
-        
-        Laragon --> LocalDB
-        Laragon --> HDD_Uploads
+    subgraph Dev_PC ["🖥️ PC Kantor (Local Dev & Backup Vault)"]
+        Laragon["Laragon Dev (Apache + MySQL Lokal)"]
+        BackupFolder["Penyimpanan Cadangan Offline<br/>(C:\simpeg-backup\db & files)"]
+        PullBackup["📥 One-Way Backup Script<br/>(backup-cloud-to-local.bat)"]
     end
 
-    subgraph Akses_Lokal ["📶 Akses Satu Jaringan (Internal)"]
-        PCLokal["PC Admin: http://sikap.fkpunri.test"]
-        HPWiFi["HP/Laptop Pegawai: http://172.30.22.156"]
+    subgraph GitHub_Repo ["🐙 GitHub Master Repository"]
+        Repo["Repo: yugisantoso52-hue/simpeg-app<br/>(Branch: main)"]
     end
 
-    subgraph GitHub_Repo ["🐙 GitHub (Penyimpanan Kodingan)"]
-        Repo["Repo: yugisantoso52-hue/simpeg-app"]
-    end
+    subgraph Production_Cloud ["☁️ Cloud Production Environment"]
+        RailwayApp["🚀 Railway App Container<br/>https://sikap-app.up.railway.app"]
+        CloudDB[("🗄️ MySQL Cloud Railway<br/>(Single Source of Truth)")]
+        R2Storage[("☁️ Cloudflare R2 Storage<br/>(Foto, SK, Ijazah, PDF)")]
 
-    subgraph Cloud_Railway ["☁️ Railway Cloud Server (Online)"]
-        RailwayApp["Web Cloud: https://sikap-app.up.railway.app"]
-        CloudDB[("Database Cloud Railway")]
         RailwayApp --> CloudDB
+        RailwayApp --> R2Storage
     end
 
-    %% Hubungan Akses
-    PCLokal <--> Laragon
-    HPWiFi <--> Laragon
-
-    %% Hubungan Kode
-    PC_Kantor -- "sync-to-github.ps1" --> Repo
+    %% Hubungan Kode & Deploy
+    Dev_PC -- "sync-to-github.ps1" --> Repo
     Repo -- "Auto Deploy CI/CD" --> RailwayApp
 
-    %% Hubungan Data
-    LocalDB <-. "sync-database.bat (Two-Way Sync)" .-> CloudDB
+    %% Hubungan Pencadangan Satu Arah
+    CloudDB -. "mysqldump (One-Way Read)" .-> PullBackup
+    R2Storage -. "simpeg:backup-r2 (One-Way Pull)" .-> PullBackup
+    PullBackup --> BackupFolder
 ```
 
 ---
 
-## 2. Alur Kerja Harian (Daily Routine SOP)
+## 2. Keunggulan Arsitektur Baru
 
-### 🌅 A. Saat Menyalakan PC di Pagi Hari
-1. Nyalakan PC kantor.
-2. Buka aplikasi **Laragon**.
-3. Pastikan tombol **"Start All"** sudah diklik (indikator Apache dan MySQL aktif).
-4. *(Opsional)* Jika Laragon sempat gagal start karena tabrakan port, cukup double-click:
-   ```text
-   C:\laragon\www\simpeg\scripts\start-server.bat
-   ```
-5. Buka browser dan buka:
-   ```text
-   http://sikap.fkpunri.test
-   ```
-   Aplikasi siap digunakan untuk melayani administrasi kepegawaian.
+1. **Single Source of Truth (Satu Sumber Kebenaran)**:
+   Data kepegawaian tidak lagi bercabang. Database utama berada di Cloud Railway, sehingga tidak ada risiko tubrukan / konflik data (*data overwrite*).
+2. **Keamanan Berkas Terjamin di Cloudflare R2**:
+   Berkas SK, KGB, Ijazah, dan Foto tersimpan di Cloudflare R2 yang memiliki redundansi tinggi, bebas biaya bandwidth unduhan (*zero egress fee*), dan gratis 10 GB pertama per bulan.
+3. **Pencadangan Satu Arah (One-Way Pull) yang Aman**:
+   PC kantor bertindak sebagai *Backup Vault* offline. Script hanya membaca dan mengunduh cadangan dari cloud ke PC, tidak pernah menimpa balik ke cloud.
+4. **Fleksibilitas Kerja**:
+   Pegawai dan pimpinan dapat mengakses aplikasi dari mana saja secara resmi melalui tautan online tanpa bergantung pada PC kantor yang harus menyala 24 jam.
 
 ---
 
-### 👥 B. Melayani Pegawai yang Mengakses via HP / Laptop Kantor (Satu WiFi)
-* Pastikan HP/Laptop pegawai tersambung ke WiFi yang sama dengan PC server (**SSO TIK UNRI**).
-* Berikan alamat IP berikut kepada pegawai:
-  ```text
-  http://172.30.22.156
-  ```
-* Pegawai dapat langsung login menggunakan NIP dan password masing-masing untuk mengajukan cuti, memperbarui data, atau melihat riwayat SK.
+## 3. Alur Kerja Harian (Daily Routine SOP)
+
+### 💻 A. Pengembangan Fitur / Kodingan Baru di PC
+1. Buka project di `C:\laragon\www\simpeg`.
+2. Nyalakan Laragon jika ingin menguji fitur di localhost (`http://sikap.fkpunri.test`).
+3. Setelah selesai mengubah kode atau tampilan:
+   * Klik kanan **`sync-to-github.ps1`** ➔ Pilih **"Run with PowerShell"**.
+   * Masukkan pesan commit atau tekan **Enter**.
+   * Kode otomatis ter-push ke GitHub.
+   * **Railway akan otomatis mendeteksi dan memperbarui website cloud dalam 2–3 menit**.
 
 ---
 
-### 🔄 C. Menyinkronkan Data antara PC Kantor dan Cloud Railway
-Jika Anda telah selesai menginput data baru di PC kantor (atau ada pegawai yang menginput data dari luar kampus lewat link Railway), lakukan sinkronisasi data agar kedua database tetap sama:
+### 📥 B. Menjalankan Backup Data Cloud ke PC Kantor (Manual / Sewaktu-waktu)
+Kapan pun Anda ingin memastikan data cloud sudah tersimpan salinannya di harddisk PC kantor:
 
 1. Buka folder:
    ```text
@@ -106,68 +96,100 @@ Jika Anda telah selesai menginput data baru di PC kantor (atau ada pegawai yang 
    ```
 2. **Double-click** file:
    ```text
-   sync-database.bat
+   backup-cloud-to-local.bat
    ```
 3. Sistem akan otomatis:
-   * Mengirim (*Push*) data pegawai baru dari PC ke Railway.
-   * Menarik (*Pull*) pembaruan dari Railway ke PC.
-   * Muncul pesan `TWO-WAY SYNC COMPLETED SUCCESSFULLY`.
+   * Mengunduh dump database Railway MySQL dan mengompresnya menjadi file `.sql.gz`.
+   * Mengunduh berkas baru dari Cloudflare R2 ke `C:\simpeg-backup\files`.
+   * Membersihkan cadangan database yang berusia lebih dari 30 hari.
+   * Menyimpan log riwayat di `C:\simpeg-backup\logs\backup.log`.
 
 ---
 
-### 💻 D. Saat Ada Perubahan Kodingan / Tampilan Web
-Jika Anda selesai mengubah kodingan, merapikan tampilan, atau menambah fitur baru:
+### ⏰ C. Backup Otomatis Harian (Windows Task Scheduler)
+Agar pencadangan berjalan otomatis tanpa perlu diklik setiap hari:
 
-1. Buka folder utama project:
-   ```text
-   C:\laragon\www\simpeg
+1. Klik kanan **PowerShell** ➔ Pilih **"Run as Administrator"**.
+2. Jalankan perintah:
+   ```powershell
+   & "C:\laragon\www\simpeg\scripts\setup-taskscheduler.ps1"
    ```
-2. Klik kanan file **`sync-to-github.ps1`** ➔ Pilih **"Run with PowerShell"**.
-3. Ketik pesan perubahan (misal: `perbaikan tampilan`) atau tekan **Enter**.
-4. Script akan otomatis mengunggah kodingan ke GitHub.
-5. **Server Railway Cloud otomatis mendeteksi dan meng-update website online dalam 2-3 menit**.
+3. Task `SikapBackupCloudToLocal` akan terdaftar dan berjalan otomatis **setiap malam pukul 02:00 WIB**.
 
 ---
 
-## 3. Matriks Tautan & Kebutuhan Akses
+## 4. Panduan Konfigurasi Cloudflare R2 & Railway
 
-| Kebutuhan | Alamat / Link yang Digunakan | Syarat Akses |
-|---|---|---|
-| **Akses Utama Admin di PC** | `http://sikap.fkpunri.test` | Buka di PC Server kantor |
-| **Cadangan Admin di PC** | `http://simpeg.test` | Buka di PC Server kantor |
-| **Akses Pegawai di Lingkungan Kampus** | `http://172.30.22.156` | Terhubung ke WiFi yang sama dengan PC Server |
-| **Akses Online dari Luar Kampus (Internet Umum)** | `https://sikap-app.up.railway.app` | Di mana saja dengan kuota/internet apa saja |
-| **Kelola Database MySQL Lokal** | `http://localhost/phpmyadmin` | Buka di PC Server (DB: `simpeg`) |
-| **Penyimpanan Kodingan Master** | `https://github.com/yugisantoso52-hue/simpeg-app` | Akun GitHub |
+### ☁️ A. Pengaturan Cloudflare R2
+1. Login ke [Cloudflare Dashboard](https://dash.cloudflare.com/) ➔ Pilih menu **R2**.
+2. Klik **Create bucket** ➔ Beri nama bucket: `sikap-files` (atau nama pilihan Anda).
+3. Di tab **Settings** bucket:
+   * Pada bagian **Public Access**, Anda bisa mengaktifkan *Custom Domain* (misal: `files.sikap.fkpunri.ac.id`) atau mengaktifkan *R2.dev subdomain*.
+4. Di halaman utama R2, klik **Manage R2 API Tokens** di sisi kanan ➔ Klik **Create API token**:
+   * Permissions: **Object Read & Write**
+   * TTL: Forever (atau sesuai kebutuhan)
+5. Simpan:
+   * **Access Key ID**
+   * **Secret Access Key**
+   * **Endpoint URL** (format: `https://<account_id>.r2.cloudflarestorage.com`)
 
 ---
 
-## 4. Daftar File Penting & Alat Bantu (Shortcut Tools)
+### 🚀 B. Pengaturan Variabel Lingkungan di Dashboard Railway
+Buka project Anda di [Railway](https://railway.app/) ➔ Pilih service aplikasi Anda ➔ Buka tab **Variables** ➔ Tambahkan:
 
-Semua kebutuhan administrasi telah dibuatkan jalan pintas 1-klik di folder project:
+```ini
+APP_NAME="SIKAP FKP UNRI"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://sikap-app.up.railway.app
+
+# Konfigurasi Storage R2
+FILESYSTEM_DISK=r2
+R2_ACCESS_KEY_ID=isi_dengan_access_key_id_cloudflare
+R2_SECRET_ACCESS_KEY=isi_dengan_secret_access_key_cloudflare
+R2_DEFAULT_REGION=auto
+R2_BUCKET=sikap-files
+R2_ENDPOINT=https://<account_id>.r2.cloudflarestorage.com
+R2_URL=https://pub-xxxxxx.r2.dev
+
+# Database Railway (Otomatis disediakan jika menambahkan plugin MySQL Railway)
+DB_CONNECTION=mysql
+DB_HOST=${{MySQL.MYSQLHOST}}
+DB_PORT=${{MySQL.MYSQLPORT}}
+DB_DATABASE=${{MySQL.MYSQLDATABASE}}
+DB_USERNAME=${{MySQL.MYSQLUSER}}
+DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
+```
+
+---
+
+### 🖥️ C. Pengaturan Variabel Remote Backup di `.env` PC Kantor
+Agar script `backup-cloud-to-local.bat` di PC kantor dapat menarik database langsung dari Railway, buka `C:\laragon\www\simpeg\.env` di PC kantor dan isi:
+
+```ini
+# Ambil dari menu 'Connect' -> 'TCP Proxy' / External Connection di Railway MySQL Service
+RAILWAY_MYSQL_HOST=autorack.proxy.rlwy.net   # (contoh host eksternal railway)
+RAILWAY_MYSQL_PORT=xxxxx                    # (port publik railway)
+RAILWAY_MYSQL_DATABASE=railway
+RAILWAY_MYSQL_USER=root
+RAILWAY_MYSQL_PASSWORD=password_railway_anda
+
+# Kredensial R2 untuk menarik file arsip
+R2_ACCESS_KEY_ID=isi_dengan_access_key_id
+R2_SECRET_ACCESS_KEY=isi_dengan_secret_access_key
+R2_BUCKET=sikap-files
+R2_ENDPOINT=https://<account_id>.r2.cloudflarestorage.com
+```
+
+---
+
+## 5. Daftar Script & Alat Bantu
 
 | File Script | Lokasi | Fungsi |
 |---|---|---|
-| ⚡ **`sync-to-github.ps1`** | `C:\laragon\www\simpeg\` | Backup kodingan ke GitHub & trigger auto-deploy Railway |
-| 🔄 **`sync-database.bat`** | `C:\laragon\www\simpeg\scripts\` | Sinkronisasi data dua arah antara PC Lokal dan Cloud Railway |
-| 🚀 **`start-server.bat`** | `C:\laragon\www\simpeg\scripts\` | Menyalakan Apache & MySQL lokal dengan 1-klik jika terjadi kendala |
-| 🛡️ **`buka-firewall-port80.bat`** | `C:\laragon\www\simpeg\scripts\` | Memastikan port 80 terbuka untuk akses WiFi multi-perangkat |
-| 🌐 **`ganti-domain-ke-sikap.bat`** | `C:\laragon\www\simpeg\scripts\` | Mendaftarkan nama domain `sikap.fkpunri` di Windows |
-
----
-
-## 5. Panduan Singkat Penanganan Kendala (Troubleshooting)
-
-### ❓ Kendala 1: Database Error (`Connection actively refused`)
-* **Penyebab**: Service MySQL Laragon belum menyala.
-* **Solusi**: Buka Laragon dan klik **Start All**, atau jalankan file `scripts\start-server.bat`.
-
-### ❓ Kendala 2: HP tidak bisa membuka `172.30.22.156`
-* **Penyebab**: HP tidak tersambung ke WiFi kantor (menggunakan paket data seluler) atau IP WiFi PC berubah.
-* **Solusi**:
-  1. Pastikan WiFi di HP menyala dan terhubung ke **SSO TIK UNRI**.
-  2. Jika pegawai berada di rumah / luar kantor, arahkan mereka membuka link Cloud: `https://sikap-app.up.railway.app`.
-
-### ❓ Kendala 3: Perubahan kodingan belum tampak di Cloud Railway
-* **Penyebab**: Railway membutuhkan waktu 2-4 menit untuk proses build container Docker.
-* **Solusi**: Cek tab **Deployments** di dashboard Railway untuk memastikan status build sudah hijau (*Active / Deployment successful*), lalu tekan **Ctrl + F5** di browser.
+| ⚡ **`sync-to-github.ps1`** | `C:\laragon\www\simpeg\` | Unggah kodingan ke GitHub & trigger auto CI/CD build Railway |
+| 📥 **`backup-cloud-to-local.bat`** | `scripts\` | Pencadangan 1-klik (Unduh DB Railway + Berkas R2 ke harddisk PC) |
+| ⏰ **`setup-taskscheduler.ps1`** | `scripts\` | Mendaftarkan jadwal otomatis backup tiap pukul 02:00 WIB di Windows |
+| 🚀 **`start-server.bat`** | `scripts\` | Menyalakan Apache & MySQL lokal jika ingin development di PC |
+| 🌐 **`ganti-domain-ke-sikap.bat`** | `scripts\` | Mendaftarkan nama domain dev `sikap.fkpunri.test` di Windows hosts |

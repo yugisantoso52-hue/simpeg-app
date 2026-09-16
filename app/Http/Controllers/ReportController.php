@@ -116,49 +116,19 @@ class ReportController extends Controller
         }
 
         // Normalisasi separator
-        $relativePath = ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $decodedPath), DIRECTORY_SEPARATOR);
+        $normalizedPath = ltrim(str_replace('\\', '/', $decodedPath), '/');
+        $relativePath   = ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $decodedPath), DIRECTORY_SEPARATOR);
 
-        // Tentukan kandidat path fisik
-        $privateStorageRoot = realpath(storage_path('app/private'));
-        $publicStorageRoot  = realpath(storage_path('app/public'));
-
-        $targetPath = storage_path('app/private' . DIRECTORY_SEPARATOR . $relativePath);
-        if (!file_exists($targetPath)) {
-            $targetPath = storage_path('app/public' . DIRECTORY_SEPARATOR . $relativePath);
-            if (!file_exists($targetPath)) {
-                if ($request->expectsJson() || $request->is('api/*') || !$request->headers->has('referer')) {
-                    abort(404, 'Dokumen tidak ditemukan.');
-                }
-                return redirect()->back()->with('error', 'Berkas fisik belum diunggah atau tidak ditemukan di server. Silakan edit dan unggah ulang berkas.');
-            }
-        }
-
-        $realTarget = realpath($targetPath);
-        if ($realTarget === false) {
-            if ($request->expectsJson() || $request->is('api/*') || !$request->headers->has('referer')) {
-                abort(404, 'Dokumen tidak ditemukan.');
-            }
-            return redirect()->back()->with('error', 'Berkas fisik belum diunggah atau tidak ditemukan di server. Silakan edit dan unggah ulang berkas.');
-        }
-
-        // 3. Containment Check: Pastikan file berada di dalam storage root yang diizinkan
-        $isInsidePrivate = $privateStorageRoot && (str_starts_with($realTarget, $privateStorageRoot . DIRECTORY_SEPARATOR) || $realTarget === $privateStorageRoot);
-        $isInsidePublic  = $publicStorageRoot && (str_starts_with($realTarget, $publicStorageRoot . DIRECTORY_SEPARATOR) || $realTarget === $publicStorageRoot);
-
-        if (!$isInsidePrivate && !$isInsidePublic) {
-            abort(403);
-        }
-
-        // 4. Blokir Ekstensi & File Sensitif Sistem
+        // 3. Blokir Ekstensi & File Sensitif Sistem
         $forbiddenExtensions = ['env', 'php', 'htaccess', 'git', 'json', 'lock', 'yml', 'yaml', 'sqlite', 'log', 'key'];
-        $extension = strtolower(pathinfo($realTarget, PATHINFO_EXTENSION));
-        $filename  = basename($realTarget);
+        $extension = strtolower(pathinfo($normalizedPath, PATHINFO_EXTENSION));
+        $filename  = basename($normalizedPath);
 
         if (in_array($extension, $forbiddenExtensions, true) || str_starts_with($filename, '.')) {
             abort(403);
         }
 
-        // 5. Otorisasi Hak Akses (IDOR Protection)
+        // 4. Otorisasi Hak Akses (IDOR Protection)
         // Admin & Pimpinan memiliki hak akses membaca dokumen
         if (!$user->hasRole(['admin', 'pimpinan'])) {
             $ownerPegawaiId = $this->resolveFileOwnerPegawaiId($path);
@@ -172,7 +142,49 @@ class ReportController extends Controller
             }
         }
 
-        return response()->file($realTarget);
+        // 5. Cek via Storage Disks (kompatibel dengan Cloudflare R2 / S3 dan Local Storage)
+        $localDisk = \Illuminate\Support\Facades\Storage::disk('local');
+        $publicDisk = \Illuminate\Support\Facades\Storage::disk('public');
+
+        if ($localDisk->exists($normalizedPath)) {
+            if (config('filesystems.disks.local.driver') === 's3') {
+                return $localDisk->response($normalizedPath);
+            }
+            return response()->file($localDisk->path($normalizedPath));
+        }
+
+        if ($publicDisk->exists($normalizedPath)) {
+            if (config('filesystems.disks.public.driver') === 's3') {
+                return $publicDisk->response($normalizedPath);
+            }
+            return response()->file($publicDisk->path($normalizedPath));
+        }
+
+        // 6. Fallback direct file checks pada storage fisik lokal
+        $privateStorageRoot = realpath(storage_path('app/private'));
+        $publicStorageRoot  = realpath(storage_path('app/public'));
+
+        $targetPath = storage_path('app/private' . DIRECTORY_SEPARATOR . $relativePath);
+        if (!file_exists($targetPath)) {
+            $targetPath = storage_path('app/public' . DIRECTORY_SEPARATOR . $relativePath);
+        }
+
+        if (file_exists($targetPath)) {
+            $realTarget = realpath($targetPath);
+            if ($realTarget !== false) {
+                $isInsidePrivate = $privateStorageRoot && (str_starts_with($realTarget, $privateStorageRoot . DIRECTORY_SEPARATOR) || $realTarget === $privateStorageRoot);
+                $isInsidePublic  = $publicStorageRoot && (str_starts_with($realTarget, $publicStorageRoot . DIRECTORY_SEPARATOR) || $realTarget === $publicStorageRoot);
+
+                if ($isInsidePrivate || $isInsidePublic) {
+                    return response()->file($realTarget);
+                }
+            }
+        }
+
+        if ($request->expectsJson() || $request->is('api/*') || !$request->headers->has('referer')) {
+            abort(404, 'Dokumen tidak ditemukan.');
+        }
+        return redirect()->back()->with('error', 'Berkas fisik belum diunggah atau tidak ditemukan di server. Silakan edit dan unggah ulang berkas.');
     }
 
     /**

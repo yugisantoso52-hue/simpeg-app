@@ -1,126 +1,110 @@
-﻿# Panduan Infrastruktur SIMPEG
+# Panduan Infrastruktur SIKAP FKP UNRI
 
-## Arsitektur Sistem
+## Arsitektur Sistem (Struktur 2: Cloud-as-Primary)
 
 ```
-[ Kode di PC ]  ──git push──▶  [ GitHub: yugisantoso52-hue/simpeg-app ]
-      │
-      │  Laragon (Apache + MySQL) berjalan di PC
-      │  IP WiFi: 172.30.22.156
-      ▼
-[ http://172.30.22.156/simpeg ]
-      │
-      ├──▶  Data Teks  ──▶  MySQL: DB `simpeg` (32 tabel)
-      └──▶  Foto/PDF   ──▶  C:\laragon\www\simpeg\storage\app\public\
+[ 💻 PC Kantor / Local Dev ]
+  │
+  ├─► Coding / Testing (Laragon Lokal: sikap.fkpunri.test)
+  │      │
+  │      ▼ (Push Git: sync-to-github.ps1)
+  │   [ 🐙 GitHub Repo ]
+  │      │
+  │      ▼ (Auto Deploy CI/CD)
+  │   [ ☁️ Cloud Railway ] ── (Production App: https://sikap-app.up.railway.app)
+  │          │
+  │          ├─► Database Utama ──► [ MySQL Cloud Railway (Single Source of Truth) ]
+  │          │
+  │          └─► File SK / PDF / Ijazah ──► [ ☁️ Cloudflare R2 (S3-Compatible) ]
+  │                                                   ▲
+  └─► [ 📥 Backup Script (One-Way Pull) ]             │
+         ├─► Download SQL Dump dari Railway ──────────┤ (Hanya membaca / backup)
+         └─► Download file arsip dari R2 ke Harddisk PC
 ```
 
 ---
 
-## 1. Akses dari Perangkat Lain (Laptop/HP)
+## 1. Lingkungan Cloud (Production)
 
-> **Syarat**: Pastikan Laragon sedang berjalan (Apache + MySQL ON) dan perangkat terhubung ke WiFi yang sama.
-
-Buka browser dan ketik:
-```
-http://172.30.22.156/simpeg
-```
-
-### Login Default
-| Username | Password | Role |
+| Layanan | Provider | Keterangan |
 |---|---|---|
-| (sesuai database) | (sesuai database) | - |
+| **Aplikasi Web** | Railway (`https://sikap-app.up.railway.app`) | Container Docker PHP 8.3 FPM + Nginx |
+| **Database Utama** | MySQL Cloud di Railway | Single Source of Truth data kepegawaian |
+| **Penyimpanan Berkas** | Cloudflare R2 | Penyimpanan foto, SK, ijazah, dan dokumen PDF |
 
 ---
 
-## 2. Push Kode ke GitHub
+## 2. Lingkungan PC Kantor (Local Dev & Offline Backup Vault)
+
+PC Kantor memiliki 2 peran utama:
+1. **Local Development & Testing**: Tempat koding dan pengujian sebelum dikirim ke GitHub.
+2. **Offline Backup Vault**: Menyimpan salinan cadangan SQL dump Railway dan file Cloudflare R2 secara satu arah (*one-way pull*).
+
+---
+
+## 3. Push Kode ke GitHub & Auto Deploy
 
 ### Cara Cepat (GUI)
-Double-click file: `sync-to-github.ps1`
+Klik kanan file **`sync-to-github.ps1`** ➔ Pilih **"Run with PowerShell"**.
 
 ### Cara Manual (Terminal)
 ```powershell
 $git = "C:\laragon\bin\git\bin\git.exe"
 &$git -C "C:\laragon\www\simpeg" add .
-&$git -C "C:\laragon\www\simpeg" commit -m "pesan commit"
+&$git -C "C:\laragon\www\simpeg" commit -m "update arsitektur struktur 2"
 &$git -C "C:\laragon\www\simpeg" push origin main
 ```
 
-### Repo GitHub
-```
-https://github.com/yugisantoso52-hue/simpeg-app
-```
+Setiap push ke branch `main` akan memicu GitHub Actions CI untuk verifikasi build dan langsung di-deploy secara otomatis oleh Railway ke production.
 
 ---
 
-## 3. Jalankan Artisan Command
+## 4. Pencadangan Satu Arah (One-Way Local Backup)
 
-```powershell
-$env:PHPRC = "C:\laragon\bin\php\php-8.4.12-nts-Win32-vs17-x64"
-$php = "C:\laragon\bin\php\php-8.4.12-nts-Win32-vs17-x64\php.exe"
-$artisan = "C:\laragon\www\simpeg\artisan"
-
-# Contoh commands:
-&$php $artisan migrate          # jalankan migration
-&$php $artisan db:show          # cek database
-&$php $artisan cache:clear      # hapus cache
-&$php $artisan storage:link     # buat storage symlink
-&$php $artisan queue:work       # jalankan queue worker
+### Cara Manual
+Double-click file:
+```text
+C:\laragon\www\simpeg\scripts\backup-cloud-to-local.bat
 ```
 
----
+### Lokasi Hasil Backup
+* **Database Dump**: `C:\simpeg-backup\db\simpeg_cloud_YYYYMMDD_HHmmss.sql.gz`
+* **Berkas R2 (Foto/SK/PDF)**: `C:\simpeg-backup\files\`
+* **Log Pencadangan**: `C:\simpeg-backup\logs\backup.log`
 
-## 4. Lokasi Penyimpanan File Upload
-
-| Tipe File | Folder |
-|---|---|
-| Foto Pegawai | `storage\app\public\pegawai_foto\` |
-| Ijazah | `storage\app\public\ijazah\` |
-| Sertifikat Diklat | `storage\app\public\sertifikat-diklat\` |
-| SK Jabatan | `storage\app\public\sk-jabatan\` |
-| Dokumen Pegawai | `storage\app\public\pegawai\` |
-
-**URL akses:** `http://172.30.22.156/simpeg/storage/{subfolder}/{nama-file}`
+### Jadwal Otomatis
+Jalankan `scripts\setup-taskscheduler.ps1` sebagai Administrator untuk mengaktifkan backup otomatis setiap hari pukul **02:00 WIB**.
 
 ---
 
-## 5. Database MySQL
+## 5. Konfigurasi Penting (.env)
 
-| Setting | Nilai |
-|---|---|
-| Host | localhost / 127.0.0.1 |
-| Port | 3306 |
-| Database | simpeg |
-| Username | root |
-| Password | (kosong) |
-| Tool GUI | http://localhost/phpmyadmin |
+### Pada Railway Dashboard:
+```ini
+FILESYSTEM_DISK=r2
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_DEFAULT_REGION=auto
+R2_BUCKET=sikap-files
+R2_ENDPOINT=https://<account_id>.r2.cloudflarestorage.com
+R2_URL=https://pub-xxxxxx.r2.dev
+```
 
----
+### Pada PC Kantor (.env Lokal):
+```ini
+FILESYSTEM_DISK=public
+DB_CONNECTION=mysql
+DB_DATABASE=simpeg
 
-## 6. Konfigurasi yang Penting
+# Kredensial untuk script backup remote
+RAILWAY_MYSQL_HOST=autorack.proxy.rlwy.net
+RAILWAY_MYSQL_PORT=...
+RAILWAY_MYSQL_DATABASE=railway
+RAILWAY_MYSQL_USER=root
+RAILWAY_MYSQL_PASSWORD=...
 
-### File `.env` (jangan di-push ke GitHub!)
-- `APP_URL=http://172.30.22.156/simpeg` — URL untuk akses WiFi
-- `DB_DATABASE=simpeg` — nama database MySQL
-- `FILESYSTEM_DISK=public` — file upload ke storage/app/public
-
-### Git Info
-- Git executable: `C:\laragon\bin\git\bin\git.exe`
-- Remote: `https://github.com/yugisantoso52-hue/simpeg-app.git`
-- Branch utama: `main`
-
----
-
-## 7. Troubleshooting
-
-### Tidak bisa akses dari HP/Laptop lain
-1. Pastikan Laragon running (Apache = ON, MySQL = ON)
-2. Pastikan terhubung ke WiFi yang sama dengan PC
-3. Cek IP WiFi PC: `ipconfig` → cari `Wi-Fi IPv4`
-4. Jika masih gagal, jalankan sebagai Admin: `scripts\buka-firewall-port80.bat`
-
-### Gambar/File tidak tampil
-- Storage junction sudah dibuat: `public\storage` → `storage\app\public`
-- Jika rusak: hapus `public\storage` dan jalankan `mklink /J "public\storage" "storage\app\public"`
-
-### PHP artisan tidak jalan
-- Set PHPRC dulu: `$env:PHPRC = "C:\laragon\bin\php\php-8.4.12-nts-Win32-vs17-x64"`
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_BUCKET=sikap-files
+R2_ENDPOINT=https://<account_id>.r2.cloudflarestorage.com
+```

@@ -7,18 +7,32 @@
     @php
         $fotoBase64 = null;
         if (!empty($pegawai->foto)) {
+            $normalizedFoto = ltrim(str_replace('\\', '/', $pegawai->foto), '/');
             $cleanFoto = ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $pegawai->foto), DIRECTORY_SEPARATOR);
-            $candidateFotoPaths = [
-                storage_path('app/public/' . $cleanFoto),
-                storage_path('app/' . $cleanFoto),
-                public_path('storage/' . $cleanFoto),
-                public_path($cleanFoto),
-            ];
-            foreach ($candidateFotoPaths as $path) {
-                if (file_exists($path) && is_file($path)) {
-                    $mime = mime_content_type($path) ?: 'image/jpeg';
-                    $fotoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($path));
-                    break;
+
+            // 1. Cek via Storage disk public (kompatibel dengan S3 / Cloudflare R2 dan Local Storage)
+            $publicDisk = \Illuminate\Support\Facades\Storage::disk('public');
+            if ($publicDisk->exists($normalizedFoto) || $publicDisk->exists($cleanFoto)) {
+                $targetFoto = $publicDisk->exists($normalizedFoto) ? $normalizedFoto : $cleanFoto;
+                $content = $publicDisk->get($targetFoto);
+                $mime = $publicDisk->mimeType($targetFoto) ?: 'image/jpeg';
+                $fotoBase64 = 'data:' . $mime . ';base64,' . base64_encode($content);
+            }
+
+            // 2. Fallback path fisik lokal
+            if (!$fotoBase64) {
+                $candidateFotoPaths = [
+                    storage_path('app/public/' . $cleanFoto),
+                    storage_path('app/' . $cleanFoto),
+                    public_path('storage/' . $cleanFoto),
+                    public_path($cleanFoto),
+                ];
+                foreach ($candidateFotoPaths as $path) {
+                    if (file_exists($path) && is_file($path)) {
+                        $mime = mime_content_type($path) ?: 'image/jpeg';
+                        $fotoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($path));
+                        break;
+                    }
                 }
             }
         }

@@ -445,19 +445,34 @@ class PegawaiController extends Controller
     public function foto(Pegawai $pegawai)
     {
         if ($pegawai->foto) {
+            $normalizedPath = ltrim(str_replace('\\', '/', $pegawai->foto), '/');
             $cleanPath = ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $pegawai->foto), DIRECTORY_SEPARATOR);
 
-            // 1. Cek via Storage disk public (kompatibel dengan Storage::fake & real storage)
-            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($cleanPath)) {
-                return response()->file(\Illuminate\Support\Facades\Storage::disk('public')->path($cleanPath));
+            // 1. Cek via Storage disk public (kompatibel dengan Storage::fake, local, dan S3/R2)
+            $publicDisk = \Illuminate\Support\Facades\Storage::disk('public');
+            if ($publicDisk->exists($normalizedPath) || $publicDisk->exists($cleanPath)) {
+                $targetFile = $publicDisk->exists($normalizedPath) ? $normalizedPath : $cleanPath;
+                if (config('filesystems.disks.public.driver') === 's3') {
+                    $url = $publicDisk->url($targetFile);
+                    if ($url && !str_starts_with($url, '/')) {
+                        return redirect()->away($url);
+                    }
+                    return $publicDisk->response($targetFile);
+                }
+                return response()->file($publicDisk->path($targetFile));
             }
 
             // 2. Cek via Storage disk local
-            if (\Illuminate\Support\Facades\Storage::disk('local')->exists($cleanPath)) {
-                return response()->file(\Illuminate\Support\Facades\Storage::disk('local')->path($cleanPath));
+            $localDisk = \Illuminate\Support\Facades\Storage::disk('local');
+            if ($localDisk->exists($normalizedPath) || $localDisk->exists($cleanPath)) {
+                $targetFile = $localDisk->exists($normalizedPath) ? $normalizedPath : $cleanPath;
+                if (config('filesystems.disks.local.driver') === 's3') {
+                    return $localDisk->response($targetFile);
+                }
+                return response()->file($localDisk->path($targetFile));
             }
 
-            // 3. Fallback direct file checks
+            // 3. Fallback direct file checks (khusus environment lokal)
             $publicPath = storage_path('app/public' . DIRECTORY_SEPARATOR . $cleanPath);
             if (file_exists($publicPath) && is_file($publicPath)) {
                 return response()->file($publicPath);
