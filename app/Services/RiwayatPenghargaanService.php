@@ -14,17 +14,15 @@ class RiwayatPenghargaanService
         protected RiwayatPenghargaanRepositoryInterface $repository
     ) {}
 
-    private function uploadFile(?UploadedFile $file): ?string
+    private function uploadFile(?UploadedFile $file, $pegawai = null, ?string $title = null): ?string
     {
         if (!$file) return null;
-        return $file->store('penghargaan/sk', 'local');
+        return PegawaiStorageService::store($file, $pegawai, 'penghargaan', $title);
     }
 
     private function deleteFile(?string $path): void
     {
-        if ($path && Storage::disk('local')->exists($path)) {
-            Storage::disk('local')->delete($path);
-        }
+        PegawaiStorageService::delete($path);
     }
 
     public function search(?string $search, int $perPage = 15)
@@ -50,7 +48,7 @@ class RiwayatPenghargaanService
     public function create(array $data, ?UploadedFile $file = null): RiwayatPenghargaan
     {
         if ($file) {
-            $data['file_sk'] = $this->uploadFile($file);
+            $data['file_sk'] = $this->uploadFile($file, $data['pegawai_id'] ?? null, $data['nama_penghargaan'] ?? null);
         }
         $penghargaan = $this->repository->createRiwayat($data);
 
@@ -71,7 +69,9 @@ class RiwayatPenghargaanService
 
         if ($file) {
             $this->deleteFile($existing->file_sk);
-            $data['file_sk'] = $this->uploadFile($file);
+            $pegawaiTarget = $data['pegawai_id'] ?? $existing->pegawai_id;
+            $namaPenghargaan = $data['nama_penghargaan'] ?? $existing->nama_penghargaan;
+            $data['file_sk'] = $this->uploadFile($file, $pegawaiTarget, $namaPenghargaan);
         } else {
             unset($data['file_sk']);
         }

@@ -40,12 +40,25 @@ class TugasBelajarService
     public function create(array $data, ?UploadedFile $fileSk = null, ?UploadedFile $fileProgress = null): TugasBelajar
     {
         return DB::transaction(function () use ($data, $fileSk, $fileProgress) {
+            $pegawaiId = $data['pegawai_id'] ?? null;
+            $jenisPengembangan = $data['jenis_pengembangan'] ?? 'tubel';
+
             if ($fileSk) {
-                $data['file_sk'] = $fileSk->store('pegawai/tugas_belajar', 'local');
+                $data['file_sk'] = PegawaiStorageService::store(
+                    $fileSk,
+                    $pegawaiId,
+                    'tugas_belajar',
+                    'sk_' . $jenisPengembangan
+                );
             }
 
             if ($fileProgress) {
-                $data['file_laporan_progress'] = $fileProgress->store('pegawai/tugas_belajar', 'local');
+                $data['file_laporan_progress'] = PegawaiStorageService::store(
+                    $fileProgress,
+                    $pegawaiId,
+                    'tugas_belajar',
+                    'progress_' . $jenisPengembangan
+                );
             }
 
             $tugasBelajar = $this->repository->create($data);
@@ -56,13 +69,13 @@ class TugasBelajarService
             if (!empty($data['pegawai_id'])) {
                 $pegawai = Pegawai::find($data['pegawai_id']);
                 if ($pegawai) {
-                    $jenisPengembangan = strtoupper(str_replace(' ', '_', $data['jenis_pengembangan'] ?? 'TUBEL_IBEL'));
+                    $jenisFormat = strtoupper(str_replace(' ', '_', $jenisPengembangan));
                     $driveService = app(GoogleDriveGasService::class);
                     if ($fileSk) {
-                        $driveService->uploadDokumen($pegawai, $fileSk, "SK_{$jenisPengembangan}", '03_PENDIDIKAN_DIKLAT', "SK {$data['jenis_pengembangan']}");
+                        $driveService->uploadDokumen($pegawai, $fileSk, "SK_{$jenisFormat}", '03_PENDIDIKAN_DIKLAT', "SK {$jenisPengembangan}");
                     }
                     if ($fileProgress) {
-                        $driveService->uploadDokumen($pegawai, $fileProgress, "KHS_LAPORAN_PROGRESS", '03_PENDIDIKAN_DIKLAT', "Laporan Progress KHS {$data['jenis_pengembangan']}");
+                        $driveService->uploadDokumen($pegawai, $fileProgress, "KHS_LAPORAN_PROGRESS", '03_PENDIDIKAN_DIKLAT', "Laporan Progress KHS {$jenisPengembangan}");
                     }
                 }
             }
@@ -75,33 +88,44 @@ class TugasBelajarService
     {
         return DB::transaction(function () use ($id, $data, $fileSk, $fileProgress) {
             $existing = $this->repository->findOrFail($id);
+            $pegawaiId = $data['pegawai_id'] ?? $existing->pegawai_id;
+            $jenisPengembangan = $data['jenis_pengembangan'] ?? $existing->jenis_pengembangan ?? 'tubel';
 
             if ($fileSk) {
-                if ($existing->file_sk && Storage::disk('local')->exists($existing->file_sk)) {
-                    Storage::disk('local')->delete($existing->file_sk);
+                if ($existing->file_sk) {
+                    PegawaiStorageService::delete($existing->file_sk);
                 }
-                $data['file_sk'] = $fileSk->store('pegawai/tugas_belajar', 'local');
+                $data['file_sk'] = PegawaiStorageService::store(
+                    $fileSk,
+                    $pegawaiId,
+                    'tugas_belajar',
+                    'sk_' . $jenisPengembangan
+                );
             }
 
             if ($fileProgress) {
-                if ($existing->file_laporan_progress && Storage::disk('local')->exists($existing->file_laporan_progress)) {
-                    Storage::disk('local')->delete($existing->file_laporan_progress);
+                if ($existing->file_laporan_progress) {
+                    PegawaiStorageService::delete($existing->file_laporan_progress);
                 }
-                $data['file_laporan_progress'] = $fileProgress->store('pegawai/tugas_belajar', 'local');
+                $data['file_laporan_progress'] = PegawaiStorageService::store(
+                    $fileProgress,
+                    $pegawaiId,
+                    'tugas_belajar',
+                    'progress_' . $jenisPengembangan
+                );
             }
 
             $tugasBelajar = $this->repository->update($id, $data);
 
             // Sinkronisasi status_pegawai
-            $this->syncPegawaiStatus((int)$data['pegawai_id']);
+            $this->syncPegawaiStatus((int)($data['pegawai_id'] ?? $pegawaiId));
 
-            $pegawaiId = $data['pegawai_id'] ?? $tugasBelajar->pegawai_id;
             $pegawai = Pegawai::find($pegawaiId);
             if ($pegawai) {
-                $jenis = strtoupper(str_replace(' ', '_', $data['jenis_pengembangan'] ?? $tugasBelajar->jenis_pengembangan ?? 'TUBEL_IBEL'));
+                $jenisFormat = strtoupper(str_replace(' ', '_', $jenisPengembangan));
                 $driveService = app(GoogleDriveGasService::class);
                 if ($fileSk) {
-                    $driveService->uploadDokumen($pegawai, $fileSk, "SK_{$jenis}", '03_PENDIDIKAN_DIKLAT', "Update SK {$jenis}");
+                    $driveService->uploadDokumen($pegawai, $fileSk, "SK_{$jenisFormat}", '03_PENDIDIKAN_DIKLAT', "Update SK {$jenisPengembangan}");
                 }
                 if ($fileProgress) {
                     $driveService->uploadDokumen($pegawai, $fileProgress, "KHS_LAPORAN_PROGRESS", '03_PENDIDIKAN_DIKLAT', "Update Laporan Progress KHS");
@@ -118,11 +142,11 @@ class TugasBelajarService
             $existing = $this->repository->findOrFail($id);
             $pegawaiId = $existing->pegawai_id;
 
-            if ($existing->file_sk && Storage::disk('local')->exists($existing->file_sk)) {
-                Storage::disk('local')->delete($existing->file_sk);
+            if ($existing->file_sk) {
+                PegawaiStorageService::delete($existing->file_sk);
             }
-            if ($existing->file_laporan_progress && Storage::disk('local')->exists($existing->file_laporan_progress)) {
-                Storage::disk('local')->delete($existing->file_laporan_progress);
+            if ($existing->file_laporan_progress) {
+                PegawaiStorageService::delete($existing->file_laporan_progress);
             }
 
             $deleted = $this->repository->delete($id);

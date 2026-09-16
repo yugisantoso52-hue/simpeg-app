@@ -81,9 +81,11 @@ class RiwayatDiklatService
 
             if ($file) {
 
-                $data['file_sertifikat'] = $file->store(
-                    'sertifikat-diklat',
-                    'public'
+                $data['file_sertifikat'] = PegawaiStorageService::store(
+                    $file,
+                    $data['pegawai_id'] ?? null,
+                    'diklat',
+                    $data['nama_diklat'] ?? 'diklat'
                 );
 
             }
@@ -119,14 +121,17 @@ class RiwayatDiklatService
 
                 if ($riwayat->file_sertifikat) {
 
-                    Storage::disk('public')
-                        ->delete($riwayat->file_sertifikat);
+                    PegawaiStorageService::delete($riwayat->file_sertifikat);
 
                 }
 
-                $data['file_sertifikat'] = $file->store(
-                    'sertifikat-diklat',
-                    'public'
+                $pegawaiTarget = $data['pegawai_id'] ?? $riwayat->pegawai_id;
+                $titleTarget   = $data['nama_diklat'] ?? $riwayat->nama_diklat ?? 'diklat';
+                $data['file_sertifikat'] = PegawaiStorageService::store(
+                    $file,
+                    $pegawaiTarget,
+                    'diklat',
+                    $titleTarget
                 );
 
             }
@@ -155,8 +160,7 @@ class RiwayatDiklatService
 
             if ($riwayat->file_sertifikat) {
 
-                Storage::disk('public')
-                    ->delete($riwayat->file_sertifikat);
+                PegawaiStorageService::delete($riwayat->file_sertifikat);
 
             }
 

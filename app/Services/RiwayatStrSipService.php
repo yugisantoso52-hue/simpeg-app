@@ -47,7 +47,12 @@ class RiwayatStrSipService
     {
         return DB::transaction(function () use ($data, $file) {
             if ($file) {
-                $data['file_dokumen'] = $file->store('pegawai/str_sip', 'local');
+                $data['file_dokumen'] = PegawaiStorageService::store(
+                    $file,
+                    $data['pegawai_id'] ?? null,
+                    'str_sip',
+                    $data['jenis'] ?? 'str_sip'
+                );
             }
 
             // Normalisasi is_seumur_hidup
@@ -85,12 +90,18 @@ class RiwayatStrSipService
     {
         return DB::transaction(function () use ($id, $data, $file) {
             $riwayat = $this->repository->findOrFail($id);
+            $pegawaiId = $data['pegawai_id'] ?? $riwayat->pegawai_id;
 
             if ($file) {
-                if ($riwayat->file_dokumen && Storage::disk('local')->exists($riwayat->file_dokumen)) {
-                    Storage::disk('local')->delete($riwayat->file_dokumen);
+                if ($riwayat->file_dokumen) {
+                    PegawaiStorageService::delete($riwayat->file_dokumen);
                 }
-                $data['file_dokumen'] = $file->store('pegawai/str_sip', 'local');
+                $data['file_dokumen'] = PegawaiStorageService::store(
+                    $file,
+                    $pegawaiId,
+                    'str_sip',
+                    $data['jenis'] ?? $riwayat->jenis ?? 'str_sip'
+                );
             }
 
             $data['is_seumur_hidup'] = !empty($data['is_seumur_hidup']) && (bool)$data['is_seumur_hidup'];
@@ -111,7 +122,6 @@ class RiwayatStrSipService
             $updated = $this->repository->update($id, $data);
 
             if ($file) {
-                $pegawaiId = $data['pegawai_id'] ?? $updated->pegawai_id;
                 $pegawai = Pegawai::find($pegawaiId);
                 if ($pegawai) {
                     $jenisDok = 'STR_SIP_' . strtoupper($data['jenis'] ?? 'PROFESI');
@@ -128,8 +138,8 @@ class RiwayatStrSipService
         return DB::transaction(function () use ($id) {
             $riwayat = $this->repository->findOrFail($id);
 
-            if ($riwayat->file_dokumen && Storage::disk('local')->exists($riwayat->file_dokumen)) {
-                Storage::disk('local')->delete($riwayat->file_dokumen);
+            if ($riwayat->file_dokumen) {
+                PegawaiStorageService::delete($riwayat->file_dokumen);
             }
 
             return $this->repository->delete($id);

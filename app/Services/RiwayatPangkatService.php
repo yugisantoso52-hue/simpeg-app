@@ -81,9 +81,10 @@ class RiwayatPangkatService
         return DB::transaction(function () use ($data, $file) {
 
             if ($file) {
-                $data['file_sk'] = $file->store(
-                    'sk-pangkat',
-                    'local'
+                $data['file_sk'] = PegawaiStorageService::store(
+                    $file,
+                    $data['pegawai_id'] ?? null,
+                    'sk_pangkat'
                 );
             }
 
@@ -128,16 +129,14 @@ class RiwayatPangkatService
 
             if ($file) {
                 if ($riwayat->file_sk) {
-                    if (Storage::disk('local')->exists($riwayat->file_sk)) {
-                        Storage::disk('local')->delete($riwayat->file_sk);
-                    } else {
-                        Storage::disk('public')->delete($riwayat->file_sk);
-                    }
+                    PegawaiStorageService::delete($riwayat->file_sk);
                 }
 
-                $data['file_sk'] = $file->store(
-                    'sk-pangkat',
-                    'local'
+                $pegawaiTarget = $data['pegawai_id'] ?? $riwayat->pegawai_id;
+                $data['file_sk'] = PegawaiStorageService::store(
+                    $file,
+                    $pegawaiTarget,
+                    'sk_pangkat'
                 );
             }
 
@@ -187,7 +186,7 @@ class RiwayatPangkatService
             $riwayat = $this->repository->findOrFail($id);
 
             if ($riwayat->file_sk) {
-                Storage::disk('public')->delete($riwayat->file_sk);
+                PegawaiStorageService::delete($riwayat->file_sk);
             }
 
             // Ambil info pegawai sebelum riwayat dihapus

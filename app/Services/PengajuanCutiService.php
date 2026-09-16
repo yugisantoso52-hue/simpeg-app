@@ -92,7 +92,13 @@ class PengajuanCutiService
             }
 
             if ($file) {
-                $data['file_lampiran'] = $file->store('pegawai/cuti', 'local');
+                $jenisTitle = $data['jenis_cuti'] ?? 'cuti';
+                $data['file_lampiran'] = PegawaiStorageService::store(
+                    $file,
+                    $pegawaiId,
+                    'cuti',
+                    'lampiran_' . $jenisTitle
+                );
             }
 
             $data['pegawai_id']  = $pegawaiId;
@@ -168,8 +174,8 @@ class PengajuanCutiService
         return DB::transaction(function () use ($id) {
             $cuti = $this->repository->findOrFail($id);
 
-            if ($cuti->file_lampiran && Storage::disk('local')->exists($cuti->file_lampiran)) {
-                Storage::disk('local')->delete($cuti->file_lampiran);
+            if ($cuti->file_lampiran) {
+                PegawaiStorageService::delete($cuti->file_lampiran);
             }
 
             return $this->repository->delete($id);

@@ -36,7 +36,7 @@ class RiwayatPendidikanService
         return DB::transaction(function () use ($data, $ijazah) {
 
             if ($ijazah) {
-                $data['ijazah'] = $ijazah->store('ijazah', 'public');
+                $data['ijazah'] = PegawaiStorageService::store($ijazah, $data['pegawai_id'] ?? null, 'ijazah', $data['jenjang'] ?? 'ijazah');
             }
 
             return $this->repository->create($data);
@@ -53,10 +53,12 @@ class RiwayatPendidikanService
             if ($ijazah) {
 
                 if ($model->ijazah) {
-                    Storage::disk('public')->delete($model->ijazah);
+                    PegawaiStorageService::delete($model->ijazah);
                 }
 
-                $data['ijazah'] = $ijazah->store('ijazah', 'public');
+                $pegawaiTarget = $data['pegawai_id'] ?? $model->pegawai_id;
+                $jenjangTarget = $data['jenjang'] ?? $model->jenjang ?? 'ijazah';
+                $data['ijazah'] = PegawaiStorageService::store($ijazah, $pegawaiTarget, 'ijazah', $jenjangTarget);
             }
 
             return $this->repository->update($id, $data);
@@ -71,7 +73,7 @@ class RiwayatPendidikanService
             $model = $this->repository->find($id);
 
             if ($model->ijazah) {
-                Storage::disk('public')->delete($model->ijazah);
+                PegawaiStorageService::delete($model->ijazah);
             }
 
             return $this->repository->delete($id);

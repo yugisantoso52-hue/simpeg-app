@@ -40,12 +40,14 @@ class RiwayatSkpService
     public function create(array $data, ?UploadedFile $fileRencana = null, ?UploadedFile $fileEvaluasi = null): RiwayatSkp
     {
         return DB::transaction(function () use ($data, $fileRencana, $fileEvaluasi) {
+            $tahun = $data['tahun'] ?? date('Y');
+
             if ($fileRencana) {
-                $data['file_rencana_skp'] = $fileRencana->store('pegawai/skp', 'local');
+                $data['file_rencana_skp'] = PegawaiStorageService::store($fileRencana, $data['pegawai_id'] ?? null, 'skp', "rencana_{$tahun}");
             }
 
             if ($fileEvaluasi) {
-                $data['file_evaluasi_skp'] = $fileEvaluasi->store('pegawai/skp', 'local');
+                $data['file_evaluasi_skp'] = PegawaiStorageService::store($fileEvaluasi, $data['pegawai_id'] ?? null, 'skp', "evaluasi_{$tahun}");
             }
 
             $skp = $this->repository->create($data);
@@ -53,7 +55,6 @@ class RiwayatSkpService
             if (!empty($data['pegawai_id'])) {
                 $pegawai = Pegawai::find($data['pegawai_id']);
                 if ($pegawai) {
-                    $tahun = $data['tahun'] ?? date('Y');
                     $driveService = app(GoogleDriveGasService::class);
                     if ($fileRencana) {
                         $driveService->uploadDokumen($pegawai, $fileRencana, "SKP_RENCANA_{$tahun}", '04_KINERJA_PENILAIAN', "Form SKP Rencana Tahun {$tahun}");
@@ -72,27 +73,27 @@ class RiwayatSkpService
     {
         return DB::transaction(function () use ($id, $data, $fileRencana, $fileEvaluasi) {
             $existing = $this->repository->findOrFail($id);
+            $pegawaiId = $data['pegawai_id'] ?? $existing->pegawai_id;
+            $tahun = $data['tahun'] ?? $existing->tahun ?? date('Y');
 
             if ($fileRencana) {
-                if ($existing->file_rencana_skp && Storage::disk('local')->exists($existing->file_rencana_skp)) {
-                    Storage::disk('local')->delete($existing->file_rencana_skp);
+                if ($existing->file_rencana_skp) {
+                    PegawaiStorageService::delete($existing->file_rencana_skp);
                 }
-                $data['file_rencana_skp'] = $fileRencana->store('pegawai/skp', 'local');
+                $data['file_rencana_skp'] = PegawaiStorageService::store($fileRencana, $pegawaiId, 'skp', "rencana_{$tahun}");
             }
 
             if ($fileEvaluasi) {
-                if ($existing->file_evaluasi_skp && Storage::disk('local')->exists($existing->file_evaluasi_skp)) {
-                    Storage::disk('local')->delete($existing->file_evaluasi_skp);
+                if ($existing->file_evaluasi_skp) {
+                    PegawaiStorageService::delete($existing->file_evaluasi_skp);
                 }
-                $data['file_evaluasi_skp'] = $fileEvaluasi->store('pegawai/skp', 'local');
+                $data['file_evaluasi_skp'] = PegawaiStorageService::store($fileEvaluasi, $pegawaiId, 'skp', "evaluasi_{$tahun}");
             }
 
             $updated = $this->repository->update($id, $data);
 
-            $pegawaiId = $data['pegawai_id'] ?? $updated->pegawai_id;
             $pegawai = Pegawai::find($pegawaiId);
             if ($pegawai) {
-                $tahun = $data['tahun'] ?? $updated->tahun ?? date('Y');
                 $driveService = app(GoogleDriveGasService::class);
                 if ($fileRencana) {
                     $driveService->uploadDokumen($pegawai, $fileRencana, "SKP_RENCANA_{$tahun}", '04_KINERJA_PENILAIAN', "Update SKP Rencana Tahun {$tahun}");
@@ -111,11 +112,11 @@ class RiwayatSkpService
         return DB::transaction(function () use ($id) {
             $existing = $this->repository->findOrFail($id);
 
-            if ($existing->file_rencana_skp && Storage::disk('local')->exists($existing->file_rencana_skp)) {
-                Storage::disk('local')->delete($existing->file_rencana_skp);
+            if ($existing->file_rencana_skp) {
+                PegawaiStorageService::delete($existing->file_rencana_skp);
             }
-            if ($existing->file_evaluasi_skp && Storage::disk('local')->exists($existing->file_evaluasi_skp)) {
-                Storage::disk('local')->delete($existing->file_evaluasi_skp);
+            if ($existing->file_evaluasi_skp) {
+                PegawaiStorageService::delete($existing->file_evaluasi_skp);
             }
 
             return $this->repository->delete($id);

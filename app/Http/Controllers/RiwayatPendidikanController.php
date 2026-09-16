@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pegawai;
 use App\Models\RiwayatPendidikan;
+use App\Services\PegawaiStorageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -53,7 +54,12 @@ class RiwayatPendidikanController extends Controller
             $file = null;
 
             if ($request->hasFile('ijazah')) {
-                $file = $request->file('ijazah')->store('ijazah', 'public');
+                $file = PegawaiStorageService::store(
+                    $request->file('ijazah'),
+                    $request->pegawai_id,
+                    'ijazah',
+                    $request->jenjang ?? 'ijazah'
+                );
             }
 
             RiwayatPendidikan::create([
@@ -106,7 +112,15 @@ class RiwayatPendidikanController extends Controller
             $file = $data->ijazah;
 
             if ($request->hasFile('ijazah')) {
-                $file = $request->file('ijazah')->store('ijazah', 'public');
+                if ($data->ijazah) {
+                    PegawaiStorageService::delete($data->ijazah);
+                }
+                $file = PegawaiStorageService::store(
+                    $request->file('ijazah'),
+                    $request->pegawai_id,
+                    'ijazah',
+                    $request->jenjang ?? 'ijazah'
+                );
             }
 
             // Pertahankan data lama jika input nullable dikirim kosong / null
@@ -140,7 +154,9 @@ class RiwayatPendidikanController extends Controller
     public function destroy($id)
     {
         $data = RiwayatPendidikan::find($id);
-        $pegawaiId = $data->pegawai_id ?? null;
+        if ($data?->ijazah) {
+            PegawaiStorageService::delete($data->ijazah);
+        }
         RiwayatPendidikan::destroy($id);
 
         if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {

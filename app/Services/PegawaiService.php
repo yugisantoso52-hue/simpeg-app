@@ -26,50 +26,37 @@ class PegawaiService
     }   
 
     /**
-     * Upload foto pegawai ke storage public
+     * Upload foto pegawai ke storage arsip hierarkis
      */
-    private function uploadFoto(?UploadedFile $foto): ?string
+    private function uploadFoto(?UploadedFile $foto, $pegawai = null): ?string
     {
         if (!$foto) return null;
-        return $foto->store('pegawai_foto', 'public');
+        return PegawaiStorageService::store($foto, $pegawai, 'foto');
     }
 
     /**
-     * Hapus foto pegawai dari storage public
+     * Hapus foto pegawai dari storage
      */
     private function deleteFoto(?string $foto): void
     {
-        if ($foto) {
-            if (Storage::disk('public')->exists($foto)) {
-                Storage::disk('public')->delete($foto);
-            }
-            if (Storage::disk('local')->exists($foto)) {
-                Storage::disk('local')->delete($foto);
-            }
-        }
+        PegawaiStorageService::delete($foto);
     }
 
     /**
-     * Upload berkas SK pegawai ke storage privat (local)
+     * Upload berkas SK pegawai ke storage arsip hierarkis
      */
-    private function uploadSK(?UploadedFile $file): ?string
+    private function uploadSK(?UploadedFile $file, $pegawai = null, string $category = 'sk_pertama', ?string $title = null): ?string
     {
         if (!$file) return null;
-        return $file->store('pegawai/sk', 'local');
+        return PegawaiStorageService::store($file, $pegawai, $category, $title);
     }
 
     /**
-     * Hapus berkas SK pegawai dari storage privat / public
+     * Hapus berkas SK pegawai dari storage
      */
     private function deleteSK(?string $filePath): void
     {
-        if ($filePath) {
-            if (Storage::disk('local')->exists($filePath)) {
-                Storage::disk('local')->delete($filePath);
-            } elseif (Storage::disk('public')->exists($filePath)) {
-                Storage::disk('public')->delete($filePath);
-            }
-        }
+        PegawaiStorageService::delete($filePath);
     }
 
     /**
@@ -166,23 +153,23 @@ class PegawaiService
         }
         return DB::transaction(function () use ($data, $files) {
             if (!empty($files['foto'])) {
-                $data['foto'] = $this->uploadFoto($files['foto']);
+                $data['foto'] = $this->uploadFoto($files['foto'], $data);
             }
 
             if (!empty($files['file_sk_pertama'])) {
-                $data['file_sk_pertama'] = $this->uploadSK($files['file_sk_pertama']);
+                $data['file_sk_pertama'] = $this->uploadSK($files['file_sk_pertama'], $data, 'sk_pertama');
             }
             if (!empty($files['file_sk_pangkat_terakhir'])) {
-                $data['file_sk_pangkat_terakhir'] = $this->uploadSK($files['file_sk_pangkat_terakhir']);
+                $data['file_sk_pangkat_terakhir'] = $this->uploadSK($files['file_sk_pangkat_terakhir'], $data, 'sk_pangkat');
             }
             if (!empty($files['file_sk_kgb_terakhir'])) {
-                $data['file_sk_kgb_terakhir'] = $this->uploadSK($files['file_sk_kgb_terakhir']);
+                $data['file_sk_kgb_terakhir'] = $this->uploadSK($files['file_sk_kgb_terakhir'], $data, 'sk_kgb');
             }
             if (!empty($files['file_karpeg'])) {
-                $data['file_karpeg'] = $this->uploadSK($files['file_karpeg']);
+                $data['file_karpeg'] = $this->uploadSK($files['file_karpeg'], $data, 'karpeg');
             }
             if (!empty($files['file_pak'])) {
-                $data['file_pak'] = $this->uploadSK($files['file_pak']);
+                $data['file_pak'] = $this->uploadSK($files['file_pak'], $data, 'pak');
             }
 
             $data['kgb_berikutnya'] = $this->generateKGB($data['tmt_kgb_terakhir'] ?? null);
@@ -242,7 +229,7 @@ class PegawaiService
                     }
                     $fileIjazah = null;
                     if (isset($files['riwayat_pendidikan'][$index]['ijazah'])) {
-                        $fileIjazah = $files['riwayat_pendidikan'][$index]['ijazah']->store('ijazah', 'local');
+                        $fileIjazah = PegawaiStorageService::store($files['riwayat_pendidikan'][$index]['ijazah'], $pegawai, 'ijazah', $row['jenjang'] ?? 'ijazah');
                         $this->syncFileToDrive($pegawai, $files['riwayat_pendidikan'][$index]['ijazah'], 'IJAZAH ' . strtoupper($row['jenjang'] ?? 'S1'), '03_PENDIDIKAN_DIKLAT');
                     }
                     $pegawai->riwayatPendidikan()->create([
@@ -264,7 +251,7 @@ class PegawaiService
                     }
                     $fileSertifikat = null;
                     if (isset($files['riwayat_diklat'][$index]['file_sertifikat'])) {
-                        $fileSertifikat = $files['riwayat_diklat'][$index]['file_sertifikat']->store('sertifikat_diklat', 'local');
+                        $fileSertifikat = PegawaiStorageService::store($files['riwayat_diklat'][$index]['file_sertifikat'], $pegawai, 'diklat', $row['nama_diklat'] ?? 'diklat');
                         $this->syncFileToDrive($pegawai, $files['riwayat_diklat'][$index]['file_sertifikat'], 'SERTIFIKAT DIKLAT', '03_PENDIDIKAN_DIKLAT');
                     }
                     $tanggalMulai   = !empty($row['tanggal_mulai']) ? $row['tanggal_mulai'] : date('Y-m-d');
@@ -300,7 +287,7 @@ class PegawaiService
                     }
                     $fileSk = null;
                     if (isset($files['riwayat_jabatan'][$index]['file_sk'])) {
-                        $fileSk = $files['riwayat_jabatan'][$index]['file_sk']->store('sk_jabatan', 'local');
+                        $fileSk = PegawaiStorageService::store($files['riwayat_jabatan'][$index]['file_sk'], $pegawai, 'sk_jabatan');
                         $this->syncFileToDrive($pegawai, $files['riwayat_jabatan'][$index]['file_sk'], 'SK JABATAN', '02_RIWAYAT_SK');
                     }
                     $status = ($lastActiveIndex !== null && $index === $lastActiveIndex) ? 'aktif' : 'nonaktif';
@@ -333,7 +320,7 @@ class PegawaiService
                     }
                     $fileSk = null;
                     if (isset($files['riwayat_pangkat'][$index]['file_sk'])) {
-                        $fileSk = $files['riwayat_pangkat'][$index]['file_sk']->store('sk_pangkat', 'local');
+                        $fileSk = PegawaiStorageService::store($files['riwayat_pangkat'][$index]['file_sk'], $pegawai, 'sk_pangkat');
                         $this->syncFileToDrive($pegawai, $files['riwayat_pangkat'][$index]['file_sk'], 'SK PANGKAT', '02_RIWAYAT_SK');
                     }
                     $status = ($lastActiveIndex !== null && $index === $lastActiveIndex) ? 'aktif' : 'nonaktif';
@@ -370,42 +357,42 @@ class PegawaiService
 
             if (!empty($files['foto'])) {
                 $this->deleteFoto($pegawai->foto);
-                $data['foto'] = $this->uploadFoto($files['foto']);
+                $data['foto'] = $this->uploadFoto($files['foto'], $pegawai);
             } else {
                 unset($data['foto']);
             }
 
             if (!empty($files['file_sk_pertama'])) {
                 $this->deleteSK($pegawai->file_sk_pertama);
-                $data['file_sk_pertama'] = $this->uploadSK($files['file_sk_pertama']);
+                $data['file_sk_pertama'] = $this->uploadSK($files['file_sk_pertama'], $pegawai, 'sk_pertama');
             } else {
                 unset($data['file_sk_pertama']);
             }
 
             if (!empty($files['file_sk_pangkat_terakhir'])) {
                 $this->deleteSK($pegawai->file_sk_pangkat_terakhir);
-                $data['file_sk_pangkat_terakhir'] = $this->uploadSK($files['file_sk_pangkat_terakhir']);
+                $data['file_sk_pangkat_terakhir'] = $this->uploadSK($files['file_sk_pangkat_terakhir'], $pegawai, 'sk_pangkat');
             } else {
                 unset($data['file_sk_pangkat_terakhir']);
             }
 
             if (!empty($files['file_sk_kgb_terakhir'])) {
                 $this->deleteSK($pegawai->file_sk_kgb_terakhir);
-                $data['file_sk_kgb_terakhir'] = $this->uploadSK($files['file_sk_kgb_terakhir']);
+                $data['file_sk_kgb_terakhir'] = $this->uploadSK($files['file_sk_kgb_terakhir'], $pegawai, 'sk_kgb');
             } else {
                 unset($data['file_sk_kgb_terakhir']);
             }
 
             if (!empty($files['file_karpeg'])) {
                 $this->deleteSK($pegawai->file_karpeg);
-                $data['file_karpeg'] = $this->uploadSK($files['file_karpeg']);
+                $data['file_karpeg'] = $this->uploadSK($files['file_karpeg'], $pegawai, 'karpeg');
             } else {
                 unset($data['file_karpeg']);
             }
 
             if (!empty($files['file_pak'])) {
                 $this->deleteSK($pegawai->file_pak);
-                $data['file_pak'] = $this->uploadSK($files['file_pak']);
+                $data['file_pak'] = $this->uploadSK($files['file_pak'], $pegawai, 'pak');
             } else {
                 unset($data['file_pak']);
             }
@@ -481,7 +468,13 @@ class PegawaiService
                 }
                 $fileIjazah = null;
                 if (isset($files['riwayat_pendidikan'][$index]['ijazah'])) {
-                    $fileIjazah = $files['riwayat_pendidikan'][$index]['ijazah']->store('ijazah', 'local');
+                    if (!empty($row['id'])) {
+                        $oldPend = $pegawai->riwayatPendidikan()->where('id', $row['id'])->first();
+                        if ($oldPend?->ijazah) {
+                            PegawaiStorageService::delete($oldPend->ijazah);
+                        }
+                    }
+                    $fileIjazah = PegawaiStorageService::store($files['riwayat_pendidikan'][$index]['ijazah'], $pegawaiUpdated, 'ijazah', $row['jenjang'] ?? 'ijazah');
                     $this->syncFileToDrive($pegawaiUpdated, $files['riwayat_pendidikan'][$index]['ijazah'], 'IJAZAH ' . strtoupper($row['jenjang'] ?? 'S1'), '03_PENDIDIKAN_DIKLAT');
                 }
                 
@@ -514,7 +507,13 @@ class PegawaiService
                 }
                 $fileSertifikat = null;
                 if (isset($files['riwayat_diklat'][$index]['file_sertifikat'])) {
-                    $fileSertifikat = $files['riwayat_diklat'][$index]['file_sertifikat']->store('sertifikat_diklat', 'local');
+                    if (!empty($row['id'])) {
+                        $oldDiklat = $pegawai->riwayatDiklat()->where('id', $row['id'])->first();
+                        if ($oldDiklat?->file_sertifikat) {
+                            PegawaiStorageService::delete($oldDiklat->file_sertifikat);
+                        }
+                    }
+                    $fileSertifikat = PegawaiStorageService::store($files['riwayat_diklat'][$index]['file_sertifikat'], $pegawaiUpdated, 'diklat', $row['nama_diklat'] ?? 'diklat');
                     $this->syncFileToDrive($pegawaiUpdated, $files['riwayat_diklat'][$index]['file_sertifikat'], 'SERTIFIKAT DIKLAT', '03_PENDIDIKAN_DIKLAT');
                 }
                 $tanggalMulai   = !empty($row['tanggal_mulai']) ? $row['tanggal_mulai'] : date('Y-m-d');
@@ -561,7 +560,13 @@ class PegawaiService
                 }
                 $fileSk = null;
                 if (isset($files['riwayat_jabatan'][$index]['file_sk'])) {
-                    $fileSk = $files['riwayat_jabatan'][$index]['file_sk']->store('sk_jabatan', 'local');
+                    if (!empty($row['id'])) {
+                        $oldJab = $pegawai->riwayatJabatan()->where('id', $row['id'])->first();
+                        if ($oldJab?->file_sk) {
+                            PegawaiStorageService::delete($oldJab->file_sk);
+                        }
+                    }
+                    $fileSk = PegawaiStorageService::store($files['riwayat_jabatan'][$index]['file_sk'], $pegawaiUpdated, 'sk_jabatan');
                     $this->syncFileToDrive($pegawaiUpdated, $files['riwayat_jabatan'][$index]['file_sk'], 'SK JABATAN', '02_RIWAYAT_SK');
                 }
 
@@ -607,7 +612,13 @@ class PegawaiService
                 }
                 $fileSk = null;
                 if (isset($files['riwayat_pangkat'][$index]['file_sk'])) {
-                    $fileSk = $files['riwayat_pangkat'][$index]['file_sk']->store('sk_pangkat', 'local');
+                    if (!empty($row['id'])) {
+                        $oldPangkat = $pegawai->riwayatPangkat()->where('id', $row['id'])->first();
+                        if ($oldPangkat?->file_sk) {
+                            PegawaiStorageService::delete($oldPangkat->file_sk);
+                        }
+                    }
+                    $fileSk = PegawaiStorageService::store($files['riwayat_pangkat'][$index]['file_sk'], $pegawaiUpdated, 'sk_pangkat');
                     $this->syncFileToDrive($pegawaiUpdated, $files['riwayat_pangkat'][$index]['file_sk'], 'SK PANGKAT', '02_RIWAYAT_SK');
                 }
 

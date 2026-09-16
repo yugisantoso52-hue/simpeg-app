@@ -142,7 +142,15 @@ class ReportController extends Controller
             }
         }
 
-        // 5. Cek via Storage Disks (kompatibel dengan Cloudflare R2 / S3 dan Local Storage)
+        // 5. Cek via Storage Disks (kompatibel dengan Supabase, Cloudflare R2, S3 dan Local Storage)
+        $defaultDiskName = config('filesystems.default', 'local');
+        if (in_array($defaultDiskName, ['supabase', 's3', 'r2'])) {
+            $cloudDisk = \Illuminate\Support\Facades\Storage::disk($defaultDiskName);
+            if ($cloudDisk->exists($normalizedPath)) {
+                return $cloudDisk->response($normalizedPath);
+            }
+        }
+
         $localDisk = \Illuminate\Support\Facades\Storage::disk('local');
         $publicDisk = \Illuminate\Support\Facades\Storage::disk('public');
 
@@ -197,6 +205,8 @@ class ReportController extends Controller
         $pegawai = Pegawai::where('file_sk_pertama', $cleanPath)
             ->orWhere('file_sk_pangkat_terakhir', $cleanPath)
             ->orWhere('file_sk_kgb_terakhir', $cleanPath)
+            ->orWhere('file_karpeg', $cleanPath)
+            ->orWhere('file_pak', $cleanPath)
             ->orWhere('foto', $cleanPath)
             ->first();
         if ($pegawai) return $pegawai->id;
@@ -215,6 +225,24 @@ class ReportController extends Controller
 
         $mp = \App\Models\MutasiPegawai::where('file_sk', $cleanPath)->first();
         if ($mp) return $mp->pegawai_id;
+
+        $skp = \App\Models\RiwayatSkp::where('file_rencana_skp', $cleanPath)->orWhere('file_evaluasi_skp', $cleanPath)->first();
+        if ($skp) return $skp->pegawai_id;
+
+        $str = \App\Models\RiwayatStrSip::where('file_dokumen', $cleanPath)->first();
+        if ($str) return $str->pegawai_id;
+
+        $tb = \App\Models\TugasBelajar::where('file_sk', $cleanPath)->orWhere('file_laporan_progress', $cleanPath)->first();
+        if ($tb) return $tb->pegawai_id;
+
+        $cuti = \App\Models\PengajuanCuti::where('file_lampiran', $cleanPath)->first();
+        if ($cuti) return $cuti->pegawai_id;
+
+        $pub = \App\Models\RiwayatPublikasi::where('file_publikasi', $cleanPath)->first();
+        if ($pub) return $pub->pegawai_id;
+
+        $penghargaan = \App\Models\RiwayatPenghargaan::where('file_sk', $cleanPath)->first();
+        if ($penghargaan) return $penghargaan->pegawai_id;
 
         return null;
     }

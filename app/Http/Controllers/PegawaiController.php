@@ -448,6 +448,15 @@ class PegawaiController extends Controller
             $normalizedPath = ltrim(str_replace('\\', '/', $pegawai->foto), '/');
             $cleanPath = ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $pegawai->foto), DIRECTORY_SEPARATOR);
 
+            // 0. Cek via Storage disk cloud (Supabase / R2 / S3) jika disk utama adalah cloud
+            $defaultDiskName = config('filesystems.default', 'public');
+            if (in_array($defaultDiskName, ['supabase', 's3', 'r2'])) {
+                $cloudDisk = \Illuminate\Support\Facades\Storage::disk($defaultDiskName);
+                if ($cloudDisk->exists($normalizedPath)) {
+                    return $cloudDisk->response($normalizedPath);
+                }
+            }
+
             // 1. Cek via Storage disk public (kompatibel dengan Storage::fake, local, dan S3/R2)
             $publicDisk = \Illuminate\Support\Facades\Storage::disk('public');
             if ($publicDisk->exists($normalizedPath) || $publicDisk->exists($cleanPath)) {

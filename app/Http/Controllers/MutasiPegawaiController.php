@@ -8,6 +8,7 @@ use App\Models\UnitKerja;
 use App\Models\Jabatan;
 use App\Http\Requests\StoreMutasiRequest;
 use App\Http\Requests\UpdateMutasiRequest; // Menggunakan UpdateMutasiRequest baru
+use App\Services\PegawaiStorageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +46,12 @@ class MutasiPegawaiController extends Controller
                 
                 $file = null;
                 if ($request->hasFile('file_sk')) {
-                    $file = $request->file('file_sk')->store('mutasi-pegawai', 'local');
+                    $file = PegawaiStorageService::store(
+                        $request->file('file_sk'),
+                        $request->pegawai_id,
+                        'mutasi',
+                        'sk_mutasi'
+                    );
                 }
 
                 // 1. Simpan Log Riwayat Mutasi
@@ -109,13 +115,14 @@ class MutasiPegawaiController extends Controller
 
                 if ($request->hasFile('file_sk')) {
                     if ($mutasi->file_sk) {
-                        if (Storage::disk('local')->exists($mutasi->file_sk)) {
-                            Storage::disk('local')->delete($mutasi->file_sk);
-                        } else {
-                            Storage::disk('public')->delete($mutasi->file_sk);
-                        }
+                        PegawaiStorageService::delete($mutasi->file_sk);
                     }
-                    $file = $request->file('file_sk')->store('mutasi-pegawai', 'local');
+                    $file = PegawaiStorageService::store(
+                        $request->file('file_sk'),
+                        $request->pegawai_id,
+                        'mutasi',
+                        'sk_mutasi'
+                    );
                 }
 
                 // Pertahankan data nullable existing jika input kosong
@@ -168,7 +175,7 @@ class MutasiPegawaiController extends Controller
                 ]);
 
                 if ($mutasi->file_sk) {
-                    Storage::disk('public')->delete($mutasi->file_sk);
+                    PegawaiStorageService::delete($mutasi->file_sk);
                 }
 
                 $mutasi->delete();

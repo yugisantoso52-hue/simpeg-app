@@ -14,17 +14,15 @@ class RiwayatPublikasiService
         protected RiwayatPublikasiRepositoryInterface $repository
     ) {}
 
-    private function uploadFile(?UploadedFile $file): ?string
+    private function uploadFile(?UploadedFile $file, $pegawai = null, ?string $title = null): ?string
     {
         if (!$file) return null;
-        return $file->store('publikasi/dokumen', 'local');
+        return PegawaiStorageService::store($file, $pegawai, 'publikasi', $title);
     }
 
     private function deleteFile(?string $path): void
     {
-        if ($path && Storage::disk('local')->exists($path)) {
-            Storage::disk('local')->delete($path);
-        }
+        PegawaiStorageService::delete($path);
     }
 
     public function search(?string $search, int $perPage = 15)
@@ -50,7 +48,7 @@ class RiwayatPublikasiService
     public function create(array $data, ?UploadedFile $file = null): RiwayatPublikasi
     {
         if ($file) {
-            $data['file_publikasi'] = $this->uploadFile($file);
+            $data['file_publikasi'] = $this->uploadFile($file, $data['pegawai_id'] ?? null, $data['judul'] ?? null);
         }
         $publikasi = $this->repository->createRiwayat($data);
 
@@ -70,7 +68,9 @@ class RiwayatPublikasiService
 
         if ($file) {
             $this->deleteFile($existing->file_publikasi);
-            $data['file_publikasi'] = $this->uploadFile($file);
+            $pegawaiTarget = $data['pegawai_id'] ?? $existing->pegawai_id;
+            $judulTarget = $data['judul'] ?? $existing->judul;
+            $data['file_publikasi'] = $this->uploadFile($file, $pegawaiTarget, $judulTarget);
         } else {
             unset($data['file_publikasi']);
         }

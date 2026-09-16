@@ -98,9 +98,10 @@ class RiwayatJabatanService
         return DB::transaction(function () use ($data, $file) {
 
             if ($file) {
-                $data['file_sk'] = $file->store(
-                    'sk-jabatan',
-                    'local'
+                $data['file_sk'] = PegawaiStorageService::store(
+                    $file,
+                    $data['pegawai_id'] ?? null,
+                    'sk_jabatan'
                 );
             }
 
@@ -154,18 +155,14 @@ class RiwayatJabatanService
             if ($file) {
 
                 if (!empty($riwayat->file_sk)) {
-
-                    if (Storage::disk('local')->exists($riwayat->file_sk)) {
-                        Storage::disk('local')->delete($riwayat->file_sk);
-                    } else {
-                        Storage::disk('public')->delete($riwayat->file_sk);
-                    }
-
+                    PegawaiStorageService::delete($riwayat->file_sk);
                 }
 
-                $data['file_sk'] = $file->store(
-                    'sk-jabatan',
-                    'local'
+                $pegawaiTarget = $data['pegawai_id'] ?? $riwayat->pegawai_id;
+                $data['file_sk'] = PegawaiStorageService::store(
+                    $file,
+                    $pegawaiTarget,
+                    'sk_jabatan'
                 );
 
             }
@@ -220,13 +217,7 @@ class RiwayatJabatanService
             $riwayat = $this->repository->findOrFail($id);
 
             if (!empty($riwayat->file_sk)) {
-
-                if (Storage::disk('local')->exists($riwayat->file_sk)) {
-                    Storage::disk('local')->delete($riwayat->file_sk);
-                } else {
-                    Storage::disk('public')->delete($riwayat->file_sk);
-                }
-
+                PegawaiStorageService::delete($riwayat->file_sk);
             }
 
             $pegawaiId = $riwayat->pegawai_id;
