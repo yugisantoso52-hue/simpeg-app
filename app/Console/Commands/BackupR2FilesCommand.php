@@ -13,6 +13,7 @@ class BackupR2FilesCommand extends Command
      * @var string
      */
     protected $signature = 'simpeg:backup-r2 
+                            {--disk= : Disk cloud yang dicadangkan (default: auto detect supabase/r2/s3)}
                             {--dest= : Direktori lokal tujuan backup (default: C:\simpeg-backup\files)}
                             {--sync-storage : Sinkronkan juga langsung ke storage/app lokal agar PC dev memiliki semua berkas}
                             {--dry-run : Hanya cek file yang akan diunduh tanpa mendownload}';
@@ -22,7 +23,7 @@ class BackupR2FilesCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Menarik / mencadangkan semua file (SK, PDF, Ijazah, Foto) dari Cloudflare R2 ke penyimpanan PC lokal';
+    protected $description = 'Menarik / mencadangkan semua file (SK, PDF, Ijazah, Foto) dari Cloud Storage (Supabase S3 / Cloudflare R2) ke penyimpanan PC lokal';
 
     /**
      * Execute the console command.
@@ -30,32 +31,45 @@ class BackupR2FilesCommand extends Command
     public function handle()
     {
         $this->info('====================================================');
-        $this->info('  SIKAP - ONE-WAY BACKUP CLOUDFLARE R2 ➔ PC LOKAL  ');
+        $this->info('  SIKAP - ONE-WAY BACKUP CLOUD STORAGE ➔ PC LOKAL  ');
         $this->info('====================================================');
 
-        // Cek ketersediaan konfigurasi R2
-        $bucket = config('filesystems.disks.r2.bucket');
-        $key = config('filesystems.disks.r2.key');
+        // Tentukan disk yang aktif (prioritas: opsi --disk, supabase, r2, s3)
+        $diskName = $this->option('disk');
+        if (!$diskName) {
+            if (!empty(config('filesystems.disks.supabase.key'))) {
+                $diskName = 'supabase';
+            } elseif (!empty(config('filesystems.disks.r2.key'))) {
+                $diskName = 'r2';
+            } elseif (!empty(config('filesystems.disks.s3.key'))) {
+                $diskName = 's3';
+            } else {
+                $diskName = 'supabase';
+            }
+        }
+
+        $bucket = config("filesystems.disks.{$diskName}.bucket");
+        $key    = config("filesystems.disks.{$diskName}.key");
 
         if (empty($bucket) || empty($key)) {
-            $this->warn('Konfigurasi Cloudflare R2 belum lengkap di .env.');
-            $this->line('Pastikan R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, dan R2_BUCKET sudah diisi.');
+            $this->warn("Konfigurasi Cloud Storage ({$diskName}) belum lengkap di .env.");
+            $this->line("Pastikan Access Key, Secret Key, dan Bucket sudah diisi (contoh: SUPABASE_STORAGE_ACCESS_KEY_ID & SUPABASE_STORAGE_SECRET_ACCESS_KEY).");
             return 1;
         }
 
-        $r2Disk = Storage::disk('r2');
+        $cloudDisk = Storage::disk($diskName);
 
-        $this->info("Menghubungi Cloudflare R2 Bucket: [{$bucket}]...");
+        $this->info("Menghubungi Cloud Storage [{$diskName}] Bucket: [{$bucket}]...");
 
         try {
-            $files = $r2Disk->allFiles();
+            $files = $cloudDisk->allFiles();
         } catch (\Throwable $e) {
-            $this->error('Gagal mengambil daftar file dari Cloudflare R2: ' . $e->getMessage());
+            $this->error("Gagal mengambil daftar file dari Cloud Storage ({$diskName}): " . $e->getMessage());
             return 1;
         }
 
         $totalFiles = count($files);
-        $this->info("Ditemukan {$totalFiles} berkas di Cloudflare R2.");
+        $this->info("Ditemukan {$totalFiles} berkas di Cloud Storage.");
 
         if ($totalFiles === 0) {
             $this->info('Tidak ada berkas untuk diunduh.');
@@ -83,7 +97,7 @@ class BackupR2FilesCommand extends Command
 
             $needsDownload = true;
             try {
-                $remoteSize = $r2Disk->size($file);
+                $remoteSize = $cloudDisk->size($file);
                 if (file_exists($targetPath) && filesize($targetPath) === $remoteSize) {
                     $needsDownload = false;
                 }
@@ -103,7 +117,7 @@ class BackupR2FilesCommand extends Command
                 }
 
                 try {
-                    $stream = $r2Disk->readStream($file);
+                    $stream = $cloudDisk->readStream($file);
                     if ($stream !== false) {
                         $localFile = fopen($targetPath, 'wb');
                         stream_copy_to_stream($stream, $localFile);

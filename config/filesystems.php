@@ -30,15 +30,15 @@ return [
 
     'disks' => [
 
-        'local' => env('FILESYSTEM_DISK') === 'r2' ? [
+        'local' => in_array(env('FILESYSTEM_DISK'), ['supabase', 's3', 'r2']) ? [
             'driver' => 's3',
-            'key' => env('R2_ACCESS_KEY_ID', env('AWS_ACCESS_KEY_ID')),
-            'secret' => env('R2_SECRET_ACCESS_KEY', env('AWS_SECRET_ACCESS_KEY')),
-            'region' => env('R2_DEFAULT_REGION', env('AWS_DEFAULT_REGION', 'auto')),
-            'bucket' => env('R2_BUCKET', env('AWS_BUCKET')),
-            'url' => env('R2_URL', env('AWS_URL')),
-            'endpoint' => env('R2_ENDPOINT', env('AWS_ENDPOINT')),
-            'use_path_style_endpoint' => env('R2_USE_PATH_STYLE_ENDPOINT', false),
+            'key' => env('SUPABASE_STORAGE_ACCESS_KEY_ID', env('R2_ACCESS_KEY_ID', env('AWS_ACCESS_KEY_ID'))),
+            'secret' => env('SUPABASE_STORAGE_SECRET_ACCESS_KEY', env('R2_SECRET_ACCESS_KEY', env('AWS_SECRET_ACCESS_KEY'))),
+            'region' => env('SUPABASE_STORAGE_REGION', env('R2_DEFAULT_REGION', env('AWS_DEFAULT_REGION', 'ap-northeast-2'))),
+            'bucket' => env('SUPABASE_STORAGE_BUCKET', env('R2_BUCKET', env('AWS_BUCKET', 'sikap-files'))),
+            'url' => env('SUPABASE_STORAGE_URL', env('R2_URL', env('AWS_URL'))),
+            'endpoint' => env('SUPABASE_STORAGE_ENDPOINT', env('R2_ENDPOINT', env('AWS_ENDPOINT', 'https://hxsiyzwrtujwtszmwcfo.storage.supabase.co/storage/v1/s3'))),
+            'use_path_style_endpoint' => env('SUPABASE_STORAGE_USE_PATH_STYLE_ENDPOINT', env('AWS_USE_PATH_STYLE_ENDPOINT', true)),
             'throw' => false,
             'report' => false,
         ] : [
@@ -49,15 +49,15 @@ return [
             'report' => false,
         ],
 
-        'public' => env('FILESYSTEM_DISK') === 'r2' ? [
+        'public' => in_array(env('FILESYSTEM_DISK'), ['supabase', 's3', 'r2']) ? [
             'driver' => 's3',
-            'key' => env('R2_ACCESS_KEY_ID', env('AWS_ACCESS_KEY_ID')),
-            'secret' => env('R2_SECRET_ACCESS_KEY', env('AWS_SECRET_ACCESS_KEY')),
-            'region' => env('R2_DEFAULT_REGION', env('AWS_DEFAULT_REGION', 'auto')),
-            'bucket' => env('R2_BUCKET', env('AWS_BUCKET')),
-            'url' => env('R2_URL', env('AWS_URL')),
-            'endpoint' => env('R2_ENDPOINT', env('AWS_ENDPOINT')),
-            'use_path_style_endpoint' => env('R2_USE_PATH_STYLE_ENDPOINT', false),
+            'key' => env('SUPABASE_STORAGE_ACCESS_KEY_ID', env('R2_ACCESS_KEY_ID', env('AWS_ACCESS_KEY_ID'))),
+            'secret' => env('SUPABASE_STORAGE_SECRET_ACCESS_KEY', env('R2_SECRET_ACCESS_KEY', env('AWS_SECRET_ACCESS_KEY'))),
+            'region' => env('SUPABASE_STORAGE_REGION', env('R2_DEFAULT_REGION', env('AWS_DEFAULT_REGION', 'ap-northeast-2'))),
+            'bucket' => env('SUPABASE_STORAGE_BUCKET', env('R2_BUCKET', env('AWS_BUCKET', 'sikap-files'))),
+            'url' => env('SUPABASE_STORAGE_URL', env('R2_URL', env('AWS_URL'))),
+            'endpoint' => env('SUPABASE_STORAGE_ENDPOINT', env('R2_ENDPOINT', env('AWS_ENDPOINT', 'https://hxsiyzwrtujwtszmwcfo.storage.supabase.co/storage/v1/s3'))),
+            'use_path_style_endpoint' => env('SUPABASE_STORAGE_USE_PATH_STYLE_ENDPOINT', env('AWS_USE_PATH_STYLE_ENDPOINT', true)),
             'throw' => false,
             'report' => false,
         ] : [
@@ -65,6 +65,19 @@ return [
             'root' => storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        'supabase' => [
+            'driver' => 's3',
+            'key' => env('SUPABASE_STORAGE_ACCESS_KEY_ID', env('AWS_ACCESS_KEY_ID')),
+            'secret' => env('SUPABASE_STORAGE_SECRET_ACCESS_KEY', env('AWS_SECRET_ACCESS_KEY')),
+            'region' => env('SUPABASE_STORAGE_REGION', 'ap-northeast-2'),
+            'bucket' => env('SUPABASE_STORAGE_BUCKET', 'sikap-files'),
+            'url' => env('SUPABASE_STORAGE_URL'),
+            'endpoint' => env('SUPABASE_STORAGE_ENDPOINT', 'https://hxsiyzwrtujwtszmwcfo.storage.supabase.co/storage/v1/s3'),
+            'use_path_style_endpoint' => env('SUPABASE_STORAGE_USE_PATH_STYLE_ENDPOINT', true),
             'throw' => false,
             'report' => false,
         ],
