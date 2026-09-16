@@ -272,61 +272,98 @@ class PegawaiCompletenessService
 
     /**
      * Mengambil Ringkasan Statistik Kelengkapan Data Fakultas (Khusus Admin/Pimpinan)
-     * Di-cache selama 15 menit untuk memangkas latensi dashboard
+     * Di-cache selama 15 menit dengan sanitasi tipe data murni untuk memangkas latensi dashboard
      */
     public static function getFacultyCompleteness(): array
     {
-        return Cache::remember(self::CACHE_KEY, now()->addMinutes(15), function () {
-            $pegawaiList = Pegawai::with(['unitKerja', 'jabatan', 'golongan', 'riwayatPendidikan', 'riwayatDiklat', 'riwayatSkp', 'riwayatStrSip'])->get();
+        try {
+            $data = Cache::remember(self::CACHE_KEY, now()->addMinutes(15), function () {
+                return self::computeFacultyCompleteness();
+            });
 
-            if ($pegawaiList->isEmpty()) {
-                return [
-                    'average_score'   => 0,
-                    'total_complete'  => 0,
-                    'total_moderate'  => 0,
-                    'total_low'       => 0,
-                    'pegawai_scores'  => collect(),
-                ];
+            // Validasi fail-safe jika cache mengembalikan format rusak/string
+            if (!is_array($data) || !isset($data['pegawai_scores']) || !is_iterable($data['pegawai_scores'])) {
+                self::clearCache();
+                return self::computeFacultyCompleteness();
             }
 
-            $totalScore = 0;
-            $totalComplete = 0;
-            $totalModerate = 0;
-            $totalLow = 0;
-
-            $scores = $pegawaiList->map(function ($p) use (&$totalScore, &$totalComplete, &$totalModerate, &$totalLow) {
-                $data = self::calculate($p);
-                $score = $data['score'];
-                $totalScore += $score;
-
-                if ($score >= 100) {
-                    $totalComplete++;
-                } elseif ($score >= 50) {
-                    $totalModerate++;
-                } else {
-                    $totalLow++;
+            // Validasi elemen pertama
+            foreach ($data['pegawai_scores'] as $item) {
+                if (!is_array($item) || !isset($item['pegawai'])) {
+                    self::clearCache();
+                    return self::computeFacultyCompleteness();
                 }
+                break;
+            }
 
-                return [
-                    'pegawai'       => $p,
-                    'score'         => $score,
-                    'status_label'  => $data['status_label'],
-                    'badge_color'   => $data['badge_color'],
-                    'progress_color'=> $data['progress_color'],
-                    'missing_count' => count($data['missing_items']),
-                    'missing_items' => $data['missing_items'],
-                ];
-            })->sortBy('score');
+            return $data;
+        } catch (\Throwable $e) {
+            self::clearCache();
+            return self::computeFacultyCompleteness();
+        }
+    }
 
-            $averageScore = round($totalScore / $pegawaiList->count(), 1);
+    /**
+     * Kalkulasi murni tanpa cache dengan output serializable murni (bebas closure/Incomplete Class)
+     */
+    public static function computeFacultyCompleteness(): array
+    {
+        $pegawaiList = Pegawai::with(['unitKerja', 'jabatan', 'golongan', 'riwayatPendidikan', 'riwayatDiklat', 'riwayatSkp', 'riwayatStrSip'])->get();
+
+        if ($pegawaiList->isEmpty()) {
+            return [
+                'average_score'   => 0,
+                'total_complete'  => 0,
+                'total_moderate'  => 0,
+                'total_low'       => 0,
+                'pegawai_scores'  => [],
+            ];
+        }
+
+        $totalScore = 0;
+        $totalComplete = 0;
+        $totalModerate = 0;
+        $totalLow = 0;
+
+        $scores = $pegawaiList->map(function ($p) use (&$totalScore, &$totalComplete, &$totalModerate, &$totalLow) {
+            $data = self::calculate($p);
+            $score = $data['score'];
+            $totalScore += $score;
+
+            if ($score >= 100) {
+                $totalComplete++;
+            } elseif ($score >= 50) {
+                $totalModerate++;
+            } else {
+                $totalLow++;
+            }
 
             return [
-                'average_score'  => $averageScore,
-                'total_complete' => $totalComplete,
-                'total_moderate' => $totalModerate,
-                'total_low'      => $totalLow,
-                'pegawai_scores' => $scores,
+                'pegawai' => (object) [
+                    'id'           => $p->id,
+                    'nama'         => $p->nama,
+                    'nama_lengkap' => $p->nama_lengkap ?? $p->nama,
+                    'nip'          => $p->nip ?? '-',
+                    'jabatan'      => (object) ['nama_jabatan' => $p->jabatan?->nama_jabatan ?? '-'],
+                    'unitKerja'    => (object) ['nama_unit' => $p->unitKerja?->nama_unit ?? '-'],
+                ],
+                'score'         => $score,
+                'status_label'  => $data['status_label'],
+                'badge_color'   => $data['badge_color'],
+                'progress_color'=> $data['progress_color'],
+                'missing_count' => count($data['missing_items']),
+                'missing_items' => $data['missing_items'],
             ];
-        });
+        })->sortBy('score')->values()->all();
+
+        $averageScore = round($totalScore / $pegawaiList->count(), 1);
+
+        return [
+            'average_score'  => $averageScore,
+            'total_complete' => $totalComplete,
+            'total_moderate' => $totalModerate,
+            'total_low'      => $totalLow,
+            'pegawai_scores' => $scores,
+        ];
     }
 }

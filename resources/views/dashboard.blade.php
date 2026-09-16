@@ -459,8 +459,11 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
-                                    @foreach($facultyCompleteness['pegawai_scores'] as $item)
-                                        @php $peg = $item['pegawai']; @endphp
+                                    @foreach($facultyCompleteness['pegawai_scores'] ?? [] as $item)
+                                        @php
+                                            if (!is_array($item) || !isset($item['pegawai'])) continue;
+                                            $peg = $item['pegawai'];
+                                        @endphp
                                         <tr class="hover:bg-slate-50 transition">
                                             <td class="px-4 py-3">
                                                 <div class="font-bold text-slate-900">{{ $peg->nama_lengkap ?? $peg->nama }}</div>
