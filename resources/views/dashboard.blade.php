@@ -461,35 +461,45 @@
                                 <tbody class="divide-y divide-slate-100">
                                     @foreach($facultyCompleteness['pegawai_scores'] ?? [] as $item)
                                         @php
-                                            if (!is_array($item) || !isset($item['pegawai'])) continue;
-                                            $peg = $item['pegawai'];
+                                            $peg = data_get($item, 'pegawai');
+                                            if (!$peg) continue;
+                                            $pegId = data_get($peg, 'id');
+                                            $pegNama = data_get($peg, 'nama_lengkap') ?? data_get($peg, 'nama') ?? '-';
+                                            $pegNip = data_get($peg, 'nip') ?? '-';
+                                            $pegJabatan = data_get($peg, 'jabatan_nama') ?? data_get($peg, 'jabatan.nama_jabatan') ?? '-';
+                                            $pegUnit = data_get($peg, 'unit_nama') ?? data_get($peg, 'unitKerja.nama_unit') ?? '-';
+                                            $score = data_get($item, 'score', 0);
+                                            $progressColor = data_get($item, 'progress_color', 'bg-blue-500');
+                                            $badgeColor = data_get($item, 'badge_color', 'bg-slate-100 text-slate-700 border-slate-200');
+                                            $statusLabel = data_get($item, 'status_label', '-');
+                                            $missingCount = data_get($item, 'missing_count', 0);
                                         @endphp
                                         <tr class="hover:bg-slate-50 transition">
                                             <td class="px-4 py-3">
-                                                <div class="font-bold text-slate-900">{{ $peg->nama_lengkap ?? $peg->nama }}</div>
-                                                <div class="text-[10px] text-slate-500 font-mono">NIP: {{ $peg->nip ?? '-' }}</div>
+                                                <div class="font-bold text-slate-900">{{ $pegNama }}</div>
+                                                <div class="text-[10px] text-slate-500 font-mono">NIP: {{ $pegNip }}</div>
                                             </td>
                                             <td class="px-4 py-3">
-                                                <div class="font-semibold text-slate-800">{{ $peg->jabatan?->nama_jabatan ?? '-' }}</div>
-                                                <div class="text-[10px] text-slate-500">{{ $peg->unitKerja?->nama_unit ?? '-' }}</div>
+                                                <div class="font-semibold text-slate-800">{{ $pegJabatan }}</div>
+                                                <div class="text-[10px] text-slate-500">{{ $pegUnit }}</div>
                                             </td>
                                             <td class="px-4 py-3 whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
                                                     <div class="w-24 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
-                                                        <div class="{{ $item['progress_color'] }} h-2 rounded-full" style="width: {{ $item['score'] }}%"></div>
+                                                        <div class="{{ $progressColor }} h-2 rounded-full" style="width: {{ $score }}%"></div>
                                                     </div>
-                                                    <span class="font-black text-slate-900 text-xs">{{ $item['score'] }}%</span>
+                                                    <span class="font-black text-slate-900 text-xs">{{ $score }}%</span>
                                                 </div>
                                             </td>
                                             <td class="px-4 py-3 whitespace-nowrap">
-                                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border {{ $item['badge_color'] }}">
-                                                    {{ $item['status_label'] }}
+                                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border {{ $badgeColor }}">
+                                                    {{ $statusLabel }}
                                                 </span>
                                             </td>
                                             <td class="px-4 py-3 text-center">
-                                                @if($item['missing_count'] > 0)
+                                                @if($missingCount > 0)
                                                     <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-900">
-                                                        ⚠️ {{ $item['missing_count'] }} Item Belum
+                                                        ⚠️ {{ $missingCount }} Item Belum
                                                     </span>
                                                 @else
                                                     <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-900">
@@ -498,7 +508,7 @@
                                                 @endif
                                             </td>
                                             <td class="px-4 py-3 text-right">
-                                                <a href="{{ route('pegawai.show', $peg->id) }}" class="inline-flex items-center px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold transition border border-slate-300">
+                                                <a href="{{ $pegId ? route('pegawai.show', $pegId) : '#' }}" class="inline-flex items-center px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold transition border border-slate-300">
                                                     Lihat Profil &rarr;
                                                 </a>
                                             </td>

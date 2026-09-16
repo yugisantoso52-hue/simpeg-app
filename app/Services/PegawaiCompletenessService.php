@@ -11,7 +11,7 @@ class PegawaiCompletenessService
     /**
      * Cache key untuk kelengkapan fakultas
      */
-    public const CACHE_KEY = 'faculty_completeness_data';
+    public const CACHE_KEY = 'faculty_completeness_v3';
 
     /**
      * Membersihkan cache kelengkapan data
@@ -19,6 +19,8 @@ class PegawaiCompletenessService
     public static function clearCache(): void
     {
         Cache::forget(self::CACHE_KEY);
+        Cache::forget('faculty_completeness_data');
+        Cache::forget('faculty_completeness_v2');
     }
     /**
      * Menghitung Persentase Kelengkapan Data Profil Pegawai (0% - 100%)
@@ -287,9 +289,9 @@ class PegawaiCompletenessService
                 return self::computeFacultyCompleteness();
             }
 
-            // Validasi elemen pertama
+            // Validasi elemen pertama - pastikan tipe data associative array
             foreach ($data['pegawai_scores'] as $item) {
-                if (!is_array($item) || !isset($item['pegawai'])) {
+                if (!is_array($item) || !isset($item['pegawai']) || !is_array($item['pegawai'])) {
                     self::clearCache();
                     return self::computeFacultyCompleteness();
                 }
@@ -339,13 +341,13 @@ class PegawaiCompletenessService
             }
 
             return [
-                'pegawai' => (object) [
+                'pegawai' => [
                     'id'           => $p->id,
                     'nama'         => $p->nama,
                     'nama_lengkap' => $p->nama_lengkap ?? $p->nama,
                     'nip'          => $p->nip ?? '-',
-                    'jabatan'      => (object) ['nama_jabatan' => $p->jabatan?->nama_jabatan ?? '-'],
-                    'unitKerja'    => (object) ['nama_unit' => $p->unitKerja?->nama_unit ?? '-'],
+                    'jabatan_nama' => $p->jabatan?->nama_jabatan ?? '-',
+                    'unit_nama'    => $p->unitKerja?->nama_unit ?? '-',
                 ],
                 'score'         => $score,
                 'status_label'  => $data['status_label'],
