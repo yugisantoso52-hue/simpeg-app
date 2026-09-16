@@ -44,20 +44,27 @@ class RiwayatSkpRepository extends BaseRepository implements RiwayatSkpRepositor
 
     public function getStatistics(?int $pegawaiId = null): array
     {
-        $query = $this->model->when($pegawaiId, function ($q) use ($pegawaiId) {
-            $q->where('pegawai_id', $pegawaiId);
-        });
-
         $currentYear = now()->year;
         $prevYear = $currentYear - 1;
 
+        $stats = $this->model->when($pegawaiId, function ($q) use ($pegawaiId) {
+            $q->where('pegawai_id', $pegawaiId);
+        })->selectRaw("
+            COUNT(*) as total,
+            COALESCE(SUM(CASE WHEN tahun = ? THEN 1 ELSE 0 END), 0) as tahun_n,
+            COALESCE(SUM(CASE WHEN tahun = ? THEN 1 ELSE 0 END), 0) as tahun_n1,
+            COALESCE(SUM(CASE WHEN predikat_kinerja = 'Sangat Baik' THEN 1 ELSE 0 END), 0) as sangat_baik,
+            COALESCE(SUM(CASE WHEN predikat_kinerja = 'Baik' THEN 1 ELSE 0 END), 0) as baik,
+            COALESCE(SUM(CASE WHEN file_rencana_skp IS NOT NULL AND file_evaluasi_skp IS NOT NULL THEN 1 ELSE 0 END), 0) as berkas_lengkap
+        ", [$currentYear, $prevYear])->first();
+
         return [
-            'total'           => (clone $query)->count(),
-            'tahun_n'         => (clone $query)->where('tahun', $currentYear)->count(),
-            'tahun_n1'        => (clone $query)->where('tahun', $prevYear)->count(),
-            'sangat_baik'     => (clone $query)->where('predikat_kinerja', 'Sangat Baik')->count(),
-            'baik'            => (clone $query)->where('predikat_kinerja', 'Baik')->count(),
-            'berkas_lengkap'  => (clone $query)->whereNotNull('file_rencana_skp')->whereNotNull('file_evaluasi_skp')->count(),
+            'total'           => (int)($stats->total ?? 0),
+            'tahun_n'         => (int)($stats->tahun_n ?? 0),
+            'tahun_n1'        => (int)($stats->tahun_n1 ?? 0),
+            'sangat_baik'     => (int)($stats->sangat_baik ?? 0),
+            'baik'            => (int)($stats->baik ?? 0),
+            'berkas_lengkap'  => (int)($stats->berkas_lengkap ?? 0),
         ];
     }
 

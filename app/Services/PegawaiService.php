@@ -122,11 +122,12 @@ class PegawaiService
         return $this->pegawaiRepository->searchFiltered($search, $filter);
     }
 
-    public function find(string|int $id): Pegawai
+    public function find(string|int $id, bool $withRelations = true): Pegawai
     {
-        return $this->pegawaiRepository
-            ->findOrFail($id)
-            ->load([
+        $pegawai = $this->pegawaiRepository->findOrFail($id);
+
+        if ($withRelations) {
+            $pegawai->load([
                 'unitKerja',
                 'jabatan',
                 'golongan',
@@ -141,6 +142,11 @@ class PegawaiService
                 'riwayatOrganisasi',
                 'riwayatPublikasi',
             ]);
+        } else {
+            $pegawai->load(['unitKerja', 'jabatan', 'golongan']);
+        }
+
+        return $pegawai;
     }
 
     /**

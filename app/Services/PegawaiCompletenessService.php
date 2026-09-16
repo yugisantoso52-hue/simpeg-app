@@ -4,9 +4,22 @@ namespace App\Services;
 
 use App\Models\Pegawai;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class PegawaiCompletenessService
 {
+    /**
+     * Cache key untuk kelengkapan fakultas
+     */
+    public const CACHE_KEY = 'faculty_completeness_data';
+
+    /**
+     * Membersihkan cache kelengkapan data
+     */
+    public static function clearCache(): void
+    {
+        Cache::forget(self::CACHE_KEY);
+    }
     /**
      * Menghitung Persentase Kelengkapan Data Profil Pegawai (0% - 100%)
      */
@@ -259,58 +272,61 @@ class PegawaiCompletenessService
 
     /**
      * Mengambil Ringkasan Statistik Kelengkapan Data Fakultas (Khusus Admin/Pimpinan)
+     * Di-cache selama 15 menit untuk memangkas latensi dashboard
      */
     public static function getFacultyCompleteness(): array
     {
-        $pegawaiList = Pegawai::with(['unitKerja', 'jabatan', 'golongan', 'riwayatPendidikan', 'riwayatDiklat', 'riwayatSkp', 'riwayatStrSip'])->get();
+        return Cache::remember(self::CACHE_KEY, now()->addMinutes(15), function () {
+            $pegawaiList = Pegawai::with(['unitKerja', 'jabatan', 'golongan', 'riwayatPendidikan', 'riwayatDiklat', 'riwayatSkp', 'riwayatStrSip'])->get();
 
-        if ($pegawaiList->isEmpty()) {
-            return [
-                'average_score'   => 0,
-                'total_complete'  => 0,
-                'total_moderate'  => 0,
-                'total_low'       => 0,
-                'pegawai_scores'  => collect(),
-            ];
-        }
-
-        $totalScore = 0;
-        $totalComplete = 0;
-        $totalModerate = 0;
-        $totalLow = 0;
-
-        $scores = $pegawaiList->map(function ($p) use (&$totalScore, &$totalComplete, &$totalModerate, &$totalLow) {
-            $data = self::calculate($p);
-            $score = $data['score'];
-            $totalScore += $score;
-
-            if ($score >= 100) {
-                $totalComplete++;
-            } elseif ($score >= 50) {
-                $totalModerate++;
-            } else {
-                $totalLow++;
+            if ($pegawaiList->isEmpty()) {
+                return [
+                    'average_score'   => 0,
+                    'total_complete'  => 0,
+                    'total_moderate'  => 0,
+                    'total_low'       => 0,
+                    'pegawai_scores'  => collect(),
+                ];
             }
 
+            $totalScore = 0;
+            $totalComplete = 0;
+            $totalModerate = 0;
+            $totalLow = 0;
+
+            $scores = $pegawaiList->map(function ($p) use (&$totalScore, &$totalComplete, &$totalModerate, &$totalLow) {
+                $data = self::calculate($p);
+                $score = $data['score'];
+                $totalScore += $score;
+
+                if ($score >= 100) {
+                    $totalComplete++;
+                } elseif ($score >= 50) {
+                    $totalModerate++;
+                } else {
+                    $totalLow++;
+                }
+
+                return [
+                    'pegawai'       => $p,
+                    'score'         => $score,
+                    'status_label'  => $data['status_label'],
+                    'badge_color'   => $data['badge_color'],
+                    'progress_color'=> $data['progress_color'],
+                    'missing_count' => count($data['missing_items']),
+                    'missing_items' => $data['missing_items'],
+                ];
+            })->sortBy('score');
+
+            $averageScore = round($totalScore / $pegawaiList->count(), 1);
+
             return [
-                'pegawai'       => $p,
-                'score'         => $score,
-                'status_label'  => $data['status_label'],
-                'badge_color'   => $data['badge_color'],
-                'progress_color'=> $data['progress_color'],
-                'missing_count' => count($data['missing_items']),
-                'missing_items' => $data['missing_items'],
+                'average_score'  => $averageScore,
+                'total_complete' => $totalComplete,
+                'total_moderate' => $totalModerate,
+                'total_low'      => $totalLow,
+                'pegawai_scores' => $scores,
             ];
-        })->sortBy('score');
-
-        $averageScore = round($totalScore / $pegawaiList->count(), 1);
-
-        return [
-            'average_score'  => $averageScore,
-            'total_complete' => $totalComplete,
-            'total_moderate' => $totalModerate,
-            'total_low'      => $totalLow,
-            'pegawai_scores' => $scores,
-        ];
+        });
     }
 }

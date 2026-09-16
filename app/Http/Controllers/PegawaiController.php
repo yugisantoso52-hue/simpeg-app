@@ -50,50 +50,33 @@ class PegawaiController extends Controller
     {
         $search = $request->get('search');
         $filter = strtolower(trim((string)$request->get('filter', '')));
-        
-        $baseQuery = function($type, $asnType = null) {
-            $q = Pegawai::$type()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
-            if ($asnType === 'pns') {
-                $q->where(function ($sq) {
-                    $sq->where('jenis_pegawai', 'PNS')
-                       ->orWhere(function ($ssq) {
-                           $ssq->where('jenis_pegawai', 'not like', '%PPPK%')
-                               ->where(function ($sssq) {
-                                   $sssq->where('status_asn', 'ASN')
-                                        ->orWhereRaw('LENGTH(nip) = 18');
-                               });
-                       });
-                });
-            } elseif ($asnType === 'pppk') {
-                $q->where(function ($sq) {
-                    $sq->where('jenis_pegawai', 'like', '%PPPK%')
-                       ->orWhere('status_asn', 'PPPK')
-                       ->orWhereRaw('LENGTH(nip) = 21');
-                });
-            }
-            return $q;
-        };
 
-        $dosenPnsQuery   = $baseQuery('dosen', 'pns');
-        $dosenPppkQuery  = $baseQuery('dosen', 'pppk');
-        $tendikPnsQuery  = $baseQuery('tendik', 'pns');
-        $tendikPppkQuery = $baseQuery('tendik', 'pppk');
-        $phlQuery        = Pegawai::phl()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+        // 1 Query Utama untuk mengambil semua Pegawai beserta relasinya (Mengurangi dari 25 query menjadi 5 query)
+        $query = Pegawai::with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
 
         if ($search) {
-            $filterSearch = function($q) use ($search) {
-                $q->where(function($sq) use ($search) {
-                    $sq->where('nama', 'like', "%{$search}%")
-                       ->orWhere('nip', 'like', "%{$search}%")
-                       ->orWhere('nidn_nuptk', 'like', "%{$search}%");
-                });
-            };
-            $dosenPnsQuery->where($filterSearch);
-            $dosenPppkQuery->where($filterSearch);
-            $tendikPnsQuery->where($filterSearch);
-            $tendikPppkQuery->where($filterSearch);
-            $phlQuery->where($filterSearch);
+            $query->where(function($sq) use ($search) {
+                $sq->where('nama', 'like', "%{$search}%")
+                   ->orWhere('nip', 'like', "%{$search}%")
+                   ->orWhere('nidn_nuptk', 'like', "%{$search}%");
+            });
         }
+
+        $allPegawai = $query->get();
+
+        $isPns = function($p) {
+            $jenis = strtoupper(trim((string)$p->jenis_pegawai));
+            $asn   = strtoupper(trim((string)$p->status_asn));
+            $cleanNip = preg_replace('/[^0-9]/', '', (string)$p->nip);
+            return ($jenis === 'PNS' || (!str_contains($jenis, 'PPPK') && ($asn === 'ASN' || strlen($cleanNip) === 18)));
+        };
+
+        $isPppk = function($p) {
+            $jenis = strtoupper(trim((string)$p->jenis_pegawai));
+            $asn   = strtoupper(trim((string)$p->status_asn));
+            $cleanNip = preg_replace('/[^0-9]/', '', (string)$p->nip);
+            return (str_contains($jenis, 'PPPK') || $asn === 'PPPK' || strlen($cleanNip) === 21);
+        };
 
         $sortDuk = function($collection) {
             return $collection->sort(function($a, $b) {
@@ -111,11 +94,15 @@ class PegawaiController extends Controller
             })->values();
         };
 
-        $dosenPnsList   = $sortDuk($dosenPnsQuery->get());
-        $dosenPppkList  = $sortDuk($dosenPppkQuery->get());
-        $tendikPnsList  = $sortDuk($tendikPnsQuery->get());
-        $tendikPppkList = $sortDuk($tendikPppkQuery->get());
-        $phlList        = $sortDuk($phlQuery->get());
+        $dosenList = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'Dosen');
+        $tendikList = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'Tendik');
+        $phlListRaw = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'PHL');
+
+        $dosenPnsList   = $sortDuk($dosenList->filter($isPns));
+        $dosenPppkList  = $sortDuk($dosenList->filter($isPppk));
+        $tendikPnsList  = $sortDuk($tendikList->filter($isPns));
+        $tendikPppkList = $sortDuk($tendikList->filter($isPppk));
+        $phlList        = $sortDuk($phlListRaw);
 
         $statistics = [
             'dosen_pns'   => count($dosenPnsList),
@@ -195,7 +182,7 @@ class PegawaiController extends Controller
 
     public function edit(Request $request, int $id)
     {
-        $pegawai = $this->pegawaiService->find($id);
+        $pegawai = $this->pegawaiService->find($id, false);
 
         // OTORISASI POLICY: Cek izin edit data
         $this->authorize('update', $pegawai);
@@ -215,7 +202,7 @@ class PegawaiController extends Controller
 
     public function update(UpdatePegawaiRequest $request, int $id)
     {
-        $pegawai = $this->pegawaiService->find($id);
+        $pegawai = $this->pegawaiService->find($id, false);
 
         // OTORISASI POLICY: Cek izin update data
         $this->authorize('update', $pegawai);
@@ -263,7 +250,7 @@ class PegawaiController extends Controller
 
     public function destroy(int $id)
     {
-        $pegawai = $this->pegawaiService->find($id);
+        $pegawai = $this->pegawaiService->find($id, false);
 
         // OTORISASI POLICY: Cek izin hapus data
         $this->authorize('delete', $pegawai);
@@ -347,49 +334,32 @@ class PegawaiController extends Controller
     {
         $search = $request->get('search');
         
-        $baseQuery = function($type, $asnType = null) {
-            $q = Pegawai::$type()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
-            if ($asnType === 'pns') {
-                $q->where(function ($sq) {
-                    $sq->where('jenis_pegawai', 'PNS')
-                       ->orWhere(function ($ssq) {
-                           $ssq->where('jenis_pegawai', 'not like', '%PPPK%')
-                               ->where(function ($sssq) {
-                                   $sssq->where('status_asn', 'ASN')
-                                        ->orWhereRaw('LENGTH(nip) = 18');
-                               });
-                       });
-                });
-            } elseif ($asnType === 'pppk') {
-                $q->where(function ($sq) {
-                    $sq->where('jenis_pegawai', 'like', '%PPPK%')
-                       ->orWhere('status_asn', 'PPPK')
-                       ->orWhereRaw('LENGTH(nip) = 21');
-                });
-            }
-            return $q;
-        };
-
-        $dosenPnsQuery   = $baseQuery('dosen', 'pns');
-        $dosenPppkQuery  = $baseQuery('dosen', 'pppk');
-        $tendikPnsQuery  = $baseQuery('tendik', 'pns');
-        $tendikPppkQuery = $baseQuery('tendik', 'pppk');
-        $phlQuery        = Pegawai::phl()->with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+        // 1 Query Utama untuk PDF Export (Mengurangi dari 25 query menjadi 5 query)
+        $query = Pegawai::with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
 
         if ($search) {
-            $filterSearch = function($q) use ($search) {
-                $q->where(function($sq) use ($search) {
-                    $sq->where('nama', 'like', "%{$search}%")
-                       ->orWhere('nip', 'like', "%{$search}%")
-                       ->orWhere('nidn_nuptk', 'like', "%{$search}%");
-                });
-            };
-            $dosenPnsQuery->where($filterSearch);
-            $dosenPppkQuery->where($filterSearch);
-            $tendikPnsQuery->where($filterSearch);
-            $tendikPppkQuery->where($filterSearch);
-            $phlQuery->where($filterSearch);
+            $query->where(function($sq) use ($search) {
+                $sq->where('nama', 'like', "%{$search}%")
+                   ->orWhere('nip', 'like', "%{$search}%")
+                   ->orWhere('nidn_nuptk', 'like', "%{$search}%");
+            });
         }
+
+        $allPegawai = $query->get();
+
+        $isPns = function($p) {
+            $jenis = strtoupper(trim((string)$p->jenis_pegawai));
+            $asn   = strtoupper(trim((string)$p->status_asn));
+            $cleanNip = preg_replace('/[^0-9]/', '', (string)$p->nip);
+            return ($jenis === 'PNS' || (!str_contains($jenis, 'PPPK') && ($asn === 'ASN' || strlen($cleanNip) === 18)));
+        };
+
+        $isPppk = function($p) {
+            $jenis = strtoupper(trim((string)$p->jenis_pegawai));
+            $asn   = strtoupper(trim((string)$p->status_asn));
+            $cleanNip = preg_replace('/[^0-9]/', '', (string)$p->nip);
+            return (str_contains($jenis, 'PPPK') || $asn === 'PPPK' || strlen($cleanNip) === 21);
+        };
 
         $sortDuk = function($collection) {
             return $collection->sort(function($a, $b) {
@@ -407,11 +377,15 @@ class PegawaiController extends Controller
             })->values();
         };
 
-        $dosenPnsList   = $sortDuk($dosenPnsQuery->get());
-        $dosenPppkList  = $sortDuk($dosenPppkQuery->get());
-        $tendikPnsList  = $sortDuk($tendikPnsQuery->get());
-        $tendikPppkList = $sortDuk($tendikPppkQuery->get());
-        $phlList        = $sortDuk($phlQuery->get());
+        $dosenList = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'Dosen');
+        $tendikList = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'Tendik');
+        $phlListRaw = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'PHL');
+
+        $dosenPnsList   = $sortDuk($dosenList->filter($isPns));
+        $dosenPppkList  = $sortDuk($dosenList->filter($isPppk));
+        $tendikPnsList  = $sortDuk($tendikList->filter($isPns));
+        $tendikPppkList = $sortDuk($tendikList->filter($isPppk));
+        $phlList        = $sortDuk($phlListRaw);
 
         $pdf = Pdf::loadView('exports.pdf.duk', compact('dosenPnsList', 'dosenPppkList', 'tendikPnsList', 'tendikPppkList', 'phlList'))
             ->setPaper('a4', 'landscape');
@@ -542,22 +516,20 @@ class PegawaiController extends Controller
 
         $pegawai = $query->latest('id')->paginate(10)->withQueryString();
 
+        $dosenStats = Pegawai::dosen()->selectRaw("
+            COUNT(*) as total,
+            COALESCE(SUM(CASE WHEN status_pegawai = 'Aktif' THEN 1 ELSE 0 END), 0) as aktif,
+            COALESCE(SUM(CASE WHEN (jenis_pegawai NOT LIKE '%PPPK%' AND (status_asn = 'ASN' OR CHAR_LENGTH(nip) = 18)) THEN 1 ELSE 0 END), 0) as pns,
+            COALESCE(SUM(CASE WHEN (jenis_pegawai LIKE '%PPPK%' OR status_asn = 'PPPK' OR CHAR_LENGTH(nip) = 21) THEN 1 ELSE 0 END), 0) as pppk,
+            COALESCE(SUM(CASE WHEN status_pegawai = 'Tugas Belajar' THEN 1 ELSE 0 END), 0) as tubel
+        ")->first();
+
         $statistics = [
-            'total' => Pegawai::dosen()->count(),
-            'aktif' => Pegawai::dosen()->aktif()->count(),
-            'pns'   => Pegawai::dosen()->where(function ($q) {
-                $q->where('jenis_pegawai', 'not like', '%PPPK%')
-                  ->where(function ($sq) {
-                      $sq->where('status_asn', 'ASN')
-                         ->orWhereRaw('CHAR_LENGTH(nip) = 18');
-                  });
-            })->count(),
-            'pppk'  => Pegawai::dosen()->where(function ($q) {
-                $q->where('jenis_pegawai', 'like', '%PPPK%')
-                  ->orWhere('status_asn', 'PPPK')
-                  ->orWhereRaw('CHAR_LENGTH(nip) = 21');
-            })->count(),
-            'tubel' => Pegawai::dosen()->where('status_pegawai', 'Tugas Belajar')->count(),
+            'total' => (int)($dosenStats->total ?? 0),
+            'aktif' => (int)($dosenStats->aktif ?? 0),
+            'pns'   => (int)($dosenStats->pns ?? 0),
+            'pppk'  => (int)($dosenStats->pppk ?? 0),
+            'tubel' => (int)($dosenStats->tubel ?? 0),
         ];
 
         $kategoriTitle = 'Data Tenaga Pendidik / Dosen';
@@ -605,21 +577,20 @@ class PegawaiController extends Controller
 
         $pegawai = $query->latest('id')->paginate(10)->withQueryString();
 
+        $tendikStats = Pegawai::tendik()->selectRaw("
+            COUNT(*) as total,
+            COALESCE(SUM(CASE WHEN status_pegawai = 'Aktif' THEN 1 ELSE 0 END), 0) as aktif,
+            COALESCE(SUM(CASE WHEN (jenis_pegawai = 'PNS' OR (status_asn = 'ASN' AND (jenis_pegawai NOT LIKE '%PPPK%' OR jenis_pegawai IS NULL))) THEN 1 ELSE 0 END), 0) as pns,
+            COALESCE(SUM(CASE WHEN (jenis_pegawai = 'PPPK' OR status_asn = 'PPPK') THEN 1 ELSE 0 END), 0) as pppk,
+            COALESCE(SUM(CASE WHEN status_pegawai = 'Tugas Belajar' THEN 1 ELSE 0 END), 0) as tubel
+        ")->first();
+
         $statistics = [
-            'total' => Pegawai::tendik()->count(),
-            'aktif' => Pegawai::tendik()->aktif()->count(),
-            'pns'   => Pegawai::tendik()->where(function ($q) {
-                $q->where('jenis_pegawai', 'PNS')
-                  ->orWhere(function ($sq) {
-                      $sq->where('status_asn', 'ASN')
-                         ->where('jenis_pegawai', 'not like', '%PPPK%');
-                  });
-            })->count(),
-            'pppk'  => Pegawai::tendik()->where(function ($q) {
-                $q->where('jenis_pegawai', 'PPPK')
-                  ->orWhere('status_asn', 'PPPK');
-            })->count(),
-            'tubel' => Pegawai::tendik()->where('status_pegawai', 'Tugas Belajar')->count(),
+            'total' => (int)($tendikStats->total ?? 0),
+            'aktif' => (int)($tendikStats->aktif ?? 0),
+            'pns'   => (int)($tendikStats->pns ?? 0),
+            'pppk'  => (int)($tendikStats->pppk ?? 0),
+            'tubel' => (int)($tendikStats->tubel ?? 0),
         ];
 
         $kategoriTitle = 'Data Tenaga Kependidikan (Tendik)';
@@ -656,11 +627,18 @@ class PegawaiController extends Controller
 
         $pegawai = $query->latest('id')->paginate(10)->withQueryString();
 
+        $phlStats = Pegawai::phl()->selectRaw("
+            COUNT(*) as total,
+            COALESCE(SUM(CASE WHEN status_pegawai = 'Aktif' THEN 1 ELSE 0 END), 0) as aktif,
+            COALESCE(SUM(CASE WHEN status_asn = 'Non ASN' THEN 1 ELSE 0 END), 0) as non_asn,
+            COALESCE(SUM(CASE WHEN jenis_kontrak IS NOT NULL THEN 1 ELSE 0 END), 0) as kontrak
+        ")->first();
+
         $statistics = [
-            'total'   => Pegawai::phl()->count(),
-            'aktif'   => Pegawai::phl()->aktif()->count(),
-            'non_asn' => Pegawai::phl()->where('status_asn', 'Non ASN')->count(),
-            'kontrak' => Pegawai::phl()->whereNotNull('jenis_kontrak')->count(),
+            'total'   => (int)($phlStats->total ?? 0),
+            'aktif'   => (int)($phlStats->aktif ?? 0),
+            'non_asn' => (int)($phlStats->non_asn ?? 0),
+            'kontrak' => (int)($phlStats->kontrak ?? 0),
         ];
 
         $kategoriTitle = 'Data Pegawai Harian Lepas (PHL) & Tenaga Kontrak';

@@ -192,7 +192,7 @@ class DashboardRepository implements DashboardRepositoryInterface
 
         // 5. Legalitas Profesi (STR & SIP - Radar 6 Bulan ke Depan)
         $strSip = collect();
-        if (\Illuminate\Support\Facades\Schema::hasTable('riwayat_str_sip')) {
+        try {
             $hariTarget6Bulan = Carbon::now()->addMonths(6)->endOfDay()->toDateTimeString();
             $strSip = \App\Models\RiwayatStrSip::with(['pegawai'])
                 ->where('is_seumur_hidup', false)
@@ -210,6 +210,9 @@ class DashboardRepository implements DashboardRepositoryInterface
                         'tanggal_kegiatan' => $item->tanggal_berakhir ? Carbon::parse($item->tanggal_berakhir)->format('d-m-Y') : '-',
                     ];
                 });
+        } catch (\Throwable $e) {
+            // Silently fallback if table doesn't exist
+            $strSip = collect();
         }
 
         return [

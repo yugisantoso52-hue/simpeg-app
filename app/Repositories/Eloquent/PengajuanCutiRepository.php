@@ -47,19 +47,22 @@ class PengajuanCutiRepository extends BaseRepository implements PengajuanCutiRep
     public function getStatistics(?int $pegawaiId = null): array
     {
         $today = Carbon::today()->toDateString();
-        $query = $this->model->when($pegawaiId, function ($q) use ($pegawaiId) {
+        $stats = $this->model->when($pegawaiId, function ($q) use ($pegawaiId) {
             $q->where('pegawai_id', $pegawaiId);
-        });
+        })->selectRaw("
+            COUNT(*) as total,
+            COALESCE(SUM(CASE WHEN status = 'Menunggu Persetujuan' THEN 1 ELSE 0 END), 0) as menunggu,
+            COALESCE(SUM(CASE WHEN status = 'Disetujui' THEN 1 ELSE 0 END), 0) as disetujui,
+            COALESCE(SUM(CASE WHEN status = 'Ditolak' THEN 1 ELSE 0 END), 0) as ditolak,
+            COALESCE(SUM(CASE WHEN status = 'Disetujui' AND tanggal_mulai <= ? AND tanggal_selesai >= ? THEN 1 ELSE 0 END), 0) as hari_ini
+        ", [$today, $today])->first();
 
         return [
-            'total'     => (clone $query)->count(),
-            'menunggu'  => (clone $query)->where('status', 'Menunggu Persetujuan')->count(),
-            'disetujui' => (clone $query)->where('status', 'Disetujui')->count(),
-            'ditolak'   => (clone $query)->where('status', 'Ditolak')->count(),
-            'hari_ini'  => (clone $query)->where('status', 'Disetujui')
-                ->where('tanggal_mulai', '<=', $today)
-                ->where('tanggal_selesai', '>=', $today)
-                ->count(),
+            'total'     => (int)($stats->total ?? 0),
+            'menunggu'  => (int)($stats->menunggu ?? 0),
+            'disetujui' => (int)($stats->disetujui ?? 0),
+            'ditolak'   => (int)($stats->ditolak ?? 0),
+            'hari_ini'  => (int)($stats->hari_ini ?? 0),
         ];
     }
 

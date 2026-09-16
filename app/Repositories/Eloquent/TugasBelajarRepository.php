@@ -52,16 +52,22 @@ class TugasBelajarRepository extends BaseRepository implements TugasBelajarRepos
 
     public function getStatistics(?int $pegawaiId = null): array
     {
-        $query = $this->model->when($pegawaiId, function ($q) use ($pegawaiId) {
+        $stats = $this->model->when($pegawaiId, function ($q) use ($pegawaiId) {
             $q->where('pegawai_id', $pegawaiId);
-        });
+        })->selectRaw("
+            COUNT(*) as total,
+            COALESCE(SUM(CASE WHEN status_studi = 'Sedang Studi' THEN 1 ELSE 0 END), 0) as sedang_studi,
+            COALESCE(SUM(CASE WHEN status_studi = 'Perpanjangan' THEN 1 ELSE 0 END), 0) as perpanjangan,
+            COALESCE(SUM(CASE WHEN status_studi = 'Lulus' THEN 1 ELSE 0 END), 0) as lulus,
+            COALESCE(SUM(CASE WHEN negara != 'Indonesia' AND negara IS NOT NULL AND negara != '' THEN 1 ELSE 0 END), 0) as luar_negeri
+        ")->first();
 
         return [
-            'total'        => (clone $query)->count(),
-            'sedang_studi' => (clone $query)->where('status_studi', 'Sedang Studi')->count(),
-            'perpanjangan' => (clone $query)->where('status_studi', 'Perpanjangan')->count(),
-            'lulus'        => (clone $query)->where('status_studi', 'Lulus')->count(),
-            'luar_negeri'  => (clone $query)->where('negara', '!=', 'Indonesia')->count(),
+            'total'        => (int)($stats->total ?? 0),
+            'sedang_studi' => (int)($stats->sedang_studi ?? 0),
+            'perpanjangan' => (int)($stats->perpanjangan ?? 0),
+            'lulus'        => (int)($stats->lulus ?? 0),
+            'luar_negeri'  => (int)($stats->luar_negeri ?? 0),
         ];
     }
 
