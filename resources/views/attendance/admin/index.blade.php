@@ -24,7 +24,7 @@
         </div>
     </x-slot>
 
-    <div class="py-6" x-data="{ modalOpen: false, modalImgSrc: '', modalTitle: '' }">
+    <div class="py-6" x-data="{ modalOpen: false, modalImgSrc: '', modalTitle: '', detailOpen: false, detailData: {} }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             <!-- Flash Message -->
@@ -67,187 +67,416 @@
                 </div>
             </div>
 
-            <!-- Filter Card -->
-            <div class="bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-sm">
-                <form method="GET" action="{{ route('admin.presensi.index') }}" class="space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                        <!-- Tanggal Spesifik -->
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Spesifik:</label>
-                            <input type="date" name="date" value="{{ request('date', date('Y-m-d')) }}" class="w-full text-xs rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                        </div>
+            <!-- Tab Switcher Mode Presensi -->
+            <div class="bg-gray-100 p-1 rounded-xl border border-gray-200 flex items-center gap-1">
+                <a href="{{ route('admin.presensi.index', ['mode' => 'daily', 'date' => request('date', date('Y-m-d'))]) }}"
+                   class="flex-1 text-center py-2.5 px-4 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 {{ ($mode ?? 'daily') === 'daily' ? 'bg-white text-slate-900 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/60' }}">
+                    <span>📋</span>
+                    <span>Log Harian (Detail GPS & Foto)</span>
+                </a>
+                <a href="{{ route('admin.presensi.index', ['mode' => 'monthly', 'month' => request('month', date('n')), 'year' => request('year', date('Y'))]) }}"
+                   class="flex-1 text-center py-2.5 px-4 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 {{ ($mode ?? 'daily') === 'monthly' ? 'bg-white text-slate-900 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/60' }}">
+                    <span>📅</span>
+                    <span>Matriks Kalender Bulanan (1 - 31)</span>
+                </a>
+            </div>
 
-                        <!-- Tipe Presensi -->
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Tipe Presensi:</label>
-                            <select name="attendance_type" class="w-full text-xs rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">-- Semua Tipe --</option>
-                                <option value="wfo" {{ request('attendance_type') === 'wfo' ? 'selected' : '' }}>WFO (Kantor)</option>
-                                <option value="wfh" {{ request('attendance_type') === 'wfh' ? 'selected' : '' }}>WFH (Rumah)</option>
-                            </select>
-                        </div>
+            @if(($mode ?? 'daily') === 'daily')
+                <!-- ============================================================= -->
+                <!-- MODE 1: LOG HARIAN (DETAIL FOTO, GPS, DAN JAM KERJA)         -->
+                <!-- ============================================================= -->
 
-                        <!-- Status -->
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Status Kehadiran:</label>
-                            <select name="status" class="w-full text-xs rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">-- Semua Status --</option>
-                                <option value="present" {{ request('status') === 'present' ? 'selected' : '' }}>Tepat Waktu</option>
-                                <option value="late" {{ request('status') === 'late' ? 'selected' : '' }}>Terlambat</option>
-                            </select>
-                        </div>
+                <!-- Filter Card Harian -->
+                <div class="bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-sm">
+                    <form method="GET" action="{{ route('admin.presensi.index') }}" class="space-y-4">
+                        <input type="hidden" name="mode" value="daily">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                            <!-- Tanggal Spesifik -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Spesifik:</label>
+                                <input type="date" name="date" value="{{ request('date', date('Y-m-d')) }}" class="w-full text-xs rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                            </div>
 
-                        <!-- Pencarian Nama / NIP -->
-                        <div class="lg:col-span-2">
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Cari Nama Pegawai / NIP:</label>
-                            <div class="flex gap-2">
-                                <input type="text" name="search" value="{{ request('search') }}" placeholder="Ketik nama atau NIP..." class="w-full text-xs rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                                <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold transition shrink-0">
-                                    Cari
-                                </button>
-                                <a href="{{ route('admin.presensi.index') }}" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition shrink-0">
-                                    Mengatur ulang
-                                </a>
+                            <!-- Tipe Presensi -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Tipe Presensi:</label>
+                                <select name="attendance_type" class="w-full text-xs rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">-- Semua Tipe --</option>
+                                    <option value="wfo" {{ request('attendance_type') === 'wfo' ? 'selected' : '' }}>WFO (Kantor)</option>
+                                    <option value="wfh" {{ request('attendance_type') === 'wfh' ? 'selected' : '' }}>WFH (Rumah)</option>
+                                </select>
+                            </div>
+
+                            <!-- Status -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Kehadiran:</label>
+                                <select name="status" class="w-full text-xs rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">-- Semua Status --</option>
+                                    <option value="present" {{ request('status') === 'present' ? 'selected' : '' }}>Tepat Waktu</option>
+                                    <option value="late" {{ request('status') === 'late' ? 'selected' : '' }}>Terlambat</option>
+                                </select>
+                            </div>
+
+                            <!-- Pencarian Nama / NIP -->
+                            <div class="lg:col-span-2">
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Cari Nama Pegawai / NIP:</label>
+                                <div class="flex gap-2">
+                                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Ketik nama atau NIP..." class="w-full text-xs rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                                    <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold transition shrink-0">
+                                        Cari
+                                    </button>
+                                    <a href="{{ route('admin.presensi.index', ['mode' => 'daily']) }}" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition shrink-0">
+                                        Mengatur ulang
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tabel Data Rekap Presensi Harian -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-gray-800 text-sm">📋 Rekap Kehadiran Pegawai</span>
+                            <span class="px-2 py-0.5 text-[11px] font-semibold bg-blue-100 text-blue-700 rounded-full">
+                                Total: {{ $attendances->total() }} Data
+                            </span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-xs text-left">
+                            <thead class="bg-gray-50 text-gray-600 font-bold uppercase tracking-wider text-[11px]">
+                                <tr>
+                                    <th class="px-4 py-3">Pegawai</th>
+                                    <th class="px-4 py-3">Tanggal & Waktu</th>
+                                    <th class="px-4 py-3">Tipe</th>
+                                    <th class="px-4 py-3">Jarak GPS</th>
+                                    <th class="px-4 py-3">Koordinat Masuk</th>
+                                    <th class="px-4 py-3 text-center">Foto Masuk</th>
+                                    <th class="px-4 py-3 text-center">Foto Pulang</th>
+                                    <th class="px-4 py-3">Total Jam Kerja (Status)</th>
+                                    <th class="px-4 py-3 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                @forelse($attendances as $item)
+                                    <tr class="hover:bg-gray-50/80 transition">
+                                        <td class="px-4 py-3">
+                                            <div class="font-bold text-gray-900">{{ $item->user?->name ?? 'User #' . $item->user_id }}</div>
+                                            <div class="text-[11px] text-gray-500 font-mono">
+                                                {{ $item->user?->pegawai?->nip ?? $item->user?->email ?? '-' }}
+                                            </div>
+                                            @if($item->user?->pegawai?->unitKerja)
+                                                <div class="text-[10px] text-gray-400">
+                                                    {{ $item->user?->pegawai?->unitKerja?->nama_unit ?? '' }}
+                                                </div>
+                                            @endif
+                                        </td>
+
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            <div class="font-semibold text-gray-800">{{ $item->attendance_date ? $item->attendance_date->translatedFormat('d/m/Y') : '-' }}</div>
+                                            <div class="text-[11px] text-emerald-700 font-mono">
+                                                Masuk: {{ $item->check_in_time ? $item->check_in_time->timezone('Asia/Jakarta')->format('H:i:s') . ' WIB' : '-' }}
+                                            </div>
+                                            <div class="text-[11px] text-amber-700 font-mono">
+                                                Pulang: {{ $item->check_out_time ? $item->check_out_time->timezone('Asia/Jakarta')->format('H:i:s') . ' WIB' : '-' }}
+                                            </div>
+                                        </td>
+
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            <span class="px-2 py-0.5 rounded-full font-bold text-[10px] uppercase {{ ($item->attendance_type ?? '') === 'wfh' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-blue-100 text-blue-700 border border-blue-200' }}">
+                                                {{ strtoupper($item->attendance_type ?? 'wfo') }}
+                                            </span>
+                                        </td>
+
+                                        <td class="px-4 py-3 whitespace-nowrap font-mono">
+                                            <div class="flex items-center gap-1 font-semibold {{ $item->check_in_distance_meters <= 75 ? 'text-emerald-700' : 'text-red-600' }}">
+                                                <span>{{ number_format($item->check_in_distance_meters, 1) }} m</span>
+                                                @if($item->check_in_distance_meters <= 75)
+                                                    <span class="text-[10px] text-emerald-600">✓</span>
+                                                @else
+                                                    <span class="text-[10px] text-red-600 font-bold">!</span>
+                                                @endif
+                                            </div>
+                                        </td>
+
+                                        <td class="px-4 py-3 font-mono text-[11px] text-gray-500 whitespace-nowrap">
+                                            {{ number_format($item->check_in_latitude, 5) }},<br>{{ number_format($item->check_in_longitude, 5) }}
+                                        </td>
+
+                                        <td class="px-4 py-3 text-center">
+                                            @if($item->check_in_photo_path)
+                                                <button type="button"
+                                                        @click="modalOpen = true; modalImgSrc = '{{ $item->check_in_photo_url }}'; modalTitle = 'Foto Selfie Masuk - {{ addslashes($item->user?->name ?? 'User') }} ({{ $item->check_in_time ? $item->check_in_time->timezone('Asia/Jakarta')->format('H:i') : '' }})'"
+                                                        class="inline-block w-10 h-10 rounded-lg overflow-hidden border border-gray-300 hover:ring-2 hover:ring-blue-500 shadow-sm transition">
+                                                    <img src="{{ $item->check_in_photo_url }}" class="w-full h-full object-cover" alt="Foto Masuk" loading="lazy">
+                                                </button>
+                                            @else
+                                                <span class="text-gray-400 text-xs">-</span>
+                                            @endif
+                                        </td>
+
+                                        <td class="px-4 py-3 text-center">
+                                            @if($item->check_out_photo_path)
+                                                <button type="button"
+                                                        @click="modalOpen = true; modalImgSrc = '{{ $item->check_out_photo_url }}'; modalTitle = 'Foto Selfie Pulang - {{ addslashes($item->user?->name ?? 'User') }} ({{ $item->check_out_time ? $item->check_out_time->timezone('Asia/Jakarta')->format('H:i') : '' }})'"
+                                                        class="inline-block w-10 h-10 rounded-lg overflow-hidden border border-gray-300 hover:ring-2 hover:ring-amber-500 shadow-sm transition">
+                                                    <img src="{{ $item->check_out_photo_url }}" class="w-full h-full object-cover" alt="Foto Pulang" loading="lazy">
+                                                </button>
+                                            @else
+                                                <span class="text-gray-400 text-xs">-</span>
+                                            @endif
+                                        </td>
+
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            <div class="font-bold text-gray-900 flex items-center gap-1.5 text-xs">
+                                                <span class="text-slate-500">⏱️</span>
+                                                <span>{{ $item->work_duration }}</span>
+                                            </div>
+                                            <div class="mt-1">
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $item->status_badge['class'] }}">
+                                                    {{ $item->status_badge['label'] }}
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        <td class="px-4 py-3 whitespace-nowrap text-center">
+                                            <form method="POST" action="{{ route('admin.presensi.destroy', $item->id) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data presensi ini?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-500 hover:text-red-700 font-medium text-xs">
+                                                    🗑️ Hapus
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="9" class="px-4 py-8 text-center text-gray-400">
+                                            Tidak ada data kehadiran yang sesuai dengan filter.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if($attendances->hasPages())
+                        <div class="p-4 border-t border-gray-100">
+                            {{ $attendances->links() }}
+                        </div>
+                    @endif
+                </div>
+
+            @else
+                <!-- ============================================================= -->
+                <!-- MODE 2: MATRIKS PRESENSI BULANAN (KALENDER 1 - 31)           -->
+                <!-- ============================================================= -->
+
+                <!-- Filter Card Matriks Bulanan -->
+                <div class="bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-sm">
+                    <form method="GET" action="{{ route('admin.presensi.index') }}" class="space-y-4">
+                        <input type="hidden" name="mode" value="monthly">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <!-- Pilihan Bulan -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Pilih Bulan:</label>
+                                <select name="month" class="w-full text-xs rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                                    @foreach([
+                                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                                        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                                        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                                    ] as $mNum => $mLabel)
+                                        <option value="{{ $mNum }}" {{ (int)request('month', $month ?? date('n')) === $mNum ? 'selected' : '' }}>
+                                            {{ $mLabel }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Pilihan Tahun -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Pilih Tahun:</label>
+                                <select name="year" class="w-full text-xs rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                                    @for($y = date('Y'); $y >= date('Y') - 3; $y--)
+                                        <option value="{{ $y }}" {{ (int)request('year', $year ?? date('Y')) === $y ? 'selected' : '' }}>
+                                            {{ $y }}
+                                        </option>
+                                    @endfor
+                                </select>
+                            </div>
+
+                            <!-- Pencarian Nama / NIP -->
+                            <div class="lg:col-span-2">
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Cari Nama Pegawai / NIP:</label>
+                                <div class="flex gap-2">
+                                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Ketik nama atau NIP..." class="w-full text-xs rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                                    <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold transition shrink-0">
+                                        Cari
+                                    </button>
+                                    <a href="{{ route('admin.presensi.index', ['mode' => 'monthly']) }}" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition shrink-0">
+                                        Mengatur ulang
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tabel Matriks Bulanan -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-gray-800 text-sm">📅 Matriks Presensi Bulanan Pegawai ({{ $matrixData['month_name'] }})</span>
+                            <span class="px-2 py-0.5 text-[11px] font-semibold bg-blue-100 text-blue-700 rounded-full">
+                                Total: {{ $matrixData['paginator']->total() }} Pegawai
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-xs text-left border-collapse">
+                            <thead class="bg-gray-50 text-gray-600 font-bold uppercase tracking-wider text-[11px]">
+                                <tr>
+                                    <th class="px-3 py-2.5 text-center sticky left-0 z-20 bg-gray-50 border-r border-gray-200" style="min-width: 40px;">No</th>
+                                    <th class="px-3 py-2.5 sticky left-[40px] z-20 bg-gray-50 border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]" style="min-width: 220px;">Pegawai</th>
+                                    @foreach($matrixData['days'] as $d => $dayInfo)
+                                        <th class="px-1 py-1.5 text-center border-r border-gray-200 {{ $dayInfo['is_weekend'] ? 'bg-slate-100 text-slate-400' : ($dayInfo['is_today'] ? 'bg-blue-100/60 text-blue-700 font-black' : '') }}" style="min-width: 28px;">
+                                            <div class="text-[11px]">{{ $d }}</div>
+                                            <div class="text-[8px] font-normal uppercase opacity-75">{{ $dayInfo['day_short'][0] }}</div>
+                                        </th>
+                                    @endforeach
+                                    <th class="px-2.5 py-2 text-center bg-gray-50 border-l border-gray-200" style="min-width: 55px;">Hadir</th>
+                                    <th class="px-2.5 py-2 text-center bg-gray-50 border-r border-gray-200" style="min-width: 55px;">Telat</th>
+                                    <th class="px-3 py-2 text-center bg-gray-50" style="min-width: 110px;">Total Durasi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                @forelse($matrixData['rows'] as $index => $row)
+                                    <tr class="hover:bg-blue-50/40 transition">
+                                        <td class="px-3 py-2 text-center font-bold text-gray-500 sticky left-0 z-10 bg-white border-r border-gray-200">
+                                            {{ $matrixData['paginator']->firstItem() + $index }}
+                                        </td>
+                                        <td class="px-3 py-2 sticky left-[40px] z-10 bg-white border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                            <div class="font-bold text-gray-900 truncate max-w-[200px]">{{ $row['pegawai']->nama }}</div>
+                                            <div class="text-[10px] text-gray-500 font-mono">{{ $row['pegawai']->nip ?? '-' }}</div>
+                                            @if($row['pegawai']->unitKerja)
+                                                <div class="text-[9px] text-gray-400 truncate max-w-[200px]">{{ $row['pegawai']->unitKerja->nama_unit }}</div>
+                                            @endif
+                                        </td>
+
+                                        @foreach($matrixData['days'] as $d => $dayInfo)
+                                            @php
+                                                $dayRecord = $row['days'][$d] ?? null;
+                                            @endphp
+                                            <td class="p-0.5 text-center border-r border-gray-100 {{ $dayInfo['is_weekend'] ? 'bg-slate-50/70' : ($dayInfo['is_today'] ? 'bg-blue-50/30' : '') }}">
+                                                @if(($dayRecord['status'] ?? '') === 'present')
+                                                    <button type="button"
+                                                            @click="detailOpen = true; detailData = {
+                                                                nama: '{{ addslashes($row['pegawai']->nama) }}',
+                                                                tanggal: '{{ $d }} {{ $matrixData['month_name'] }}',
+                                                                tipe: '{{ strtoupper($dayRecord['type'] ?? 'WFO') }}',
+                                                                in: '{{ $dayRecord['in'] ?? '-' }}',
+                                                                out: '{{ $dayRecord['out'] ?? '-' }}',
+                                                                duration: '{{ $dayRecord['duration'] ?? '-' }}',
+                                                                distance: '{{ number_format($dayRecord['distance'] ?? 0, 1) }} m',
+                                                                photo_in: '{{ $dayRecord['photo_in'] ?? '' }}',
+                                                                photo_out: '{{ $dayRecord['photo_out'] ?? '' }}',
+                                                                status: 'Hadir Tepat Waktu',
+                                                                status_badge: 'bg-green-100 text-green-800'
+                                                            }"
+                                                            title="Tgl {{ $d }}: Hadir ({{ $dayRecord['in'] ?? '-' }} s/d {{ $dayRecord['out'] ?? '-' }})"
+                                                            class="w-6 h-6 rounded flex items-center justify-center font-bold text-[10px] bg-emerald-100 text-emerald-800 hover:ring-2 hover:ring-emerald-400 mx-auto transition">
+                                                        H
+                                                    </button>
+                                                @elseif(($dayRecord['status'] ?? '') === 'late')
+                                                    <button type="button"
+                                                            @click="detailOpen = true; detailData = {
+                                                                nama: '{{ addslashes($row['pegawai']->nama) }}',
+                                                                tanggal: '{{ $d }} {{ $matrixData['month_name'] }}',
+                                                                tipe: '{{ strtoupper($dayRecord['type'] ?? 'WFO') }}',
+                                                                in: '{{ $dayRecord['in'] ?? '-' }}',
+                                                                out: '{{ $dayRecord['out'] ?? '-' }}',
+                                                                duration: '{{ $dayRecord['duration'] ?? '-' }}',
+                                                                distance: '{{ number_format($dayRecord['distance'] ?? 0, 1) }} m',
+                                                                photo_in: '{{ $dayRecord['photo_in'] ?? '' }}',
+                                                                photo_out: '{{ $dayRecord['photo_out'] ?? '' }}',
+                                                                status: 'Terlambat',
+                                                                status_badge: 'bg-amber-100 text-amber-800'
+                                                            }"
+                                                            title="Tgl {{ $d }}: Terlambat ({{ $dayRecord['in'] ?? '-' }} s/d {{ $dayRecord['out'] ?? '-' }})"
+                                                            class="w-6 h-6 rounded flex items-center justify-center font-bold text-[10px] bg-amber-100 text-amber-800 hover:ring-2 hover:ring-amber-400 mx-auto transition">
+                                                        T
+                                                    </button>
+                                                @elseif(($dayRecord['status'] ?? '') === 'absent')
+                                                    <span class="w-5 h-5 flex items-center justify-center text-[10px] font-semibold text-rose-500 mx-auto" title="Tgl {{ $d }}: Tidak Hadir">
+                                                        A
+                                                    </span>
+                                                @elseif(($dayRecord['status'] ?? '') === 'weekend')
+                                                    <span class="w-5 h-5 flex items-center justify-center text-[10px] text-gray-300 mx-auto" title="Akhir Pekan">
+                                                        —
+                                                    </span>
+                                                @else
+                                                    <span class="w-5 h-5 flex items-center justify-center text-[10px] text-gray-200 mx-auto">
+                                                        ·
+                                                    </span>
+                                                @endif
+                                            </td>
+                                        @endforeach
+
+                                        <td class="px-2.5 py-2 text-center font-bold font-mono text-emerald-700 bg-gray-50/50 border-l border-gray-200">
+                                            {{ $row['total_hadir'] }}
+                                        </td>
+                                        <td class="px-2.5 py-2 text-center font-bold font-mono {{ $row['total_late'] > 0 ? 'text-amber-700' : 'text-gray-400' }} bg-gray-50/50 border-r border-gray-200">
+                                            {{ $row['total_late'] }}
+                                        </td>
+                                        <td class="px-3 py-2 text-center font-bold font-mono text-slate-800 bg-gray-50/50 text-[11px] whitespace-nowrap">
+                                            {{ $row['total_duration'] }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="{{ 6 + $matrixData['days_in_month'] }}" class="px-4 py-8 text-center text-gray-400">
+                                            Tidak ada data pegawai yang sesuai dengan filter.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Legenda Keterangan -->
+                    <div class="px-5 py-3 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gray-50/30 text-xs">
+                        <div class="flex flex-wrap items-center gap-4 text-gray-600">
+                            <span class="font-semibold text-gray-700">Keterangan:</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px] flex items-center justify-center">H</span>
+                                <span>Hadir Tepat Waktu</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded bg-amber-100 text-amber-800 font-bold text-[10px] flex items-center justify-center">T</span>
+                                <span>Terlambat</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded font-bold text-[10px] text-rose-500 flex items-center justify-center">A</span>
+                                <span>Tidak Hadir (Alpa)</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-gray-400 font-bold">—</span>
+                                <span class="text-gray-400">Akhir Pekan / Libur</span>
                             </div>
                         </div>
                     </div>
-                </form>
-            </div>
 
-            <!-- Tabel Data Rekap Presensi -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                    <div class="flex items-center gap-2">
-                        <span class="font-bold text-gray-800 text-sm">📋 Rekap Kehadiran Pegawai</span>
-                        <span class="px-2 py-0.5 text-[11px] font-semibold bg-blue-100 text-blue-700 rounded-full">
-                            Total: {{ $attendances->total() }} Data
-                        </span>
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 text-xs text-left">
-                        <thead class="bg-gray-50 text-gray-600 font-bold uppercase tracking-wider text-[11px]">
-                            <tr>
-                                <th class="px-4 py-3">Pegawai</th>
-                                <th class="px-4 py-3">Tanggal & Waktu</th>
-                                <th class="px-4 py-3">Tipe</th>
-                                <th class="px-4 py-3">Jarak GPS</th>
-                                <th class="px-4 py-3">Koordinat Masuk</th>
-                                <th class="px-4 py-3 text-center">Foto Masuk</th>
-                                <th class="px-4 py-3 text-center">Foto Pulang</th>
-                                <th class="px-4 py-3">Total Jam Kerja (Status)</th>
-                                <th class="px-4 py-3 text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 bg-white">
-                            @forelse($attendances as $item)
-                                <tr class="hover:bg-gray-50/80 transition">
-                                    <td class="px-4 py-3">
-                                        <div class="font-bold text-gray-900">{{ $item->user?->name ?? 'User #' . $item->user_id }}</div>
-                                        <div class="text-[11px] text-gray-500 font-mono">
-                                            {{ $item->user?->pegawai?->nip ?? $item->user?->email ?? '-' }}
-                                        </div>
-                                        @if($item->user?->pegawai?->unitKerja)
-                                            <div class="text-[10px] text-gray-400">
-                                                {{ $item->user?->pegawai?->unitKerja?->nama_unit ?? '' }}
-                                            </div>
-                                        @endif
-                                    </td>
-
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        <div class="font-semibold text-gray-800">{{ $item->attendance_date ? $item->attendance_date->translatedFormat('d/m/Y') : '-' }}</div>
-                                        <div class="text-[11px] text-emerald-700 font-mono">
-                                            Masuk: {{ $item->check_in_time ? $item->check_in_time->timezone('Asia/Jakarta')->format('H:i:s') . ' WIB' : '-' }}
-                                        </div>
-                                        <div class="text-[11px] text-amber-700 font-mono">
-                                            Pulang: {{ $item->check_out_time ? $item->check_out_time->timezone('Asia/Jakarta')->format('H:i:s') . ' WIB' : '-' }}
-                                        </div>
-                                    </td>
-
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        <span class="px-2 py-0.5 rounded-full font-bold text-[10px] uppercase {{ ($item->attendance_type ?? '') === 'wfh' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-blue-100 text-blue-700 border border-blue-200' }}">
-                                            {{ strtoupper($item->attendance_type ?? 'wfo') }}
-                                        </span>
-                                    </td>
-
-                                    <td class="px-4 py-3 whitespace-nowrap font-mono">
-                                        <div class="flex items-center gap-1 font-semibold {{ $item->check_in_distance_meters <= 75 ? 'text-emerald-700' : 'text-red-600' }}">
-                                            <span>{{ number_format($item->check_in_distance_meters, 1) }} m</span>
-                                            @if($item->check_in_distance_meters <= 75)
-                                                <span class="text-[10px] text-emerald-600">✓</span>
-                                            @else
-                                                <span class="text-[10px] text-red-600 font-bold">!</span>
-                                            @endif
-                                        </div>
-                                    </td>
-
-                                    <td class="px-4 py-3 font-mono text-[11px] text-gray-500 whitespace-nowrap">
-                                        {{ number_format($item->check_in_latitude, 5) }},<br>{{ number_format($item->check_in_longitude, 5) }}
-                                    </td>
-
-                                    <td class="px-4 py-3 text-center">
-                                        @if($item->check_in_photo_path)
-                                            <button type="button"
-                                                    @click="modalOpen = true; modalImgSrc = '{{ $item->check_in_photo_url }}'; modalTitle = 'Foto Selfie Masuk - {{ addslashes($item->user?->name ?? 'User') }} ({{ $item->check_in_time ? $item->check_in_time->timezone('Asia/Jakarta')->format('H:i') : '' }})'"
-                                                    class="inline-block w-10 h-10 rounded-lg overflow-hidden border border-gray-300 hover:ring-2 hover:ring-blue-500 shadow-sm transition">
-                                                <img src="{{ $item->check_in_photo_url }}" class="w-full h-full object-cover" alt="Foto Masuk" loading="lazy">
-                                            </button>
-                                        @else
-                                            <span class="text-gray-400 text-xs">-</span>
-                                        @endif
-                                    </td>
-
-                                    <td class="px-4 py-3 text-center">
-                                        @if($item->check_out_photo_path)
-                                            <button type="button"
-                                                    @click="modalOpen = true; modalImgSrc = '{{ $item->check_out_photo_url }}'; modalTitle = 'Foto Selfie Pulang - {{ addslashes($item->user?->name ?? 'User') }} ({{ $item->check_out_time ? $item->check_out_time->timezone('Asia/Jakarta')->format('H:i') : '' }})'"
-                                                    class="inline-block w-10 h-10 rounded-lg overflow-hidden border border-gray-300 hover:ring-2 hover:ring-amber-500 shadow-sm transition">
-                                                <img src="{{ $item->check_out_photo_url }}" class="w-full h-full object-cover" alt="Foto Pulang" loading="lazy">
-                                            </button>
-                                        @else
-                                            <span class="text-gray-400 text-xs">-</span>
-                                        @endif
-                                    </td>
-
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        <div class="font-bold text-gray-900 flex items-center gap-1.5 text-xs">
-                                            <span class="text-slate-500">⏱️</span>
-                                            <span>{{ $item->work_duration }}</span>
-                                        </div>
-                                        <div class="mt-1">
-                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $item->status_badge['class'] }}">
-                                                {{ $item->status_badge['label'] }}
-                                            </span>
-                                        </div>
-                                    </td>
-
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        <form method="POST" action="{{ route('admin.presensi.destroy', $item->id) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data presensi ini?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-500 hover:text-red-700 font-medium text-xs">
-                                                🗑️ Hapus
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="9" class="px-4 py-8 text-center text-gray-400">
-                                        Tidak ada data kehadiran yang sesuai dengan filter.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                    @if($matrixData['paginator']->hasPages())
+                        <div class="p-4 border-t border-gray-100">
+                            {{ $matrixData['paginator']->links() }}
+                        </div>
+                    @endif
                 </div>
 
-                @if($attendances->hasPages())
-                    <div class="p-4 border-t border-gray-100">
-                        {{ $attendances->links() }}
-                    </div>
-                @endif
-            </div>
+            @endif
 
         </div>
 
@@ -272,6 +501,74 @@
                 </div>
                 <div class="p-3 bg-gray-100 text-right">
                     <button type="button" @click="modalOpen = false" class="px-4 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-semibold">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL DETAIL PRESENSI DARI MATRIKS BULANAN -->
+        <div x-show="detailOpen"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+             style="display: none;">
+            <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl"
+                 @click.outside="detailOpen = false">
+                <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm font-bold text-gray-900" x-text="detailData.nama"></h4>
+                        <div class="text-[11px] text-gray-500 font-medium" x-text="'Presensi: ' + detailData.tanggal"></div>
+                    </div>
+                    <button type="button" @click="detailOpen = false" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                </div>
+                <div class="p-4 space-y-3 text-xs bg-gray-50/50">
+                    <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-200">
+                        <span class="text-gray-500">Status Kehadiran:</span>
+                        <span :class="detailData.status_badge" class="px-2.5 py-0.5 rounded-full font-bold text-[11px]" x-text="detailData.status"></span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-white p-3 rounded-xl border border-gray-200">
+                            <div class="text-[10px] text-gray-400 font-bold uppercase">Jam Masuk</div>
+                            <div class="text-sm font-black text-emerald-700 mt-0.5" x-text="detailData.in || '-'"></div>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-gray-200">
+                            <div class="text-[10px] text-gray-400 font-bold uppercase">Jam Pulang</div>
+                            <div class="text-sm font-black text-amber-700 mt-0.5" x-text="detailData.out || '-'"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-1.5">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Total Jam Kerja:</span>
+                            <span class="font-bold text-gray-900" x-text="detailData.duration || '-'"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Tipe Presensi:</span>
+                            <span class="font-semibold text-gray-800" x-text="detailData.tipe || '-'"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Jarak Lokasi GPS:</span>
+                            <span class="font-mono text-gray-800" x-text="detailData.distance || '-'"></span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2" x-show="detailData.photo_in || detailData.photo_out">
+                        <div x-show="detailData.photo_in" class="bg-white p-2 rounded-xl border border-gray-200 text-center">
+                            <div class="text-[10px] font-bold text-gray-500 mb-1">Foto Masuk</div>
+                            <img :src="detailData.photo_in" class="w-full h-28 object-cover rounded-lg shadow-sm">
+                        </div>
+                        <div x-show="detailData.photo_out" class="bg-white p-2 rounded-xl border border-gray-200 text-center">
+                            <div class="text-[10px] font-bold text-gray-500 mb-1">Foto Pulang</div>
+                            <img :src="detailData.photo_out" class="w-full h-28 object-cover rounded-lg shadow-sm">
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3 bg-gray-100 text-right">
+                    <button type="button" @click="detailOpen = false" class="px-4 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-semibold">
                         Tutup
                     </button>
                 </div>

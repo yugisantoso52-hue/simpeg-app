@@ -353,4 +353,143 @@ class AttendanceService
             'total_late' => $lateCount,
         ];
     }
+
+    /**
+     * Dapatkan data Matriks Presensi Bulanan (Kalender 1 - 31) untuk semua pegawai
+     */
+    public function getMonthlyMatrix(int $month, int $year, ?string $search = null, int $perPage = 50): array
+    {
+        $startOfMonth = Carbon::createFromDate($year, $month, 1, 'Asia/Jakarta')->startOfMonth();
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+        $daysInMonth = $startOfMonth->daysInMonth;
+        $now = Carbon::now('Asia/Jakarta');
+
+        $days = [];
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $date = Carbon::createFromDate($year, $month, $d, 'Asia/Jakarta');
+            $days[$d] = [
+                'day' => $d,
+                'date' => $date->toDateString(),
+                'day_name' => $date->translatedFormat('D'), // Sen, Sel, Rab, Kam, Jum, Sab, Min
+                'day_short' => $date->format('D'),
+                'is_weekend' => $date->isWeekend(),
+                'is_future' => $date->isAfter($now->endOfDay()),
+                'is_today' => $date->isToday(),
+            ];
+        }
+
+        $query = Pegawai::with([
+            'unitKerja',
+            'jabatan',
+            'user.attendances' => function ($q) use ($startOfMonth, $endOfMonth) {
+                $q->whereBetween('attendance_date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()]);
+            }
+        ])->where('status_pegawai', 'Aktif');
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%");
+            });
+        }
+
+        $pegawaiList = $query->orderBy('nama', 'asc')->paginate($perPage)->withQueryString();
+
+        $matrixRows = [];
+        foreach ($pegawaiList as $pegawai) {
+            $attendancesByDay = [];
+            if ($pegawai->user && $pegawai->user->attendances) {
+                foreach ($pegawai->user->attendances as $att) {
+                    $dayNum = (int) Carbon::parse($att->attendance_date)->format('j');
+                    $attendancesByDay[$dayNum] = $att;
+                }
+            }
+
+            $totalHadir = 0;
+            $totalLate = 0;
+            $totalWfo = 0;
+            $totalWfh = 0;
+            $totalSeconds = 0;
+
+            $dayRecords = [];
+            foreach ($days as $d => $dayInfo) {
+                $att = $attendancesByDay[$d] ?? null;
+                if ($att) {
+                    $totalHadir++;
+                    if ($att->status === 'late') {
+                        $totalLate++;
+                    }
+                    if ($att->attendance_type === 'wfh') {
+                        $totalWfh++;
+                    } else {
+                        $totalWfo++;
+                    }
+
+                    if ($att->check_in_time && $att->check_out_time) {
+                        $diffSeconds = $att->check_in_time->diffInSeconds($att->check_out_time);
+                        $totalSeconds += $diffSeconds;
+                    }
+
+                    $dayRecords[$d] = [
+                        'status' => $att->status,
+                        'type' => $att->attendance_type,
+                        'in' => $att->formatted_check_in_time,
+                        'out' => $att->formatted_check_out_time,
+                        'duration' => $att->work_duration,
+                        'distance' => $att->check_in_distance_meters,
+                        'photo_in' => $att->check_in_photo_url,
+                        'photo_out' => $att->check_out_photo_url,
+                        'notes' => $att->notes,
+                        'badge' => $att->status === 'late' ? 'T' : ($att->status === 'leave' ? 'I' : 'H'),
+                        'badge_color' => $att->status === 'late' ? 'yellow' : ($att->status === 'leave' ? 'blue' : 'green'),
+                    ];
+                } else {
+                    if ($dayInfo['is_weekend']) {
+                        $dayRecords[$d] = [
+                            'status' => 'weekend',
+                            'badge' => '—',
+                            'badge_color' => 'gray',
+                        ];
+                    } elseif ($dayInfo['is_future']) {
+                        $dayRecords[$d] = [
+                            'status' => 'future',
+                            'badge' => '·',
+                            'badge_color' => 'lightgray',
+                        ];
+                    } else {
+                        $dayRecords[$d] = [
+                            'status' => 'absent',
+                            'badge' => 'A',
+                            'badge_color' => 'red',
+                        ];
+                    }
+                }
+            }
+
+            $hours = floor($totalSeconds / 3600);
+            $minutes = floor(($totalSeconds % 3600) / 60);
+            $formattedTotalDuration = $hours > 0 ? "{$hours} Jam {$minutes} Menit" : ($minutes > 0 ? "{$minutes} Menit" : "-");
+
+            $matrixRows[] = [
+                'pegawai' => $pegawai,
+                'days' => $dayRecords,
+                'total_hadir' => $totalHadir,
+                'total_late' => $totalLate,
+                'total_wfo' => $totalWfo,
+                'total_wfh' => $totalWfh,
+                'total_duration' => $formattedTotalDuration,
+                'total_seconds' => $totalSeconds,
+            ];
+        }
+
+        return [
+            'days' => $days,
+            'days_in_month' => $daysInMonth,
+            'month' => $month,
+            'year' => $year,
+            'month_name' => Carbon::createFromDate($year, $month, 1)->translatedFormat('F Y'),
+            'paginator' => $pegawaiList,
+            'rows' => $matrixRows,
+        ];
+    }
 }

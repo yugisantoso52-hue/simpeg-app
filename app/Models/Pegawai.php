@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\RiwayatPenghargaan;
 use App\Models\RiwayatOrganisasi;
 use App\Models\RiwayatPublikasi;
@@ -146,6 +147,11 @@ class Pegawai extends Model
     }
 
     /* --- RELATIONSHIPS --- */
+
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class, 'pegawai_id');
+    }
 
     public function unitKerja(): BelongsTo
     {

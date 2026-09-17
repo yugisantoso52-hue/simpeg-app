@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Exports\AttendanceExport;
+use App\Exports\AttendanceMonthlyExport;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\EmployeeAttendanceLocation;
@@ -26,11 +27,41 @@ class AttendanceManageController extends Controller
      */
     public function index(Request $request): View
     {
-        $filters = $this->extractFilters($request);
-        $attendances = $this->service->filterAttendances($filters, 20);
+        $mode = $request->get('mode', 'daily');
         $statistics = $this->service->todayStatistics();
 
-        return view('attendance.admin.index', compact('attendances', 'filters', 'statistics'));
+        if ($mode === 'monthly') {
+            $month = (int) $request->get('month', Carbon::now('Asia/Jakarta')->month);
+            $year = (int) $request->get('year', Carbon::now('Asia/Jakarta')->year);
+            $search = $request->get('search');
+
+            $matrixData = $this->service->getMonthlyMatrix($month, $year, $search, 50);
+
+            return view('attendance.admin.index', [
+                'mode' => 'monthly',
+                'month' => $month,
+                'year' => $year,
+                'search' => $search,
+                'matrixData' => $matrixData,
+                'statistics' => $statistics,
+                'filters' => [
+                    'mode' => 'monthly',
+                    'month' => $month,
+                    'year' => $year,
+                    'search' => $search,
+                ],
+            ]);
+        }
+
+        $filters = $this->extractFilters($request);
+        $attendances = $this->service->filterAttendances($filters, 20);
+
+        return view('attendance.admin.index', [
+            'mode' => 'daily',
+            'attendances' => $attendances,
+            'filters' => array_merge($filters, ['mode' => 'daily']),
+            'statistics' => $statistics,
+        ]);
     }
 
     /**
@@ -118,8 +149,18 @@ class AttendanceManageController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        $filters = $this->extractFilters($request);
+        $mode = $request->get('mode', 'daily');
 
+        if ($mode === 'monthly') {
+            $month = (int) $request->get('month', Carbon::now('Asia/Jakarta')->month);
+            $year = (int) $request->get('year', Carbon::now('Asia/Jakarta')->year);
+            $search = $request->get('search');
+
+            $filename = 'Matriks_Presensi_' . $year . '_' . sprintf('%02d', $month) . '.xlsx';
+            return Excel::download(new AttendanceMonthlyExport($month, $year, $search), $filename);
+        }
+
+        $filters = $this->extractFilters($request);
         $filename = 'Rekap_Presensi_' . Carbon::now('Asia/Jakarta')->format('Y-m-d_His') . '.xlsx';
         return Excel::download(new AttendanceExport($filters), $filename);
     }
@@ -129,6 +170,20 @@ class AttendanceManageController extends Controller
      */
     public function exportPdf(Request $request)
     {
+        $mode = $request->get('mode', 'daily');
+
+        if ($mode === 'monthly') {
+            $month = (int) $request->get('month', Carbon::now('Asia/Jakarta')->month);
+            $year = (int) $request->get('year', Carbon::now('Asia/Jakarta')->year);
+            $search = $request->get('search');
+
+            $matrixData = $this->service->getMonthlyMatrix($month, $year, $search, 5000);
+            $pdf = Pdf::loadView('exports.pdf.attendance_monthly', compact('matrixData'))->setPaper('a4', 'landscape');
+
+            $filename = 'Matriks_Presensi_' . $year . '_' . sprintf('%02d', $month) . '.pdf';
+            return $pdf->download($filename);
+        }
+
         $filters = $this->extractFilters($request);
 
         $paginator = $this->service->filterAttendances($filters, 5000);
