@@ -68,7 +68,7 @@ $activeClass = $active ? 'ring-4 ring-offset-2 ' . $theme['ring'] . ' shadow-2xl
 
         <div class="pr-2">
 
-            <p class="text-xs xl:text-sm text-white/90 font-semibold uppercase tracking-wide">
+            <p class="text-xs xl:text-sm text-white/90 font-semibold uppercase tracking-wide notranslate" translate="no">
                 {{ $title }}
             </p>
 

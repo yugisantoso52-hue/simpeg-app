@@ -206,10 +206,10 @@
                                     <th class="w-12 px-4 py-3 text-center">
                                         <input type="checkbox" id="check-all" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
                                     </th>
-                                    <th class="w-12 px-4 py-3 text-center">No</th>
+                                    <th class="w-12 px-4 py-3 text-center notranslate" translate="no">No.</th>
                                     <th class="w-16 px-4 py-3 text-center">Foto</th>
-                                    <th class="px-4 py-3 text-left">NIP</th>
-                                    <th class="px-4 py-3 text-left">Nama Pegawai</th>
+                                    <th class="px-4 py-3 text-left notranslate" translate="no">NIP</th>
+                                    <th class="px-4 py-3 text-left notranslate" translate="no">Nama Pegawai</th>
                                     <th class="px-4 py-3 text-left">Unit Kerja</th>
                                     <th class="px-4 py-3 text-left">Jabatan</th>
                                     <th class="px-4 py-3 text-left">Golongan</th>
@@ -223,19 +223,19 @@
                                     <td class="px-4 py-3 text-center">
                                         <input type="checkbox" name="pegawai_ids[]" value="{{ $row->id }}" class="pegawai-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500">
                                     </td>
-                                    <td class="px-4 py-3 text-center font-medium text-slate-600">
+                                    <td class="px-4 py-3 text-center font-medium text-slate-600 notranslate" translate="no">
                                         {{ ($pegawai->currentPage()-1)*$pegawai->perPage()+$loop->iteration }}
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <x-enterprise.avatar :src="$row->foto_url" :name="$row->nama_lengkap" />
                                     </td>
-                                    <td class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">
+                                    <td class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap notranslate" translate="no">
                                         {{ $row->nip }}
                                     </td>
-                                    <td class="px-4 py-3">
-                                        <div class="font-semibold text-slate-900">{{ $row->nama_lengkap }}</div>
+                                    <td class="px-4 py-3 notranslate" translate="no">
+                                        <div class="font-semibold text-slate-900 notranslate" translate="no">{{ $row->nama_lengkap }}</div>
                                         @if($row->email)
-                                            <div class="text-xs text-slate-500">{{ $row->email }}</div>
+                                            <div class="text-xs text-slate-500 notranslate" translate="no">{{ $row->email }}</div>
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-slate-600">{{ $row->unitKerja?->nama_unit ?? $row->riwayatJabatan?->first()?->unitKerja?->nama_unit ?? '-' }}</td>

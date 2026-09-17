@@ -10,7 +10,7 @@
             </a>
 
             <!-- Teks Kop Surat -->
-            <div class="leading-tight max-w-full px-1">
+            <div class="leading-tight max-w-full px-1 notranslate" translate="no">
                 <h2 class="text-[10px] md:text-[11px] font-semibold tracking-wider text-slate-600 uppercase">
                     KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI
                 </h2>
@@ -41,11 +41,11 @@
     <!-- ========================================== -->
     <!-- 2. MENU NAVIGASI UTAMA (CENTERED MENU)     -->
     <!-- ========================================== -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 notranslate" translate="no">
         <div class="relative flex items-center justify-center h-14">
 
             <!-- Navigation Links (Center Aligned Desktop) -->
-            <div class="hidden sm:flex sm:items-center sm:space-x-8">
+            <div class="hidden sm:flex sm:items-center sm:space-x-8 notranslate" translate="no">
                 @include('layouts.partials.nav-desktop')
             </div>
 

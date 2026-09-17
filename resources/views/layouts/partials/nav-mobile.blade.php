@@ -1,7 +1,7 @@
-<div class="pt-2 pb-3 space-y-1">
+<div class="pt-2 pb-3 space-y-1 notranslate" translate="no">
     {{-- Dashboard --}}
-    <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-        Dashboard
+    <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="notranslate" translate="no">
+        <span class="notranslate" translate="no">Dashboard</span>
     </x-responsive-nav-link>
 
     {{-- Profil Saya (Pegawai) --}}
@@ -102,7 +102,7 @@
 
     {{-- Group Master Data --}}
     @if(Auth::user()->hasRole('admin'))
-        <div class="px-4 pt-3 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider">
+        <div class="px-4 pt-3 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider notranslate" translate="no">
             Master Data
         </div>
         <x-responsive-nav-link :href="route('unit-kerja.index')" :active="request()->routeIs('unit-kerja.*')">

@@ -5,7 +5,7 @@
     'backLabel' => 'Kembali',
 ])
 
-<div class="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between">
+<div class="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between notranslate" translate="no">
 
     <div>
 
