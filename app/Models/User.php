@@ -6,6 +6,8 @@ use App\Traits\RecordsSyncOutbox;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -47,6 +49,22 @@ class User extends Authenticatable
     public function pegawai(): BelongsTo
     {
         return $this->belongsTo(Pegawai::class, 'pegawai_id');
+    }
+
+    public function attendanceLocation(): HasOne
+    {
+        return $this->hasOne(EmployeeAttendanceLocation::class, 'user_id');
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class, 'user_id');
+    }
+
+    public function todayAttendance(): HasOne
+    {
+        return $this->hasOne(Attendance::class, 'user_id')
+            ->whereDate('attendance_date', now()->toDateString());
     }
 
     public function hasRole(array|string $roles): bool

@@ -29,6 +29,8 @@ use App\Http\Controllers\CloudSyncController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\JenisJabatanController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\Admin\AttendanceManageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +57,11 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::get('/notifications/{id}/read', [NotificationController::class, 'readAndRedirect'])->name('notifications.readAndRedirect');
     Route::get('/document-preview/{path}', [ReportController::class, 'streamPrivateFile'])->where('path', '.*')->name('document.preview');
     Route::get('/pegawai/{pegawai}/foto', [PegawaiController::class, 'foto'])->name('pegawai.foto');
+
+    /* Modul Presensi Karyawan (GPS Geolocation & Selfie) */
+    Route::get('/presensi', [AttendanceController::class, 'index'])->name('presensi.index');
+    Route::post('/presensi', [AttendanceController::class, 'store'])->name('presensi.store');
+    Route::get('/presensi/riwayat', [AttendanceController::class, 'history'])->name('presensi.history');
 
     // ======================================================================
     // ROUTE PEGAWAI BIASA (Akses Data Diri Sendiri)
@@ -184,6 +191,14 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         /* Audit Log & Monitoring Rekam Aktivitas System */
         Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
         Route::post('/audit-logs/prune', [AuditLogController::class, 'prune'])->name('audit-logs.prune');
+
+        /* Rekap Presensi Karyawan & Titik Lokasi (Admin/Pimpinan) */
+        Route::prefix('admin/presensi')->name('admin.presensi.')->group(function () {
+            Route::get('/', [AttendanceManageController::class, 'index'])->name('index');
+            Route::get('/locations', [AttendanceManageController::class, 'locations'])->name('locations');
+            Route::post('/{userId}/reset-location', [AttendanceManageController::class, 'resetLocation'])->name('reset-location');
+            Route::delete('/{id}', [AttendanceManageController::class, 'destroy'])->name('destroy');
+        });
     });
 
     /* Fallback Route untuk modul yang masih tahap pengembangan / Coming Soon */

@@ -16,6 +16,11 @@
         🏖️ E-Cuti Pegawai
     </x-responsive-nav-link>
 
+    {{-- Presensi Pegawai --}}
+    <x-responsive-nav-link :href="route('presensi.index')" :active="request()->routeIs('presensi.*')">
+        📍 Presensi Pegawai
+    </x-responsive-nav-link>
+
     {{-- Group Data Kepegawaian (Admin & Pimpinan) --}}
     @if(Auth::user()->hasRole(['admin', 'pimpinan']))
         <div class="px-4 pt-3 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -52,6 +57,12 @@
         @endif
         <x-responsive-nav-link :href="route('tugas-belajar.index')" :active="request()->routeIs('tugas-belajar.*')">
             🎓 Tugas Belajar
+        </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('admin.presensi.index')" :active="request()->routeIs('admin.presensi.index')">
+            📊 Rekap Presensi Pegawai
+        </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('admin.presensi.locations')" :active="request()->routeIs('admin.presensi.locations')">
+            📍 Titik Acuan Lokasi Pegawai
         </x-responsive-nav-link>
     @endif
 
