@@ -67,7 +67,7 @@
                                 <th class="px-4 py-3">Jarak Lokasi</th>
                                 <th class="px-4 py-3">Foto Selfie Masuk</th>
                                 <th class="px-4 py-3">Foto Selfie Pulang</th>
-                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3">Total Jam Kerja (Status)</th>
                                 <th class="px-4 py-3">Catatan</th>
                             </tr>
                         </thead>
@@ -93,8 +93,8 @@
                                     </td>
                                     <td class="px-4 py-3">
                                         @if($item->check_in_photo_path)
-                                            <a href="{{ Storage::disk('public')->url($item->check_in_photo_path) }}" target="_blank" class="block w-10 h-10 rounded-lg overflow-hidden border border-gray-200 hover:scale-105 transition shadow-sm">
-                                                <img src="{{ Storage::disk('public')->url($item->check_in_photo_path) }}" class="w-full h-full object-cover">
+                                            <a href="{{ $item->check_in_photo_url }}" target="_blank" class="block w-10 h-10 rounded-lg overflow-hidden border border-gray-200 hover:scale-105 transition shadow-sm">
+                                                <img src="{{ $item->check_in_photo_url }}" class="w-full h-full object-cover">
                                             </a>
                                         @else
                                             <span class="text-gray-400">-</span>
@@ -102,14 +102,17 @@
                                     </td>
                                     <td class="px-4 py-3">
                                         @if($item->check_out_photo_path)
-                                            <a href="{{ Storage::disk('public')->url($item->check_out_photo_path) }}" target="_blank" class="block w-10 h-10 rounded-lg overflow-hidden border border-gray-200 hover:scale-105 transition shadow-sm">
-                                                <img src="{{ Storage::disk('public')->url($item->check_out_photo_path) }}" class="w-full h-full object-cover">
+                                            <a href="{{ $item->check_out_photo_url }}" target="_blank" class="block w-10 h-10 rounded-lg overflow-hidden border border-gray-200 hover:scale-105 transition shadow-sm">
+                                                <img src="{{ $item->check_out_photo_url }}" class="w-full h-full object-cover">
                                             </a>
                                         @else
                                             <span class="text-gray-400">-</span>
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap">
+                                        <div class="font-bold text-gray-900 text-xs mb-1">
+                                            ⏱️ {{ $item->work_duration }}
+                                        </div>
                                         <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $item->status_badge['class'] }}">
                                             {{ $item->status_badge['label'] }}
                                         </span>

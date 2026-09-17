@@ -126,4 +126,37 @@ class AttendanceController extends Controller
 
         return view('attendance.history', compact('attendances', 'user'));
     }
+
+    /**
+     * Stream / Tampilkan Berkas Foto Selfie Presensi
+     */
+    public function streamPhoto(int $id, string $type)
+    {
+        $attendance = Attendance::findOrFail($id);
+        $path = strtolower($type) === 'out'
+            ? $attendance->check_out_photo_path
+            : $attendance->check_in_photo_path;
+
+        if (!$path) {
+            abort(404, 'Foto selfie tidak ditemukan.');
+        }
+
+        // 1. Cek via disk public
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->response($path);
+        }
+
+        // 2. Cek via disk local
+        if (\Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
+            return \Illuminate\Support\Facades\Storage::disk('local')->response($path);
+        }
+
+        // 3. Cek direct storage_path
+        $fullPath = storage_path('app/public/' . $path);
+        if (file_exists($fullPath)) {
+            return response()->file($fullPath);
+        }
+
+        abort(404, 'Berkas foto selfie tidak ditemukan di penyimpanan server.');
+    }
 }

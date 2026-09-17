@@ -7,9 +7,15 @@
                 </h2>
                 <p class="text-sm text-gray-500 mt-0.5">Monitoring kehadiran, verifikasi foto selfie, dan radius koordinat GPS.</p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{{ route('admin.presensi.export.excel', request()->query()) }}" class="inline-flex items-center px-3 py-1.5 bg-emerald-600 border border-transparent rounded-lg text-xs font-semibold text-white hover:bg-emerald-700 shadow-sm transition">
+                    📊 Export Excel
+                </a>
+                <a href="{{ route('admin.presensi.export.pdf', request()->query()) }}" target="_blank" class="inline-flex items-center px-3 py-1.5 bg-rose-600 border border-transparent rounded-lg text-xs font-semibold text-white hover:bg-rose-700 shadow-sm transition">
+                    🖨️ Cetak PDF
+                </a>
                 <a href="{{ route('admin.presensi.locations') }}" class="inline-flex items-center px-3 py-1.5 bg-indigo-600 border border-transparent rounded-lg text-xs font-semibold text-white hover:bg-indigo-700 shadow-sm transition">
-                    📍 Kelola Titik Acuan Lokasi Pegawai
+                    📍 Kelola Titik Acuan
                 </a>
                 <a href="{{ route('presensi.index') }}" class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition">
                     📸 Presensi Mandiri
@@ -110,38 +116,54 @@
 
             <!-- Tabel Data Rekap Presensi -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-5 py-3.5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gray-50/50">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-gray-800 text-sm">📋 Rekap Presensi Karyawan</span>
+                        <span class="px-2 py-0.5 text-[11px] font-semibold bg-blue-100 text-blue-700 rounded-full">
+                            Total: {{ $attendances->total() }} Data
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('admin.presensi.export.excel', request()->query()) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+                            <span>📊</span> Unduh Excel
+                        </a>
+                        <a href="{{ route('admin.presensi.export.pdf', request()->query()) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+                            <span>🖨️</span> Cetak PDF
+                        </a>
+                    </div>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 text-xs text-left">
-                        <thead class="bg-gray-50 text-gray-600 font-bold uppercase tracking-wider">
+                        <thead class="bg-gray-50 text-gray-600 font-bold uppercase tracking-wider text-[11px]">
                             <tr>
                                 <th class="px-4 py-3">Pegawai</th>
                                 <th class="px-4 py-3">Tanggal & Waktu</th>
                                 <th class="px-4 py-3">Tipe</th>
                                 <th class="px-4 py-3">Jarak GPS</th>
                                 <th class="px-4 py-3">Koordinat Masuk</th>
-                                <th class="px-4 py-3">Foto Masuk</th>
-                                <th class="px-4 py-3">Foto Pulang</th>
-                                <th class="px-4 py-3">Status</th>
-                                <th class="px-4 py-3">Aksi</th>
+                                <th class="px-4 py-3 text-center">Foto Masuk</th>
+                                <th class="px-4 py-3 text-center">Foto Pulang</th>
+                                <th class="px-4 py-3">Total Jam Kerja (Status)</th>
+                                <th class="px-4 py-3 text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white">
                             @forelse($attendances as $item)
                                 <tr class="hover:bg-gray-50/80 transition">
                                     <td class="px-4 py-3">
-                                        <div class="font-bold text-gray-900">{{ $item->user->name ?? 'User #' . $item->user_id }}</div>
+                                        <div class="font-bold text-gray-900">{{ $item->user?->name ?? 'User #' . $item->user_id }}</div>
                                         <div class="text-[11px] text-gray-500 font-mono">
-                                            {{ $item->user->pegawai->nip ?? $item->user->email }}
+                                            {{ $item->user?->pegawai?->nip ?? $item->user?->email ?? '-' }}
                                         </div>
-                                        @if($item->user->pegawai && $item->user->pegawai->unitKerja)
+                                        @if($item->user?->pegawai?->unitKerja)
                                             <div class="text-[10px] text-gray-400">
-                                                {{ $item->user->pegawai->unitKerja->nama_unit ?? '' }}
+                                                {{ $item->user?->pegawai?->unitKerja?->nama_unit ?? '' }}
                                             </div>
                                         @endif
                                     </td>
 
                                     <td class="px-4 py-3 whitespace-nowrap">
-                                        <div class="font-semibold text-gray-800">{{ $item->attendance_date->translatedFormat('d/m/Y') }}</div>
+                                        <div class="font-semibold text-gray-800">{{ $item->attendance_date ? $item->attendance_date->translatedFormat('d/m/Y') : '-' }}</div>
                                         <div class="text-[11px] text-emerald-700 font-mono">
                                             Masuk: {{ $item->check_in_time ? $item->check_in_time->timezone('Asia/Jakarta')->format('H:i:s') . ' WIB' : '-' }}
                                         </div>
@@ -151,8 +173,8 @@
                                     </td>
 
                                     <td class="px-4 py-3 whitespace-nowrap">
-                                        <span class="px-2 py-0.5 rounded-full font-bold text-[10px] uppercase {{ $item->attendance_type === 'wfh' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-blue-100 text-blue-700 border border-blue-200' }}">
-                                            {{ strtoupper($item->attendance_type) }}
+                                        <span class="px-2 py-0.5 rounded-full font-bold text-[10px] uppercase {{ ($item->attendance_type ?? '') === 'wfh' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-blue-100 text-blue-700 border border-blue-200' }}">
+                                            {{ strtoupper($item->attendance_type ?? 'wfo') }}
                                         </span>
                                     </td>
 
@@ -171,34 +193,40 @@
                                         {{ number_format($item->check_in_latitude, 5) }},<br>{{ number_format($item->check_in_longitude, 5) }}
                                     </td>
 
-                                    <td class="px-4 py-3">
+                                    <td class="px-4 py-3 text-center">
                                         @if($item->check_in_photo_path)
                                             <button type="button"
-                                                    @click="modalOpen = true; modalImgSrc = '{{ Storage::disk('public')->url($item->check_in_photo_path) }}'; modalTitle = 'Foto Selfie Masuk - {{ addslashes($item->user->name ?? 'User') }} ({{ $item->check_in_time ? $item->check_in_time->format('H:i') : '' }})'"
-                                                    class="block w-9 h-9 rounded-lg overflow-hidden border border-gray-300 hover:ring-2 hover:ring-blue-500 shadow-sm transition">
-                                                <img src="{{ Storage::disk('public')->url($item->check_in_photo_path) }}" class="w-full h-full object-cover">
+                                                    @click="modalOpen = true; modalImgSrc = '{{ $item->check_in_photo_url }}'; modalTitle = 'Foto Selfie Masuk - {{ addslashes($item->user?->name ?? 'User') }} ({{ $item->check_in_time ? $item->check_in_time->timezone('Asia/Jakarta')->format('H:i') : '' }})'"
+                                                    class="inline-block w-10 h-10 rounded-lg overflow-hidden border border-gray-300 hover:ring-2 hover:ring-blue-500 shadow-sm transition">
+                                                <img src="{{ $item->check_in_photo_url }}" class="w-full h-full object-cover" alt="Foto Masuk" loading="lazy">
                                             </button>
                                         @else
-                                            <span class="text-gray-400">-</span>
+                                            <span class="text-gray-400 text-xs">-</span>
                                         @endif
                                     </td>
 
-                                    <td class="px-4 py-3">
+                                    <td class="px-4 py-3 text-center">
                                         @if($item->check_out_photo_path)
                                             <button type="button"
-                                                    @click="modalOpen = true; modalImgSrc = '{{ Storage::disk('public')->url($item->check_out_photo_path) }}'; modalTitle = 'Foto Selfie Pulang - {{ addslashes($item->user->name ?? 'User') }} ({{ $item->check_out_time ? $item->check_out_time->format('H:i') : '' }})'"
-                                                    class="block w-9 h-9 rounded-lg overflow-hidden border border-gray-300 hover:ring-2 hover:ring-amber-500 shadow-sm transition">
-                                                <img src="{{ Storage::disk('public')->url($item->check_out_photo_path) }}" class="w-full h-full object-cover">
+                                                    @click="modalOpen = true; modalImgSrc = '{{ $item->check_out_photo_url }}'; modalTitle = 'Foto Selfie Pulang - {{ addslashes($item->user?->name ?? 'User') }} ({{ $item->check_out_time ? $item->check_out_time->timezone('Asia/Jakarta')->format('H:i') : '' }})'"
+                                                    class="inline-block w-10 h-10 rounded-lg overflow-hidden border border-gray-300 hover:ring-2 hover:ring-amber-500 shadow-sm transition">
+                                                <img src="{{ $item->check_out_photo_url }}" class="w-full h-full object-cover" alt="Foto Pulang" loading="lazy">
                                             </button>
                                         @else
-                                            <span class="text-gray-400">-</span>
+                                            <span class="text-gray-400 text-xs">-</span>
                                         @endif
                                     </td>
 
                                     <td class="px-4 py-3 whitespace-nowrap">
-                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $item->status_badge['class'] }}">
-                                            {{ $item->status_badge['label'] }}
-                                        </span>
+                                        <div class="font-bold text-gray-900 flex items-center gap-1.5 text-xs">
+                                            <span class="text-slate-500">⏱️</span>
+                                            <span>{{ $item->work_duration }}</span>
+                                        </div>
+                                        <div class="mt-1">
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $item->status_badge['class'] }}">
+                                                {{ $item->status_badge['label'] }}
+                                            </span>
+                                        </div>
                                     </td>
 
                                     <td class="px-4 py-3 whitespace-nowrap">

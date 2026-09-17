@@ -62,6 +62,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::get('/presensi', [AttendanceController::class, 'index'])->name('presensi.index');
     Route::post('/presensi', [AttendanceController::class, 'store'])->name('presensi.store');
     Route::get('/presensi/riwayat', [AttendanceController::class, 'history'])->name('presensi.history');
+    Route::get('/presensi/foto/{id}/{type}', [AttendanceController::class, 'streamPhoto'])->name('presensi.photo');
 
     // ======================================================================
     // ROUTE PEGAWAI BIASA (Akses Data Diri Sendiri)
@@ -195,6 +196,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         /* Rekap Presensi Karyawan & Titik Lokasi (Admin/Pimpinan) */
         Route::prefix('admin/presensi')->name('admin.presensi.')->group(function () {
             Route::get('/', [AttendanceManageController::class, 'index'])->name('index');
+            Route::get('/export/pdf', [AttendanceManageController::class, 'exportPdf'])->name('export.pdf');
+            Route::get('/export/excel', [AttendanceManageController::class, 'exportExcel'])->name('export.excel');
             Route::get('/locations', [AttendanceManageController::class, 'locations'])->name('locations');
             Route::post('/{userId}/reset-location', [AttendanceManageController::class, 'resetLocation'])->name('reset-location');
             Route::delete('/{id}', [AttendanceManageController::class, 'destroy'])->name('destroy');

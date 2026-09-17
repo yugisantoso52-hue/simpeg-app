@@ -389,13 +389,13 @@
                                     <td class="px-4 py-3">
                                         <div class="flex items-center gap-1.5">
                                             @if($item->check_in_photo_path)
-                                                <a href="{{ Storage::disk('public')->url($item->check_in_photo_path) }}" target="_blank" class="block w-8 h-8 rounded-lg overflow-hidden border border-gray-200 hover:ring-2 hover:ring-blue-500 transition">
-                                                    <img src="{{ Storage::disk('public')->url($item->check_in_photo_path) }}" class="w-full h-full object-cover">
+                                                <a href="{{ $item->check_in_photo_url }}" target="_blank" class="block w-8 h-8 rounded-lg overflow-hidden border border-gray-200 hover:ring-2 hover:ring-blue-500 transition">
+                                                    <img src="{{ $item->check_in_photo_url }}" class="w-full h-full object-cover">
                                                 </a>
                                             @endif
                                             @if($item->check_out_photo_path)
-                                                <a href="{{ Storage::disk('public')->url($item->check_out_photo_path) }}" target="_blank" class="block w-8 h-8 rounded-lg overflow-hidden border border-gray-200 hover:ring-2 hover:ring-amber-500 transition">
-                                                    <img src="{{ Storage::disk('public')->url($item->check_out_photo_path) }}" class="w-full h-full object-cover">
+                                                <a href="{{ $item->check_out_photo_url }}" target="_blank" class="block w-8 h-8 rounded-lg overflow-hidden border border-gray-200 hover:ring-2 hover:ring-amber-500 transition">
+                                                    <img src="{{ $item->check_out_photo_url }}" class="w-full h-full object-cover">
                                                 </a>
                                             @endif
                                         </div>

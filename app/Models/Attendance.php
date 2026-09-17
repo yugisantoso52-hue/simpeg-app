@@ -54,12 +54,62 @@ class Attendance extends Model
     // Accessors for UI convenience
     public function getCheckInPhotoUrlAttribute(): ?string
     {
-        return $this->check_in_photo_path ? Storage::disk('public')->url($this->check_in_photo_path) : null;
+        return $this->check_in_photo_path ? route('presensi.photo', ['id' => $this->id, 'type' => 'in']) : null;
     }
 
     public function getCheckOutPhotoUrlAttribute(): ?string
     {
-        return $this->check_out_photo_path ? Storage::disk('public')->url($this->check_out_photo_path) : null;
+        return $this->check_out_photo_path ? route('presensi.photo', ['id' => $this->id, 'type' => 'out']) : null;
+    }
+
+    /**
+     * Hitung Penjumlahan / Total Durasi Jam Kerja (Jam Masuk s/d Jam Pulang)
+     */
+    public function getWorkDurationAttribute(): string
+    {
+        if (!$this->check_in_time) {
+            return '-';
+        }
+
+        if (!$this->check_out_time) {
+            return 'Sedang Bekerja (Belum Pulang)';
+        }
+
+        $in = $this->check_in_time->copy()->timezone('Asia/Jakarta');
+        $out = $this->check_out_time->copy()->timezone('Asia/Jakarta');
+
+        $diff = $in->diff($out);
+        $totalHours = ($diff->days * 24) + $diff->h;
+        $minutes = $diff->i;
+
+        if ($totalHours > 0) {
+            return "{$totalHours} Jam {$minutes} Menit";
+        }
+
+        if ($minutes > 0) {
+            return "{$minutes} Menit";
+        }
+
+        return "{$diff->s} Detik";
+    }
+
+    /**
+     * Format Ringkas Total Jam Kerja (e.g. untuk Export Excel & PDF)
+     */
+    public function getWorkDurationShortAttribute(): string
+    {
+        if (!$this->check_in_time || !$this->check_out_time) {
+            return '-';
+        }
+
+        $in = $this->check_in_time->copy()->timezone('Asia/Jakarta');
+        $out = $this->check_out_time->copy()->timezone('Asia/Jakarta');
+
+        $diff = $in->diff($out);
+        $totalHours = ($diff->days * 24) + $diff->h;
+        $minutes = $diff->i;
+
+        return sprintf('%02d:%02d', $totalHours, $minutes);
     }
 
     public function getFormattedCheckInTimeAttribute(): ?string
