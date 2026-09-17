@@ -5,20 +5,20 @@
                 <h2 class="font-bold text-xl text-gray-800 leading-tight flex items-center gap-2">
                     <span>📊</span> {{ __('Rekap Presensi Pegawai') }}
                 </h2>
-                <p class="text-sm text-gray-500 mt-0.5">Monitoring kehadiran, verifikasi foto selfie, dan radius koordinat GPS.</p>
+                <p class="text-sm text-gray-500 mt-0.5">Pemantauan keberadaan, verifikasi foto selfie, dan radius koordinat GPS.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <a href="{{ route('admin.presensi.export.excel', request()->query()) }}" class="inline-flex items-center px-3 py-1.5 bg-emerald-600 border border-transparent rounded-lg text-xs font-semibold text-white hover:bg-emerald-700 shadow-sm transition">
-                    📊 Export Excel
+                <a href="{{ route('admin.presensi.export.excel', request()->query()) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 border border-transparent rounded-lg text-xs font-semibold text-white shadow-sm transition" style="background-color: #059669; color: #ffffff;">
+                    <span>📊</span> Ekspor Excel
                 </a>
-                <a href="{{ route('admin.presensi.export.pdf', request()->query()) }}" target="_blank" class="inline-flex items-center px-3 py-1.5 bg-rose-600 border border-transparent rounded-lg text-xs font-semibold text-white hover:bg-rose-700 shadow-sm transition">
-                    🖨️ Cetak PDF
+                <a href="{{ route('admin.presensi.export.pdf', request()->query()) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 border border-transparent rounded-lg text-xs font-semibold text-white shadow-sm transition" style="background-color: #dc2626; color: #ffffff;">
+                    <span>🖨️</span> Cetak PDF
                 </a>
-                <a href="{{ route('admin.presensi.locations') }}" class="inline-flex items-center px-3 py-1.5 bg-indigo-600 border border-transparent rounded-lg text-xs font-semibold text-white hover:bg-indigo-700 shadow-sm transition">
-                    📍 Kelola Titik Acuan
+                <a href="{{ route('admin.presensi.locations') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-lg text-xs font-semibold text-white shadow-sm transition" style="background-color: #4f46e5; color: #ffffff;">
+                    <span>📍</span> Kelola Titik Acuan
                 </a>
-                <a href="{{ route('presensi.index') }}" class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition">
-                    📸 Presensi Mandiri
+                <a href="{{ route('presensi.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition">
+                    <span>📸</span> Presensi Mandiri
                 </a>
             </div>
         </div>
@@ -35,35 +35,35 @@
             @endif
 
             <!-- KPI Cards Statistik Hari Ini -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                 <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Total User/Pegawai</div>
+                    <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">JUMLAH PENGGUNA/PEGAWAI</div>
                     <div class="text-2xl font-black text-gray-900 mt-1">{{ $statistics['total_users'] }}</div>
                     <div class="text-[10px] text-gray-400 mt-0.5">Terdaftar dalam sistem</div>
                 </div>
 
                 <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Hadir Hari Ini</div>
+                    <div class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">HADIR HARI INI</div>
                     <div class="text-2xl font-black text-emerald-600 mt-1">{{ $statistics['total_present'] }}</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">{{ \Carbon\Carbon::today()->translatedFormat('d M Y') }}</div>
+                    <div class="text-[10px] text-gray-400 mt-0.5">{{ \Carbon\Carbon::today()->translatedFormat('d F Y') }}</div>
                 </div>
 
                 <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div class="text-[11px] font-bold text-blue-600 uppercase tracking-wider">WFO (Kantor)</div>
+                    <div class="text-[11px] font-bold text-blue-600 uppercase tracking-wider">WFO (KANTOR)</div>
                     <div class="text-2xl font-black text-blue-600 mt-1">{{ $statistics['total_wfo'] }}</div>
                     <div class="text-[10px] text-gray-400 mt-0.5">Pegawai presensi kantor</div>
                 </div>
 
                 <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div class="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">WFH (Rumah)</div>
+                    <div class="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">WFH (RUMAH)</div>
                     <div class="text-2xl font-black text-indigo-600 mt-1">{{ $statistics['total_wfh'] }}</div>
                     <div class="text-[10px] text-gray-400 mt-0.5">Pegawai presensi WFH</div>
                 </div>
 
-                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm col-span-2 sm:col-span-1">
-                    <div class="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Terlambat</div>
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <div class="text-[11px] font-bold text-amber-600 uppercase tracking-wider">TERLAMBAT</div>
                     <div class="text-2xl font-black text-amber-600 mt-1">{{ $statistics['total_late'] }}</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">Check-in > 08:00 WIB</div>
+                    <div class="text-[10px] text-gray-400 mt-0.5">Waktu check-in &gt; 08.00 WIB</div>
                 </div>
             </div>
 
@@ -106,7 +106,7 @@
                                     Cari
                                 </button>
                                 <a href="{{ route('admin.presensi.index') }}" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition shrink-0">
-                                    Reset
+                                    Mengatur ulang
                                 </a>
                             </div>
                         </div>
@@ -116,20 +116,12 @@
 
             <!-- Tabel Data Rekap Presensi -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-5 py-3.5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gray-50/50">
+                <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                     <div class="flex items-center gap-2">
-                        <span class="font-bold text-gray-800 text-sm">📋 Rekap Presensi Karyawan</span>
+                        <span class="font-bold text-gray-800 text-sm">📋 Rekap Kehadiran Karyawan</span>
                         <span class="px-2 py-0.5 text-[11px] font-semibold bg-blue-100 text-blue-700 rounded-full">
                             Total: {{ $attendances->total() }} Data
                         </span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <a href="{{ route('admin.presensi.export.excel', request()->query()) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm transition">
-                            <span>📊</span> Unduh Excel
-                        </a>
-                        <a href="{{ route('admin.presensi.export.pdf', request()->query()) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-sm transition">
-                            <span>🖨️</span> Cetak PDF
-                        </a>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
