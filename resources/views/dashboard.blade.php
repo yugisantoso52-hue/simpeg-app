@@ -58,7 +58,57 @@
                             <a href="{{ route('pengajuan-cuti.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs transition shadow-sm" style="background-color: #f59e0b !important; color: #ffffff !important;">
                                 🏖️ Ajukan Cuti
                             </a>
+                            <a href="{{ route('presensi.index') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs transition shadow-sm" style="background-color: #10b981 !important; color: #ffffff !important;">
+                                📍 Presensi Pegawai
+                            </a>
                         </div>
+                    </div>
+                </div>
+
+                {{-- 📍 KARTU STATUS PRESENSI HARI INI PEGAWAI --}}
+                @php
+                    $todayAttendance = Auth::user()->todayAttendance;
+                @endphp
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl {{ $todayAttendance ? ($todayAttendance->check_out_time ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-blue-50 text-blue-600 border border-blue-200') : 'bg-amber-50 text-amber-600 border border-amber-200' }} flex items-center justify-center text-2xl shrink-0 shadow-xs">
+                            📍
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-bold text-base text-slate-800">Presensi Hari Ini</h3>
+                                <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold {{ $todayAttendance ? ($todayAttendance->status === 'late' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200') : 'bg-rose-100 text-rose-700 border border-rose-200' }}">
+                                    {{ $todayAttendance ? ($todayAttendance->status === 'late' ? 'Terlambat' : 'Hadir Tepat Waktu') : 'Belum Presensi' }}
+                                </span>
+                                @if($todayAttendance)
+                                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
+                                        {{ strtoupper($todayAttendance->attendance_type) }}
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2.5 text-xs text-slate-500 mt-1">
+                                <span>🗓️ {{ \Carbon\Carbon::now('Asia/Jakarta')->locale('id')->translatedFormat('l, d F Y') }}</span>
+                                <span class="text-slate-300">•</span>
+                                <span>🟢 Masuk: <strong class="text-slate-800 font-mono">{{ $todayAttendance && $todayAttendance->check_in_time ? $todayAttendance->check_in_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-' }}</strong></span>
+                                <span class="text-slate-300">•</span>
+                                <span>🔴 Pulang: <strong class="text-slate-800 font-mono">{{ $todayAttendance && $todayAttendance->check_out_time ? $todayAttendance->check_out_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : 'Belum Check-Out' }}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2.5 w-full md:w-auto shrink-0">
+                        <a href="{{ route('presensi.index') }}" class="w-full md:w-auto px-5 py-2.5 rounded-xl font-bold text-xs text-white transition shadow-sm flex items-center justify-center gap-2 {{ !$todayAttendance ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20' : (!$todayAttendance->check_out_time ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20' : 'bg-slate-800 hover:bg-slate-700') }}">
+                            @if(!$todayAttendance)
+                                <span>📸 Presensi Masuk Sekarang</span>
+                            @elseif(!$todayAttendance->check_out_time)
+                                <span>🚪 Presensi Pulang (Check-Out)</span>
+                            @else
+                                <span>✅ Buka Menu Presensi</span>
+                            @endif
+                        </a>
+                        <a href="{{ route('presensi.history') }}" class="px-3.5 py-2.5 rounded-xl font-semibold text-xs text-slate-700 bg-slate-100 hover:bg-slate-200 transition">
+                            Riwayat
+                        </a>
                     </div>
                 </div>
 

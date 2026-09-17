@@ -64,7 +64,7 @@ class User extends Authenticatable
     public function todayAttendance(): HasOne
     {
         return $this->hasOne(Attendance::class, 'user_id')
-            ->whereDate('attendance_date', now()->toDateString());
+            ->whereDate('attendance_date', \Carbon\Carbon::now('Asia/Jakarta')->toDateString());
     }
 
     public function hasRole(array|string $roles): bool

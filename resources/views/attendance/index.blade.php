@@ -56,7 +56,7 @@
                         <div>
                             <div class="text-xs text-slate-300 font-medium uppercase tracking-wider">Status Kehadiran Hari Ini</div>
                             <div class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                                <span>{{ \Carbon\Carbon::today()->translatedFormat('l, d F Y') }}</span>
+                                <span>{{ \Carbon\Carbon::now('Asia/Jakarta')->locale('id')->translatedFormat('l, d F Y') }}</span>
                                 <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
                                     {{ Auth::user()->name }}
                                 </span>
@@ -68,12 +68,12 @@
                         @if($todayAttendance)
                             <div class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs flex items-center gap-2">
                                 <span class="text-emerald-400 font-bold">🟢 Masuk:</span>
-                                <span>{{ $todayAttendance->check_in_time ? $todayAttendance->check_in_time->format('H:i') . ' WIB' : '-' }}</span>
+                                <span>{{ $todayAttendance->check_in_time ? $todayAttendance->check_in_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-' }}</span>
                                 <span class="text-[10px] uppercase font-semibold px-1.5 py-0.2 rounded bg-white/20">({{ strtoupper($todayAttendance->attendance_type) }})</span>
                             </div>
                             <div class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs flex items-center gap-2">
                                 <span class="text-amber-300 font-bold">🔴 Pulang:</span>
-                                <span>{{ $todayAttendance->check_out_time ? $todayAttendance->check_out_time->format('H:i') . ' WIB' : 'Belum Check-Out' }}</span>
+                                <span>{{ $todayAttendance->check_out_time ? $todayAttendance->check_out_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : 'Belum Check-Out' }}</span>
                             </div>
                             <span class="px-2.5 py-1 rounded-lg text-xs font-semibold {{ $todayAttendance->status === 'late' ? 'bg-amber-500/30 text-amber-200 border border-amber-400/40' : 'bg-green-500/30 text-green-200 border border-green-400/40' }}">
                                 {{ $todayAttendance->status === 'late' ? 'Terlambat' : 'Hadir Tepat Waktu' }}
@@ -378,10 +378,10 @@
                                         </span>
                                     </td>
                                     <td class="px-4 py-3 font-mono font-medium text-gray-800">
-                                        {{ $item->check_in_time ? $item->check_in_time->format('H:i') . ' WIB' : '-' }}
+                                        {{ $item->check_in_time ? $item->check_in_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-' }}
                                     </td>
                                     <td class="px-4 py-3 font-mono font-medium text-gray-800">
-                                        {{ $item->check_out_time ? $item->check_out_time->format('H:i') . ' WIB' : '-' }}
+                                        {{ $item->check_out_time ? $item->check_out_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-' }}
                                     </td>
                                     <td class="px-4 py-3 font-mono text-gray-600">
                                         {{ number_format($item->check_in_distance_meters, 1) }} m
@@ -432,13 +432,13 @@
                         is_locked: {{ $location->isWfoLocked() ? 'true' : 'false' }},
                         lat: {{ $location->wfo_latitude ?? 0 }},
                         lng: {{ $location->wfo_longitude ?? 0 }},
-                        locked_at: '{{ $location->wfo_locked_at ? $location->wfo_locked_at->translatedFormat("d M Y H:i") : "" }}'
+                        locked_at: '{{ $location->wfo_locked_at ? $location->wfo_locked_at->timezone("Asia/Jakarta")->translatedFormat("d M Y H:i") : "" }}'
                     },
                     wfh: {
                         is_locked: {{ $location->isWfhLocked() ? 'true' : 'false' }},
                         lat: {{ $location->wfh_latitude ?? 0 }},
                         lng: {{ $location->wfh_longitude ?? 0 }},
-                        locked_at: '{{ $location->wfh_locked_at ? $location->wfh_locked_at->translatedFormat("d M Y H:i") : "" }}'
+                        locked_at: '{{ $location->wfh_locked_at ? $location->wfh_locked_at->timezone("Asia/Jakarta")->translatedFormat("d M Y H:i") : "" }}'
                     }
                 },
 

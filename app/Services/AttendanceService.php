@@ -95,7 +95,8 @@ class AttendanceService
             ]);
         }
 
-        $today = Carbon::today()->toDateString();
+        $now = Carbon::now('Asia/Jakarta');
+        $today = $now->toDateString();
         $existingAttendance = Attendance::where('user_id', $user->id)
             ->whereDate('attendance_date', $today)
             ->first();
@@ -114,7 +115,7 @@ class AttendanceService
             }
             if ($existingAttendance->check_out_time) {
                 throw ValidationException::withMessages([
-                    'action' => 'Anda sudah melakukan check-out hari ini pada ' . Carbon::parse($existingAttendance->check_out_time)->translatedFormat('H:i') . ' WIB.',
+                    'action' => 'Anda sudah melakukan check-out hari ini pada ' . Carbon::parse($existingAttendance->check_out_time)->timezone('Asia/Jakarta')->translatedFormat('H:i') . ' WIB.',
                 ]);
             }
         }
@@ -131,11 +132,11 @@ class AttendanceService
             if ($type === 'wfh') {
                 $location->wfh_latitude = $latitude;
                 $location->wfh_longitude = $longitude;
-                $location->wfh_locked_at = now();
+                $location->wfh_locked_at = $now;
             } else {
                 $location->wfo_latitude = $latitude;
                 $location->wfo_longitude = $longitude;
-                $location->wfo_locked_at = now();
+                $location->wfo_locked_at = $now;
             }
             $location->save();
 
@@ -162,18 +163,18 @@ class AttendanceService
         // Simpan foto selfie Base64 ke disk storage
         $photoPath = $this->saveBase64Photo($photoBase64, $user->id, $action);
 
-        return DB::transaction(function () use ($user, $type, $today, $action, $latitude, $longitude, $distanceMeters, $photoPath, $notes, $existingAttendance) {
+        return DB::transaction(function () use ($user, $type, $today, $action, $latitude, $longitude, $distanceMeters, $photoPath, $notes, $existingAttendance, $now) {
             if ($action === 'check_in') {
                 if ($existingAttendance) {
                     // Update check-in jika belum check out
                     $existingAttendance->update([
                         'attendance_type' => $type,
-                        'check_in_time' => now(),
+                        'check_in_time' => $now,
                         'check_in_latitude' => $latitude,
                         'check_in_longitude' => $longitude,
                         'check_in_distance_meters' => $distanceMeters,
                         'check_in_photo_path' => $photoPath,
-                        'status' => $this->determineStatus(now()),
+                        'status' => $this->determineStatus($now),
                         'notes' => $notes ?: $existingAttendance->notes,
                     ]);
                     return $existingAttendance;
@@ -183,19 +184,19 @@ class AttendanceService
                     'user_id' => $user->id,
                     'attendance_type' => $type,
                     'attendance_date' => $today,
-                    'check_in_time' => now(),
+                    'check_in_time' => $now,
                     'check_in_latitude' => $latitude,
                     'check_in_longitude' => $longitude,
                     'check_in_distance_meters' => $distanceMeters,
                     'check_in_photo_path' => $photoPath,
-                    'status' => $this->determineStatus(now()),
+                    'status' => $this->determineStatus($now),
                     'notes' => $notes,
                 ]);
             }
 
             // Check-out
             $existingAttendance->update([
-                'check_out_time' => now(),
+                'check_out_time' => $now,
                 'check_out_latitude' => $latitude,
                 'check_out_longitude' => $longitude,
                 'check_out_distance_meters' => $distanceMeters,
@@ -212,8 +213,9 @@ class AttendanceService
      */
     protected function determineStatus(Carbon $time): string
     {
-        $cutoff = Carbon::parse($time->toDateString() . ' ' . self::DEFAULT_LATE_TIME);
-        return $time->greaterThan($cutoff) ? 'late' : 'present';
+        $timeInJakarta = $time->copy()->timezone('Asia/Jakarta');
+        $cutoff = Carbon::parse($timeInJakarta->toDateString() . ' ' . self::DEFAULT_LATE_TIME, 'Asia/Jakarta');
+        return $timeInJakarta->greaterThan($cutoff) ? 'late' : 'present';
     }
 
     /**
@@ -240,7 +242,7 @@ class AttendanceService
             ]);
         }
 
-        $dateFolder = now()->format('Y-m-d');
+        $dateFolder = Carbon::now('Asia/Jakarta')->format('Y-m-d');
         $fileName = "attendances/{$dateFolder}/user_{$userId}_{$action}_" . time() . '_' . Str::random(6) . ".{$extension}";
 
         Storage::disk('public')->put($fileName, $imageData);
@@ -327,7 +329,7 @@ class AttendanceService
      */
     public function todayStatistics(): array
     {
-        $today = Carbon::today()->toDateString();
+        $today = Carbon::now('Asia/Jakarta')->toDateString();
 
         $totalUsers = User::count();
         $presentCount = Attendance::whereDate('attendance_date', $today)->count();

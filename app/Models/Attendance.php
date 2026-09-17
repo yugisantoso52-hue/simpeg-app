@@ -62,6 +62,26 @@ class Attendance extends Model
         return $this->check_out_photo_path ? Storage::disk('public')->url($this->check_out_photo_path) : null;
     }
 
+    public function getFormattedCheckInTimeAttribute(): ?string
+    {
+        return $this->check_in_time ? $this->check_in_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-';
+    }
+
+    public function getFormattedCheckOutTimeAttribute(): ?string
+    {
+        return $this->check_out_time ? $this->check_out_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : 'Belum Check-Out';
+    }
+
+    public function getFormattedCheckInTimeSecAttribute(): ?string
+    {
+        return $this->check_in_time ? $this->check_in_time->timezone('Asia/Jakarta')->format('H:i:s') . ' WIB' : '-';
+    }
+
+    public function getFormattedCheckOutTimeSecAttribute(): ?string
+    {
+        return $this->check_out_time ? $this->check_out_time->timezone('Asia/Jakarta')->format('H:i:s') . ' WIB' : '-';
+    }
+
     // Aliases matching prompt spec
     public function getPhotoPathAttribute(): ?string
     {

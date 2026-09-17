@@ -83,10 +83,10 @@
                                         </span>
                                     </td>
                                     <td class="px-4 py-3 font-mono font-medium text-gray-800 whitespace-nowrap">
-                                        {{ $item->check_in_time ? $item->check_in_time->format('H:i:s') . ' WIB' : '-' }}
+                                        {{ $item->check_in_time ? $item->check_in_time->timezone('Asia/Jakarta')->format('H:i:s') . ' WIB' : '-' }}
                                     </td>
                                     <td class="px-4 py-3 font-mono font-medium text-gray-800 whitespace-nowrap">
-                                        {{ $item->check_out_time ? $item->check_out_time->format('H:i:s') . ' WIB' : '-' }}
+                                        {{ $item->check_out_time ? $item->check_out_time->timezone('Asia/Jakarta')->format('H:i:s') . ' WIB' : '-' }}
                                     </td>
                                     <td class="px-4 py-3 font-mono text-gray-600 whitespace-nowrap">
                                         {{ number_format($item->check_in_distance_meters, 1) }} meter

@@ -21,6 +21,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Set default timezone & Carbon locale ke Asia/Jakarta (WIB)
+        date_default_timezone_set(config('app.timezone', 'Asia/Jakarta'));
+        \Carbon\Carbon::setLocale(config('app.locale', 'id'));
+
         // Memaksa penggunaan HTTPS di server Production (Mengatasi Error 419 & Tampilan Berantakan)
         if (config('app.env') === 'production') {
             URL::forceScheme('https');

@@ -143,10 +143,10 @@
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <div class="font-semibold text-gray-800">{{ $item->attendance_date->translatedFormat('d/m/Y') }}</div>
                                         <div class="text-[11px] text-emerald-700 font-mono">
-                                            Masuk: {{ $item->check_in_time ? $item->check_in_time->format('H:i:s') : '-' }}
+                                            Masuk: {{ $item->check_in_time ? $item->check_in_time->timezone('Asia/Jakarta')->format('H:i:s') . ' WIB' : '-' }}
                                         </div>
                                         <div class="text-[11px] text-amber-700 font-mono">
-                                            Pulang: {{ $item->check_out_time ? $item->check_out_time->format('H:i:s') : '-' }}
+                                            Pulang: {{ $item->check_out_time ? $item->check_out_time->timezone('Asia/Jakarta')->format('H:i:s') . ' WIB' : '-' }}
                                         </div>
                                     </td>
 

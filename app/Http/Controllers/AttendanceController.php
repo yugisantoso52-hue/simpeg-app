@@ -26,7 +26,7 @@ class AttendanceController extends Controller
         $user = $request->user();
         $location = $this->service->getOrCreateLocation($user);
 
-        $today = Carbon::today()->toDateString();
+        $today = Carbon::now('Asia/Jakarta')->toDateString();
         $todayAttendance = Attendance::where('user_id', $user->id)
             ->whereDate('attendance_date', $today)
             ->first();
@@ -69,8 +69,8 @@ class AttendanceController extends Controller
                         'id' => $attendance->id,
                         'attendance_type' => $attendance->attendance_type,
                         'attendance_date' => $attendance->attendance_date->format('d/m/Y'),
-                        'check_in_time' => $attendance->check_in_time ? $attendance->check_in_time->format('H:i') : null,
-                        'check_out_time' => $attendance->check_out_time ? $attendance->check_out_time->format('H:i') : null,
+                        'check_in_time' => $attendance->check_in_time ? $attendance->check_in_time->timezone('Asia/Jakarta')->format('H:i') : null,
+                        'check_out_time' => $attendance->check_out_time ? $attendance->check_out_time->timezone('Asia/Jakarta')->format('H:i') : null,
                         'distance_meters' => $attendance->check_in_distance_meters,
                         'status' => $attendance->status,
                         'status_badge' => $attendance->status_badge,
