@@ -37,8 +37,8 @@
             <!-- KPI Cards Statistik Hari Ini -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                 <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">JUMLAH PENGGUNA/PEGAWAI</div>
-                    <div class="text-2xl font-black text-gray-900 mt-1">{{ $statistics['total_users'] }}</div>
+                    <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">TOTAL PEGAWAI</div>
+                    <div class="text-2xl font-black text-gray-900 mt-1">{{ $statistics['total_pegawai'] ?? $statistics['total_users'] }}</div>
                     <div class="text-[10px] text-gray-400 mt-0.5">Terdaftar dalam sistem</div>
                 </div>
 
@@ -118,7 +118,7 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                     <div class="flex items-center gap-2">
-                        <span class="font-bold text-gray-800 text-sm">📋 Rekap Kehadiran Karyawan</span>
+                        <span class="font-bold text-gray-800 text-sm">📋 Rekap Kehadiran Pegawai</span>
                         <span class="px-2 py-0.5 text-[11px] font-semibold bg-blue-100 text-blue-700 rounded-full">
                             Total: {{ $attendances->total() }} Data
                         </span>

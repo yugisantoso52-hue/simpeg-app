@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Attendance;
 use App\Models\EmployeeAttendanceLocation;
+use App\Models\Pegawai;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -331,6 +332,11 @@ class AttendanceService
     {
         $today = Carbon::now('Asia/Jakarta')->toDateString();
 
+        $totalPegawai = Pegawai::count();
+        if ($totalPegawai === 0) {
+            $totalPegawai = User::count();
+        }
+
         $totalUsers = User::count();
         $presentCount = Attendance::whereDate('attendance_date', $today)->count();
         $wfoCount = Attendance::whereDate('attendance_date', $today)->where('attendance_type', 'wfo')->count();
@@ -338,7 +344,9 @@ class AttendanceService
         $lateCount = Attendance::whereDate('attendance_date', $today)->where('status', 'late')->count();
 
         return [
-            'total_users' => $totalUsers,
+            'total_users' => $totalPegawai,
+            'total_pegawai' => $totalPegawai,
+            'total_user_accounts' => $totalUsers,
             'total_present' => $presentCount,
             'total_wfo' => $wfoCount,
             'total_wfh' => $wfhCount,
