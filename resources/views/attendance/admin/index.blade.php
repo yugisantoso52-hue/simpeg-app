@@ -63,7 +63,7 @@
                 <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                     <div class="text-[11px] font-bold text-amber-600 uppercase tracking-wider">TERLAMBAT</div>
                     <div class="text-2xl font-black text-amber-600 mt-1">{{ $statistics['total_late'] }}</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">Waktu check-in &gt; 08.00 WIB</div>
+                    <div class="text-[10px] text-gray-400 mt-0.5">Waktu check-in &gt; 07.30 WIB</div>
                 </div>
             </div>
 
@@ -234,10 +234,20 @@
                                                 <span class="text-slate-500">⏱️</span>
                                                 <span>{{ $item->work_duration }}</span>
                                             </div>
-                                            <div class="mt-1">
+                                            <div class="mt-1 flex flex-wrap items-center gap-1">
                                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $item->status_badge['class'] }}">
                                                     {{ $item->status_badge['label'] }}
                                                 </span>
+                                                @if($item->late_minutes > 0)
+                                                    <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                                        +{{ $item->late_minutes }}m telat
+                                                    </span>
+                                                @endif
+                                                @if($item->early_leave_minutes > 0)
+                                                    <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-orange-100 text-orange-800 border border-orange-300">
+                                                        -{{ $item->early_leave_minutes }}m PSW
+                                                    </span>
+                                                @endif
                                             </div>
                                         </td>
 
@@ -347,9 +357,11 @@
                                             <div class="text-[8px] font-normal uppercase opacity-75">{{ $dayInfo['day_short'][0] }}</div>
                                         </th>
                                     @endforeach
-                                    <th class="px-2.5 py-2 text-center bg-gray-50 border-l border-gray-200" style="min-width: 55px;">Hadir</th>
+                                    <th class="px-2.5 py-2 text-center bg-gray-50 border-l border-gray-200" style="min-width: 50px;">Hadir</th>
                                     <th class="px-2.5 py-2 text-center bg-gray-50 border-r border-gray-200" style="min-width: 55px;">Telat</th>
-                                    <th class="px-3 py-2 text-center bg-gray-50" style="min-width: 110px;">Total Durasi</th>
+                                    <th class="px-2.5 py-2 text-center bg-gray-50 border-r border-gray-200" style="min-width: 55px;">PSW</th>
+                                    <th class="px-3 py-2 text-center bg-gray-50 border-r border-gray-200" style="min-width: 110px;">Total Durasi</th>
+                                    <th class="px-3 py-2 text-center bg-gray-50" style="min-width: 110px;">Sanksi Waktu</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 bg-white">
@@ -380,6 +392,8 @@
                                                                 in: '{{ $dayRecord['in'] ?? '-' }}',
                                                                 out: '{{ $dayRecord['out'] ?? '-' }}',
                                                                 duration: '{{ $dayRecord['duration'] ?? '-' }}',
+                                                                late_minutes: {{ $dayRecord['late_minutes'] ?? 0 }},
+                                                                early_leave_minutes: {{ $dayRecord['early_leave_minutes'] ?? 0 }},
                                                                 distance: '{{ number_format($dayRecord['distance'] ?? 0, 1) }} m',
                                                                 photo_in: '{{ $dayRecord['photo_in'] ?? '' }}',
                                                                 photo_out: '{{ $dayRecord['photo_out'] ?? '' }}',
@@ -399,13 +413,15 @@
                                                                 in: '{{ $dayRecord['in'] ?? '-' }}',
                                                                 out: '{{ $dayRecord['out'] ?? '-' }}',
                                                                 duration: '{{ $dayRecord['duration'] ?? '-' }}',
+                                                                late_minutes: {{ $dayRecord['late_minutes'] ?? 0 }},
+                                                                early_leave_minutes: {{ $dayRecord['early_leave_minutes'] ?? 0 }},
                                                                 distance: '{{ number_format($dayRecord['distance'] ?? 0, 1) }} m',
                                                                 photo_in: '{{ $dayRecord['photo_in'] ?? '' }}',
                                                                 photo_out: '{{ $dayRecord['photo_out'] ?? '' }}',
-                                                                status: 'Terlambat',
+                                                                status: 'Terlambat (+{{ $dayRecord['late_minutes'] ?? 0 }}m)',
                                                                 status_badge: 'bg-amber-100 text-amber-800'
                                                             }"
-                                                            title="Tgl {{ $d }}: Terlambat ({{ $dayRecord['in'] ?? '-' }} s/d {{ $dayRecord['out'] ?? '-' }})"
+                                                            title="Tgl {{ $d }}: Terlambat {{ $dayRecord['late_minutes'] ?? 0 }} mnt ({{ $dayRecord['in'] ?? '-' }} s/d {{ $dayRecord['out'] ?? '-' }})"
                                                             class="w-6 h-6 rounded flex items-center justify-center font-bold text-[10px] bg-amber-100 text-amber-800 hover:ring-2 hover:ring-amber-400 mx-auto transition">
                                                         T
                                                     </button>
@@ -428,11 +444,33 @@
                                         <td class="px-2.5 py-2 text-center font-bold font-mono text-emerald-700 bg-gray-50/50 border-l border-gray-200">
                                             {{ $row['total_hadir'] }}
                                         </td>
-                                        <td class="px-2.5 py-2 text-center font-bold font-mono {{ $row['total_late'] > 0 ? 'text-amber-700' : 'text-gray-400' }} bg-gray-50/50 border-r border-gray-200">
-                                            {{ $row['total_late'] }}
+                                        <td class="px-2.5 py-2 text-center font-bold font-mono bg-gray-50/50 border-r border-gray-200">
+                                            <div class="{{ $row['total_late'] > 0 ? 'text-amber-700' : 'text-gray-400' }}">{{ $row['total_late'] }}x</div>
+                                            @if($row['total_late_minutes'] > 0)
+                                                <div class="text-[9px] text-amber-600 font-normal">({{ $row['total_late_minutes'] }}m)</div>
+                                            @endif
                                         </td>
-                                        <td class="px-3 py-2 text-center font-bold font-mono text-slate-800 bg-gray-50/50 text-[11px] whitespace-nowrap">
+                                        <td class="px-2.5 py-2 text-center font-bold font-mono bg-gray-50/50 border-r border-gray-200">
+                                            <div class="{{ $row['total_early_count'] > 0 ? 'text-orange-700' : 'text-gray-400' }}">{{ $row['total_early_count'] }}x</div>
+                                            @if($row['total_early_minutes'] > 0)
+                                                <div class="text-[9px] text-orange-600 font-normal">({{ $row['total_early_minutes'] }}m)</div>
+                                            @endif
+                                        </td>
+                                        <td class="px-3 py-2 text-center font-bold font-mono text-slate-800 bg-gray-50/50 text-[11px] whitespace-nowrap border-r border-gray-200">
                                             {{ $row['total_duration'] }}
+                                        </td>
+                                        <td class="px-3 py-2 text-center font-mono bg-gray-50/50 text-[11px] whitespace-nowrap">
+                                            @if($row['sanksi_hari'] > 0)
+                                                <span class="px-2 py-0.5 rounded font-bold text-rose-700 bg-rose-100 border border-rose-300">
+                                                    {{ $row['sanksi_hari'] }} Hari
+                                                </span>
+                                                <div class="text-[9px] text-slate-500 font-normal mt-0.5">Sisa {{ $row['sisa_menit_sanksi'] }} mnt</div>
+                                            @elseif($row['total_violation_minutes'] > 0)
+                                                <span class="text-slate-600 font-semibold">0 Hari</span>
+                                                <div class="text-[9px] text-slate-400 font-normal mt-0.5">Total {{ $row['formatted_violation_time'] }}</div>
+                                            @else
+                                                <span class="text-slate-400">-</span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty
@@ -535,15 +573,17 @@
                         <div class="bg-white p-3 rounded-xl border border-gray-200">
                             <div class="text-[10px] text-gray-400 font-bold uppercase">Jam Masuk</div>
                             <div class="text-sm font-black text-emerald-700 mt-0.5" x-text="detailData.in || '-'"></div>
+                            <div class="text-[10px] mt-1 font-semibold" :class="detailData.late_minutes > 0 ? 'text-rose-600' : 'text-emerald-600'" x-text="detailData.late_minutes > 0 ? '⚠️ Telat: ' + detailData.late_minutes + ' mnt' : '✅ Tepat Waktu (≤07:30)'"></div>
                         </div>
                         <div class="bg-white p-3 rounded-xl border border-gray-200">
                             <div class="text-[10px] text-gray-400 font-bold uppercase">Jam Pulang</div>
                             <div class="text-sm font-black text-amber-700 mt-0.5" x-text="detailData.out || '-'"></div>
+                            <div class="text-[10px] mt-1 font-semibold" :class="detailData.early_leave_minutes > 0 ? 'text-orange-600' : 'text-emerald-600'" x-text="detailData.early_leave_minutes > 0 ? '⚠️ PSW: ' + detailData.early_leave_minutes + ' mnt' : '✅ Jam Pulang Sah'"></div>
                         </div>
                     </div>
                     <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-1.5">
                         <div class="flex justify-between">
-                            <span class="text-gray-500">Total Jam Kerja:</span>
+                            <span class="text-gray-500">Total Jam Kerja Efektif:</span>
                             <span class="font-bold text-gray-900" x-text="detailData.duration || '-'"></span>
                         </div>
                         <div class="flex justify-between">

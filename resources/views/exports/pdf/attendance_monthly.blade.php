@@ -155,12 +155,14 @@
         <thead>
             <tr>
                 <th width="2%" rowspan="2">NO</th>
-                <th width="16%" rowspan="2">NAMA PEGAWAI / NIP</th>
-                <th width="12%" rowspan="2">JABATAN & UNIT</th>
+                <th width="15%" rowspan="2">NAMA PEGAWAI / NIP</th>
+                <th width="11%" rowspan="2">JABATAN & UNIT</th>
                 <th colspan="{{ $matrixData['days_in_month'] }}">TANGGAL ({{ $matrixData['month_name'] }})</th>
-                <th width="5%" rowspan="2">HADIR</th>
+                <th width="4%" rowspan="2">HADIR</th>
                 <th width="4%" rowspan="2">TELAT</th>
-                <th width="9%" rowspan="2">TOTAL JAM KERJA</th>
+                <th width="4%" rowspan="2">PSW</th>
+                <th width="8%" rowspan="2">JAM KERJA</th>
+                <th width="7%" rowspan="2">SANKSI</th>
             </tr>
             <tr>
                 @foreach($matrixData['days'] as $d => $dayInfo)
@@ -203,12 +205,28 @@
                     @endforeach
 
                     <td class="text-center font-bold font-mono">{{ $row['total_hadir'] }}</td>
-                    <td class="text-center font-bold font-mono" style="{{ $row['total_late'] > 0 ? 'color: #b45309;' : '' }}">{{ $row['total_late'] }}</td>
-                    <td class="text-center font-bold font-mono" style="font-size: 6px;">{{ $row['total_duration'] }}</td>
+                    <td class="text-center font-mono" style="{{ $row['total_late'] > 0 ? 'color: #b45309; font-weight: bold;' : '' }}">
+                        {{ $row['total_late'] }}x
+                        @if($row['total_late_minutes'] > 0)<br><span style="font-size: 5px;">({{ $row['total_late_minutes'] }}m)</span>@endif
+                    </td>
+                    <td class="text-center font-mono" style="{{ $row['total_early_count'] > 0 ? 'color: #ea580c; font-weight: bold;' : '' }}">
+                        {{ $row['total_early_count'] }}x
+                        @if($row['total_early_minutes'] > 0)<br><span style="font-size: 5px;">({{ $row['total_early_minutes'] }}m)</span>@endif
+                    </td>
+                    <td class="text-center font-mono" style="font-size: 5.5px; font-weight: bold;">{{ $row['total_duration'] }}</td>
+                    <td class="text-center font-mono" style="font-size: 5.5px;">
+                        @if($row['sanksi_hari'] > 0)
+                            <strong style="color: #dc2626;">{{ $row['sanksi_hari'] }} Hari</strong><br><span style="font-size: 5px; color: #64748b;">(Sisa {{ $row['sisa_menit_sanksi'] }}m)</span>
+                        @elseif($row['total_violation_minutes'] > 0)
+                            <span style="color: #475569;">0 Hari</span><br><span style="font-size: 5px; color: #64748b;">({{ $row['formatted_violation_time'] }})</span>
+                        @else
+                            <span style="color: #94a3b8;">-</span>
+                        @endif
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ 6 + $matrixData['days_in_month'] }}" class="text-center" style="padding: 10px; color: #94a3b8;">
+                    <td colspan="{{ 8 + $matrixData['days_in_month'] }}" class="text-center" style="padding: 10px; color: #94a3b8;">
                         Tidak ada data pegawai aktif yang ditemukan.
                     </td>
                 </tr>
@@ -216,13 +234,18 @@
         </tbody>
     </table>
 
-    <!-- KETERANGAN / LEGENDA -->
+    <!-- KETERANGAN / LEGENDA & CATATAN ATURAN ASN UNRI -->
     <div class="legend">
-        <strong>Legenda:</strong>
-        <span style="color: #16a34a;">[H] Hadir Tepat Waktu</span>
-        <span style="color: #d97706;">[T] Terlambat</span>
-        <span style="color: #dc2626;">[A] Tidak Hadir</span>
-        <span style="color: #64748b;">[—] Akhir Pekan / Libur</span>
+        <div>
+            <strong>Legenda:</strong>
+            <span style="color: #16a34a;">[H] Hadir Tepat Waktu</span>
+            <span style="color: #d97706;">[T] Terlambat</span>
+            <span style="color: #dc2626;">[A] Tidak Hadir</span>
+            <span style="color: #64748b;">[—] Akhir Pekan / Libur</span>
+        </div>
+        <div style="margin-top: 3px; font-size: 6px; color: #475569; border-top: 1px dashed #cbd5e1; padding-top: 2px;">
+            <em>* Ketentuan Jam Kerja ASN Universitas Riau: Total 37,5 Jam/Minggu (7,5 Jam/Hari Efektif). Senin-Kamis (07.30-16.00 WIB, Istirahat 12.00-13.00 WIB); Jumat (07.30-16.30 WIB, Istirahat 11.45-13.15 WIB). Akumulasi keterlambatan & pulang sebelum waktu (PSW) mencapai 7,5 jam (450 menit) dalam sebulan setara sanksi 1 hari tidak masuk kerja.</em>
+        </div>
     </div>
 
     <!-- LEMBAR PENGESAHAN / TANDA TANGAN -->

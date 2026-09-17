@@ -63,7 +63,41 @@ class Attendance extends Model
     }
 
     /**
-     * Hitung Penjumlahan / Total Durasi Jam Kerja (Jam Masuk s/d Jam Pulang)
+     * Hitung Keterlambatan Masuk (Menit setelah 07:30 WIB)
+     */
+    public function getLateMinutesAttribute(): int
+    {
+        if (!$this->check_in_time) {
+            return 0;
+        }
+        return \App\Services\AttendanceService::calculateLateMinutes($this->check_in_time);
+    }
+
+    /**
+     * Hitung Pulang Sebelum Waktunya / PSW (Menit sebelum 16:00 atau 16:30 WIB)
+     */
+    public function getEarlyLeaveMinutesAttribute(): int
+    {
+        if (!$this->check_out_time) {
+            return 0;
+        }
+        $date = $this->attendance_date ? \Carbon\Carbon::parse($this->attendance_date) : $this->check_out_time;
+        return \App\Services\AttendanceService::calculateEarlyLeaveMinutes($this->check_out_time, $date);
+    }
+
+    /**
+     * Hitung Total Detik Kerja Efektif (Sudah dikurangi jam istirahat resmi ASN UNRI)
+     */
+    public function getEffectiveWorkSecondsAttribute(): int
+    {
+        if (!$this->check_in_time || !$this->check_out_time) {
+            return 0;
+        }
+        return \App\Services\AttendanceService::calculateEffectiveWorkSeconds($this->check_in_time, $this->check_out_time);
+    }
+
+    /**
+     * Hitung Penjumlahan / Total Jam Kerja Efektif (Jam Masuk s/d Jam Pulang - Jam Istirahat)
      */
     public function getWorkDurationAttribute(): string
     {
@@ -75,26 +109,23 @@ class Attendance extends Model
             return 'Sedang Bekerja (Belum Pulang)';
         }
 
-        $in = $this->check_in_time->copy()->timezone('Asia/Jakarta');
-        $out = $this->check_out_time->copy()->timezone('Asia/Jakarta');
+        $effectiveSeconds = $this->effective_work_seconds;
+        $hours = floor($effectiveSeconds / 3600);
+        $minutes = floor(($effectiveSeconds % 3600) / 60);
 
-        $diff = $in->diff($out);
-        $totalHours = ($diff->days * 24) + $diff->h;
-        $minutes = $diff->i;
-
-        if ($totalHours > 0) {
-            return "{$totalHours} Jam {$minutes} Menit";
+        if ($hours > 0) {
+            return "{$hours} Jam {$minutes} Menit";
         }
 
         if ($minutes > 0) {
             return "{$minutes} Menit";
         }
 
-        return "{$diff->s} Detik";
+        return "{$effectiveSeconds} Detik";
     }
 
     /**
-     * Format Ringkas Total Jam Kerja (e.g. untuk Export Excel & PDF)
+     * Format Ringkas Total Jam Kerja Efektif (e.g. untuk Export Excel & PDF)
      */
     public function getWorkDurationShortAttribute(): string
     {
@@ -102,14 +133,11 @@ class Attendance extends Model
             return '-';
         }
 
-        $in = $this->check_in_time->copy()->timezone('Asia/Jakarta');
-        $out = $this->check_out_time->copy()->timezone('Asia/Jakarta');
+        $effectiveSeconds = $this->effective_work_seconds;
+        $hours = floor($effectiveSeconds / 3600);
+        $minutes = floor(($effectiveSeconds % 3600) / 60);
 
-        $diff = $in->diff($out);
-        $totalHours = ($diff->days * 24) + $diff->h;
-        $minutes = $diff->i;
-
-        return sprintf('%02d:%02d', $totalHours, $minutes);
+        return sprintf('%02d:%02d', $hours, $minutes);
     }
 
     public function getFormattedCheckInTimeAttribute(): ?string

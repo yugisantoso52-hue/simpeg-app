@@ -16,7 +16,17 @@ use Illuminate\Validation\ValidationException;
 class AttendanceService
 {
     public const MAX_ALLOWED_RADIUS_METERS = 75.0;
-    public const DEFAULT_LATE_TIME = '08:00:00';
+    
+    // Ketentuan Jam Kerja ASN Universitas Riau (37,5 Jam/Minggu, 7,5 Jam/Hari Efektif)
+    public const WORK_START_TIME = '07:30:00';
+    public const WORK_END_MON_THU = '16:00:00';
+    public const WORK_END_FRI = '16:30:00';
+    public const BREAK_START_MON_THU = '12:00:00';
+    public const BREAK_END_MON_THU = '13:00:00';
+    public const BREAK_START_FRI = '11:45:00';
+    public const BREAK_END_FRI = '13:15:00';
+    public const STANDARD_WORK_MINUTES = 450; // 7,5 jam = 450 menit kerja efektif
+    public const DEFAULT_LATE_TIME = '07:30:00';
 
     /**
      * Haversine Formula untuk menghitung jarak antara 2 titik koordinat (meter).
@@ -210,13 +220,97 @@ class AttendanceService
     }
 
     /**
-     * Tentukan status kehadiran (Hadir Tepat Waktu vs Terlambat).
+     * Dapatkan rincian jadwal kerja resmi ASN UNRI berdasarkan tanggal tertentu.
+     * - Senin - Kamis: 07:30 - 16:00 (Istirahat 12:00 - 13:00)
+     * - Jumat: 07:30 - 16:30 (Istirahat 11:45 - 13:15)
      */
-    protected function determineStatus(Carbon $time): string
+    public static function getScheduleForDate(Carbon $date): array
+    {
+        $dateStr = $date->toDateString();
+        $isFriday = ($date->dayOfWeek === Carbon::FRIDAY);
+
+        $start = Carbon::parse($dateStr . ' ' . self::WORK_START_TIME, 'Asia/Jakarta');
+        $end = Carbon::parse($dateStr . ' ' . ($isFriday ? self::WORK_END_FRI : self::WORK_END_MON_THU), 'Asia/Jakarta');
+        $breakStart = Carbon::parse($dateStr . ' ' . ($isFriday ? self::BREAK_START_FRI : self::BREAK_START_MON_THU), 'Asia/Jakarta');
+        $breakEnd = Carbon::parse($dateStr . ' ' . ($isFriday ? self::BREAK_END_FRI : self::BREAK_END_MON_THU), 'Asia/Jakarta');
+
+        return [
+            'is_friday' => $isFriday,
+            'start' => $start,
+            'end' => $end,
+            'break_start' => $breakStart,
+            'break_end' => $breakEnd,
+            'break_duration_minutes' => (int) $breakStart->diffInMinutes($breakEnd),
+            'target_work_minutes' => self::STANDARD_WORK_MINUTES,
+        ];
+    }
+
+    /**
+     * Hitung durasi keterlambatan masuk (menit lewat dari 07:30 WIB)
+     */
+    public static function calculateLateMinutes(Carbon $checkInTime): int
+    {
+        $in = $checkInTime->copy()->timezone('Asia/Jakarta');
+        $schedule = self::getScheduleForDate($in);
+        if ($in->greaterThan($schedule['start'])) {
+            return (int) $schedule['start']->diffInMinutes($in);
+        }
+        return 0;
+    }
+
+    /**
+     * Hitung durasi pulang sebelum waktunya / PSW (menit sebelum 16:00 atau 16:30 WIB)
+     */
+    public static function calculateEarlyLeaveMinutes(Carbon $checkOutTime, Carbon $date): int
+    {
+        $out = $checkOutTime->copy()->timezone('Asia/Jakarta');
+        $schedule = self::getScheduleForDate($date);
+        if ($out->lessThan($schedule['end'])) {
+            return (int) $out->diffInMinutes($schedule['end']);
+        }
+        return 0;
+    }
+
+    /**
+     * Hitung durasi jam kerja efektif dalam detik.
+     * Mengurangkan potongan irisan jam istirahat resmi jika rentang presensi melintasinya.
+     */
+    public static function calculateEffectiveWorkSeconds(Carbon $in, Carbon $out): int
+    {
+        $inJkt = $in->copy()->timezone('Asia/Jakarta');
+        $outJkt = $out->copy()->timezone('Asia/Jakarta');
+
+        if ($outJkt->lessThanOrEqualTo($inJkt)) {
+            return 0;
+        }
+
+        $grossSeconds = $inJkt->diffInSeconds($outJkt);
+        $schedule = self::getScheduleForDate($inJkt);
+
+        $breakStart = $schedule['break_start'];
+        $breakEnd = $schedule['break_end'];
+
+        // Overlap antara rentang kerja [$inJkt, $outJkt] dan rentang istirahat [$breakStart, $breakEnd]
+        $overlapStart = $inJkt->greaterThan($breakStart) ? $inJkt : $breakStart;
+        $overlapEnd = $outJkt->lessThan($breakEnd) ? $outJkt : $breakEnd;
+
+        $breakSeconds = 0;
+        if ($overlapEnd->greaterThan($overlapStart)) {
+            $breakSeconds = $overlapStart->diffInSeconds($overlapEnd);
+        }
+
+        return max(0, $grossSeconds - $breakSeconds);
+    }
+
+    /**
+     * Tentukan status kehadiran (Hadir Tepat Waktu vs Terlambat).
+     * Terlambat jika check-in melewati jam 07:30:00 WIB.
+     */
+    public function determineStatus(Carbon $time): string
     {
         $timeInJakarta = $time->copy()->timezone('Asia/Jakarta');
-        $cutoff = Carbon::parse($timeInJakarta->toDateString() . ' ' . self::DEFAULT_LATE_TIME, 'Asia/Jakarta');
-        return $timeInJakarta->greaterThan($cutoff) ? 'late' : 'present';
+        $schedule = self::getScheduleForDate($timeInJakarta);
+        return $timeInJakarta->greaterThan($schedule['start']) ? 'late' : 'present';
     }
 
     /**
@@ -406,28 +500,48 @@ class AttendanceService
             }
 
             $totalHadir = 0;
-            $totalLate = 0;
+            $totalLateCount = 0;
+            $totalEarlyCount = 0;
+            $totalLateMinutes = 0;
+            $totalEarlyMinutes = 0;
             $totalWfo = 0;
             $totalWfh = 0;
-            $totalSeconds = 0;
+            $totalEffectiveSeconds = 0;
 
             $dayRecords = [];
             foreach ($days as $d => $dayInfo) {
                 $att = $attendancesByDay[$d] ?? null;
                 if ($att) {
                     $totalHadir++;
-                    if ($att->status === 'late') {
-                        $totalLate++;
-                    }
                     if ($att->attendance_type === 'wfh') {
                         $totalWfh++;
                     } else {
                         $totalWfo++;
                     }
 
+                    $lateMinutes = 0;
+                    $earlyMinutes = 0;
+
+                    if ($att->check_in_time) {
+                        $lateMinutes = self::calculateLateMinutes($att->check_in_time);
+                        if ($lateMinutes > 0) {
+                            $totalLateCount++;
+                            $totalLateMinutes += $lateMinutes;
+                        }
+                    }
+
+                    $attDate = $att->attendance_date ? Carbon::parse($att->attendance_date) : ($att->check_in_time ?? $now);
+                    if ($att->check_out_time) {
+                        $earlyMinutes = self::calculateEarlyLeaveMinutes($att->check_out_time, $attDate);
+                        if ($earlyMinutes > 0) {
+                            $totalEarlyCount++;
+                            $totalEarlyMinutes += $earlyMinutes;
+                        }
+                    }
+
                     if ($att->check_in_time && $att->check_out_time) {
-                        $diffSeconds = $att->check_in_time->diffInSeconds($att->check_out_time);
-                        $totalSeconds += $diffSeconds;
+                        $effectiveSecs = self::calculateEffectiveWorkSeconds($att->check_in_time, $att->check_out_time);
+                        $totalEffectiveSeconds += $effectiveSecs;
                     }
 
                     $dayRecords[$d] = [
@@ -436,6 +550,8 @@ class AttendanceService
                         'in' => $att->formatted_check_in_time,
                         'out' => $att->formatted_check_out_time,
                         'duration' => $att->work_duration,
+                        'late_minutes' => $lateMinutes,
+                        'early_leave_minutes' => $earlyMinutes,
                         'distance' => $att->check_in_distance_meters,
                         'photo_in' => $att->check_in_photo_url,
                         'photo_out' => $att->check_out_photo_url,
@@ -466,19 +582,40 @@ class AttendanceService
                 }
             }
 
-            $hours = floor($totalSeconds / 3600);
-            $minutes = floor(($totalSeconds % 3600) / 60);
+            $hours = floor($totalEffectiveSeconds / 3600);
+            $minutes = floor(($totalEffectiveSeconds % 3600) / 60);
             $formattedTotalDuration = $hours > 0 ? "{$hours} Jam {$minutes} Menit" : ($minutes > 0 ? "{$minutes} Menit" : "-");
+
+            // Total Pelanggaran Disiplin Waktu ASN UNRI (Keterlambatan + Pulang Cepat)
+            $totalViolationMinutes = $totalLateMinutes + $totalEarlyMinutes;
+            $sanksiHari = intdiv($totalViolationMinutes, self::STANDARD_WORK_MINUTES); // Setiap 450 menit = 1 hari sanksi
+            $sisaMenitSanksi = $totalViolationMinutes % self::STANDARD_WORK_MINUTES;
+
+            $vHours = floor($totalViolationMinutes / 60);
+            $vMins = $totalViolationMinutes % 60;
+            $formattedViolationTime = $vHours > 0 ? "{$vHours}j {$vMins}m" : "{$vMins}m";
+
+            $formattedSanksi = $sanksiHari > 0
+                ? "{$sanksiHari} Hari (Sisa {$sisaMenitSanksi}m)"
+                : ($totalViolationMinutes > 0 ? "0 Hari ({$formattedViolationTime})" : "-");
 
             $matrixRows[] = [
                 'pegawai' => $pegawai,
                 'days' => $dayRecords,
                 'total_hadir' => $totalHadir,
-                'total_late' => $totalLate,
+                'total_late' => $totalLateCount,
+                'total_late_minutes' => $totalLateMinutes,
+                'total_early_count' => $totalEarlyCount,
+                'total_early_minutes' => $totalEarlyMinutes,
+                'total_violation_minutes' => $totalViolationMinutes,
+                'formatted_violation_time' => $formattedViolationTime,
+                'sanksi_hari' => $sanksiHari,
+                'sisa_menit_sanksi' => $sisaMenitSanksi,
+                'formatted_sanksi' => $formattedSanksi,
                 'total_wfo' => $totalWfo,
                 'total_wfh' => $totalWfh,
                 'total_duration' => $formattedTotalDuration,
-                'total_seconds' => $totalSeconds,
+                'total_seconds' => $totalEffectiveSeconds,
             ];
         }
 

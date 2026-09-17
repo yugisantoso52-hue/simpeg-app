@@ -80,8 +80,10 @@ class AttendanceMonthlyExport implements FromCollection, WithHeadings, WithMappi
         }
 
         $headings[] = 'TOTAL HADIR';
-        $headings[] = 'TERLAMBAT';
+        $headings[] = 'TERLAMBAT (TELAT)';
+        $headings[] = 'PULANG CEPAT (PSW)';
         $headings[] = 'TOTAL JAM KERJA';
+        $headings[] = 'SANKSI DISIPLIN WAKTU';
 
         return $headings;
     }
@@ -99,8 +101,11 @@ class AttendanceMonthlyExport implements FromCollection, WithHeadings, WithMappi
         }
 
         $totalHadir = 0;
-        $totalLate = 0;
-        $totalSeconds = 0;
+        $totalLateCount = 0;
+        $totalLateMinutes = 0;
+        $totalEarlyCount = 0;
+        $totalEarlyMinutes = 0;
+        $totalEffectiveSeconds = 0;
 
         $row = [
             $this->rowNumber,
@@ -116,17 +121,37 @@ class AttendanceMonthlyExport implements FromCollection, WithHeadings, WithMappi
 
             if ($att) {
                 $totalHadir++;
-                if ($att->status === 'late') {
-                    $totalLate++;
+
+                $lateMinutes = 0;
+                $earlyMinutes = 0;
+
+                if ($att->check_in_time) {
+                    $lateMinutes = \App\Services\AttendanceService::calculateLateMinutes($att->check_in_time);
+                    if ($lateMinutes > 0) {
+                        $totalLateCount++;
+                        $totalLateMinutes += $lateMinutes;
+                    }
+                }
+
+                $attDate = $att->attendance_date ? Carbon::parse($att->attendance_date) : ($att->check_in_time ?? Carbon::now('Asia/Jakarta'));
+                if ($att->check_out_time) {
+                    $earlyMinutes = \App\Services\AttendanceService::calculateEarlyLeaveMinutes($att->check_out_time, $attDate);
+                    if ($earlyMinutes > 0) {
+                        $totalEarlyCount++;
+                        $totalEarlyMinutes += $earlyMinutes;
+                    }
+                }
+
+                if ($att->check_in_time && $att->check_out_time) {
+                    $totalEffectiveSeconds += \App\Services\AttendanceService::calculateEffectiveWorkSeconds($att->check_in_time, $att->check_out_time);
+                }
+
+                if ($lateMinutes > 0) {
                     $row[] = 'T';
                 } elseif ($att->status === 'leave') {
                     $row[] = 'I';
                 } else {
                     $row[] = 'H';
-                }
-
-                if ($att->check_in_time && $att->check_out_time) {
-                    $totalSeconds += $att->check_in_time->diffInSeconds($att->check_out_time);
                 }
             } else {
                 if ($dayInfo['is_weekend']) {
@@ -139,13 +164,23 @@ class AttendanceMonthlyExport implements FromCollection, WithHeadings, WithMappi
             }
         }
 
-        $hours = floor($totalSeconds / 3600);
-        $minutes = floor(($totalSeconds % 3600) / 60);
+        $hours = floor($totalEffectiveSeconds / 3600);
+        $minutes = floor(($totalEffectiveSeconds % 3600) / 60);
         $formattedDuration = $hours > 0 ? "{$hours} Jam {$minutes} Menit" : ($minutes > 0 ? "{$minutes} Menit" : "-");
 
+        $totalViolationMinutes = $totalLateMinutes + $totalEarlyMinutes;
+        $sanksiHari = intdiv($totalViolationMinutes, \App\Services\AttendanceService::STANDARD_WORK_MINUTES);
+        $sisaMenit = $totalViolationMinutes % \App\Services\AttendanceService::STANDARD_WORK_MINUTES;
+
+        $formattedSanksi = $sanksiHari > 0
+            ? "{$sanksiHari} Hari (Sisa {$sisaMenit}m)"
+            : ($totalViolationMinutes > 0 ? "0 Hari ({$totalViolationMinutes}m)" : "-");
+
         $row[] = $totalHadir . ' Hari';
-        $row[] = $totalLate . 'x';
+        $row[] = $totalLateCount > 0 ? "{$totalLateCount}x ({$totalLateMinutes}m)" : "0x";
+        $row[] = $totalEarlyCount > 0 ? "{$totalEarlyCount}x ({$totalEarlyMinutes}m)" : "0x";
         $row[] = $formattedDuration;
+        $row[] = $formattedSanksi;
 
         return $row;
     }

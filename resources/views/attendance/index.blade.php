@@ -87,6 +87,55 @@
                 </div>
             </div>
 
+            <!-- Ketentuan Jam Kerja Resmi ASN Universitas Riau -->
+            <div class="bg-gradient-to-r from-blue-50 via-indigo-50 to-sky-50 rounded-xl border border-blue-200/80 p-4 sm:p-5 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-blue-200/60">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                            ⏰
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-blue-950">Ketentuan Jam Kerja ASN Universitas Riau</h3>
+                            <p class="text-xs text-blue-700">Dasar: Standar Jam Kerja Instansi Pemerintah (37,5 Jam/Minggu — 7,5 Jam/Hari Efektif)</p>
+                        </div>
+                    </div>
+                    <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-[11px] font-semibold border border-blue-200">
+                        <span>🏛️</span> FKP Universitas Riau
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-blue-100 shadow-2xs">
+                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Senin — Kamis (7,5 Jam)</div>
+                        <div class="mt-1 flex items-baseline gap-1.5">
+                            <span class="text-xs font-extrabold text-blue-900">07:30 — 16:00</span>
+                            <span class="text-[10px] text-slate-500">WIB</span>
+                        </div>
+                        <div class="text-[10px] text-slate-600 mt-1">
+                            🥪 Istirahat: <strong>12:00 — 13:00</strong> (60 mnt)
+                        </div>
+                    </div>
+
+                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-blue-100 shadow-2xs">
+                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Jumat (7,5 Jam)</div>
+                        <div class="mt-1 flex items-baseline gap-1.5">
+                            <span class="text-xs font-extrabold text-blue-900">07:30 — 16:30</span>
+                            <span class="text-[10px] text-slate-500">WIB</span>
+                        </div>
+                        <div class="text-[10px] text-slate-600 mt-1">
+                            🕌 Istirahat: <strong>11:45 — 13:15</strong> (90 mnt)
+                        </div>
+                    </div>
+
+                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-amber-200/80 bg-amber-50/40 shadow-2xs">
+                        <div class="text-[10px] font-bold text-amber-900 uppercase tracking-wider">Disiplin & Sanksi Waktu</div>
+                        <div class="text-[11px] text-amber-950 font-medium mt-1 leading-snug">
+                            Akumulasi telat & pulang cepat mencapai <strong>7,5 jam (450 mnt)</strong> dalam sebulan setara <strong>1 hari tidak hadir</strong>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- GRID UTAMA: Panel Presensi & Peta Lokasi -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
