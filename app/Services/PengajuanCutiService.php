@@ -112,6 +112,14 @@ class PengajuanCutiService
                 app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, "SURAT_LAMPIRAN_{$jenisCuti}", '05_DOKUMEN_LAINNYA', "Permohonan {$data['jenis_cuti']}");
             }
 
+            // Kirim notifikasi lonceng ke Pimpinan & Admin
+            try {
+                $leaders = \App\Models\User::whereHas('role', fn($q) => $q->whereIn('name', ['admin', 'pimpinan']))->get();
+                \Illuminate\Support\Facades\Notification::send($leaders, new \App\Notifications\CutiSubmittedNotification($cuti, $pegawai));
+            } catch (\Throwable $e) {
+                // Ignore notification failure to prevent transaction abort
+            }
+
             return $cuti;
         });
     }
@@ -135,7 +143,20 @@ class PengajuanCutiService
                 $updateData['nomor_surat'] = $data['nomor_surat'];
             }
 
-            return $this->repository->update($id, $updateData);
+            $updatedCuti = $this->repository->update($id, $updateData);
+
+            // Kirim notifikasi lonceng ke Pegawai pemohon cuti
+            try {
+                $approver = \App\Models\User::find($approverUserId);
+                $employeeUser = \App\Models\User::where('pegawai_id', $cuti->pegawai_id)->first();
+                if ($employeeUser && $approver) {
+                    $employeeUser->notify(new \App\Notifications\CutiStatusNotification($cuti, $approver, $data['status']));
+                }
+            } catch (\Throwable $e) {
+                // Ignore notification failure
+            }
+
+            return $updatedCuti;
         });
     }
 

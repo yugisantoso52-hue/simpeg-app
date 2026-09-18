@@ -233,10 +233,24 @@ class LogbookService
     public function submitSingle(Logbook $logbook): bool
     {
         if (in_array($logbook->status, [Logbook::STATUS_DRAFT, Logbook::STATUS_PERLU_REVISI], true)) {
-            return $logbook->update([
+            $updated = $logbook->update([
                 'status'         => Logbook::STATUS_DIAJUKAN,
                 'catatan_atasan' => null,
             ]);
+
+            if ($updated) {
+                try {
+                    $pegawai = $logbook->pegawai;
+                    if ($pegawai) {
+                        $leaders = User::whereHas('role', fn($q) => $q->whereIn('name', ['admin', 'pimpinan']))->get();
+                        \Illuminate\Support\Facades\Notification::send($leaders, new \App\Notifications\LogbookSubmittedNotification($pegawai, 1));
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore notification errors
+                }
+            }
+
+            return $updated;
         }
         return false;
     }
@@ -246,7 +260,7 @@ class LogbookService
      */
     public function submitBulk(int $pegawaiId, int $month, int $year): int
     {
-        return Logbook::where('pegawai_id', $pegawaiId)
+        $count = Logbook::where('pegawai_id', $pegawaiId)
             ->whereYear('tanggal', $year)
             ->whereMonth('tanggal', $month)
             ->whereIn('status', [Logbook::STATUS_DRAFT, Logbook::STATUS_PERLU_REVISI])
@@ -254,6 +268,20 @@ class LogbookService
                 'status'         => Logbook::STATUS_DIAJUKAN,
                 'catatan_atasan' => null,
             ]);
+
+        if ($count > 0) {
+            try {
+                $pegawai = Pegawai::find($pegawaiId);
+                if ($pegawai) {
+                    $leaders = User::whereHas('role', fn($q) => $q->whereIn('name', ['admin', 'pimpinan']))->get();
+                    \Illuminate\Support\Facades\Notification::send($leaders, new \App\Notifications\LogbookSubmittedNotification($pegawai, $count));
+                }
+            } catch (\Throwable $e) {
+                // Ignore notification errors
+            }
+        }
+
+        return $count;
     }
 
     /**
@@ -273,12 +301,26 @@ class LogbookService
      */
     public function verify(Logbook $logbook, string $status, ?string $catatanAtasan, int $verifierUserId): bool
     {
-        return $logbook->update([
+        $updated = $logbook->update([
             'status'            => $status,
             'catatan_atasan'    => $catatanAtasan,
             'diverifikasi_oleh' => $verifierUserId,
             'diverifikasi_pada' => Carbon::now(),
         ]);
+
+        if ($updated) {
+            try {
+                $verifier = User::find($verifierUserId);
+                $owner = $logbook->user;
+                if ($owner && $verifier) {
+                    $owner->notify(new \App\Notifications\LogbookVerifiedNotification($logbook, $verifier, $status));
+                }
+            } catch (\Throwable $e) {
+                // Ignore notification errors
+            }
+        }
+
+        return $updated;
     }
 
     /**
@@ -286,7 +328,9 @@ class LogbookService
      */
     public function verifyBulk(array $ids, string $status, ?string $catatanAtasan, int $verifierUserId): int
     {
-        return Logbook::whereIn('id', $ids)
+        $logbooks = Logbook::whereIn('id', $ids)->where('status', Logbook::STATUS_DIAJUKAN)->get();
+
+        $count = Logbook::whereIn('id', $ids)
             ->where('status', Logbook::STATUS_DIAJUKAN)
             ->update([
                 'status'            => $status,
@@ -294,5 +338,21 @@ class LogbookService
                 'diverifikasi_oleh' => $verifierUserId,
                 'diverifikasi_pada' => Carbon::now(),
             ]);
+
+        if ($count > 0) {
+            try {
+                $verifier = User::find($verifierUserId);
+                foreach ($logbooks as $lb) {
+                    $owner = $lb->user;
+                    if ($owner && $verifier) {
+                        $owner->notify(new \App\Notifications\LogbookVerifiedNotification($lb, $verifier, $status));
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Ignore notification errors
+            }
+        }
+
+        return $count;
     }
 }

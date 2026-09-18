@@ -61,6 +61,9 @@
                             <a href="{{ route('presensi.index') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs transition shadow-sm" style="background-color: #10b981 !important; color: #ffffff !important;">
                                 📍 Presensi Pegawai
                             </a>
+                            <a href="{{ route('logbook.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs transition shadow-sm" style="background-color: #6366f1 !important; color: #ffffff !important;">
+                                📝 Catat Logbook
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -111,6 +114,49 @@
                         </a>
                     </div>
                 </div>
+
+                {{-- 📝 KARTU CAPAIAN E-LOGBOOK KINERJA BULAN INI --}}
+                @if(isset($myLogbookStats))
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-200 flex items-center justify-center text-2xl shrink-0 shadow-xs">
+                                📝
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-bold text-base text-slate-800">E-Logbook Kinerja Bulan Ini</h3>
+                                    <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                        {{ \Carbon\Carbon::now('Asia/Jakarta')->locale('id')->isoFormat('MMMM Y') }}
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2.5 text-xs text-slate-500 mt-1">
+                                    <span>⏱️ Total Waktu: <strong class="text-slate-800 font-bold">{{ $myLogbookStats['total_jam'] }} Jam</strong> ({{ $myLogbookStats['total_menit'] }} mnt)</span>
+                                    <span class="text-slate-300">•</span>
+                                    <span>📋 Aktivitas: <strong class="text-slate-800 font-bold">{{ $myLogbookStats['total_aktivitas'] }}</strong></span>
+                                    <span class="text-slate-300">•</span>
+                                    <span>✅ Disetujui: <strong class="text-emerald-600 font-bold">{{ $myLogbookStats['disetujui'] }}</strong></span>
+                                    @if($myLogbookStats['diajukan'] > 0)
+                                        <span class="text-slate-300">•</span>
+                                        <span class="text-amber-600 font-medium">⏳ Menunggu: <strong>{{ $myLogbookStats['diajukan'] }}</strong></span>
+                                    @endif
+                                    @if($myLogbookStats['perlu_revisi'] > 0)
+                                        <span class="text-slate-300">•</span>
+                                        <span class="text-rose-600 font-bold animate-pulse">⚠️ Perlu Revisi: {{ $myLogbookStats['perlu_revisi'] }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2.5 w-full md:w-auto shrink-0">
+                            <a href="{{ route('logbook.create') }}" class="w-full md:w-auto px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition flex items-center justify-center gap-1.5">
+                                <span>+ Catat Aktivitas</span>
+                            </a>
+                            <a href="{{ route('logbook.index') }}" class="px-3.5 py-2.5 rounded-xl font-semibold text-xs text-slate-700 bg-slate-100 hover:bg-slate-200 transition">
+                                Buka Logbook
+                            </a>
+                        </div>
+                    </div>
+                @endif
 
                 {{-- 📊 KARTU PERSENTASE KELENGKAPAN DATA PEGAWAI MANDIRI --}}
                 @if(isset($completenessData))
@@ -406,8 +452,59 @@
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6 border border-gray-200">
                     <div class="p-6 text-gray-900">
                         <h3 class="text-lg font-semibold">Selamat Datang, {{ Auth::user()->name ?? 'Administrator' }}!</h3>
-                        <p class="text-sm text-gray-500 mt-1">Berikut adalah ringkasan data sistem informasi kepegawaian saat ini.</p>
+                        <p class="text-sm text-gray-500 mt-1">Berikut adalah ringkasan data sistem informasi kepegawaian dan operasional harian saat ini.</p>
                     </div>
+                </div>
+
+                {{-- 🚨 PUSAT TINDAKAN & OPERASIONAL HARIAN (ACTION ITEMS) --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {{-- 1. Pending Cuti --}}
+                    <a href="{{ route('pengajuan-cuti.index') }}" class="p-4 rounded-2xl bg-amber-50 border border-amber-200 shadow-sm hover:shadow-md transition flex items-center justify-between group">
+                        <div>
+                            <div class="text-xs font-bold text-amber-700 uppercase tracking-wider">Cuti Menunggu</div>
+                            <div class="text-2xl font-black text-amber-900 mt-1">{{ $pendingCutiCount ?? 0 }}</div>
+                            <div class="text-[11px] text-amber-600 mt-0.5 group-hover:underline">Perlu Persetujuan →</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-amber-200/60 text-amber-800 flex items-center justify-center text-2xl">
+                            🏖️
+                        </div>
+                    </a>
+
+                    {{-- 2. Pending Logbook --}}
+                    <a href="{{ route('admin.logbook.index', ['status' => 'diajukan']) }}" class="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 shadow-sm hover:shadow-md transition flex items-center justify-between group">
+                        <div>
+                            <div class="text-xs font-bold text-indigo-700 uppercase tracking-wider">Logbook Menunggu</div>
+                            <div class="text-2xl font-black text-indigo-900 mt-1">{{ $pendingLogbookCount ?? 0 }}</div>
+                            <div class="text-[11px] text-indigo-600 mt-0.5 group-hover:underline">Perlu Diverifikasi →</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-indigo-200/60 text-indigo-800 flex items-center justify-center text-2xl">
+                            📝
+                        </div>
+                    </a>
+
+                    {{-- 3. Presensi Hari Ini --}}
+                    <a href="{{ route('admin.presensi.index') }}" class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 shadow-sm hover:shadow-md transition flex items-center justify-between group">
+                        <div>
+                            <div class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Presensi Hari Ini</div>
+                            <div class="text-2xl font-black text-emerald-900 mt-1">{{ $todayPresentCount ?? 0 }}</div>
+                            <div class="text-[11px] text-emerald-600 mt-0.5 group-hover:underline">Pegawai Hadir →</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-200/60 text-emerald-800 flex items-center justify-center text-2xl">
+                            📍
+                        </div>
+                    </a>
+
+                    {{-- 4. Total Jam Logbook Bulan Ini --}}
+                    <a href="{{ route('admin.logbook.index') }}" class="p-4 rounded-2xl bg-blue-50 border border-blue-200 shadow-sm hover:shadow-md transition flex items-center justify-between group">
+                        <div>
+                            <div class="text-xs font-bold text-blue-700 uppercase tracking-wider">Kinerja Bulan Ini</div>
+                            <div class="text-2xl font-black text-blue-900 mt-1">{{ $adminLogbookStats['total_jam'] ?? 0 }} Jam</div>
+                            <div class="text-[11px] text-blue-600 mt-0.5 group-hover:underline">{{ $adminLogbookStats['total'] ?? 0 }} Aktivitas Terdata →</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-blue-200/60 text-blue-800 flex items-center justify-center text-2xl">
+                            ⏱️
+                        </div>
+                    </a>
                 </div>
 
                 {{-- BARIS 1: STATISTIK UTAMA PEGAWAI --}}
