@@ -29,6 +29,19 @@ class Attendance extends Model
         'check_out_photo_path',
         'status',
         'notes',
+        'ip_address',
+        'user_agent',
+        'gps_accuracy',
+        'gps_altitude',
+        'gps_speed',
+        'is_mock_location',
+        'liveness_verified',
+        'liveness_challenge',
+        'face_similarity_score',
+        'device_fingerprint',
+        'device_platform',
+        'is_suspicious',
+        'suspicious_reason',
     ];
 
     protected function casts(): array
@@ -43,6 +56,13 @@ class Attendance extends Model
             'check_out_latitude' => 'float',
             'check_out_longitude' => 'float',
             'check_out_distance_meters' => 'float',
+            'gps_accuracy' => 'float',
+            'gps_altitude' => 'float',
+            'gps_speed' => 'float',
+            'is_mock_location' => 'boolean',
+            'liveness_verified' => 'boolean',
+            'face_similarity_score' => 'float',
+            'is_suspicious' => 'boolean',
         ];
     }
 

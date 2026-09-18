@@ -37,14 +37,31 @@ class AttendanceController extends Controller
             ->get();
 
         $maxRadius = AttendanceService::MAX_ALLOWED_RADIUS_METERS;
+        $attendanceToken = $this->service->generateAttendanceToken($user);
+        $tokenTtl = AttendanceService::ATTENDANCE_TOKEN_TTL_SECONDS;
 
         return view('attendance.index', compact(
             'user',
             'location',
             'todayAttendance',
             'recentAttendances',
-            'maxRadius'
+            'maxRadius',
+            'attendanceToken',
+            'tokenTtl'
         ));
+    }
+
+    /**
+     * Dapatkan Token Anti-Replay Baru (AJAX Refresh jika expired)
+     */
+    public function refreshToken(Request $request): JsonResponse
+    {
+        $token = $this->service->generateAttendanceToken($request->user());
+        return response()->json([
+            'success' => true,
+            'token' => $token,
+            'expires_in' => AttendanceService::ATTENDANCE_TOKEN_TTL_SECONDS,
+        ]);
     }
 
     /**

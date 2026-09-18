@@ -8,6 +8,7 @@ use App\Models\Pegawai;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -16,6 +17,7 @@ use Illuminate\Validation\ValidationException;
 class AttendanceService
 {
     public const MAX_ALLOWED_RADIUS_METERS = 75.0;
+    public const ATTENDANCE_TOKEN_TTL_SECONDS = 60; // Token kedaluwarsa dalam 60 detik
     
     // Ketentuan Jam Kerja ASN Universitas Riau (37,5 Jam/Minggu, 7,5 Jam/Hari Efektif)
     public const WORK_START_TIME = '07:30:00';
@@ -72,6 +74,32 @@ class AttendanceService
     }
 
     /**
+     * Generate single-use anti-replay attendance token with 60s TTL.
+     */
+    public function generateAttendanceToken(User $user): string
+    {
+        $token = Str::random(40);
+        Cache::put("att_token_{$user->id}_{$token}", true, self::ATTENDANCE_TOKEN_TTL_SECONDS);
+        return $token;
+    }
+
+    /**
+     * Validate and immediately burn the anti-replay token.
+     */
+    public function validateAndBurnToken(User $user, ?string $token): bool
+    {
+        if (empty($token)) {
+            return false;
+        }
+        $key = "att_token_{$user->id}_{$token}";
+        if (Cache::has($key)) {
+            Cache::forget($key);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Proses Presensi (Check-in atau Check-out)
      *
      * @param User $user
@@ -81,17 +109,66 @@ class AttendanceService
      *     latitude: float,
      *     longitude: float,
      *     photo: string,
-     *     notes?: string|null
+     *     notes?: string|null,
+     *     accuracy?: float|int|null,
+     *     altitude?: float|int|null,
+     *     speed?: float|int|null,
+     *     is_mock?: bool|null,
+     *     liveness_verified?: bool|null,
+     *     liveness_challenge?: string|null,
+     *     face_similarity_score?: float|null,
+     *     device_fingerprint?: string|null,
+     *     device_platform?: string|null,
+     *     token?: string|null
      * } $payload
      * @return Attendance
      * @throws ValidationException
      */
     public function processAttendance(User $user, array $payload): Attendance
     {
+        // 1. Anti-Replay Token (Single Use, 60s TTL)
+        $token = $payload['token'] ?? null;
+        if (!$this->validateAndBurnToken($user, $token)) {
+            throw ValidationException::withMessages([
+                'token' => 'Sesi presensi telah kedaluwarsa atau token tidak valid (Anti-Replay Protection). Silakan refresh halaman dan lakukan presensi kembali.',
+            ]);
+        }
+
         $type = strtolower($payload['attendance_type'] ?? 'wfo');
         if (!in_array($type, ['wfo', 'wfh'])) {
             throw ValidationException::withMessages([
                 'attendance_type' => 'Tipe presensi tidak valid. Pilih WFO atau WFH.',
+            ]);
+        }
+
+        // 2. Pilar 1: Sensor Geolocation & Mock Check
+        $accuracy = isset($payload['accuracy']) ? (float) $payload['accuracy'] : null;
+        if ($accuracy === null || $accuracy <= 0) {
+            throw ValidationException::withMessages([
+                'accuracy' => 'Presensi ditolak: Sinyal sensor GPS tidak valid atau terdeteksi penggunaan Mock/Fake GPS emulator (akurasi <= 0 meter).',
+            ]);
+        }
+        if ($accuracy > self::MAX_ALLOWED_RADIUS_METERS) {
+            throw ValidationException::withMessages([
+                'accuracy' => "Presensi ditolak: Akurasi sinyal GPS Anda terlalu lemah ({$accuracy} meter > batas toleransi " . self::MAX_ALLOWED_RADIUS_METERS . " meter). Harap berada di area terbuka dan tunggu GPS mengunci posisi presisi.",
+            ]);
+        }
+
+        $isMock = !empty($payload['is_mock']);
+        if ($isMock) {
+            throw ValidationException::withMessages([
+                'is_mock' => 'Presensi ditolak: Terdeteksi manipulasi peramban / otomasi emulator (Headless/Mock DevTools).',
+            ]);
+        }
+
+        // 3. Pilar 2: Uji Keaktifan Wajah (Liveness Detection)
+        $livenessVerified = !empty($payload['liveness_verified']);
+        $livenessChallenge = $payload['liveness_challenge'] ?? 'blink';
+        $faceSimilarityScore = isset($payload['face_similarity_score']) ? (float) $payload['face_similarity_score'] : null;
+
+        if (!$livenessVerified) {
+            throw ValidationException::withMessages([
+                'liveness_verified' => 'Presensi ditolak: Uji keaktifan wajah (Liveness Detection) belum berhasil diselesaikan.',
             ]);
         }
 
@@ -130,6 +207,54 @@ class AttendanceService
                 ]);
             }
         }
+
+        // 4. Pilar 3: Integritas Perangkat (Anti-Titip Absen & Impossible Travel)
+        $deviceFingerprint = $payload['device_fingerprint'] ?? null;
+        $devicePlatform = $payload['device_platform'] ?? null;
+        $altitude = isset($payload['altitude']) ? (float) $payload['altitude'] : null;
+        $speed = isset($payload['speed']) ? (float) $payload['speed'] : null;
+        $ipAddress = request()->ip();
+        $userAgent = request()->userAgent();
+
+        $isSuspicious = false;
+        $suspiciousReasons = [];
+
+        // Deteksi Multi-Akun pada 1 Perangkat di Hari yang Sama
+        if ($deviceFingerprint) {
+            $deviceCollisions = Attendance::whereDate('attendance_date', $today)
+                ->where('device_fingerprint', $deviceFingerprint)
+                ->where('user_id', '!=', $user->id)
+                ->with('user')
+                ->get();
+
+            if ($deviceCollisions->isNotEmpty()) {
+                $collidingNames = $deviceCollisions->pluck('user.name')->filter()->unique()->implode(', ');
+                $isSuspicious = true;
+                $suspiciousReasons[] = "Indikasi Multi-Akun / Titip Absen: Perangkat ini digunakan oleh pegawai lain ({$collidingNames}) pada hari yang sama.";
+            }
+        }
+
+        // Deteksi Impossible Travel saat Check-out
+        if ($action === 'check_out' && $existingAttendance && $existingAttendance->check_in_time && $existingAttendance->check_in_latitude && $existingAttendance->check_in_longitude) {
+            $distanceFromCheckIn = $this->calculateDistance(
+                (float) $existingAttendance->check_in_latitude,
+                (float) $existingAttendance->check_in_longitude,
+                $latitude,
+                $longitude
+            );
+            $secondsElapsed = Carbon::parse($existingAttendance->check_in_time)->diffInSeconds($now);
+            if ($secondsElapsed > 0) {
+                $speedKmh = ($distanceFromCheckIn / 1000) / ($secondsElapsed / 3600);
+                // Jarak > 2 km dengan rata-rata kecepatan > 120 km/jam
+                if ($distanceFromCheckIn > 2000 && $speedKmh > 120) {
+                    $isSuspicious = true;
+                    $minutesElapsed = max(1, round($secondsElapsed / 60));
+                    $suspiciousReasons[] = "Impossible Travel: Terdeteksi perpindahan jarak " . round($distanceFromCheckIn) . " m dalam {$minutesElapsed} menit (kecepatan " . round($speedKmh, 1) . " km/jam).";
+                }
+            }
+        }
+
+        $suspiciousReasonText = !empty($suspiciousReasons) ? implode("\n", $suspiciousReasons) : null;
 
         // Ambil data titik acuan user
         $location = $this->getOrCreateLocation($user);
@@ -174,7 +299,13 @@ class AttendanceService
         // Simpan foto selfie Base64 ke disk storage
         $photoPath = $this->saveBase64Photo($photoBase64, $user->id, $action);
 
-        return DB::transaction(function () use ($user, $type, $today, $action, $latitude, $longitude, $distanceMeters, $photoPath, $notes, $existingAttendance, $now) {
+        return DB::transaction(function () use (
+            $user, $type, $today, $action, $latitude, $longitude, $distanceMeters,
+            $photoPath, $notes, $existingAttendance, $now,
+            $ipAddress, $userAgent, $accuracy, $altitude, $speed, $isMock,
+            $livenessVerified, $livenessChallenge, $faceSimilarityScore,
+            $deviceFingerprint, $devicePlatform, $isSuspicious, $suspiciousReasonText
+        ) {
             if ($action === 'check_in') {
                 if ($existingAttendance) {
                     // Update check-in jika belum check out
@@ -187,6 +318,19 @@ class AttendanceService
                         'check_in_photo_path' => $photoPath,
                         'status' => $this->determineStatus($now),
                         'notes' => $notes ?: $existingAttendance->notes,
+                        'ip_address' => $ipAddress,
+                        'user_agent' => $userAgent,
+                        'gps_accuracy' => $accuracy,
+                        'gps_altitude' => $altitude,
+                        'gps_speed' => $speed,
+                        'is_mock_location' => $isMock,
+                        'liveness_verified' => $livenessVerified,
+                        'liveness_challenge' => $livenessChallenge,
+                        'face_similarity_score' => $faceSimilarityScore,
+                        'device_fingerprint' => $deviceFingerprint,
+                        'device_platform' => $devicePlatform,
+                        'is_suspicious' => $existingAttendance->is_suspicious || $isSuspicious,
+                        'suspicious_reason' => trim(($existingAttendance->suspicious_reason ? $existingAttendance->suspicious_reason . "\n" : '') . ($suspiciousReasonText ?? '')),
                     ]);
                     return $existingAttendance;
                 }
@@ -202,6 +346,19 @@ class AttendanceService
                     'check_in_photo_path' => $photoPath,
                     'status' => $this->determineStatus($now),
                     'notes' => $notes,
+                    'ip_address' => $ipAddress,
+                    'user_agent' => $userAgent,
+                    'gps_accuracy' => $accuracy,
+                    'gps_altitude' => $altitude,
+                    'gps_speed' => $speed,
+                    'is_mock_location' => $isMock,
+                    'liveness_verified' => $livenessVerified,
+                    'liveness_challenge' => $livenessChallenge,
+                    'face_similarity_score' => $faceSimilarityScore,
+                    'device_fingerprint' => $deviceFingerprint,
+                    'device_platform' => $devicePlatform,
+                    'is_suspicious' => $isSuspicious,
+                    'suspicious_reason' => $suspiciousReasonText,
                 ]);
             }
 
@@ -213,6 +370,19 @@ class AttendanceService
                 'check_out_distance_meters' => $distanceMeters,
                 'check_out_photo_path' => $photoPath,
                 'notes' => $notes ? ($existingAttendance->notes ? $existingAttendance->notes . ' | ' . $notes : $notes) : $existingAttendance->notes,
+                'ip_address' => $ipAddress,
+                'user_agent' => $userAgent,
+                'gps_accuracy' => $accuracy,
+                'gps_altitude' => $altitude,
+                'gps_speed' => $speed,
+                'is_mock_location' => $isMock,
+                'liveness_verified' => $livenessVerified,
+                'liveness_challenge' => $livenessChallenge,
+                'face_similarity_score' => $faceSimilarityScore,
+                'device_fingerprint' => $deviceFingerprint,
+                'device_platform' => $devicePlatform,
+                'is_suspicious' => $existingAttendance->is_suspicious || $isSuspicious,
+                'suspicious_reason' => trim(($existingAttendance->suspicious_reason ? $existingAttendance->suspicious_reason . "\n" : '') . ($suspiciousReasonText ?? '')),
             ]);
 
             return $existingAttendance;
@@ -436,6 +606,7 @@ class AttendanceService
         $wfoCount = Attendance::whereDate('attendance_date', $today)->where('attendance_type', 'wfo')->count();
         $wfhCount = Attendance::whereDate('attendance_date', $today)->where('attendance_type', 'wfh')->count();
         $lateCount = Attendance::whereDate('attendance_date', $today)->where('status', 'late')->count();
+        $suspiciousCount = Attendance::whereDate('attendance_date', $today)->where('is_suspicious', true)->count();
 
         return [
             'total_users' => $totalPegawai,
@@ -445,6 +616,7 @@ class AttendanceService
             'total_wfo' => $wfoCount,
             'total_wfh' => $wfhCount,
             'total_late' => $lateCount,
+            'total_suspicious' => $suspiciousCount,
         ];
     }
 

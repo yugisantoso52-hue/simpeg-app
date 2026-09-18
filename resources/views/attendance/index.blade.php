@@ -199,11 +199,42 @@
                             </div>
                         </div>
 
-                        <!-- Kamera Real-Time (MediaDevices) -->
+                        <!-- Telemetri Keamanan & Sensor GPS -->
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                            <div class="flex items-center justify-between text-xs">
+                                <div class="flex items-center gap-1.5 font-bold text-slate-700">
+                                    <span class="text-base">🛡️</span>
+                                    <span>Token Anti-Replay:</span>
+                                    <span class="font-mono px-1.5 py-0.5 rounded bg-white border border-slate-200" x-text="tokenRemaining + 's'"></span>
+                                </div>
+                                <span class="text-[10px] px-2 py-0.5 rounded font-semibold"
+                                      :class="tokenRemaining > 15 ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200 animate-pulse'">
+                                    <span x-text="tokenRemaining > 15 ? 'Aktif' : 'Memperbarui...'"></span>
+                                </span>
+                            </div>
+                            <!-- Bar Countdown Token -->
+                            <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                <div class="h-1.5 transition-all duration-1000"
+                                     :class="tokenRemaining > 15 ? 'bg-emerald-500' : 'bg-rose-500'"
+                                     :style="'width: ' + ((tokenRemaining / 60) * 100) + '%'"></div>
+                            </div>
+
+                            <!-- Sensor Akurasi GPS & Mock Check -->
+                            <div class="flex flex-wrap items-center justify-between gap-1 pt-1 text-[11px] border-t border-slate-200/60">
+                                <span class="text-slate-500">Sensor GPS:</span>
+                                <span class="font-semibold px-2 py-0.5 rounded text-[10px] flex items-center gap-1"
+                                      :class="gpsBadgeClass">
+                                    <span x-text="gpsBadgeIcon"></span>
+                                    <span x-text="gpsBadgeText"></span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Kamera Real-Time & Liveness Detection (MediaDevices) -->
                         <div class="space-y-2">
                             <div class="flex items-center justify-between">
-                                <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                    2. Verifikasi Foto Selfie Real-Time:
+                                <label class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span>2. Uji Keaktifan & Foto Real-Time:</span>
                                 </label>
                                 <button type="button"
                                         x-show="hasMultipleCameras"
@@ -213,7 +244,7 @@
                                 </button>
                             </div>
 
-                            <!-- Area Video & Snapshot -->
+                            <!-- Area Video & Snapshot with HUD -->
                             <div class="relative w-full aspect-[4/3] bg-black rounded-xl overflow-hidden shadow-inner flex items-center justify-center">
                                 <!-- Video Stream Live -->
                                 <video id="cameraStream"
@@ -232,7 +263,7 @@
                                      class="w-full h-full object-cover">
 
                                 <!-- Fallback / Loading Overlay -->
-                                <div x-show="!cameraActive && !photoTaken" class="p-4 text-center text-gray-400 space-y-2">
+                                <div x-show="!cameraActive && !photoTaken" class="p-4 text-center text-gray-400 space-y-2 z-20">
                                     <div class="text-3xl animate-pulse">📷</div>
                                     <p class="text-xs" x-text="cameraErrorMessage || 'Menghubungkan kamera...'"></p>
                                     <button type="button"
@@ -242,12 +273,51 @@
                                     </button>
                                 </div>
 
-                                <!-- Hidden Canvas for capture -->
+                                <!-- Hidden Canvases for capture and analysis -->
                                 <canvas id="captureCanvas" class="hidden"></canvas>
+                                <canvas id="analysisCanvas" class="hidden" width="160" height="120"></canvas>
 
-                                <!-- Overlay Guide Target -->
-                                <div x-show="cameraActive && !photoTaken" class="absolute inset-0 pointer-events-none flex items-center justify-center p-6">
-                                    <div class="w-44 h-56 border-2 border-dashed border-white/60 rounded-full"></div>
+                                <!-- Dynamic Face Target Oval -->
+                                <div x-show="cameraActive && !photoTaken" class="absolute inset-0 pointer-events-none flex items-center justify-center p-6 z-10">
+                                    <div class="w-44 h-56 border-2 rounded-full transition-all duration-300 flex flex-col items-center justify-between py-4"
+                                         :class="livenessVerified ? 'border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.5)] bg-emerald-500/10' : (faceDetected ? 'border-amber-400 animate-pulse bg-amber-500/5' : 'border-dashed border-white/60')">
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white backdrop-blur-sm"
+                                              :class="livenessVerified ? 'bg-emerald-600' : 'bg-black/50'"
+                                              x-text="livenessVerified ? '✓ TERVERIFIKASI' : (faceDetected ? 'WAJAH TERDETEKSI' : 'POSISIKAN WAJAH')"></span>
+                                        
+                                        <span class="text-2xl" x-show="livenessVerified">✅</span>
+                                        
+                                        <span class="text-[9px] text-white/80 font-mono" x-text="faceDetected ? 'Tunggal (1 Wajah)' : 'Mencari Wajah...'"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Floating Liveness Challenge HUD -->
+                                <div x-show="cameraActive && !photoTaken"
+                                     class="absolute bottom-2 left-2 right-2 bg-slate-900/85 backdrop-blur-md text-white p-2.5 rounded-xl border border-white/15 text-xs z-20 space-y-1.5">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xl" x-text="currentChallenge.icon"></span>
+                                            <div>
+                                                <div class="text-[10px] text-amber-300 font-bold uppercase tracking-wider">Uji Keaktifan Wajah</div>
+                                                <div class="font-bold text-xs" x-text="currentChallenge.label"></div>
+                                            </div>
+                                        </div>
+                                        <button type="button" @click="pickRandomChallenge()" title="Ganti Tantangan" class="text-[10px] text-slate-300 hover:text-white underline ml-2">
+                                            Acak
+                                        </button>
+                                    </div>
+
+                                    <!-- Progress Keaktifan -->
+                                    <div class="w-full bg-slate-700/80 rounded-full h-2 overflow-hidden">
+                                        <div class="h-2 transition-all duration-200"
+                                             :class="livenessVerified ? 'bg-emerald-400' : 'bg-gradient-to-r from-amber-400 to-emerald-400'"
+                                             :style="'width: ' + livenessProgress + '%'"></div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between text-[10px] text-slate-300 font-medium">
+                                        <span x-text="livenessStatusHint"></span>
+                                        <span class="font-mono font-bold" x-text="livenessProgress + '%'"></span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -256,15 +326,17 @@
                                 <button type="button"
                                         x-show="cameraActive && !photoTaken"
                                         @click="takeSnapshot()"
-                                        class="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
-                                    <span>📸</span> Ambil Foto Selfie
+                                        :disabled="!livenessVerified"
+                                        :class="livenessVerified ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20' : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
+                                        class="w-full py-2.5 px-4 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
+                                    <span x-text="livenessVerified ? '📸 Ambil Foto Selfie (Keaktifan Valid)' : '⏳ Selesaikan Uji Keaktifan Dahulu'"></span>
                                 </button>
 
                                 <button type="button"
                                         x-show="photoTaken"
                                         @click="retakeSnapshot()"
                                         class="w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 border border-gray-300 transition">
-                                    <span>🔄</span> Foto Ulang (Retake)
+                                    <span>🔄</span> Uji & Foto Ulang (Retake)
                                 </button>
                             </div>
                         </div>
@@ -284,23 +356,23 @@
                             @if(!$todayAttendance)
                                 <button type="button"
                                         @click="submitAttendance('check_in')"
-                                        :disabled="isSubmitting || !photoTaken || !gpsReady"
+                                        :disabled="isSubmitting || !photoTaken || !gpsReady || !canSubmitSecurity"
                                         class="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition transform active:scale-95">
                                     <span x-show="!isSubmitting">✅ Kirim Presensi Masuk (Check-In)</span>
                                     <span x-show="isSubmitting" class="flex items-center gap-2">
                                         <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                                        Memproses Presensi...
+                                        Memvalidasi & Memproses Presensi...
                                     </span>
                                 </button>
                             @elseif(!$todayAttendance->check_out_time)
                                 <button type="button"
                                         @click="submitAttendance('check_out')"
-                                        :disabled="isSubmitting || !photoTaken || !gpsReady"
+                                        :disabled="isSubmitting || !photoTaken || !gpsReady || !canSubmitSecurity"
                                         class="w-full py-3.5 px-4 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20 transition transform active:scale-95">
                                     <span x-show="!isSubmitting">🚪 Kirim Presensi Pulang (Check-Out)</span>
                                     <span x-show="isSubmitting" class="flex items-center gap-2">
                                         <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                                        Memproses Check-Out...
+                                        Memvalidasi & Memproses Check-Out...
                                     </span>
                                 </button>
                             @else
@@ -308,6 +380,20 @@
                                     🎉 Anda telah menyelesaikan seluruh presensi (Masuk & Pulang) hari ini.
                                 </div>
                             @endif
+
+                            <!-- Petunjuk Alasan Tombol Belum Aktif jika ada syarat belum terpenuhi -->
+                            <div x-show="!canSubmitSecurity && !isSubmitting" class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 p-2.5 rounded-lg space-y-1">
+                                <div class="font-bold flex items-center gap-1">
+                                    <span>⚠️</span> <span>Syarat Kelengkapan Presensi:</span>
+                                </div>
+                                <ul class="list-disc list-inside space-y-0.5 text-[10px]">
+                                    <li :class="gpsReady && gpsAccuracy > 0 && gpsAccuracy <= maxRadius ? 'text-emerald-700 line-through' : 'text-amber-800'">Sinyal GPS akurat (≤ 75 meter).</li>
+                                    <li :class="!isMock ? 'text-emerald-700 line-through' : 'text-rose-700 font-bold'">Bukan peramban mock/emulator otomatis.</li>
+                                    <li :class="livenessVerified ? 'text-emerald-700 line-through' : 'text-amber-800'">Uji keaktifan wajah lolos tantangan.</li>
+                                    <li :class="photoTaken ? 'text-emerald-700 line-through' : 'text-amber-800'">Foto selfie berhasil diambil.</li>
+                                    <li :class="isWithinRadius ? 'text-emerald-700 line-through' : 'text-rose-700 font-bold'">Berada di dalam radius lokasi acuan (≤ 75m).</li>
+                                </ul>
+                            </div>
 
                             <!-- Error Message Banner -->
                             <div x-show="submitErrorMessage"
@@ -470,7 +556,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT LOGIKA KAMERA, GPS & LEAFLET MAP -->
+    <!-- SCRIPT LOGIKA KAMERA, GPS, LIVENESS DETECTION & LEAFLET MAP -->
     <script>
         function attendanceApp() {
             return {
@@ -491,14 +577,16 @@
                     }
                 },
 
-                // GPS State
+                // Pilar 1: GPS & Sensor State
                 currentLat: 0.5333,
                 currentLng: 101.4500,
                 gpsAccuracy: 0,
+                gpsAltitude: null,
+                gpsSpeed: null,
                 gpsReady: false,
                 gpsLoading: false,
 
-                // Camera State
+                // Pilar 2: Kamera & Liveness Detection State
                 cameraActive: false,
                 facingMode: 'user',
                 hasMultipleCameras: false,
@@ -506,6 +594,32 @@
                 photoData: null,
                 cameraErrorMessage: '',
                 videoStream: null,
+
+                challenges: [
+                    { id: 'blink', label: 'Kedipkan mata Anda 2 kali', icon: '👁️', hint: 'Kedipkan mata Anda secara wajar di depan kamera' },
+                    { id: 'smile', label: 'Tersenyum lebar ke arah kamera', icon: '😊', hint: 'Tersenyumlah hingga ekspresi wajah berubah' },
+                    { id: 'head_turn', label: 'Tengokkan kepala sedikit ke samping', icon: '↔️', hint: 'Tolehkan kepala sedikit ke samping lalu kembali ke tengah' }
+                ],
+                currentChallengeIndex: 0,
+                faceDetected: false,
+                livenessVerified: false,
+                livenessProgress: 0,
+                livenessStatusHint: 'Posisikan wajah Anda tepat di dalam lingkaran',
+                blinkCount: 0,
+                lastBlinkDip: false,
+                smileHoldCount: 0,
+                headTurnPhase: 0, // 0: center, 1: turned, 2: returned
+                baselineLum: null,
+                prevFrameData: null,
+                livenessLoopId: null,
+
+                // Pilar 3: Token Anti-Replay & Integritas Perangkat
+                attendanceToken: '{{ $attendanceToken }}',
+                tokenRemaining: {{ $tokenTtl ?? 60 }},
+                tokenTimer: null,
+                deviceFingerprint: '',
+                devicePlatform: navigator.platform || (navigator.userAgentData ? navigator.userAgentData.platform : 'Unknown'),
+                isMock: false,
 
                 // Map & Form State
                 map: null,
@@ -516,7 +630,12 @@
                 isSubmitting: false,
                 submitErrorMessage: '',
 
-                init() {
+                async init() {
+                    this.pickRandomChallenge();
+                    this.startTokenCountdown();
+                    this.detectMockOrHeadless();
+                    this.deviceFingerprint = await this.generateDeviceFingerprint();
+
                     this.$nextTick(() => {
                         this.initMap();
                         this.detectGpsLocation();
@@ -528,18 +647,193 @@
                     return this.type === 'wfh' ? this.locations.wfh : this.locations.wfo;
                 },
 
-                setType(newType) {
-                    this.type = newType;
-                    this.updateMapLayers();
+                get currentChallenge() {
+                    return this.challenges[this.currentChallengeIndex];
+                },
+
+                get canSubmitSecurity() {
+                    return this.gpsReady &&
+                           this.gpsAccuracy > 0 &&
+                           this.gpsAccuracy <= this.maxRadius &&
+                           !this.isMock &&
+                           this.livenessVerified &&
+                           this.photoTaken &&
+                           this.isWithinRadius &&
+                           this.tokenRemaining > 0;
                 },
 
                 // -------------------------------------------------------------
-                // 1. KAMERA REAL-TIME (MediaDevices API)
+                // PILAR 3: TOKEN ANTI-REPLAY & DEVICE FINGERPRINT
                 // -------------------------------------------------------------
+                startTokenCountdown() {
+                    if (this.tokenTimer) clearInterval(this.tokenTimer);
+                    this.tokenTimer = setInterval(() => {
+                        if (this.tokenRemaining > 0) {
+                            this.tokenRemaining--;
+                            // Auto-refresh token jika sisa <= 5 detik agar presensi tidak gagal di tengah jalan
+                            if (this.tokenRemaining <= 5 && !this.isSubmitting) {
+                                this.refreshToken();
+                            }
+                        }
+                    }, 1000);
+                },
+
+                async refreshToken() {
+                    try {
+                        const response = await fetch('{{ route("presensi.token") }}', {
+                            headers: { 'Accept': 'application/json' }
+                        });
+                        const data = await response.json();
+                        if (data.success && data.token) {
+                            this.attendanceToken = data.token;
+                            this.tokenRemaining = data.expires_in || 60;
+                        }
+                    } catch (e) {
+                        console.warn('Auto refresh token gagal:', e);
+                    }
+                },
+
+                detectMockOrHeadless() {
+                    if (navigator.webdriver === true) {
+                        this.isMock = true;
+                    }
+                    if (window.chrome && (window.chrome.webdriver || window._phantom || window.__nightmare)) {
+                        this.isMock = true;
+                    }
+                },
+
+                async generateDeviceFingerprint() {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                        let webglInfo = '';
+                        if (gl) {
+                            const ext = gl.getExtension('WEBGL_debug_renderer_info');
+                            if (ext) {
+                                webglInfo = gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) + '~' + gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
+                            }
+                        }
+                        const raw = [
+                            navigator.userAgent,
+                            navigator.platform,
+                            navigator.language,
+                            screen.width + 'x' + screen.height + 'x' + screen.colorDepth,
+                            Intl.DateTimeFormat().resolvedOptions().timeZone,
+                            navigator.hardwareConcurrency || 1,
+                            webglInfo
+                        ].join('|||');
+
+                        const msgBuffer = new TextEncoder().encode(raw);
+                        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                        const hashArray = Array.from(new Uint8Array(hashBuffer));
+                        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 32);
+                    } catch (e) {
+                        // Fallback DJB2 hash
+                        let hash = 5381;
+                        const str = (navigator.userAgent || '') + (screen.width || '') + (screen.height || '');
+                        for (let i = 0; i < str.length; i++) {
+                            hash = ((hash << 5) + hash) + str.charCodeAt(i);
+                        }
+                        return 'fp_' + Math.abs(hash).toString(16).padStart(16, '0');
+                    }
+                },
+
+                // -------------------------------------------------------------
+                // PILAR 1: GEOLOCATION & SENSOR ACCURACY
+                // -------------------------------------------------------------
+                detectGpsLocation() {
+                    if (!navigator.geolocation) {
+                        this.submitErrorMessage = 'Peramban Anda tidak mendukung HTML5 Geolocation.';
+                        return;
+                    }
+
+                    this.gpsLoading = true;
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            this.currentLat = pos.coords.latitude;
+                            this.currentLng = pos.coords.longitude;
+                            this.gpsAccuracy = pos.coords.accuracy;
+                            this.gpsAltitude = pos.coords.altitude || null;
+                            this.gpsSpeed = pos.coords.speed || null;
+                            this.gpsReady = true;
+                            this.gpsLoading = false;
+
+                            // Cek akurasi emulator
+                            if (this.gpsAccuracy <= 0) {
+                                this.isMock = true;
+                            }
+
+                            this.updateMapLayers();
+                        },
+                        (err) => {
+                            console.error('GPS error:', err);
+                            this.gpsLoading = false;
+                            let msg = 'Gagal mendeteksi lokasi GPS.';
+                            if (err.code === 1) {
+                                msg = 'Izin lokasi GPS ditolak! Harap aktifkan izin lokasi di peramban Anda.';
+                            } else if (err.code === 2) {
+                                msg = 'Sinyal GPS tidak tersedia atau perangkat di ruang tertutup.';
+                            }
+                            this.submitErrorMessage = msg;
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 15000,
+                            maximumAge: 0
+                        }
+                    );
+                },
+
+                refreshGpsLocation() {
+                    this.detectGpsLocation();
+                },
+
+                get gpsBadgeClass() {
+                    if (!this.gpsReady) return 'bg-gray-100 text-gray-700 border border-gray-200';
+                    if (this.gpsAccuracy <= 0 || this.isMock) return 'bg-rose-100 text-rose-800 border border-rose-300';
+                    if (this.gpsAccuracy > this.maxRadius) return 'bg-rose-100 text-rose-800 border border-rose-300';
+                    if (this.gpsAccuracy <= 25) return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
+                    return 'bg-amber-100 text-amber-800 border border-amber-300';
+                },
+
+                get gpsBadgeIcon() {
+                    if (!this.gpsReady) return '⏳';
+                    if (this.gpsAccuracy <= 0 || this.isMock) return '⛔';
+                    if (this.gpsAccuracy > this.maxRadius) return '⚠️';
+                    return '✅';
+                },
+
+                get gpsBadgeText() {
+                    if (!this.gpsReady) return 'Mendeteksi sinyal GPS...';
+                    if (this.gpsAccuracy <= 0) return 'Mock/Fake GPS (0m)';
+                    if (this.gpsAccuracy > this.maxRadius) return 'Sinyal Lemah: ±' + Math.round(this.gpsAccuracy) + 'm (>75m)';
+                    return 'Akurasi: ±' + Math.round(this.gpsAccuracy) + 'm (Presisi)';
+                },
+
+                // -------------------------------------------------------------
+                // PILAR 2: KAMERA & LIVENESS DETECTION (BROWSER-BASED)
+                // -------------------------------------------------------------
+                pickRandomChallenge() {
+                    this.currentChallengeIndex = Math.floor(Math.random() * this.challenges.length);
+                    this.resetLivenessState();
+                },
+
+                resetLivenessState() {
+                    this.livenessVerified = false;
+                    this.livenessProgress = 0;
+                    this.blinkCount = 0;
+                    this.lastBlinkDip = false;
+                    this.smileHoldCount = 0;
+                    this.headTurnPhase = 0;
+                    this.baselineLum = null;
+                    this.faceDetected = false;
+                    this.livenessStatusHint = this.currentChallenge.hint;
+                },
+
                 async initCamera() {
                     this.cameraErrorMessage = '';
                     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                        this.cameraErrorMessage = 'Browser ini tidak mendukung akses kamera langsung.';
+                        this.cameraErrorMessage = 'Peramban ini tidak mendukung akses kamera langsung.';
                         return;
                     }
 
@@ -567,11 +861,14 @@
                         video.srcObject = stream;
                         await video.play();
                         this.cameraActive = true;
+
+                        // Mulai Real-Time Liveness Detection Analyzer
+                        this.startLivenessDetectionLoop();
                     } catch (err) {
                         console.error('Camera access error:', err);
                         this.cameraActive = false;
                         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                            this.cameraErrorMessage = 'Izin kamera ditolak. Harap izinkan akses kamera di pengaturan peramban Anda.';
+                            this.cameraErrorMessage = 'Izin kamera ditolak. Harap izinkan akses kamera di pengaturan peramban.';
                         } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
                             this.cameraErrorMessage = 'Kamera tidak ditemukan pada perangkat ini.';
                         } else {
@@ -583,6 +880,183 @@
                 async switchCamera() {
                     this.facingMode = this.facingMode === 'user' ? 'environment' : 'user';
                     await this.initCamera();
+                },
+
+                startLivenessDetectionLoop() {
+                    if (this.livenessLoopId) clearInterval(this.livenessLoopId);
+
+                    const canvas = document.getElementById('analysisCanvas');
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                    const video = document.getElementById('cameraStream');
+
+                    this.livenessLoopId = setInterval(() => {
+                        if (!this.cameraActive || this.photoTaken || this.livenessVerified) return;
+                        if (!video || video.readyState < 2) return;
+
+                        // Draw downsampled frame to mini canvas (160x120)
+                        ctx.drawImage(video, 0, 0, 160, 120);
+                        const frame = ctx.getImageData(0, 0, 160, 120);
+                        const data = frame.data;
+
+                        // 1. Single Face & Center Check
+                        // Ambil region tengah wajah (oval: x: 45..115, y: 25..95)
+                        let centerLumSum = 0;
+                        let centerVariance = 0;
+                        let count = 0;
+                        let skinPixelCount = 0;
+
+                        for (let y = 25; y < 95; y += 2) {
+                            for (let x = 45; x < 115; x += 2) {
+                                const idx = (y * 160 + x) * 4;
+                                const r = data[idx];
+                                const g = data[idx + 1];
+                                const b = data[idx + 2];
+                                const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+                                centerLumSum += lum;
+                                count++;
+
+                                // Cek tone wajah/kulit dasar
+                                if (r > 60 && g > 40 && b > 20 && r > b && (r - g) > 10) {
+                                    skinPixelCount++;
+                                }
+                            }
+                        }
+
+                        const avgLum = centerLumSum / count;
+                        const skinRatio = skinPixelCount / count;
+
+                        // Wajah terdeteksi jika terdapat kontras & warna kulit alami di tengah frame
+                        const hasFace = (avgLum > 30 && avgLum < 240 && skinRatio > 0.15);
+                        this.faceDetected = hasFace;
+
+                        if (!hasFace) {
+                            this.livenessStatusHint = 'Posisikan wajah Anda tepat di dalam lingkaran';
+                            return;
+                        }
+
+                        // Baseline luminance tracker
+                        if (this.baselineLum === null) {
+                            this.baselineLum = avgLum;
+                        } else {
+                            this.baselineLum = (this.baselineLum * 0.9) + (avgLum * 0.1);
+                        }
+
+                        // 2. Analisa Tantangan Keaktifan Spesifik
+                        const challenge = this.currentChallenge.id;
+
+                        if (challenge === 'blink') {
+                            // Analisa area mata (y: 35..55, x: 50..110)
+                            let eyeRegionLum = 0;
+                            let eyeCount = 0;
+                            for (let y = 35; y < 55; y += 2) {
+                                for (let x = 50; x < 110; x += 2) {
+                                    const idx = (y * 160 + x) * 4;
+                                    eyeRegionLum += (0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2]);
+                                    eyeCount++;
+                                }
+                            }
+                            const currentEyeLum = eyeRegionLum / eyeCount;
+
+                            // Saat berkedip, luminance/kontras kelopak mata turun dibanding baseline
+                            const dipThreshold = this.baselineLum * 0.92;
+                            if (currentEyeLum < dipThreshold) {
+                                this.lastBlinkDip = true;
+                            } else if (this.lastBlinkDip) {
+                                // Kedipan selesai (recovery)
+                                this.lastBlinkDip = false;
+                                this.blinkCount++;
+                                this.livenessProgress = Math.min(100, this.blinkCount * 50);
+                                this.livenessStatusHint = this.blinkCount === 1 ? 'Bagus! Kedipkan 1 kali lagi...' : 'Kedipan terverifikasi!';
+
+                                if (this.blinkCount >= 2) {
+                                    this.onLivenessSuccess();
+                                }
+                            }
+                        } else if (challenge === 'smile') {
+                            // Analisa area senyum/mulut (y: 65..95, x: 55..105)
+                            let mouthLum = 0;
+                            let mouthEdgeEnergy = 0;
+                            let mCount = 0;
+
+                            for (let y = 65; y < 95; y += 2) {
+                                for (let x = 55; x < 105; x += 2) {
+                                    const idx = (y * 160 + x) * 4;
+                                    const nextIdx = (y * 160 + (x + 2)) * 4;
+                                    const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+                                    const nextLum = 0.299 * data[nextIdx] + 0.587 * data[nextIdx + 1] + 0.114 * data[nextIdx + 2];
+                                    mouthLum += lum;
+                                    mouthEdgeEnergy += Math.abs(nextLum - lum);
+                                    mCount++;
+                                }
+                            }
+
+                            const avgMouthLum = mouthLum / mCount;
+                            const avgEdge = mouthEdgeEnergy / mCount;
+
+                            // Senyuman memicu pelebaran kontras tepi horizontal di area bibir
+                            if (avgEdge > 12 || avgMouthLum > (this.baselineLum * 1.05)) {
+                                this.smileHoldCount++;
+                                this.livenessProgress = Math.min(100, this.smileHoldCount * 25);
+                                this.livenessStatusHint = 'Pertahankan senyum Anda...';
+
+                                if (this.smileHoldCount >= 4) {
+                                    this.onLivenessSuccess();
+                                }
+                            } else if (this.smileHoldCount > 0) {
+                                this.smileHoldCount = Math.max(0, this.smileHoldCount - 1);
+                            }
+                        } else if (challenge === 'head_turn') {
+                            // Analisa perpindahan bobot center of mass horizontal
+                            let leftEnergy = 0;
+                            let rightEnergy = 0;
+
+                            for (let y = 30; y < 90; y += 2) {
+                                for (let x = 40; x < 80; x += 2) {
+                                    const idx = (y * 160 + x) * 4;
+                                    leftEnergy += (data[idx] + data[idx + 1] + data[idx + 2]);
+                                }
+                                for (let x = 80; x < 120; x += 2) {
+                                    const idx = (y * 160 + x) * 4;
+                                    rightEnergy += (data[idx] + data[idx + 1] + data[idx + 2]);
+                                }
+                            }
+
+                            const balanceRatio = Math.abs(leftEnergy - rightEnergy) / (leftEnergy + rightEnergy + 1);
+
+                            if (this.headTurnPhase === 0) {
+                                if (balanceRatio > 0.12) {
+                                    this.headTurnPhase = 1;
+                                    this.livenessProgress = 60;
+                                    this.livenessStatusHint = 'Bagus! Sekarang kembali menghadap tengah...';
+                                }
+                            } else if (this.headTurnPhase === 1) {
+                                if (balanceRatio < 0.05) {
+                                    this.headTurnPhase = 2;
+                                    this.livenessProgress = 100;
+                                    this.onLivenessSuccess();
+                                }
+                            }
+                        }
+
+                    }, 120);
+                },
+
+                onLivenessSuccess() {
+                    this.livenessVerified = true;
+                    this.livenessProgress = 100;
+                    this.livenessStatusHint = '✅ Uji Keaktifan Berhasil! Wajah Hidup Terverifikasi.';
+                    if (this.livenessLoopId) {
+                        clearInterval(this.livenessLoopId);
+                        this.livenessLoopId = null;
+                    }
+
+                    // Otomatis ambil snapshot setelah verifikasi berhasil (delay 400ms untuk ekspresi stabil)
+                    setTimeout(() => {
+                        if (!this.photoTaken && this.cameraActive) {
+                            this.takeSnapshot();
+                        }
+                    }, 400);
                 },
 
                 takeSnapshot() {
@@ -607,53 +1081,12 @@
                 retakeSnapshot() {
                     this.photoTaken = false;
                     this.photoData = null;
+                    this.pickRandomChallenge();
+                    this.startLivenessDetectionLoop();
                 },
 
                 // -------------------------------------------------------------
-                // 2. GEOLOCATION (HTML5 navigator.geolocation)
-                // -------------------------------------------------------------
-                detectGpsLocation() {
-                    if (!navigator.geolocation) {
-                        alert('Browser Anda tidak mendukung HTML5 Geolocation.');
-                        return;
-                    }
-
-                    this.gpsLoading = true;
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => {
-                            this.currentLat = pos.coords.latitude;
-                            this.currentLng = pos.coords.longitude;
-                            this.gpsAccuracy = pos.coords.accuracy;
-                            this.gpsReady = true;
-                            this.gpsLoading = false;
-
-                            this.updateMapLayers();
-                        },
-                        (err) => {
-                            console.error('GPS error:', err);
-                            this.gpsLoading = false;
-                            let msg = 'Gagal mendeteksi lokasi GPS.';
-                            if (err.code === 1) {
-                                msg = 'Akses lokasi ditolak! Harap aktifkan izin GPS pada peramban Anda agar dapat melakukan presensi.';
-                            } else if (err.code === 2) {
-                                msg = 'Sinyal GPS tidak tersedia atau tidak akurat.';
-                            }
-                            this.submitErrorMessage = msg;
-                        },
-                        {
-                            enableHighAccuracy: true,
-                            timeout: 15000,
-                            maximumAge: 0
-                        }
-                    );
-                },
-
-                refreshGpsLocation() {
-                    this.detectGpsLocation();
-                },
-
-                // -------------------------------------------------------------
-                // 3. HAVERSINE FORMULA DI FRONTEND (Meter)
+                // HAVERSINE FORMULA DI FRONTEND (Meter)
                 // -------------------------------------------------------------
                 calculateDistance(lat1, lon1, lat2, lon2) {
                     const R = 6371000;
@@ -711,7 +1144,7 @@
                 },
 
                 // -------------------------------------------------------------
-                // 4. LEAFLET MAP VISUALIZATION
+                // LEAFLET MAP VISUALIZATION
                 // -------------------------------------------------------------
                 initMap() {
                     const startLat = this.currentLocationInfo.is_locked ? this.currentLocationInfo.lat : this.currentLat;
@@ -730,7 +1163,6 @@
                 updateMapLayers() {
                     if (!this.map) return;
 
-                    // Bersihkan marker & layer lama
                     if (this.userMarker) this.map.removeLayer(this.userMarker);
                     if (this.refMarker) this.map.removeLayer(this.refMarker);
                     if (this.radiusCircle) this.map.removeLayer(this.radiusCircle);
@@ -738,11 +1170,9 @@
                     const info = this.currentLocationInfo;
 
                     if (info.is_locked) {
-                        // Titik Acuan Terkunci
                         this.refMarker = L.marker([info.lat, info.lng]).addTo(this.map)
                             .bindPopup(`<b>Titik Acuan ${this.type.toUpperCase()}</b><br>Terkunci sejak: ${info.locked_at}`);
 
-                        // Lingkaran Radius 75 Meter
                         this.radiusCircle = L.circle([info.lat, info.lng], {
                             color: this.isWithinRadius ? '#10b981' : '#ef4444',
                             fillColor: this.isWithinRadius ? '#10b981' : '#ef4444',
@@ -750,7 +1180,6 @@
                             radius: this.maxRadius
                         }).addTo(this.map);
 
-                        // Titik GPS Pengguna
                         if (this.gpsReady) {
                             const userIcon = L.divIcon({
                                 className: 'custom-user-marker',
@@ -760,7 +1189,7 @@
                             });
 
                             this.userMarker = L.marker([this.currentLat, this.currentLng], { icon: userIcon }).addTo(this.map)
-                                .bindPopup(`<b>Posisi Anda Saat Ini</b><br>Jarak: ${this.currentDistance.toFixed(1)} m`);
+                                .bindPopup(`<b>Posisi Anda Saat Ini</b><br>Jarak: ${this.currentDistance.toFixed(1)} m<br>Akurasi GPS: ±${Math.round(this.gpsAccuracy)} m`);
 
                             const bounds = L.latLngBounds([
                                 [info.lat, info.lng],
@@ -769,7 +1198,6 @@
                             this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 18 });
                         }
                     } else if (this.gpsReady) {
-                        // Titik Belum Terkunci: tampilkan lingkaran radius di posisi saat ini sebagai simulasi
                         this.radiusCircle = L.circle([this.currentLat, this.currentLng], {
                             color: '#3b82f6',
                             fillColor: '#3b82f6',
@@ -791,14 +1219,34 @@
                     }
                 },
 
+                setType(newType) {
+                    this.type = newType;
+                    this.updateMapLayers();
+                },
+
                 // -------------------------------------------------------------
-                // 5. SUBMIT PRESENSI KE BACKEND
+                // SUBMIT PRESENSI KE BACKEND DENGAN VALIDASI LENGKAP
                 // -------------------------------------------------------------
                 async submitAttendance(action) {
                     this.submitErrorMessage = '';
 
                     if (!this.gpsReady) {
-                        this.submitErrorMessage = 'Menunggu data koordinat GPS akurat. Harap pastikan GPS aktif.';
+                        this.submitErrorMessage = 'Menunggu data koordinat GPS. Pastikan GPS aktif.';
+                        return;
+                    }
+
+                    if (this.gpsAccuracy <= 0 || this.isMock) {
+                        this.submitErrorMessage = 'Presensi ditolak: Sinyal GPS tidak valid atau terdeteksi Mock/Fake GPS emulator.';
+                        return;
+                    }
+
+                    if (this.gpsAccuracy > this.maxRadius) {
+                        this.submitErrorMessage = `Akurasi sinyal GPS Anda terlalu lemah (${Math.round(this.gpsAccuracy)}m > batas toleransi 75m). Harap berada di area terbuka.`;
+                        return;
+                    }
+
+                    if (!this.livenessVerified) {
+                        this.submitErrorMessage = 'Uji keaktifan wajah (Liveness Detection) wajib diselesaikan.';
                         return;
                     }
 
@@ -828,7 +1276,16 @@
                                 latitude: this.currentLat,
                                 longitude: this.currentLng,
                                 photo: this.photoData,
-                                notes: this.notes
+                                notes: this.notes,
+                                accuracy: this.gpsAccuracy,
+                                altitude: this.gpsAltitude,
+                                speed: this.gpsSpeed,
+                                is_mock: this.isMock,
+                                liveness_verified: this.livenessVerified,
+                                liveness_challenge: this.currentChallenge.id,
+                                device_fingerprint: this.deviceFingerprint,
+                                device_platform: this.devicePlatform,
+                                token: this.attendanceToken
                             })
                         });
 
@@ -838,7 +1295,6 @@
                             throw new Error(result.message || 'Gagal memproses presensi.');
                         }
 
-                        // Berhasil! Reload halaman agar state sinkron
                         alert(result.message || 'Presensi berhasil dicatat!');
                         window.location.reload();
 

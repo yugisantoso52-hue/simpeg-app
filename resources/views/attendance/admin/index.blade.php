@@ -34,8 +34,19 @@
                 </div>
             @endif
 
+            <!-- Banner Peringatan Keamanan & Integritas Presensi -->
+            @if(($statistics['total_suspicious'] ?? 0) > 0)
+                <div class="p-4 bg-rose-50 border-l-4 border-rose-500 rounded-r-xl shadow-sm flex items-start gap-3">
+                    <span class="text-2xl">⚠️</span>
+                    <div>
+                        <h4 class="text-sm font-bold text-rose-900">Peringatan Integritas Presensi: Ditemukan {{ $statistics['total_suspicious'] }} Anomali Hari Ini!</h4>
+                        <p class="text-xs text-rose-700 mt-0.5">Sistem mendeteksi indikasi titip absen / penggunaan perangkat multi-akun atau anomali perpindahan lokasi yang tidak wajar (Impossible Travel). Silakan periksa badge peringatan merah pada tabel log harian di bawah.</p>
+                    </div>
+                </div>
+            @endif
+
             <!-- KPI Cards Statistik Hari Ini -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
                 <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                     <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">TOTAL PEGAWAI</div>
                     <div class="text-2xl font-black text-gray-900 mt-1">{{ $statistics['total_pegawai'] ?? $statistics['total_users'] }}</div>
@@ -64,6 +75,12 @@
                     <div class="text-[11px] font-bold text-amber-600 uppercase tracking-wider">TERLAMBAT</div>
                     <div class="text-2xl font-black text-amber-600 mt-1">{{ $statistics['total_late'] }}</div>
                     <div class="text-[10px] text-gray-400 mt-0.5">Waktu check-in &gt; 07.30 WIB</div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border {{ ($statistics['total_suspicious'] ?? 0) > 0 ? 'border-rose-300 bg-rose-50/40' : 'border-gray-200' }} shadow-sm">
+                    <div class="text-[11px] font-bold {{ ($statistics['total_suspicious'] ?? 0) > 0 ? 'text-rose-600' : 'text-gray-500' }} uppercase tracking-wider">ANOMALI / TITIP</div>
+                    <div class="text-2xl font-black {{ ($statistics['total_suspicious'] ?? 0) > 0 ? 'text-rose-600' : 'text-gray-900' }} mt-1">{{ $statistics['total_suspicious'] ?? 0 }}</div>
+                    <div class="text-[10px] text-gray-400 mt-0.5">Indikasi pelanggaran</div>
                 </div>
             </div>
 
@@ -151,17 +168,17 @@
                                     <th class="px-4 py-3">Pegawai</th>
                                     <th class="px-4 py-3">Tanggal & Waktu</th>
                                     <th class="px-4 py-3">Tipe</th>
-                                    <th class="px-4 py-3">Jarak GPS</th>
-                                    <th class="px-4 py-3">Koordinat Masuk</th>
+                                    <th class="px-4 py-3">Jarak & GPS</th>
                                     <th class="px-4 py-3 text-center">Foto Masuk</th>
                                     <th class="px-4 py-3 text-center">Foto Pulang</th>
-                                    <th class="px-4 py-3">Total Jam Kerja (Status)</th>
+                                    <th class="px-4 py-3">Jam Kerja (Status)</th>
+                                    <th class="px-4 py-3 text-center">Integritas</th>
                                     <th class="px-4 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 bg-white">
                                 @forelse($attendances as $item)
-                                    <tr class="hover:bg-gray-50/80 transition">
+                                    <tr class="hover:bg-gray-50/80 transition {{ $item->is_suspicious ? 'bg-rose-50/40' : '' }}">
                                         <td class="px-4 py-3">
                                             <div class="font-bold text-gray-900">{{ $item->user?->name ?? 'User #' . $item->user_id }}</div>
                                             <div class="text-[11px] text-gray-500 font-mono">
@@ -170,6 +187,13 @@
                                             @if($item->user?->pegawai?->unitKerja)
                                                 <div class="text-[10px] text-gray-400">
                                                     {{ $item->user?->pegawai?->unitKerja?->nama_unit ?? '' }}
+                                                </div>
+                                            @endif
+                                            @if($item->is_suspicious)
+                                                <div class="mt-1">
+                                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300" title="{{ $item->suspicious_reason }}">
+                                                        ⚠️ Anomali / Titip Absen
+                                                    </span>
                                                 </div>
                                             @endif
                                         </td>
@@ -199,10 +223,12 @@
                                                     <span class="text-[10px] text-red-600 font-bold">!</span>
                                                 @endif
                                             </div>
-                                        </td>
-
-                                        <td class="px-4 py-3 font-mono text-[11px] text-gray-500 whitespace-nowrap">
-                                            {{ number_format($item->check_in_latitude, 5) }},<br>{{ number_format($item->check_in_longitude, 5) }}
+                                            <div class="text-[10px] text-gray-400 font-sans mt-0.5">
+                                                Akurasi: ± {{ round($item->gps_accuracy ?? 0) }}m
+                                                @if($item->is_mock_location)
+                                                    <span class="text-[9px] font-bold text-rose-600 bg-rose-100 px-1 rounded ml-1">MOCK</span>
+                                                @endif
+                                            </div>
                                         </td>
 
                                         <td class="px-4 py-3 text-center">
@@ -252,10 +278,57 @@
                                         </td>
 
                                         <td class="px-4 py-3 whitespace-nowrap text-center">
+                                            @if($item->is_suspicious)
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                                                    ⚠️ Anomali
+                                                </span>
+                                            @else
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                                    ✓ Terverifikasi
+                                                </span>
+                                            @endif
+                                            <div class="text-[10px] text-gray-400 mt-0.5">
+                                                {{ strtoupper($item->liveness_challenge ?? 'VALID') }}
+                                            </div>
+                                        </td>
+
+                                        <td class="px-4 py-3 whitespace-nowrap text-center space-y-1">
+                                            <button type="button"
+                                                    @click="detailOpen = true; detailData = {
+                                                        nama: '{{ addslashes($item->user?->name ?? 'User') }}',
+                                                        nip: '{{ addslashes($item->user?->pegawai?->nip ?? '-') }}',
+                                                        tanggal: '{{ $item->attendance_date ? $item->attendance_date->translatedFormat('d F Y') : '-' }}',
+                                                        status: '{{ $item->status_badge['label'] }}',
+                                                        status_badge: '{{ $item->status_badge['class'] }}',
+                                                        in: '{{ $item->check_in_time ? $item->check_in_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-' }}',
+                                                        out: '{{ $item->check_out_time ? $item->check_out_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-' }}',
+                                                        late_minutes: {{ $item->late_minutes }},
+                                                        early_leave_minutes: {{ $item->early_leave_minutes }},
+                                                        duration: '{{ $item->work_duration }}',
+                                                        tipe: '{{ strtoupper($item->attendance_type) }}',
+                                                        distance: '{{ number_format($item->check_in_distance_meters, 1) }} meter',
+                                                        accuracy: '{{ $item->gps_accuracy ? '± ' . round($item->gps_accuracy) . ' meter' : '-' }}',
+                                                        altitude: '{{ $item->gps_altitude ? round($item->gps_altitude, 1) . ' m' : '-' }}',
+                                                        speed: '{{ $item->gps_speed ? round($item->gps_speed, 1) . ' m/s' : '-' }}',
+                                                        is_mock: {{ $item->is_mock_location ? 'true' : 'false' }},
+                                                        is_suspicious: {{ $item->is_suspicious ? 'true' : 'false' }},
+                                                        suspicious_reason: '{{ addslashes($item->suspicious_reason ?? '') }}',
+                                                        ip_address: '{{ $item->ip_address ?? '-' }}',
+                                                        device_platform: '{{ addslashes($item->device_platform ?? '-') }}',
+                                                        device_fingerprint: '{{ $item->device_fingerprint ?? '-' }}',
+                                                        liveness_verified: {{ $item->liveness_verified ? 'true' : 'false' }},
+                                                        liveness_challenge: '{{ strtoupper($item->liveness_challenge ?? '-') }}',
+                                                        photo_in: '{{ $item->check_in_photo_url }}',
+                                                        photo_out: '{{ $item->check_out_photo_url }}'
+                                                    }"
+                                                    class="inline-block px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">
+                                                🔍 Detail
+                                            </button>
+
                                             <form method="POST" action="{{ route('admin.presensi.destroy', $item->id) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data presensi ini?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-red-500 hover:text-red-700 font-medium text-xs">
+                                                <button type="submit" class="text-red-500 hover:text-red-700 font-medium text-[11px] block mx-auto">
                                                     🗑️ Hapus
                                                 </button>
                                             </form>
@@ -555,20 +628,22 @@
              x-transition:leave-end="opacity-0"
              class="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
              style="display: none;">
-            <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl"
+            <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl"
                  @click.outside="detailOpen = false">
                 <div class="p-4 border-b border-gray-100 flex items-center justify-between">
                     <div>
                         <h4 class="text-sm font-bold text-gray-900" x-text="detailData.nama"></h4>
-                        <div class="text-[11px] text-gray-500 font-medium" x-text="'Presensi: ' + detailData.tanggal"></div>
+                        <div class="text-[11px] text-gray-500 font-medium" x-text="'Presensi: ' + detailData.tanggal + (detailData.nip && detailData.nip !== '-' ? ' | NIP: ' + detailData.nip : '')"></div>
                     </div>
                     <button type="button" @click="detailOpen = false" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
                 </div>
-                <div class="p-4 space-y-3 text-xs bg-gray-50/50">
+                <div class="p-4 space-y-3 text-xs bg-gray-50/50 max-h-[80vh] overflow-y-auto">
+                    <!-- Status & Peringatan Integritas -->
                     <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-200">
                         <span class="text-gray-500">Status Kehadiran:</span>
                         <span :class="detailData.status_badge" class="px-2.5 py-0.5 rounded-full font-bold text-[11px]" x-text="detailData.status"></span>
                     </div>
+
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-white p-3 rounded-xl border border-gray-200">
                             <div class="text-[10px] text-gray-400 font-bold uppercase">Jam Masuk</div>
@@ -581,6 +656,53 @@
                             <div class="text-[10px] mt-1 font-semibold" :class="detailData.early_leave_minutes > 0 ? 'text-orange-600' : 'text-emerald-600'" x-text="detailData.early_leave_minutes > 0 ? '⚠️ PSW: ' + detailData.early_leave_minutes + ' mnt' : '✅ Jam Pulang Sah'"></div>
                         </div>
                     </div>
+
+                    <!-- Panel Audit Integritas & Keamanan Perangkat -->
+                    <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-2">
+                        <div class="flex items-center justify-between border-b border-gray-100 pb-1.5">
+                            <span class="text-[11px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                                <span>🛡️</span> Audit Keamanan Presensi
+                            </span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold"
+                                  :class="detailData.is_suspicious ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-emerald-100 text-emerald-800 border border-emerald-300'"
+                                  x-text="detailData.is_suspicious ? '⚠️ ANOMALI TERDETEKSI' : '✅ VALID & AMAN'"></span>
+                        </div>
+
+                        <!-- Banner Detail Anomali Jika Ada -->
+                        <template x-if="detailData.is_suspicious && detailData.suspicious_reason">
+                            <div class="p-2.5 bg-rose-50 border border-rose-200 rounded-lg text-[11px] text-rose-800 space-y-1">
+                                <div class="font-bold flex items-center gap-1">
+                                    <span>⚠️</span> <span>Detail Pelanggaran / Anomali:</span>
+                                </div>
+                                <div class="font-mono text-[10px] whitespace-pre-line" x-text="detailData.suspicious_reason"></div>
+                            </div>
+                        </template>
+
+                        <div class="grid grid-cols-2 gap-2 text-[11px]">
+                            <div>
+                                <span class="text-gray-400 block text-[10px]">Akurasi GPS Sensor:</span>
+                                <span class="font-mono text-gray-800 font-semibold" x-text="detailData.accuracy || '-'"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400 block text-[10px]">Uji Keaktifan (Liveness):</span>
+                                <span class="font-semibold text-emerald-700" x-text="detailData.liveness_challenge ? '✓ Lolos (' + detailData.liveness_challenge + ')' : '-'"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400 block text-[10px]">IP Address:</span>
+                                <span class="font-mono text-gray-800" x-text="detailData.ip_address || '-'"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400 block text-[10px]">Platform / OS:</span>
+                                <span class="text-gray-800 truncate block" x-text="detailData.device_platform || '-'"></span>
+                            </div>
+                        </div>
+
+                        <div class="pt-1 border-t border-gray-100 text-[10px]">
+                            <span class="text-gray-400">Device Fingerprint:</span>
+                            <span class="font-mono text-gray-600 block truncate" x-text="detailData.device_fingerprint || '-'"></span>
+                        </div>
+                    </div>
+
                     <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-1.5">
                         <div class="flex justify-between">
                             <span class="text-gray-500">Total Jam Kerja Efektif:</span>

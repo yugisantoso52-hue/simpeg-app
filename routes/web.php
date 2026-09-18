@@ -63,6 +63,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::post('/presensi', [AttendanceController::class, 'store'])->name('presensi.store');
     Route::get('/presensi/riwayat', [AttendanceController::class, 'history'])->name('presensi.history');
     Route::get('/presensi/foto/{id}/{type}', [AttendanceController::class, 'streamPhoto'])->name('presensi.photo');
+    Route::get('/presensi/token', [AttendanceController::class, 'refreshToken'])->name('presensi.token');
 
     // ======================================================================
     // ROUTE PEGAWAI BIASA (Akses Data Diri Sendiri)
