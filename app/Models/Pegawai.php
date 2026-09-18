@@ -198,6 +198,11 @@ class Pegawai extends Model
         return $this->hasMany(RiwayatStrSip::class, 'pegawai_id');
     }
 
+    public function logbooks(): HasMany
+    {
+        return $this->hasMany(Logbook::class, 'pegawai_id')->orderBy('tanggal', 'desc')->orderBy('jam_mulai', 'desc');
+    }
+
     public function pengajuanCuti(): HasMany
     {
         return $this->hasMany(PengajuanCuti::class, 'pegawai_id');

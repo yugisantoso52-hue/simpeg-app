@@ -31,6 +31,8 @@ use App\Http\Controllers\JenisJabatanController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Admin\AttendanceManageController;
+use App\Http\Controllers\LogbookController;
+use App\Http\Controllers\Admin\LogbookManageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +66,21 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::get('/presensi/riwayat', [AttendanceController::class, 'history'])->name('presensi.history');
     Route::get('/presensi/foto/{id}/{type}', [AttendanceController::class, 'streamPhoto'])->name('presensi.photo');
     Route::get('/presensi/token', [AttendanceController::class, 'refreshToken'])->name('presensi.token');
+
+    /* Modul E-Logbook Kinerja Harian Pegawai */
+    Route::prefix('logbook')->name('logbook.')->group(function () {
+        Route::get('/', [LogbookController::class, 'index'])->name('index');
+        Route::get('/create', [LogbookController::class, 'create'])->name('create');
+        Route::post('/', [LogbookController::class, 'store'])->name('store');
+        Route::get('/export/pdf', [LogbookController::class, 'exportPdf'])->name('export.pdf');
+        Route::get('/export/excel', [LogbookController::class, 'exportExcel'])->name('export.excel');
+        Route::post('/submit-bulk', [LogbookController::class, 'submitBulk'])->name('submit-bulk');
+        Route::get('/{id}', [LogbookController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [LogbookController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [LogbookController::class, 'update'])->name('update');
+        Route::delete('/{id}', [LogbookController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/submit', [LogbookController::class, 'submit'])->name('submit');
+    });
 
     // ======================================================================
     // ROUTE PEGAWAI BIASA (Akses Data Diri Sendiri)
@@ -202,6 +219,15 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
             Route::get('/locations', [AttendanceManageController::class, 'locations'])->name('locations');
             Route::post('/{userId}/reset-location', [AttendanceManageController::class, 'resetLocation'])->name('reset-location');
             Route::delete('/{id}', [AttendanceManageController::class, 'destroy'])->name('destroy');
+        });
+
+        /* Monitoring & Verifikasi Logbook Kinerja Pegawai */
+        Route::prefix('admin/logbook')->name('admin.logbook.')->group(function () {
+            Route::get('/', [LogbookManageController::class, 'index'])->name('index');
+            Route::post('/bulk-verify', [LogbookManageController::class, 'bulkVerify'])->name('bulk-verify');
+            Route::post('/{id}/verify', [LogbookManageController::class, 'verify'])->name('verify');
+            Route::get('/export/pdf', [LogbookManageController::class, 'exportRekapPdf'])->name('export.pdf');
+            Route::get('/export/excel', [LogbookManageController::class, 'exportRekapExcel'])->name('export.excel');
         });
     });
 

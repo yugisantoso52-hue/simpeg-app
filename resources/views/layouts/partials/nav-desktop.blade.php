@@ -20,11 +20,16 @@
     📍 Presensi
 </x-nav-link>
 
-{{-- 5. Dropdown Data Kepegawaian (Khusus Admin & Pimpinan) --}}
+{{-- 5. Logbook Kinerja Pegawai (Semua Role) --}}
+<x-nav-link :href="route('logbook.index')" :active="request()->routeIs('logbook.*')">
+    📝 Logbook
+</x-nav-link>
+
+{{-- 6. Dropdown Data Kepegawaian (Khusus Admin & Pimpinan) --}}
 @if(Auth::user()->hasRole(['admin', 'pimpinan']))
     <x-dropdown align="left" width="60">
         <x-slot name="trigger">
-            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('kepegawaian.*', 'pegawai.*', 'duk.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'admin.presensi.*') ? 'border-blue-600 text-blue-700 font-bold' : '' }}">
+            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('kepegawaian.*', 'pegawai.*', 'duk.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'admin.presensi.*', 'admin.logbook.*') ? 'border-blue-600 text-blue-700 font-bold' : '' }}">
                 <span>Data Kepegawaian</span>
                 <svg class="ms-1.5 h-4 w-4 fill-current text-gray-400" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -82,6 +87,14 @@
             </x-dropdown-link>
             <x-dropdown-link :href="route('admin.presensi.locations')" class="{{ request()->routeIs('admin.presensi.locations') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                 📍 Titik Acuan Lokasi Pegawai
+            </x-dropdown-link>
+
+            <div class="border-t border-gray-100 my-1"></div>
+            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                Kinerja Harian
+            </div>
+            <x-dropdown-link :href="route('admin.logbook.index')" class="{{ request()->routeIs('admin.logbook.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                📝 Verifikasi Logbook Pegawai
             </x-dropdown-link>
         </x-slot>
     </x-dropdown>

@@ -43,6 +43,7 @@ class PegawaiStorageService
         'mutasi'            => '14_MUTASI',
         'publikasi'         => '15_PUBLIKASI',
         'penghargaan'       => '16_PENGHARGAAN',
+        'logbook'           => '17_LOGBOOK',
     ];
 
     /**

@@ -61,6 +61,11 @@ class User extends Authenticatable
         return $this->hasMany(Attendance::class, 'user_id');
     }
 
+    public function logbooks(): HasMany
+    {
+        return $this->hasMany(Logbook::class, 'user_id');
+    }
+
     public function todayAttendance(): HasOne
     {
         return $this->hasOne(Attendance::class, 'user_id')

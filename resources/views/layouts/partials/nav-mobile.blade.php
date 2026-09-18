@@ -21,6 +21,11 @@
         📍 Presensi Pegawai
     </x-responsive-nav-link>
 
+    {{-- Logbook Pegawai --}}
+    <x-responsive-nav-link :href="route('logbook.index')" :active="request()->routeIs('logbook.*')">
+        📝 Logbook Kinerja
+    </x-responsive-nav-link>
+
     {{-- Group Data Kepegawaian (Admin & Pimpinan) --}}
     @if(Auth::user()->hasRole(['admin', 'pimpinan']))
         <div class="px-4 pt-3 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -63,6 +68,9 @@
         </x-responsive-nav-link>
         <x-responsive-nav-link :href="route('admin.presensi.locations')" :active="request()->routeIs('admin.presensi.locations')">
             📍 Titik Acuan Lokasi Pegawai
+        </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('admin.logbook.index')" :active="request()->routeIs('admin.logbook.*')">
+            📝 Verifikasi Logbook Pegawai
         </x-responsive-nav-link>
     @endif
 
