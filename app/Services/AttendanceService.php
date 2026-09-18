@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -606,7 +607,9 @@ class AttendanceService
         $wfoCount = Attendance::whereDate('attendance_date', $today)->where('attendance_type', 'wfo')->count();
         $wfhCount = Attendance::whereDate('attendance_date', $today)->where('attendance_type', 'wfh')->count();
         $lateCount = Attendance::whereDate('attendance_date', $today)->where('status', 'late')->count();
-        $suspiciousCount = Attendance::whereDate('attendance_date', $today)->where('is_suspicious', true)->count();
+        $suspiciousCount = Schema::hasColumn('attendances', 'is_suspicious')
+            ? Attendance::whereDate('attendance_date', $today)->where('is_suspicious', true)->count()
+            : 0;
 
         return [
             'total_users' => $totalPegawai,
