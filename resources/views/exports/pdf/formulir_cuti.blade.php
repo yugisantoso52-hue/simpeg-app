@@ -17,8 +17,9 @@
         .header-kop-table {
             width: 100%;
             border-collapse: collapse;
+            /* Garis tebal tunggal sesuai Permendikti 42/2025 */
             border-bottom: 2px solid #000;
-            padding-bottom: 4px;
+            padding-bottom: 3px;
             margin-bottom: 8px;
         }
         .header-kop-table td {
@@ -27,22 +28,52 @@
             border: none;
         }
         .header-kop-logo {
-            width: 75px;
+            width: 76px;
             text-align: left;
         }
         .header-kop-logo img {
-            width: 68px;
-            height: auto;
+            width: 70px;
+            height: 70px;
             display: block;
         }
         .header-kop-text {
             text-align: center;
             padding-right: 15px;
         }
-        .header-kop-text h3 { margin: 0; font-size: 9pt; font-weight: normal; text-transform: uppercase; }
-        .header-kop-text h2 { margin: 1px 0; font-size: 11pt; font-weight: bold; text-transform: uppercase; }
-        .header-kop-text h1 { margin: 1px 0; font-size: 12pt; font-weight: bold; text-transform: uppercase; }
-        .header-kop-text p { margin: 1px 0; font-size: 8pt; }
+        /* Baris 1: KEMENTERIAN - Times New Roman regular */
+        .header-kop-text .kop-kemdikti {
+            margin: 0;
+            font-size: 11pt;
+            font-weight: normal;
+            font-family: 'Times New Roman', Times, serif;
+            text-transform: uppercase;
+            line-height: 1.15;
+        }
+        /* Baris 2: NAMA PTN - Times New Roman bold */
+        .header-kop-text .kop-ptn {
+            margin: 1px 0;
+            font-size: 10.5pt;
+            font-weight: bold;
+            font-family: 'Times New Roman', Times, serif;
+            text-transform: uppercase;
+            line-height: 1.15;
+        }
+        /* Baris 3: NAMA FAKULTAS - Times New Roman bold */
+        .header-kop-text .kop-fakultas {
+            margin: 1px 0;
+            font-size: 10.5pt;
+            font-weight: bold;
+            font-family: 'Times New Roman', Times, serif;
+            text-transform: uppercase;
+            line-height: 1.15;
+        }
+        /* Baris 4: Alamat & Kontak */
+        .header-kop-text .kop-alamat {
+            margin: 2px 0 0 0;
+            font-size: 7.5pt;
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.2;
+        }
 
         .title {
             text-align: center;
@@ -117,11 +148,13 @@
                 @endif
             </td>
             <td class="header-kop-text">
-                <h3>KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI</h3>
-                <h2>UNIVERSITAS RIAU</h2>
-                <h1>FAKULTAS KEPERAWATAN</h1>
-                <p>Kampus Bina Widya Gedung Health Studies Complex Km. 12,5 Simpang Baru Pekanbaru 28293</p>
-                <p>Laman: http://keperawatan.unri.ac.id | Email: keperawatan@unri.ac.id</p>
+                <div class="kop-kemdikti">KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI</div>
+                <div class="kop-ptn">UNIVERSITAS RIAU</div>
+                <div class="kop-fakultas">FAKULTAS KEPERAWATAN</div>
+                <div class="kop-alamat">
+                    Kampus Bina Widya Gedung Health Studies Complex Km. 12,5 Simpang Baru, Pekanbaru 28293<br>
+                    Laman keperawatan.unri.ac.id Pos-el keperawatan@unri.ac.id
+                </div>
             </td>
         </tr>
     </table>
@@ -247,7 +280,7 @@
                 <div style="margin-top: 2px; font-size: 8.5pt;">Catatan: {{ $cuti->catatan_pimpinan ?: '-' }}</div>
                 <br><br>
                 <div class="text-center">
-                    <span>( KTU / Wakil Dekan II )</span><br>
+                    <span style="font-weight: normal; text-decoration: none;">KTU / Wakil Dekan II</span><br>
                     NIP. .....................................................
                 </div>
             </td>
@@ -256,7 +289,7 @@
                 <div style="margin-top: 2px; font-size: 8.5pt;">No. SK/Izin: {{ $cuti->nomor_surat ?: '-' }}</div>
                 <br><br>
                 <div class="text-center">
-                    <span>Prof. Dr. Dosen Dekan, M.Kep</span><br>
+                    <span style="font-weight: normal; text-decoration: none;">Prof. Dr. Dosen Dekan, M.Kep</span><br>
                     NIP. .....................................................
                 </div>
             </td>

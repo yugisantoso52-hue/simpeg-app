@@ -5,9 +5,10 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>@yield('title', 'Dokumen Kepegawaian')</title>
     <style>
-        /* Setup Halaman Resmi Kedinasan */
+        /* Setup Halaman Resmi Kedinasan Sesuai Permendikti Saintek No. 42 Tahun 2025 */
         @page {
-            margin: 12mm 15mm 15mm 15mm;
+            /* Pasal 47: Kiri min 3cm (30mm), Kanan min 2cm (20mm), Bawah min 2.5cm (25mm), Atas 15-20mm */
+            margin: 15mm 20mm 25mm 30mm;
         }
 
         body {
@@ -19,13 +20,14 @@
             padding: 0;
         }
 
-        /* STYLING KOP SURAT PROFESIONAL */
+        /* STYLING KOP SURAT SESUAI LAMPIRAN PERMENDIKTI SAINTEK NO. 42 TAHUN 2025 */
         .kop-surat-table {
             width: 100%;
             border-collapse: collapse;
-            border-bottom: 3px double #000000;
-            padding-bottom: 6px;
-            margin-bottom: 18px;
+            /* Garis penutup kop: Garis tebal tunggal solid (Lampiran hal. 76 angka 9 & 10) */
+            border-bottom: 2.5px solid #000000;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
         }
 
         .kop-surat-table td {
@@ -34,51 +36,60 @@
         }
 
         .kop-logo-cell {
-            width: 90px;
+            /* Lambang PTN ukuran tinggi 3 cm dan lebar 3 cm (Lampiran hal. 76 angka 1) */
+            width: 32mm;
             text-align: left;
         }
 
         .kop-logo-cell img {
-            width: 82px;
-            height: auto;
+            width: 30mm;
+            height: 30mm;
             display: block;
         }
 
         .kop-text-cell {
             text-align: center;
-            padding-right: 20px; /* Menyeimbangkan posisi teks dengan logo */
+            padding-right: 15px; /* Menyeimbangkan posisi teks dengan logo di sebelah kiri */
         }
 
-        .kop-text-cell h3 {
+        /* Baris 1: KEMENTERIAN - Times New Roman 16 pt, kapital, reguler */
+        .kop-text-cell .kop-kemdikti {
             margin: 0;
-            font-size: 11pt;
-            font-weight: bold;
+            font-size: 15pt;
+            font-weight: normal;
             font-family: 'Times New Roman', Times, serif;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            line-height: 1.15;
+            letter-spacing: 0.2px;
         }
 
-        .kop-text-cell h2 {
-            margin: 1px 0;
+        /* Baris 2: NAMA PTN - Times New Roman 14 pt, kapital, dicetak tebal/bold */
+        .kop-text-cell .kop-ptn {
+            margin: 2px 0 0 0;
             font-size: 13.5pt;
             font-weight: bold;
             font-family: 'Times New Roman', Times, serif;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            line-height: 1.15;
+            letter-spacing: 0.4px;
         }
 
-        .kop-text-cell .sub-header {
-            margin: 0;
-            font-size: 11.5pt;
+        /* Baris 3: NAMA FAKULTAS - Times New Roman 14 pt, kapital, dicetak tebal/bold */
+        .kop-text-cell .kop-fakultas {
+            margin: 2px 0 0 0;
+            font-size: 13.5pt;
             font-weight: bold;
             font-family: 'Times New Roman', Times, serif;
             text-transform: uppercase;
+            line-height: 1.15;
         }
 
-        .kop-text-cell p {
-            margin: 3px 0 0 0;
-            font-size: 8.5pt;
-            font-style: normal;
+        /* Baris 4 & 5: Alamat, Telepon, Laman, Pos-el - Times New Roman 10-12 pt */
+        .kop-text-cell .kop-alamat {
+            margin: 4px 0 0 0;
+            font-size: 9.5pt;
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: normal;
             line-height: 1.2;
         }
 
@@ -213,13 +224,13 @@
                 @endif
             </td>
             <td class="kop-text-cell">
-                <h3>KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI</h3>
-                <h2>UNIVERSITAS RIAU</h2>
-                <div class="sub-header">FAKULTAS KEPERAWATAN</div>
-                <p>
-                    Kampus Bina Widya Gedung Health Studies Complex Km. 12,5 Simpang Baru Pekanbaru 28293<br>
-                    Laman: http://keperawatan.unri.ac.id | Email: keperawatan@unri.ac.id
-                </p>
+                <div class="kop-kemdikti">KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI</div>
+                <div class="kop-ptn">UNIVERSITAS RIAU</div>
+                <div class="kop-fakultas">FAKULTAS KEPERAWATAN</div>
+                <div class="kop-alamat">
+                    Kampus Bina Widya Gedung Health Studies Complex Km. 12,5 Simpang Baru, Pekanbaru 28293<br>
+                    Laman keperawatan.unri.ac.id Pos-el keperawatan@unri.ac.id
+                </div>
             </td>
         </tr>
     </table>
