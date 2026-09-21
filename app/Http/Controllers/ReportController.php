@@ -133,8 +133,17 @@ class ReportController extends Controller
         if (!$user->hasRole(['admin', 'pimpinan'])) {
             $ownerPegawaiId = $this->resolveFileOwnerPegawaiId($path);
             if ($ownerPegawaiId) {
-                $userPegawai = Pegawai::where('email', $user->email)->orWhere('nip', $user->name)->first();
-                if (!$userPegawai || $userPegawai->id !== $ownerPegawaiId) {
+                $userPegawaiId = $user->pegawai_id;
+                if (!$userPegawaiId) {
+                    $up = Pegawai::where('email', $user->email)->orWhere('nip', $user->name)->first();
+                    $userPegawaiId = $up?->id;
+                }
+
+                // Pengguna dapat melihat dokumen jika miliknya sendiri, ATAU jika pengguna adalah atasan langsung pemilik dokumen
+                $isOwn = $userPegawaiId && $userPegawaiId === $ownerPegawaiId;
+                $isAtasan = $userPegawaiId && Pegawai::where('id', $ownerPegawaiId)->where('atasan_id', $userPegawaiId)->exists();
+
+                if (!$isOwn && !$isAtasan) {
                     abort(403, 'Anda tidak memiliki hak akses untuk membuka dokumen ini.');
                 }
             } else {
@@ -217,10 +226,10 @@ class ReportController extends Controller
         $rj = \App\Models\RiwayatJabatan::where('file_sk', $cleanPath)->first();
         if ($rj) return $rj->pegawai_id;
 
-        $rpend = \App\Models\RiwayatPendidikan::where('file_ijazah', $cleanPath)->orWhere('ijazah', $cleanPath)->first();
+        $rpend = \App\Models\RiwayatPendidikan::where('ijazah', $cleanPath)->first();
         if ($rpend) return $rpend->pegawai_id;
 
-        $rd = \App\Models\RiwayatDiklat::where('file_sertifikat', $cleanPath)->orWhere('sertifikat', $cleanPath)->first();
+        $rd = \App\Models\RiwayatDiklat::where('file_sertifikat', $cleanPath)->first();
         if ($rd) return $rd->pegawai_id;
 
         $mp = \App\Models\MutasiPegawai::where('file_sk', $cleanPath)->first();
@@ -237,6 +246,9 @@ class ReportController extends Controller
 
         $cuti = \App\Models\PengajuanCuti::where('file_lampiran', $cleanPath)->first();
         if ($cuti) return $cuti->pegawai_id;
+
+        $logbook = \App\Models\Logbook::where('file_lampiran', $cleanPath)->first();
+        if ($logbook) return $logbook->pegawai_id;
 
         $pub = \App\Models\RiwayatPublikasi::where('file_publikasi', $cleanPath)->first();
         if ($pub) return $pub->pegawai_id;
