@@ -663,13 +663,23 @@
 
                 {{-- 📊 MONITORING KELENGKAPAN DATA PEGAWAI FAKULTAS (KHUSUS ADMIN & PIMPINAN) 📊 --}}
                 @if(isset($facultyCompleteness))
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6"
+                         x-data="{ 
+                             filter: 'all', 
+                             search: '',
+                             counts: {
+                                 all: {{ count($facultyCompleteness['pegawai_scores'] ?? []) }},
+                                 complete: {{ $facultyCompleteness['total_complete'] ?? 0 }},
+                                 moderate: {{ $facultyCompleteness['total_moderate'] ?? 0 }},
+                                 low: {{ $facultyCompleteness['total_low'] ?? 0 }}
+                             }
+                         }">
                         <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-4 mb-4 gap-3">
                             <div class="flex items-center gap-2">
                                 <span class="text-xl">📊</span>
                                 <div>
                                     <h3 class="text-lg font-bold text-slate-800">Monitoring Kelengkapan Data Pegawai Fakultas</h3>
-                                    <p class="text-xs text-slate-500">Evaluasi pemenuhan dokumen SK & data profil seluruh pegawai</p>
+                                    <p class="text-xs text-slate-500">Evaluasi pemenuhan dokumen SK & data profil seluruh pegawai (Klik kartu untuk memfilter tabel di bawah)</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200 shrink-0">
@@ -678,33 +688,123 @@
                             </div>
                         </div>
 
-                        {{-- Ringkasan 3 Kategori --}}
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center justify-between">
+                        {{-- Ringkasan 3 Kategori yang Dapat Diklik (Interactive Filter Cards) --}}
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                            
+                            {{-- Kartu 1: 100% Lengkap --}}
+                            <div @click="filter = (filter === 'complete' ? 'all' : 'complete')"
+                                 :class="filter === 'complete' ? 'ring-2 ring-emerald-500 shadow-md bg-emerald-100 border-emerald-400 scale-[1.01]' : 'bg-emerald-50 hover:bg-emerald-100/70 border-emerald-200 hover:shadow-xs'"
+                                 class="border rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all duration-200 select-none group"
+                                 title="Klik untuk memfilter pegawai dengan data 100% Lengkap">
                                 <div>
-                                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-800">100% Lengkap (Sempurna)</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-800">100% Lengkap (Sempurna)</span>
+                                        <span x-show="filter === 'complete'" class="text-[9px] font-black bg-emerald-600 text-white px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">Aktif</span>
+                                    </div>
                                     <h4 class="text-2xl font-black text-emerald-700 mt-1">{{ $facultyCompleteness['total_complete'] }} Pegawai</h4>
+                                    <span class="text-[11px] text-emerald-600 font-semibold group-hover:underline flex items-center gap-1 mt-1">
+                                        <span x-text="filter === 'complete' ? '✕ Reset / Tampilkan Semua' : '🔍 Klik untuk filter tabel'"></span>
+                                    </span>
                                 </div>
-                                <div class="w-10 h-10 rounded-lg bg-emerald-200 text-emerald-800 flex items-center justify-center text-lg font-bold">💎</div>
+                                <div class="w-11 h-11 rounded-xl bg-emerald-200/80 text-emerald-800 flex items-center justify-center text-xl font-bold group-hover:scale-110 transition-transform shadow-xs">💎</div>
                             </div>
-                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center justify-between">
+
+                            {{-- Kartu 2: Cukup Lengkap (50% - 99%) --}}
+                            <div @click="filter = (filter === 'moderate' ? 'all' : 'moderate')"
+                                 :class="filter === 'moderate' ? 'ring-2 ring-amber-500 shadow-md bg-amber-100 border-amber-400 scale-[1.01]' : 'bg-amber-50 hover:bg-amber-100/70 border-amber-200 hover:shadow-xs'"
+                                 class="border rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all duration-200 select-none group"
+                                 title="Klik untuk memfilter pegawai dengan data Cukup Lengkap (50% - 99%)">
                                 <div>
-                                    <span class="text-xs font-bold uppercase tracking-wider text-amber-800">Cukup Lengkap (50% - 99%)</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs font-bold uppercase tracking-wider text-amber-800">Cukup Lengkap (50% - 99%)</span>
+                                        <span x-show="filter === 'moderate'" class="text-[9px] font-black bg-amber-600 text-white px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">Aktif</span>
+                                    </div>
                                     <h4 class="text-2xl font-black text-amber-700 mt-1">{{ $facultyCompleteness['total_moderate'] }} Pegawai</h4>
+                                    <span class="text-[11px] text-amber-700 font-semibold group-hover:underline flex items-center gap-1 mt-1">
+                                        <span x-text="filter === 'moderate' ? '✕ Reset / Tampilkan Semua' : '🔍 Klik untuk filter tabel'"></span>
+                                    </span>
                                 </div>
-                                <div class="w-10 h-10 rounded-lg bg-amber-200 text-amber-800 flex items-center justify-center text-lg font-bold">🟡</div>
+                                <div class="w-11 h-11 rounded-xl bg-amber-200/80 text-amber-800 flex items-center justify-center text-xl font-bold group-hover:scale-110 transition-transform shadow-xs">🟡</div>
                             </div>
-                            <div class="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-center justify-between">
+
+                            {{-- Kartu 3: Perlu Dilengkapi (< 50%) --}}
+                            <div @click="filter = (filter === 'low' ? 'all' : 'low')"
+                                 :class="filter === 'low' ? 'ring-2 ring-rose-500 shadow-md bg-rose-100 border-rose-400 scale-[1.01]' : 'bg-rose-50 hover:bg-rose-100/70 border-rose-200 hover:shadow-xs'"
+                                 class="border rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all duration-200 select-none group"
+                                 title="Klik untuk memfilter pegawai yang Perlu Dilengkapi (< 50%)">
                                 <div>
-                                    <span class="text-xs font-bold uppercase tracking-wider text-rose-800">Perlu Dilengkapi (&lt; 50%)</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs font-bold uppercase tracking-wider text-rose-800">Perlu Dilengkapi (&lt; 50%)</span>
+                                        <span x-show="filter === 'low'" class="text-[9px] font-black bg-rose-600 text-white px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">Aktif</span>
+                                    </div>
                                     <h4 class="text-2xl font-black text-rose-700 mt-1">{{ $facultyCompleteness['total_low'] }} Pegawai</h4>
+                                    <span class="text-[11px] text-rose-700 font-semibold group-hover:underline flex items-center gap-1 mt-1">
+                                        <span x-text="filter === 'low' ? '✕ Reset / Tampilkan Semua' : '🔍 Klik untuk filter tabel'"></span>
+                                    </span>
                                 </div>
-                                <div class="w-10 h-10 rounded-lg bg-rose-200 text-rose-800 flex items-center justify-center text-lg font-bold">🔴</div>
+                                <div class="w-11 h-11 rounded-xl bg-rose-200/80 text-rose-800 flex items-center justify-center text-xl font-bold group-hover:scale-110 transition-transform shadow-xs">🔴</div>
+                            </div>
+
+                        </div>
+
+                        {{-- Bilah Status Filter & Pencarian Cepat --}}
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 pt-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-xs font-semibold text-slate-500">Tampilan Data:</span>
+                                
+                                <button type="button" 
+                                        @click="filter = 'all'"
+                                        :class="filter === 'all' ? 'bg-slate-800 text-white shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'"
+                                        class="px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+                                    <span>Semua Pegawai</span>
+                                    <span class="text-[10px] px-1.5 py-0.2 rounded-full" :class="filter === 'all' ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-600'" x-text="counts.all"></span>
+                                </button>
+
+                                <button type="button" 
+                                        @click="filter = 'complete'"
+                                        :class="filter === 'complete' ? 'bg-emerald-700 text-white shadow-xs ring-1 ring-emerald-600' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'"
+                                        class="px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+                                    <span>💎 100% Lengkap</span>
+                                    <span class="text-[10px] px-1.5 py-0.2 rounded-full" :class="filter === 'complete' ? 'bg-emerald-800 text-white' : 'bg-emerald-200 text-emerald-800'" x-text="counts.complete"></span>
+                                </button>
+
+                                <button type="button" 
+                                        @click="filter = 'moderate'"
+                                        :class="filter === 'moderate' ? 'bg-amber-600 text-white shadow-xs ring-1 ring-amber-500' : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200'"
+                                        class="px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+                                    <span>🟡 Cukup Lengkap</span>
+                                    <span class="text-[10px] px-1.5 py-0.2 rounded-full" :class="filter === 'moderate' ? 'bg-amber-700 text-white' : 'bg-amber-200 text-amber-800'" x-text="counts.moderate"></span>
+                                </button>
+
+                                <button type="button" 
+                                        @click="filter = 'low'"
+                                        :class="filter === 'low' ? 'bg-rose-700 text-white shadow-xs ring-1 ring-rose-600' : 'bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200'"
+                                        class="px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+                                    <span>🔴 Perlu Dilengkapi</span>
+                                    <span class="text-[10px] px-1.5 py-0.2 rounded-full" :class="filter === 'low' ? 'bg-rose-800 text-white' : 'bg-rose-200 text-rose-800'" x-text="counts.low"></span>
+                                </button>
+                            </div>
+
+                            {{-- Input Pencarian Nama / NIP --}}
+                            <div class="relative w-full sm:w-64">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400 text-xs">
+                                    🔍
+                                </span>
+                                <input type="text" 
+                                       x-model="search" 
+                                       placeholder="Cari Nama / NIP..." 
+                                       class="w-full pl-8 pr-7 py-1.5 text-xs bg-slate-50 hover:bg-white focus:bg-white rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                                <button type="button" 
+                                        x-show="search.length > 0" 
+                                        @click="search = ''" 
+                                        class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 text-xs font-bold">
+                                    ✕
+                                </button>
                             </div>
                         </div>
 
                         {{-- Tabel Monitoring Kelengkapan Pegawai --}}
-                        <div class="overflow-x-auto max-h-80 overflow-y-auto border border-slate-200 rounded-xl">
+                        <div class="overflow-x-auto max-h-88 overflow-y-auto border border-slate-200 rounded-xl">
                             <table class="w-full text-xs text-left text-slate-600">
                                 <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-[10px] sticky top-0 border-b border-slate-200 shadow-2xs">
                                     <tr>
@@ -731,8 +831,13 @@
                                             $badgeColor = data_get($item, 'badge_color', 'bg-slate-100 text-slate-700 border-slate-200');
                                             $statusLabel = data_get($item, 'status_label', '-');
                                             $missingCount = data_get($item, 'missing_count', 0);
+                                            
+                                            // Klasifikasi Kategori
+                                            $itemCategory = ($score >= 100) ? 'complete' : (($score >= 50) ? 'moderate' : 'low');
+                                            $searchPayload = strtolower(addslashes($pegNama . ' ' . $pegNip . ' ' . $pegJabatan . ' ' . $pegUnit));
                                         @endphp
-                                        <tr class="hover:bg-slate-50 transition">
+                                        <tr class="hover:bg-slate-50 transition"
+                                            x-show="(filter === 'all' || filter === '{{ $itemCategory }}') && (search === '' || '{{ $searchPayload }}'.includes(search.toLowerCase().trim()))">
                                             <td class="px-4 py-3">
                                                 <div class="font-bold text-slate-900">{{ $pegNama }}</div>
                                                 <div class="text-[10px] text-slate-500 font-mono">NIP: {{ $pegNip }}</div>
@@ -772,6 +877,38 @@
                                             </td>
                                         </tr>
                                     @endforeach
+
+                                    {{-- Pesan Ketika Kategori Terfilter Bernilai 0 Pegawai --}}
+                                    <tr x-show="filter === 'complete' && counts.complete === 0">
+                                        <td colspan="6" class="px-4 py-10 text-center text-slate-400 text-xs">
+                                            <span class="text-3xl block mb-2">💎</span>
+                                            <p class="font-semibold text-slate-600">Belum ada pegawai dengan data 100% Lengkap (Sempurna).</p>
+                                            <button type="button" @click="filter = 'all'" class="mt-2 text-blue-600 font-bold hover:underline">
+                                                &larr; Tampilkan Semua Pegawai
+                                            </button>
+                                        </td>
+                                    </tr>
+
+                                    <tr x-show="filter === 'moderate' && counts.moderate === 0">
+                                        <td colspan="6" class="px-4 py-10 text-center text-slate-400 text-xs">
+                                            <span class="text-3xl block mb-2">🟡</span>
+                                            <p class="font-semibold text-slate-600">Tidak ada pegawai dalam kategori Cukup Lengkap (50% - 99%).</p>
+                                            <button type="button" @click="filter = 'all'" class="mt-2 text-blue-600 font-bold hover:underline">
+                                                &larr; Tampilkan Semua Pegawai
+                                            </button>
+                                        </td>
+                                    </tr>
+
+                                    <tr x-show="filter === 'low' && counts.low === 0">
+                                        <td colspan="6" class="px-4 py-10 text-center text-slate-400 text-xs">
+                                            <span class="text-3xl block mb-2">🎉</span>
+                                            <p class="font-semibold text-slate-600">Luar biasa! Tidak ada pegawai dalam kategori Perlu Dilengkapi (&lt; 50%).</p>
+                                            <button type="button" @click="filter = 'all'" class="mt-2 text-blue-600 font-bold hover:underline">
+                                                &larr; Tampilkan Semua Pegawai
+                                            </button>
+                                        </td>
+                                    </tr>
+
                                 </tbody>
                             </table>
                         </div>
