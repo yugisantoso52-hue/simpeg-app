@@ -164,8 +164,8 @@
         }
 
         .ttd-box .nama {
-            font-weight: bold;
-            text-decoration: underline;
+            font-weight: normal;
+            text-decoration: none;
             font-size: 10.5pt;
             margin: 0;
         }
@@ -189,8 +189,8 @@
         <tr>
             <td class="kop-logo-cell">
                 @php
-                    // Fallback pencarian lokasi file logo UNRI
                     $candidatePaths = [
+                        public_path('images/logo-unri-bw.png'),
                         public_path('build/assets/logo-unri.png'),
                         public_path('images/logo-unri.png'),
                         public_path('assets/logo-unri.png'),
@@ -217,8 +217,8 @@
                 <h2>UNIVERSITAS RIAU</h2>
                 <div class="sub-header">FAKULTAS KEPERAWATAN</div>
                 <p>
-                    Kampus Bina Widya Gedung Health Studies Complex KM. 12,5 Simpang Baru 28293<br>
-                    Laman: www.keperawatan.unri.ac.id | Email: keperawatan@unri.co.id
+                    Kampus Bina Widya Gedung Health Studies Complex Km. 12,5 Simpang Baru Pekanbaru 28293<br>
+                    Laman: http://keperawatan.unri.ac.id | Email: keperawatan@unri.ac.id
                 </p>
             </td>
         </tr>
@@ -238,7 +238,7 @@
                 <p class="jabatan">
                     Ditetapkan di Pekanbaru<br>
                     Pada tanggal {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br><br>
-                    <strong>Wakil Dekan Bidang Keuangan dan Umum<br>Fakultas Keperawatan Universitas Riau</strong>
+                    Wakil Dekan Bidang Keuangan dan Umum<br>Fakultas Keperawatan Universitas Riau
                 </p>
                 <p class="nama">Ns. Safri, M.Kep., Sp.Kep.M.B</p>
                 <p class="nip">NIP. 19850909 201404 1 001</p>

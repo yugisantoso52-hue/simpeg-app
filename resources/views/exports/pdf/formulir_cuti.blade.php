@@ -14,16 +14,35 @@
             color: #000;
             line-height: 1.25;
         }
-        .header-kop {
-            text-align: center;
+        .header-kop-table {
+            width: 100%;
+            border-collapse: collapse;
             border-bottom: 2px solid #000;
             padding-bottom: 4px;
             margin-bottom: 8px;
         }
-        .header-kop h3 { margin: 0; font-size: 9pt; font-weight: normal; text-transform: uppercase; }
-        .header-kop h2 { margin: 1px 0; font-size: 11pt; font-weight: bold; text-transform: uppercase; }
-        .header-kop h1 { margin: 1px 0; font-size: 12pt; font-weight: bold; text-transform: uppercase; }
-        .header-kop p { margin: 1px 0; font-size: 8pt; }
+        .header-kop-table td {
+            vertical-align: middle;
+            padding: 0;
+            border: none;
+        }
+        .header-kop-logo {
+            width: 75px;
+            text-align: left;
+        }
+        .header-kop-logo img {
+            width: 68px;
+            height: auto;
+            display: block;
+        }
+        .header-kop-text {
+            text-align: center;
+            padding-right: 15px;
+        }
+        .header-kop-text h3 { margin: 0; font-size: 9pt; font-weight: normal; text-transform: uppercase; }
+        .header-kop-text h2 { margin: 1px 0; font-size: 11pt; font-weight: bold; text-transform: uppercase; }
+        .header-kop-text h1 { margin: 1px 0; font-size: 12pt; font-weight: bold; text-transform: uppercase; }
+        .header-kop-text p { margin: 1px 0; font-size: 8pt; }
 
         .title {
             text-align: center;
@@ -69,14 +88,43 @@
 </head>
 <body>
 
-    {{-- KOP SURAT --}}
-    <div class="header-kop">
-        <h3>KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI</h3>
-        <h2>UNIVERSITAS RIAU</h2>
-        <h1>FAKULTAS KEPERAWATAN</h1>
-        <p>Kampus Bina Widya Gedung Health Studies Complex Km. 12,5 Simpang Baru Pekanbaru 28293</p>
-        <p>Laman: http://keperawatan.unri.ac.id | Email: keperawatan@unri.ac.id</p>
-    </div>
+    {{-- KOP SURAT BERLOGO HITAM PUTIH --}}
+    @php
+        $candidatePaths = [
+            public_path('images/logo-unri-bw.png'),
+            public_path('build/assets/logo-unri.png'),
+            public_path('images/logo-unri.png'),
+            public_path('assets/logo-unri.png'),
+            public_path('logo-unri.png'),
+        ];
+
+        $foundLogo = null;
+        foreach ($candidatePaths as $path) {
+            if (file_exists($path)) {
+                $foundLogo = $path;
+                break;
+            }
+        }
+    @endphp
+
+    <table class="header-kop-table">
+        <tr>
+            <td class="header-kop-logo">
+                @if($foundLogo)
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents($foundLogo)) }}" alt="Logo UNRI">
+                @else
+                    <div style="font-size: 8pt; color: #666; text-align: center;">[LOGO UNRI]</div>
+                @endif
+            </td>
+            <td class="header-kop-text">
+                <h3>KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI</h3>
+                <h2>UNIVERSITAS RIAU</h2>
+                <h1>FAKULTAS KEPERAWATAN</h1>
+                <p>Kampus Bina Widya Gedung Health Studies Complex Km. 12,5 Simpang Baru Pekanbaru 28293</p>
+                <p>Laman: http://keperawatan.unri.ac.id | Email: keperawatan@unri.ac.id</p>
+            </td>
+        </tr>
+    </table>
 
     <div class="title">FORMULIR PERMINTAAN DAN PEMBERIAN CUTI</div>
     <div style="text-align: right; font-size: 8.5pt; margin-bottom: 6px;">
@@ -141,7 +189,7 @@
             <td>III. ALASAN CUTI</td>
         </tr>
         <tr>
-            <td style="min-height: 28px;">{{ $cuti->alasan }}</td>
+            <td>{{ $cuti->alasan ?: '-' }}</td>
         </tr>
     </table>
 
@@ -152,24 +200,24 @@
         </tr>
         <tr>
             <td style="width: 15%;">Selama</td>
-            <td style="width: 20%;" class="text-bold">{{ $cuti->jumlah_hari }} Hari Kerja</td>
-            <td style="width: 15%;">Mulai Tanggal</td>
-            <td style="width: 20%;">{{ $cuti->tanggal_mulai ? $cuti->tanggal_mulai->translatedFormat('d/m/Y') : '-' }}</td>
-            <td style="width: 12%;">s.d.</td>
-            <td style="width: 18%;">{{ $cuti->tanggal_selesai ? $cuti->tanggal_selesai->translatedFormat('d/m/Y') : '-' }}</td>
+            <td style="width: 25%;" class="text-bold">{{ $cuti->jumlah_hari }} Hari Kerja</td>
+            <td style="width: 18%;">Mulai Tanggal</td>
+            <td style="width: 18%;">{{ $cuti->tanggal_mulai ? $cuti->tanggal_mulai->format('d/m/Y') : '-' }}</td>
+            <td style="width: 6%;" class="text-center">s.d.</td>
+            <td style="width: 18%;">{{ $cuti->tanggal_selesai ? $cuti->tanggal_selesai->format('d/m/Y') : '-' }}</td>
         </tr>
     </table>
 
-    {{-- V. CATATAN CUTI --}}
+    {{-- V. CATATAN CUTI TAHUNAN & ALAMAT --}}
     <table class="bkn-table">
         <tr class="section-title">
             <td colspan="5">V. CATATAN CUTI TAHUNAN</td>
         </tr>
-        <tr class="text-center" style="font-weight: bold; background-color: #fafafa;">
-            <td>Tahun</td>
-            <td>Sisa Kuota</td>
-            <td>Keterangan</td>
-            <td colspan="2">Alamat Selama Menjalankan Cuti</td>
+        <tr class="section-title" style="font-size: 8pt;">
+            <td style="width: 12%; text-align: center;">Tahun</td>
+            <td style="width: 15%; text-align: center;">Sisa Kuota</td>
+            <td style="width: 28%;">Keterangan</td>
+            <td colspan="2" style="width: 45%;">Alamat Selama Menjalankan Cuti</td>
         </tr>
         <tr>
             <td class="text-center">{{ now()->year }}</td>
@@ -199,7 +247,7 @@
                 <div style="margin-top: 2px; font-size: 8.5pt;">Catatan: {{ $cuti->catatan_pimpinan ?: '-' }}</div>
                 <br><br>
                 <div class="text-center">
-                    <strong><u>( KTU / Wakil Dekan II )</u></strong><br>
+                    <span>( KTU / Wakil Dekan II )</span><br>
                     NIP. .....................................................
                 </div>
             </td>
@@ -208,7 +256,7 @@
                 <div style="margin-top: 2px; font-size: 8.5pt;">No. SK/Izin: {{ $cuti->nomor_surat ?: '-' }}</div>
                 <br><br>
                 <div class="text-center">
-                    <strong><u>Prof. Dr. Dosen Dekan, M.Kep</u></strong><br>
+                    <span>Prof. Dr. Dosen Dekan, M.Kep</span><br>
                     NIP. .....................................................
                 </div>
             </td>
