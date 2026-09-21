@@ -27,8 +27,14 @@ class RoleMiddleware
         }
         $flatRoles = array_map('trim', $flatRoles);
 
-        // Cek apakah user memiliki salah satu dari role yang diizinkan
-        if (!$request->user()->hasRole($flatRoles)) {
+        // Cek apakah user memiliki salah satu dari role yang diizinkan, atau jika role mengandung 'pimpinan'/'atasan' dan user adalah atasan bawahan
+        $hasAccess = $request->user()->hasRole($flatRoles);
+
+        if (!$hasAccess && (in_array('pimpinan', $flatRoles, true) || in_array('atasan', $flatRoles, true))) {
+            $hasAccess = $request->user()->isAtasan();
+        }
+
+        if (!$hasAccess) {
             abort(403, 'Anda tidak memiliki hak akses untuk halaman ini.');
         }
 

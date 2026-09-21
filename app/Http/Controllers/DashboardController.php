@@ -65,16 +65,30 @@ class DashboardController extends Controller
             }
         }
 
-        // Jika user yang login adalah Admin / Pimpinan
-        if ($user->hasRole(['admin', 'pimpinan'])) {
+        // Jika user yang login adalah Admin / Pimpinan / Atasan Langsung
+        $isAdmin = $user->hasRole('admin');
+        $isAtasan = $user->isAtasan() || $user->hasRole('pimpinan');
+
+        if ($isAdmin || $isAtasan) {
             $data['facultyCompleteness'] = PegawaiCompletenessService::getFacultyCompleteness();
 
             // Tambahan Metrik Manajerial (Action Items & Kinerja Terkini)
             $now = Carbon::now('Asia/Jakarta');
-            $data['pendingCutiCount'] = PengajuanCuti::where('status', 'Menunggu Persetujuan')->count();
-            $data['pendingLogbookCount'] = Logbook::where('status', Logbook::STATUS_DIAJUKAN)->count();
+            $bawahanIds = (!$isAdmin && $isAtasan) ? $user->getBawahanIds() : null;
+
+            $cutiQuery = PengajuanCuti::where('status', 'Menunggu Persetujuan');
+            $logbookQuery = Logbook::where('status', Logbook::STATUS_DIAJUKAN);
+
+            if ($bawahanIds !== null) {
+                $cutiQuery->whereIn('pegawai_id', $bawahanIds);
+                $logbookQuery->whereIn('pegawai_id', $bawahanIds);
+            }
+
+            $data['pendingCutiCount'] = $cutiQuery->count();
+            $data['pendingLogbookCount'] = $logbookQuery->count();
             $data['todayPresentCount'] = Attendance::whereDate('attendance_date', $now->toDateString())->count();
-            $data['adminLogbookStats'] = app(LogbookService::class)->getAdminStatistics($now->month, $now->year);
+            $data['adminLogbookStats'] = app(LogbookService::class)->getAdminStatistics($now->month, $now->year, null, $bawahanIds);
+            $data['isAtasan'] = $isAtasan;
         }
 
         return view('dashboard', $data);

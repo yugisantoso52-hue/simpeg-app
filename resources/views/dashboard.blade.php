@@ -115,6 +115,45 @@
                     </div>
                 </div>
 
+                {{-- 👥 PUSAT TINDAKAN VERIFIKASI ATASAN LANGSUNG (JIKA PEGAWAI ADALAH ATASAN) --}}
+                @if(isset($isAtasan) && $isAtasan)
+                    <div class="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-2xl p-5 text-white shadow-md">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-blue-800 pb-3 mb-4">
+                            <div class="flex items-center gap-2.5">
+                                <span class="text-2xl">👥</span>
+                                <div>
+                                    <h3 class="font-bold text-base text-white">Meja Verifikasi Atasan Langsung</h3>
+                                    <p class="text-xs text-blue-200">Pengawasan dan pengesahan aktivitas logbook harian serta cuti pegawai di bawah tanggung jawab Anda.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <a href="{{ route('admin.logbook.index', ['status' => 'diajukan']) }}" class="p-4 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition flex items-center justify-between group">
+                                <div>
+                                    <div class="text-xs font-semibold text-blue-200 uppercase tracking-wider">Logbook Bawahan Menunggu</div>
+                                    <div class="text-2xl font-black text-white mt-1">{{ $pendingLogbookCount ?? 0 }}</div>
+                                    <div class="text-xs text-blue-300 mt-0.5 group-hover:underline">Periksa & Berikan Pengesahan →</div>
+                                </div>
+                                <div class="w-11 h-11 rounded-xl bg-indigo-500/30 text-white flex items-center justify-center text-xl">
+                                    📝
+                                </div>
+                            </a>
+
+                            <a href="{{ route('pengajuan-cuti.index', ['status' => 'Menunggu Persetujuan']) }}" class="p-4 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition flex items-center justify-between group">
+                                <div>
+                                    <div class="text-xs font-semibold text-blue-200 uppercase tracking-wider">Permohonan Cuti Bawahan</div>
+                                    <div class="text-2xl font-black text-white mt-1">{{ $pendingCutiCount ?? 0 }}</div>
+                                    <div class="text-xs text-blue-300 mt-0.5 group-hover:underline">Tinjau & Berikan Keputusan →</div>
+                                </div>
+                                <div class="w-11 h-11 rounded-xl bg-amber-500/30 text-white flex items-center justify-center text-xl">
+                                    🏖️
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                @endif
+
                 {{-- 📝 KARTU CAPAIAN E-LOGBOOK KINERJA BULAN INI --}}
                 @if(isset($myLogbookStats))
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

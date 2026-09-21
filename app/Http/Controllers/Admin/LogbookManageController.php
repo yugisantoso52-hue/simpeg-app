@@ -21,10 +21,11 @@ class LogbookManageController extends Controller
     ) {}
 
     /**
-     * Dashboard Verifikasi & Rekap Logbook Kinerja Pegawai (Admin & Pimpinan)
+     * Dashboard Verifikasi & Rekap Logbook Kinerja Pegawai (Admin, Pimpinan & Atasan Langsung)
      */
     public function index(Request $request)
     {
+        $user = $request->user();
         $month = (int) $request->get('bulan', Carbon::now()->month);
         $year = (int) $request->get('tahun', Carbon::now()->year);
         $unitKerjaId = $request->filled('unit_kerja_id') ? (int) $request->get('unit_kerja_id') : null;
@@ -32,9 +33,17 @@ class LogbookManageController extends Controller
         $status = $request->get('status', 'semua');
         $search = $request->get('search');
 
-        $statistics = $this->service->getAdminStatistics($month, $year, $unitKerjaId);
+        // Jika bukan admin (misal pimpinan, kaprodi, ketua pokja, kabag, dsb), batasi hanya bawahan langsungnya
+        $bawahanIds = null;
+        $isRestrictedToBawahan = false;
+        if (!$user->hasRole('admin')) {
+            $isRestrictedToBawahan = true;
+            $bawahanIds = $user->getBawahanIds();
+        }
 
-        $logbooks = $this->service->getAdminQuery($month, $year, $unitKerjaId, $kategoriPegawai, $status, $search)
+        $statistics = $this->service->getAdminStatistics($month, $year, $unitKerjaId, $bawahanIds);
+
+        $logbooks = $this->service->getAdminQuery($month, $year, $unitKerjaId, $kategoriPegawai, $status, $search, $bawahanIds)
             ->paginate(20)
             ->withQueryString();
 
@@ -49,7 +58,8 @@ class LogbookManageController extends Controller
             'unitKerjaId',
             'kategoriPegawai',
             'status',
-            'search'
+            'search',
+            'isRestrictedToBawahan'
         ));
     }
 
@@ -104,13 +114,16 @@ class LogbookManageController extends Controller
      */
     public function exportRekapPdf(Request $request)
     {
+        $user = $request->user();
         $month = (int) $request->get('bulan', Carbon::now()->month);
         $year = (int) $request->get('tahun', Carbon::now()->year);
         $unitKerjaId = $request->filled('unit_kerja_id') ? (int) $request->get('unit_kerja_id') : null;
         $kategoriPegawai = $request->get('kategori_pegawai', 'semua');
         $status = $request->get('status', 'semua');
 
-        $logbooks = $this->service->getAdminQuery($month, $year, $unitKerjaId, $kategoriPegawai, $status)
+        $bawahanIds = !$user->hasRole('admin') ? $user->getBawahanIds() : null;
+
+        $logbooks = $this->service->getAdminQuery($month, $year, $unitKerjaId, $kategoriPegawai, $status, null, $bawahanIds)
             ->get();
 
         $unitKerja = $unitKerjaId ? UnitKerja::find($unitKerjaId) : null;
@@ -130,15 +143,18 @@ class LogbookManageController extends Controller
      */
     public function exportRekapExcel(Request $request)
     {
+        $user = $request->user();
         $month = (int) $request->get('bulan', Carbon::now()->month);
         $year = (int) $request->get('tahun', Carbon::now()->year);
         $unitKerjaId = $request->filled('unit_kerja_id') ? (int) $request->get('unit_kerja_id') : null;
         $status = $request->get('status');
 
+        $bawahanIds = !$user->hasRole('admin') ? $user->getBawahanIds() : null;
+
         $unitKerja = $unitKerjaId ? UnitKerja::find($unitKerjaId) : null;
         $unitName = $unitKerja ? str_replace(' ', '_', $unitKerja->nama_unit) : 'Semua_Unit';
         $filename = "Rekap_Logbook_{$unitName}_{$year}_{$month}.xlsx";
 
-        return Excel::download(new LogbookExport(null, $month, $year, $unitKerjaId, $status), $filename);
+        return Excel::download(new LogbookExport(null, $month, $year, $unitKerjaId, $status, $bawahanIds), $filename);
     }
 }

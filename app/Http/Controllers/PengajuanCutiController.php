@@ -17,24 +17,34 @@ class PengajuanCutiController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $isPegawaiOnly = $user->hasRole('pegawai') && !$user->hasRole(['admin', 'pimpinan']);
+        $isAdmin = $user->hasRole('admin');
+        $isAtasan = $user->isAtasan() || $user->hasRole('pimpinan');
+        $isPegawaiOnly = !$isAdmin && !$isAtasan;
         $pegawaiId = $isPegawaiOnly ? $user->pegawai_id : null;
 
         if ($isPegawaiOnly && !$pegawaiId) {
             return redirect()->route('dashboard')->with('error', 'Akun Anda belum terhubung dengan data pegawai.');
         }
 
+        // Jika Atasan Langsung / Pimpinan (bukan Admin penuh), filter cuti bawahan langsungnya
+        $bawahanIds = null;
+        if (!$isAdmin && $isAtasan) {
+            $bawahanIds = $user->getBawahanIds();
+        }
+
         $data = $this->service->filter(
             $request->get('search'),
             $request->get('jenis'),
             $request->get('status'),
-            $pegawaiId
+            $pegawaiId,
+            10,
+            $bawahanIds
         );
 
-        $statistics = $this->service->statistics($pegawaiId);
-        $pegawai = $isPegawaiOnly ? $user->pegawai : null;
+        $statistics = $this->service->statistics($pegawaiId, $bawahanIds);
+        $pegawai = $user->pegawai;
 
-        return view('pengajuan-cuti.index', compact('data', 'statistics', 'isPegawaiOnly', 'pegawai'));
+        return view('pengajuan-cuti.index', compact('data', 'statistics', 'isPegawaiOnly', 'pegawai', 'isAtasan', 'isAdmin'));
     }
 
     public function create(Request $request)
@@ -78,11 +88,13 @@ class PengajuanCutiController extends Controller
         $cuti = $this->service->find($id);
         $user = $request->user();
 
-        // Otorisasi: Pegawai biasa hanya bisa melihat permohonannya sendiri
-        if ($user->hasRole('pegawai') && !$user->hasRole(['admin', 'pimpinan'])) {
-            if ($user->pegawai_id !== $cuti->pegawai_id) {
-                abort(403, 'Anda tidak diizinkan melihat data permohonan cuti ini.');
-            }
+        // Otorisasi: Pegawai biasa hanya bisa melihat permohonannya sendiri atau permohonan bawahannya jika atasan
+        $isAdmin = $user->hasRole('admin');
+        $isOwn = $user->pegawai_id && $user->pegawai_id === $cuti->pegawai_id;
+        $isMySubordinate = $cuti->pegawai && $cuti->pegawai->atasan_id && $cuti->pegawai->atasan_id === $user->pegawai_id;
+
+        if (!$isAdmin && !$isOwn && !$isMySubordinate && !$user->hasRole('pimpinan')) {
+            abort(403, 'Anda tidak diizinkan melihat data permohonan cuti ini.');
         }
 
         return view('pengajuan-cuti.show', compact('cuti'));

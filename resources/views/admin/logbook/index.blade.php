@@ -50,6 +50,15 @@
                 </div>
             @endif
 
+            @if(isset($isRestrictedToBawahan) && $isRestrictedToBawahan)
+                <div class="rounded-xl border border-blue-200 bg-blue-50/80 px-5 py-3 text-blue-900 flex items-center gap-3 text-sm shadow-sm">
+                    <span class="text-xl">👥</span>
+                    <div>
+                        <span class="font-bold">Meja Verifikasi Atasan Langsung:</span> Menampilkan daftar logbook kinerja harian dari seluruh staf / pegawai yang berada di bawah bimbingan dan tanggung jawab langsung Anda.
+                    </div>
+                </div>
+            @endif
+
             {{-- STATISTIK VERIFIKASI ADMIN --}}
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                 <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-200">

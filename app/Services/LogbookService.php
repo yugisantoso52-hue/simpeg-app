@@ -52,11 +52,15 @@ class LogbookService
     }
 
     /**
-     * Filter query untuk monitoring Admin & Pimpinan
+     * Filter query untuk monitoring Admin & Pimpinan / Atasan Langsung
      */
-    public function getAdminQuery(?int $month = null, ?int $year = null, ?int $unitKerjaId = null, ?string $kategoriPegawai = null, ?string $status = null, ?string $search = null): Builder
+    public function getAdminQuery(?int $month = null, ?int $year = null, ?int $unitKerjaId = null, ?string $kategoriPegawai = null, ?string $status = null, ?string $search = null, ?array $bawahanIds = null): Builder
     {
         $query = Logbook::with(['pegawai.unitKerja', 'pegawai.jabatan', 'user', 'verifikator']);
+
+        if ($bawahanIds !== null) {
+            $query->whereIn('pegawai_id', $bawahanIds);
+        }
 
         if ($month && $year) {
             $query->periode($month, $year);
@@ -119,11 +123,15 @@ class LogbookService
     }
 
     /**
-     * Hitung statistik untuk pimpinan/admin
+     * Hitung statistik untuk pimpinan/admin / atasan langsung
      */
-    public function getAdminStatistics(?int $month = null, ?int $year = null, ?int $unitKerjaId = null): array
+    public function getAdminStatistics(?int $month = null, ?int $year = null, ?int $unitKerjaId = null, ?array $bawahanIds = null): array
     {
         $query = Logbook::query();
+
+        if ($bawahanIds !== null) {
+            $query->whereIn('pegawai_id', $bawahanIds);
+        }
 
         if ($month && $year) {
             $query->periode($month, $year);
@@ -242,8 +250,20 @@ class LogbookService
                 try {
                     $pegawai = $logbook->pegawai;
                     if ($pegawai) {
-                        $leaders = User::whereHas('role', fn($q) => $q->whereIn('name', ['admin', 'pimpinan']))->get();
-                        \Illuminate\Support\Facades\Notification::send($leaders, new \App\Notifications\LogbookSubmittedNotification($pegawai, 1));
+                        $targets = collect();
+                        if ($pegawai->atasan_id) {
+                            $atasanUser = User::where('pegawai_id', $pegawai->atasan_id)->first();
+                            if ($atasanUser) {
+                                $targets->push($atasanUser);
+                            }
+                        }
+
+                        // Jika belum ada atasan langsung terdaftar, kirim ke admin/pimpinan sebagai fallback
+                        if ($targets->isEmpty()) {
+                            $targets = User::whereHas('role', fn($q) => $q->whereIn('name', ['admin', 'pimpinan']))->get();
+                        }
+
+                        \Illuminate\Support\Facades\Notification::send($targets, new \App\Notifications\LogbookSubmittedNotification($pegawai, 1));
                     }
                 } catch (\Throwable $e) {
                     // Ignore notification errors
@@ -273,8 +293,19 @@ class LogbookService
             try {
                 $pegawai = Pegawai::find($pegawaiId);
                 if ($pegawai) {
-                    $leaders = User::whereHas('role', fn($q) => $q->whereIn('name', ['admin', 'pimpinan']))->get();
-                    \Illuminate\Support\Facades\Notification::send($leaders, new \App\Notifications\LogbookSubmittedNotification($pegawai, $count));
+                    $targets = collect();
+                    if ($pegawai->atasan_id) {
+                        $atasanUser = User::where('pegawai_id', $pegawai->atasan_id)->first();
+                        if ($atasanUser) {
+                            $targets->push($atasanUser);
+                        }
+                    }
+
+                    if ($targets->isEmpty()) {
+                        $targets = User::whereHas('role', fn($q) => $q->whereIn('name', ['admin', 'pimpinan']))->get();
+                    }
+
+                    \Illuminate\Support\Facades\Notification::send($targets, new \App\Notifications\LogbookSubmittedNotification($pegawai, $count));
                 }
             } catch (\Throwable $e) {
                 // Ignore notification errors

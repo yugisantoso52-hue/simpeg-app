@@ -46,6 +46,26 @@
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>
 
+    {{-- Atasan Langsung (Verifikator Hierarkis) --}}
+    <x-enterprise.forms.row cols="1">
+        <x-enterprise.forms.field>
+            <x-enterprise.form-group label="Atasan Langsung (Pejabat Penilai / Verifikator)" hint="Pejabat yang berwenang menyetujui logbook kinerja harian dan permohonan cuti pegawai ini (misal: Kaprodi, Ketua Pokja, Kabag TU, WD, atau Dekan)">
+                <x-enterprise.select name="atasan_id">
+                    <option value="">-- Tidak Ada / Pucuk Pimpinan (Dekan) --</option>
+                    @php
+                        $listAtasan = $atasanList ?? \App\Models\Pegawai::where('status_pegawai', 'Aktif')->when(isset($pegawai->id), fn($q) => $q->where('id', '!=', $pegawai->id))->orderBy('nama')->get();
+                        $selectedAtasan = old('atasan_id', $pegawai->atasan_id ?? '');
+                    @endphp
+                    @foreach($listAtasan as $item)
+                        <option value="{{ $item->id }}" @selected($selectedAtasan == $item->id)>
+                            {{ $item->nama_lengkap ?? $item->nama }} (NIP. {{ $item->nip ?? '-' }}) {{ $item->jabatan ? '— ' . ($item->jabatan->nama_jabatan ?? $item->jabatan->nama) : '' }}
+                        </option>
+                    @endforeach
+                </x-enterprise.select>
+            </x-enterprise.form-group>
+        </x-enterprise.forms.field>
+    </x-enterprise.forms.row>
+
     {{-- Jenis Jabatan --}}
     <x-enterprise.forms.row cols="1">
         <x-enterprise.forms.field>

@@ -26,6 +26,13 @@
         📝 Logbook Kinerja
     </x-responsive-nav-link>
 
+    {{-- Menu Khusus Atasan Langsung --}}
+    @if(Auth::user()->isAtasan() && !Auth::user()->hasRole(['admin', 'pimpinan']))
+        <x-responsive-nav-link :href="route('admin.logbook.index')" :active="request()->routeIs('admin.logbook.*')">
+            👥 Verifikasi Logbook Bawahan
+        </x-responsive-nav-link>
+    @endif
+
     {{-- Group Data Kepegawaian (Admin & Pimpinan) --}}
     @if(Auth::user()->hasRole(['admin', 'pimpinan']))
         <div class="px-4 pt-3 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider">

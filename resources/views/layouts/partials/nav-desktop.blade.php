@@ -25,6 +25,13 @@
     📝 Logbook
 </x-nav-link>
 
+{{-- 5b. Menu Khusus Verifikasi Logbook Bawahan (Jika Pegawai adalah Atasan Langsung dan bukan admin) --}}
+@if(Auth::user()->isAtasan() && !Auth::user()->hasRole(['admin', 'pimpinan']))
+    <x-nav-link :href="route('admin.logbook.index')" :active="request()->routeIs('admin.logbook.*')">
+        👥 Verifikasi Logbook Bawahan
+    </x-nav-link>
+@endif
+
 {{-- 6. Dropdown Data Kepegawaian (Khusus Admin & Pimpinan) --}}
 @if(Auth::user()->hasRole(['admin', 'pimpinan']))
     <x-dropdown align="left" width="60">

@@ -39,7 +39,7 @@ class Pegawai extends Model
         'status_pernikahan', 'nama_pasangan', 'jumlah_anak',
         // Kepegawaian
         'jenis_pegawai', 'status_asn', 'pendidikan_terakhir',
-        'unit_kerja_id', 'jabatan_id', 'golongan_id',
+        'unit_kerja_id', 'jabatan_id', 'atasan_id', 'golongan_id',
         // Masa Kerja Golongan (MKG)
         'mkg_tahun', 'mkg_bulan',
         // Tanggal Masuk & TMT
@@ -156,6 +156,16 @@ class Pegawai extends Model
     public function unitKerja(): BelongsTo
     {
         return $this->belongsTo(UnitKerja::class, 'unit_kerja_id');
+    }
+
+    public function atasan(): BelongsTo
+    {
+        return $this->belongsTo(Pegawai::class, 'atasan_id');
+    }
+
+    public function bawahan(): HasMany
+    {
+        return $this->hasMany(Pegawai::class, 'atasan_id');
     }
 
     public function jabatan(): BelongsTo

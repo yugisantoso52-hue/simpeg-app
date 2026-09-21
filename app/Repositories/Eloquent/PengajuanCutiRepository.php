@@ -15,11 +15,14 @@ class PengajuanCutiRepository extends BaseRepository implements PengajuanCutiRep
         parent::__construct($model);
     }
 
-    public function filter(?string $search, ?string $jenis, ?string $status, ?int $pegawaiId = null, int $perPage = 10): LengthAwarePaginator
+    public function filter(?string $search, ?string $jenis, ?string $status, ?int $pegawaiId = null, int $perPage = 10, ?array $bawahanIds = null): LengthAwarePaginator
     {
         return $this->model->with(['pegawai.unitKerja', 'pegawai.jabatan', 'approver'])
             ->when($pegawaiId, function ($query) use ($pegawaiId) {
                 $query->where('pegawai_id', $pegawaiId);
+            })
+            ->when($bawahanIds !== null, function ($query) use ($bawahanIds) {
+                $query->whereIn('pegawai_id', $bawahanIds);
             })
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
@@ -44,11 +47,13 @@ class PengajuanCutiRepository extends BaseRepository implements PengajuanCutiRep
             ->withQueryString();
     }
 
-    public function getStatistics(?int $pegawaiId = null): array
+    public function getStatistics(?int $pegawaiId = null, ?array $bawahanIds = null): array
     {
         $today = Carbon::today()->toDateString();
         $stats = $this->model->when($pegawaiId, function ($q) use ($pegawaiId) {
             $q->where('pegawai_id', $pegawaiId);
+        })->when($bawahanIds !== null, function ($q) use ($bawahanIds) {
+            $q->whereIn('pegawai_id', $bawahanIds);
         })->selectRaw("
             COUNT(*) as total,
             COALESCE(SUM(CASE WHEN status = 'Menunggu Persetujuan' THEN 1 ELSE 0 END), 0) as menunggu,
@@ -74,8 +79,12 @@ class PengajuanCutiRepository extends BaseRepository implements PengajuanCutiRep
             ->get();
     }
 
-    public function getPendingCount(): int
+    public function getPendingCount(?array $bawahanIds = null): int
     {
-        return $this->model->where('status', 'Menunggu Persetujuan')->count();
+        return $this->model->where('status', 'Menunggu Persetujuan')
+            ->when($bawahanIds !== null, function ($q) use ($bawahanIds) {
+                $q->whereIn('pegawai_id', $bawahanIds);
+            })
+            ->count();
     }
 }

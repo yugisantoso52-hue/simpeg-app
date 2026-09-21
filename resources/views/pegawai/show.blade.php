@@ -201,6 +201,20 @@
                                          </td>
                                      </tr>
                                      <tr class="border-b border-gray-50">
+                                         <td class="py-1.5 font-medium text-gray-500">Atasan Langsung (Verifikator)</td>
+                                         <td class="py-1.5 text-gray-900">
+                                             @if($pegawai->atasan)
+                                                 <a href="{{ route('pegawai.show', $pegawai->atasan->id) }}" class="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-800 hover:underline">
+                                                     <span>👤</span>
+                                                     <span>{{ $pegawai->atasan->nama_lengkap ?? $pegawai->atasan->nama }}</span>
+                                                     <span class="text-xs text-gray-500 font-normal">({{ $pegawai->atasan->jabatan->nama_jabatan ?? 'Pejabat' }})</span>
+                                                 </a>
+                                             @else
+                                                 <span class="text-gray-400 italic">Pucuk Pimpinan (Dekan) / Belum Ditentukan</span>
+                                             @endif
+                                         </td>
+                                     </tr>
+                                     <tr class="border-b border-gray-50">
                                          <td class="py-1.5 font-medium text-gray-500">Golongan / Pangkat</td>
                                          <td class="py-1.5 text-gray-900">
                                              {{ $pegawai->golongan->nama_golongan ?? $pegawai->golongan->nama ?? $pegawai->golongan ?? '-' }}

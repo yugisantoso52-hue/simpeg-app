@@ -87,4 +87,28 @@ class User extends Authenticatable
 
         return in_array($this->role->name, $allowedRoles, true);
     }
+
+    /**
+     * Cek apakah user memiliki pegawai bawahan langsung
+     */
+    public function isAtasan(): bool
+    {
+        if (!$this->pegawai_id) {
+            return false;
+        }
+
+        return Pegawai::where('atasan_id', $this->pegawai_id)->exists();
+    }
+
+    /**
+     * Ambil array ID pegawai bawahan langsung
+     */
+    public function getBawahanIds(): array
+    {
+        if (!$this->pegawai_id) {
+            return [];
+        }
+
+        return Pegawai::where('atasan_id', $this->pegawai_id)->pluck('id')->toArray();
+    }
 }

@@ -21,15 +21,17 @@ class LogbookExport implements FromCollection, WithHeadings, WithMapping, Should
     protected ?int $year;
     protected ?int $unitKerjaId;
     protected ?string $status;
+    protected ?array $bawahanIds;
     protected int $rowNumber = 0;
 
-    public function __construct(?int $pegawaiId = null, ?int $month = null, ?int $year = null, ?int $unitKerjaId = null, ?string $status = null)
+    public function __construct(?int $pegawaiId = null, ?int $month = null, ?int $year = null, ?int $unitKerjaId = null, ?string $status = null, ?array $bawahanIds = null)
     {
         $this->pegawaiId = $pegawaiId;
         $this->month = $month ?: Carbon::now()->month;
         $this->year = $year ?: Carbon::now()->year;
         $this->unitKerjaId = $unitKerjaId;
         $this->status = $status;
+        $this->bawahanIds = $bawahanIds;
     }
 
     public function collection()
@@ -40,6 +42,10 @@ class LogbookExport implements FromCollection, WithHeadings, WithMapping, Should
 
         if ($this->pegawaiId) {
             $query->where('pegawai_id', $this->pegawaiId);
+        }
+
+        if ($this->bawahanIds !== null) {
+            $query->whereIn('pegawai_id', $this->bawahanIds);
         }
 
         if ($this->unitKerjaId) {

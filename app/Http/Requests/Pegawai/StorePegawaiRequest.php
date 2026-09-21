@@ -63,6 +63,7 @@ class StorePegawaiRequest extends FormRequest
             // Relasi Utama (Opsional saat pengisian parsial)
             'unit_kerja_id'        => 'nullable|exists:unit_kerja,id',
             'jabatan_id'           => 'nullable|exists:jabatan,id',
+            'atasan_id'            => 'nullable|exists:pegawai,id',
             'golongan_id'          => 'nullable|exists:golongan,id',
             
             // Tanggal, SK & Dokumen

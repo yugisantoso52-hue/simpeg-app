@@ -146,8 +146,12 @@
                 @endif
             </div>
 
-            {{-- FORM VERIFIKASI & PERSETUJUAN (KHUSUS ADMIN & PIMPINAN) --}}
-            @if(Auth::user()->hasRole(['admin', 'pimpinan']))
+            {{-- FORM VERIFIKASI & PERSETUJUAN (KHUSUS ADMIN, PIMPINAN & ATASAN LANGSUNG) --}}
+            @php
+                $canApprove = Auth::user()->hasRole(['admin', 'pimpinan']) ||
+                              (Auth::user()->isAtasan() && $cuti->pegawai && $cuti->pegawai->atasan_id === Auth::user()->pegawai_id);
+            @endphp
+            @if($canApprove)
                 <div class="bg-white rounded-xl shadow-sm border border-blue-200 p-6">
                     <h3 class="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
                         <span>✍️</span> Keputusan Pejabat yang Berwenang Memberikan Cuti

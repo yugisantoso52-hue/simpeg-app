@@ -17,14 +17,14 @@ class PengajuanCutiService
         protected PengajuanCutiRepositoryInterface $repository
     ) {}
 
-    public function filter(?string $search, ?string $jenis, ?string $status, ?int $pegawaiId = null, int $perPage = 10)
+    public function filter(?string $search, ?string $jenis, ?string $status, ?int $pegawaiId = null, int $perPage = 10, ?array $bawahanIds = null)
     {
-        return $this->repository->filter($search, $jenis, $status, $pegawaiId, $perPage);
+        return $this->repository->filter($search, $jenis, $status, $pegawaiId, $perPage, $bawahanIds);
     }
 
-    public function statistics(?int $pegawaiId = null): array
+    public function statistics(?int $pegawaiId = null, ?array $bawahanIds = null): array
     {
-        return $this->repository->getStatistics($pegawaiId);
+        return $this->repository->getStatistics($pegawaiId, $bawahanIds);
     }
 
     public function find(int $id): PengajuanCuti
@@ -112,10 +112,21 @@ class PengajuanCutiService
                 app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, "SURAT_LAMPIRAN_{$jenisCuti}", '05_DOKUMEN_LAINNYA', "Permohonan {$data['jenis_cuti']}");
             }
 
-            // Kirim notifikasi lonceng ke Pimpinan & Admin
+            // Kirim notifikasi lonceng ke Atasan Langsung (fallback ke Pimpinan & Admin)
             try {
-                $leaders = \App\Models\User::whereHas('role', fn($q) => $q->whereIn('name', ['admin', 'pimpinan']))->get();
-                \Illuminate\Support\Facades\Notification::send($leaders, new \App\Notifications\CutiSubmittedNotification($cuti, $pegawai));
+                $targets = collect();
+                if ($pegawai->atasan_id) {
+                    $atasanUser = \App\Models\User::where('pegawai_id', $pegawai->atasan_id)->first();
+                    if ($atasanUser) {
+                        $targets->push($atasanUser);
+                    }
+                }
+
+                if ($targets->isEmpty()) {
+                    $targets = \App\Models\User::whereHas('role', fn($q) => $q->whereIn('name', ['admin', 'pimpinan']))->get();
+                }
+
+                \Illuminate\Support\Facades\Notification::send($targets, new \App\Notifications\CutiSubmittedNotification($cuti, $pegawai));
             } catch (\Throwable $e) {
                 // Ignore notification failure to prevent transaction abort
             }
