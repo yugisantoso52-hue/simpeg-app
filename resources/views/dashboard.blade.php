@@ -46,73 +46,127 @@
                             </div>
                         </div>
 
+                        {{-- Tombol Aksi Eksklusif Profil (Bebas redundansi dengan navbar atas) --}}
                         <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto shrink-0">
                             @if(isset($p->id))
-                                <a href="{{ route('pegawai.show', $p->id) }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs transition shadow-sm" style="background-color: #ffffff !important; color: #1e3a8a !important;">
-                                    👤 Profil Saya
+                                <a href="{{ route('pegawai.download-pdf', $p->id) }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition shadow-md hover:bg-slate-100" style="background-color: #ffffff !important; color: #1e3a8a !important;" title="Unduh Lembar Profil Lengkap Pegawai Resmi PDF">
+                                    <span>📄</span> Unduh Profil (PDF)
                                 </a>
-                                <a href="{{ route('pegawai.edit', $p->id) }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs transition border border-white/30" style="background-color: rgba(255, 255, 255, 0.25) !important; color: #ffffff !important;">
-                                    📝 Edit Data
+                                <a href="{{ route('pegawai.edit', $p->id) }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs transition border border-white/30 hover:bg-white/30" style="background-color: rgba(255, 255, 255, 0.2) !important; color: #ffffff !important;" title="Perbarui Biodata & Berkas Pribadi">
+                                    <span>✏️</span> Edit Biodata
                                 </a>
                             @endif
-                            <a href="{{ route('pengajuan-cuti.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs transition shadow-sm" style="background-color: #f59e0b !important; color: #ffffff !important;">
-                                🏖️ Ajukan Cuti
-                            </a>
-                            <a href="{{ route('presensi.index') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs transition shadow-sm" style="background-color: #10b981 !important; color: #ffffff !important;">
-                                📍 Presensi Pegawai
-                            </a>
-                            <a href="{{ route('logbook.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs transition shadow-sm" style="background-color: #6366f1 !important; color: #ffffff !important;">
-                                📝 Catat Logbook
-                            </a>
                         </div>
                     </div>
                 </div>
 
-                {{-- 📍 KARTU STATUS PRESENSI HARI INI PEGAWAI --}}
-                @php
-                    $todayAttendance = Auth::user()->todayAttendance;
-                @endphp
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl {{ $todayAttendance ? ($todayAttendance->check_out_time ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-blue-50 text-blue-600 border border-blue-200') : 'bg-amber-50 text-amber-600 border border-amber-200' }} flex items-center justify-center text-2xl shrink-0 shadow-xs">
-                            📍
-                        </div>
+                {{-- ===================================================================== --}}
+                {{-- ⚡ DAILY WORKSPACE: PRESENSI & E-LOGBOOK (GRID 2 KOLOM SEJAJAR)        --}}
+                {{-- ===================================================================== --}}
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+                    {{-- 📍 KARTU STATUS PRESENSI HARI INI PEGAWAI --}}
+                    @php
+                        $todayAttendance = Auth::user()->todayAttendance;
+                    @endphp
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between h-full">
                         <div>
-                            <div class="flex items-center gap-2">
-                                <h3 class="font-bold text-base text-slate-800">Presensi Hari Ini</h3>
-                                <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold {{ $todayAttendance ? ($todayAttendance->status === 'late' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200') : 'bg-rose-100 text-rose-700 border border-rose-200' }}">
+                            <div class="flex items-center justify-between gap-3 mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-xl {{ $todayAttendance ? ($todayAttendance->check_out_time ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-blue-50 text-blue-600 border border-blue-200') : 'bg-amber-50 text-amber-600 border border-amber-200' }} flex items-center justify-center text-xl shrink-0 shadow-2xs">
+                                        📍
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-base text-slate-800">Presensi Hari Ini</h3>
+                                        <p class="text-xs text-slate-500">{{ \Carbon\Carbon::now('Asia/Jakarta')->locale('id')->translatedFormat('l, d F Y') }}</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs px-2.5 py-1 rounded-full font-bold {{ $todayAttendance ? ($todayAttendance->status === 'late' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200') : 'bg-rose-100 text-rose-700 border border-rose-200' }}">
                                     {{ $todayAttendance ? ($todayAttendance->status === 'late' ? 'Terlambat' : 'Hadir Tepat Waktu') : 'Belum Presensi' }}
                                 </span>
-                                @if($todayAttendance)
-                                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
-                                        {{ strtoupper($todayAttendance->attendance_type) }}
-                                    </span>
+                            </div>
+
+                            <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-100 grid grid-cols-2 gap-3 text-xs mb-4">
+                                <div>
+                                    <span class="text-slate-400 block text-[11px] font-semibold uppercase">Jam Masuk</span>
+                                    <strong class="text-slate-800 font-mono text-sm">{{ $todayAttendance && $todayAttendance->check_in_time ? $todayAttendance->check_in_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-' }}</strong>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px] font-semibold uppercase">Jam Pulang</span>
+                                    <strong class="text-slate-800 font-mono text-sm">{{ $todayAttendance && $todayAttendance->check_out_time ? $todayAttendance->check_out_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : ($todayAttendance ? 'Belum Check-Out' : '-') }}</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2.5 pt-2 border-t border-slate-100">
+                            <a href="{{ route('presensi.index') }}" class="flex-1 px-4 py-2.5 rounded-xl font-bold text-xs text-white transition shadow-sm flex items-center justify-center gap-2 {{ !$todayAttendance ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20' : (!$todayAttendance->check_out_time ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20' : 'bg-slate-800 hover:bg-slate-700') }}">
+                                @if(!$todayAttendance)
+                                    <span>📸 Presensi Masuk Sekarang</span>
+                                @elseif(!$todayAttendance->check_out_time)
+                                    <span>🚪 Presensi Pulang (Check-Out)</span>
+                                @else
+                                    <span>✅ Buka Menu Presensi</span>
                                 @endif
-                            </div>
-                            <div class="flex flex-wrap items-center gap-2.5 text-xs text-slate-500 mt-1">
-                                <span>🗓️ {{ \Carbon\Carbon::now('Asia/Jakarta')->locale('id')->translatedFormat('l, d F Y') }}</span>
-                                <span class="text-slate-300">•</span>
-                                <span>🟢 Masuk: <strong class="text-slate-800 font-mono">{{ $todayAttendance && $todayAttendance->check_in_time ? $todayAttendance->check_in_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-' }}</strong></span>
-                                <span class="text-slate-300">•</span>
-                                <span>🔴 Pulang: <strong class="text-slate-800 font-mono">{{ $todayAttendance && $todayAttendance->check_out_time ? $todayAttendance->check_out_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : 'Belum Check-Out' }}</strong></span>
-                            </div>
+                            </a>
+                            <a href="{{ route('presensi.history') }}" class="px-3.5 py-2.5 rounded-xl font-semibold text-xs text-slate-700 bg-slate-100 hover:bg-slate-200 transition shrink-0">
+                                Riwayat
+                            </a>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2.5 w-full md:w-auto shrink-0">
-                        <a href="{{ route('presensi.index') }}" class="w-full md:w-auto px-5 py-2.5 rounded-xl font-bold text-xs text-white transition shadow-sm flex items-center justify-center gap-2 {{ !$todayAttendance ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20' : (!$todayAttendance->check_out_time ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20' : 'bg-slate-800 hover:bg-slate-700') }}">
-                            @if(!$todayAttendance)
-                                <span>📸 Presensi Masuk Sekarang</span>
-                            @elseif(!$todayAttendance->check_out_time)
-                                <span>🚪 Presensi Pulang (Check-Out)</span>
-                            @else
-                                <span>✅ Buka Menu Presensi</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('presensi.history') }}" class="px-3.5 py-2.5 rounded-xl font-semibold text-xs text-slate-700 bg-slate-100 hover:bg-slate-200 transition">
-                            Riwayat
-                        </a>
-                    </div>
+                    {{-- 📝 KARTU CAPAIAN E-LOGBOOK KINERJA BULAN INI --}}
+                    @if(isset($myLogbookStats))
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between h-full">
+                            <div>
+                                <div class="flex items-center justify-between gap-3 mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200 flex items-center justify-center text-xl shrink-0 shadow-2xs">
+                                            📝
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-base text-slate-800">E-Logbook Kinerja</h3>
+                                            <p class="text-xs text-slate-500">Bulan: {{ \Carbon\Carbon::now('Asia/Jakarta')->locale('id')->isoFormat('MMMM Y') }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs px-2.5 py-1 rounded-full font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                        {{ $myLogbookStats['total_aktivitas'] }} Aktivitas
+                                    </span>
+                                </div>
+
+                                <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-100 grid grid-cols-3 gap-2 text-center text-xs mb-4">
+                                    <div>
+                                        <span class="text-slate-400 block text-[10px] font-bold uppercase">Total Jam</span>
+                                        <strong class="text-slate-800 text-sm font-bold">{{ $myLogbookStats['total_jam'] }}j</strong>
+                                        <span class="text-[10px] text-slate-400">({{ $myLogbookStats['total_menit'] }}m)</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 block text-[10px] font-bold uppercase">Disetujui</span>
+                                        <strong class="text-emerald-600 text-sm font-bold">{{ $myLogbookStats['disetujui'] }}</strong>
+                                        <span class="text-[10px] text-emerald-500">Aktivitas</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 block text-[10px] font-bold uppercase">Menunggu</span>
+                                        <strong class="text-amber-600 text-sm font-bold">{{ $myLogbookStats['diajukan'] }}</strong>
+                                        @if($myLogbookStats['perlu_revisi'] > 0)
+                                            <span class="text-[10px] text-rose-600 font-bold block animate-pulse">Revisi: {{ $myLogbookStats['perlu_revisi'] }}</span>
+                                        @else
+                                            <span class="text-[10px] text-slate-400">Pending</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2.5 pt-2 border-t border-slate-100">
+                                <a href="{{ route('logbook.create') }}" class="flex-1 px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition flex items-center justify-center gap-1.5">
+                                    <span>+ Catat Aktivitas</span>
+                                </a>
+                                <a href="{{ route('logbook.index') }}" class="px-3.5 py-2.5 rounded-xl font-semibold text-xs text-slate-700 bg-slate-100 hover:bg-slate-200 transition shrink-0">
+                                    Buka Logbook
+                                </a>
+                            </div>
+                        </div>
+                    @endif
+
                 </div>
 
                 {{-- 👥 PUSAT TINDAKAN VERIFIKASI ATASAN LANGSUNG (JIKA PEGAWAI ADALAH ATASAN) --}}
@@ -149,49 +203,6 @@
                                 <div class="w-11 h-11 rounded-xl bg-amber-500/30 text-white flex items-center justify-center text-xl">
                                     🏖️
                                 </div>
-                            </a>
-                        </div>
-                    </div>
-                @endif
-
-                {{-- 📝 KARTU CAPAIAN E-LOGBOOK KINERJA BULAN INI --}}
-                @if(isset($myLogbookStats))
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-200 flex items-center justify-center text-2xl shrink-0 shadow-xs">
-                                📝
-                            </div>
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <h3 class="font-bold text-base text-slate-800">E-Logbook Kinerja Bulan Ini</h3>
-                                    <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-indigo-100 text-indigo-800 border border-indigo-200">
-                                        {{ \Carbon\Carbon::now('Asia/Jakarta')->locale('id')->isoFormat('MMMM Y') }}
-                                    </span>
-                                </div>
-                                <div class="flex flex-wrap items-center gap-2.5 text-xs text-slate-500 mt-1">
-                                    <span>⏱️ Total Waktu: <strong class="text-slate-800 font-bold">{{ $myLogbookStats['total_jam'] }} Jam</strong> ({{ $myLogbookStats['total_menit'] }} mnt)</span>
-                                    <span class="text-slate-300">•</span>
-                                    <span>📋 Aktivitas: <strong class="text-slate-800 font-bold">{{ $myLogbookStats['total_aktivitas'] }}</strong></span>
-                                    <span class="text-slate-300">•</span>
-                                    <span>✅ Disetujui: <strong class="text-emerald-600 font-bold">{{ $myLogbookStats['disetujui'] }}</strong></span>
-                                    @if($myLogbookStats['diajukan'] > 0)
-                                        <span class="text-slate-300">•</span>
-                                        <span class="text-amber-600 font-medium">⏳ Menunggu: <strong>{{ $myLogbookStats['diajukan'] }}</strong></span>
-                                    @endif
-                                    @if($myLogbookStats['perlu_revisi'] > 0)
-                                        <span class="text-slate-300">•</span>
-                                        <span class="text-rose-600 font-bold animate-pulse">⚠️ Perlu Revisi: {{ $myLogbookStats['perlu_revisi'] }}</span>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-2.5 w-full md:w-auto shrink-0">
-                            <a href="{{ route('logbook.create') }}" class="w-full md:w-auto px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition flex items-center justify-center gap-1.5">
-                                <span>+ Catat Aktivitas</span>
-                            </a>
-                            <a href="{{ route('logbook.index') }}" class="px-3.5 py-2.5 rounded-xl font-semibold text-xs text-slate-700 bg-slate-100 hover:bg-slate-200 transition">
-                                Buka Logbook
                             </a>
                         </div>
                     </div>
@@ -332,12 +343,17 @@
                             <div class="mt-3 text-[11px] font-semibold text-amber-800 bg-amber-100 p-2 rounded-lg text-center">
                                 @if(isset($p->kgb_berikutnya))
                                     @php
-                                        $diffKgb = \Carbon\Carbon::now()->diffInMonths(\Carbon\Carbon::parse($p->kgb_berikutnya), false);
+                                        $diffKgb = (int) round(\Carbon\Carbon::now()->diffInMonths(\Carbon\Carbon::parse($p->kgb_berikutnya), false));
                                     @endphp
                                     @if($diffKgb <= 0)
-                                        ⚠️ Jatuh Tempo KGB! Silakan konsultasi pengajuan.
+                                        ⚠️ Jatuh Tempo KGB! Silakan ajukan berkas.
                                     @else
-                                        ⏳ Est. {{ $diffKgb }} Bulan menuju KGB berikutnya.
+                                        @php
+                                            $thnKgb = floor($diffKgb / 12);
+                                            $blnKgb = $diffKgb % 12;
+                                            $labelKgb = $thnKgb > 0 ? "{$thnKgb} Thn " . ($blnKgb > 0 ? "{$blnKgb} Bln" : "") : "{$blnKgb} Bulan";
+                                        @endphp
+                                        ⏳ Est. {{ trim($labelKgb) }} ({{ $diffKgb }} Bulan)
                                     @endif
                                 @else
                                     Info KGB belum diset.
@@ -360,12 +376,17 @@
                             <div class="mt-3 text-[11px] font-semibold text-emerald-800 bg-emerald-100 p-2 rounded-lg text-center">
                                 @if(isset($p->kp_berikutnya))
                                     @php
-                                        $diffKp = \Carbon\Carbon::now()->diffInMonths(\Carbon\Carbon::parse($p->kp_berikutnya), false);
+                                        $diffKp = (int) round(\Carbon\Carbon::now()->diffInMonths(\Carbon\Carbon::parse($p->kp_berikutnya), false));
                                     @endphp
                                     @if($diffKp <= 0)
                                         ⚠️ Siap Pengajuan Kenaikan Pangkat!
                                     @else
-                                        ⏳ Est. {{ $diffKp }} Bulan menuju KP berikutnya.
+                                        @php
+                                            $thnKp = floor($diffKp / 12);
+                                            $blnKp = $diffKp % 12;
+                                            $labelKp = $thnKp > 0 ? "{$thnKp} Thn " . ($blnKp > 0 ? "{$blnKp} Bln" : "") : "{$blnKp} Bulan";
+                                        @endphp
+                                        ⏳ Est. {{ trim($labelKp) }} ({{ $diffKp }} Bulan)
                                     @endif
                                 @else
                                     Info KP belum diset.
@@ -378,7 +399,7 @@
                             <div>
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-xs font-bold uppercase tracking-wider text-indigo-900">🏅 Satyalancana</span>
-                                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-indigo-200 text-indigo-900">10 / 20 / 30 Thn</span>
+                                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-indigo-200 text-indigo-900">10/20/30 Thn</span>
                                 </div>
                                 <div class="text-xs space-y-1 text-slate-700">
                                     <p>Terakhir: <strong class="text-slate-900">{{ $p->satyalancana_terakhir ?? '-' }}</strong></p>
@@ -390,45 +411,96 @@
                             </div>
                         </div>
 
-                        {{-- STR & SIP (Khusus Dosen / Tendik Klinis) --}}
-                        <div class="p-4 rounded-xl border border-sky-200 bg-sky-50/60 flex flex-col justify-between">
-                            <div>
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-xs font-bold uppercase tracking-wider text-sky-900">🩺 STR & SIP Profesi</span>
-                                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-sky-200 text-sky-900">Legalitas</span>
-                                </div>
-                                @php
-                                    $activeStr = (isset($p->riwayatStrSip) && $p->riwayatStrSip->count() > 0) ? $p->riwayatStrSip->first() : null;
-                                @endphp
-                                <div class="text-xs space-y-1 text-slate-700">
-                                    <p>Jenis: <strong class="text-slate-900">{{ $activeStr?->jenis_dokumen ?? 'STR/SIP' }}</strong></p>
-                                    <p>Berakhir: <strong class="font-mono text-sky-800">
-                                        @if($activeStr)
+                        {{-- KARTU KE-4: KONDISIONAL STR/SIP ATAU MASA KONTRAK PPPK ATAU SKP --}}
+                        @php
+                            $activeStr = (isset($p->riwayatStrSip) && $p->riwayatStrSip->count() > 0) ? $p->riwayatStrSip->first() : null;
+                            $isPppkOrContract = ($p->jenis_pegawai === 'PPPK' || $p->jenis_pegawai === 'PHL' || !empty($p->tanggal_kontrak_selesai));
+                        @endphp
+
+                        @if($activeStr)
+                            {{-- 1. STR & SIP (Khusus Tenaga Medis / Dosen Klinis) --}}
+                            <div class="p-4 rounded-xl border border-sky-200 bg-sky-50/60 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs font-bold uppercase tracking-wider text-sky-900">🩺 STR & SIP Profesi</span>
+                                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-sky-200 text-sky-900">Legalitas</span>
+                                    </div>
+                                    <div class="text-xs space-y-1 text-slate-700">
+                                        <p>Jenis: <strong class="text-slate-900">{{ $activeStr->jenis_dokumen ?? 'STR/SIP' }}</strong></p>
+                                        <p>Berakhir: <strong class="font-mono text-sky-800">
                                             {{ $activeStr->is_seumur_hidup ? 'Seumur Hidup' : (isset($activeStr->tanggal_berakhir) ? \Carbon\Carbon::parse($activeStr->tanggal_berakhir)->format('d-m-Y') : '-') }}
-                                        @else
-                                            -
-                                        @endif
-                                    </strong></p>
+                                        </strong></p>
+                                    </div>
+                                </div>
+                                <div class="mt-3 text-[11px] font-semibold text-sky-800 bg-sky-100 p-2 rounded-lg text-center">
+                                    🩺 Izin Praktik / Profesi
                                 </div>
                             </div>
-                            <div class="mt-3 text-[11px] font-semibold text-sky-800 bg-sky-100 p-2 rounded-lg text-center">
-                                🩺 Operational License
+                        @elseif($isPppkOrContract)
+                            {{-- 2. Kontrak Kerja PPPK / PHL --}}
+                            <div class="p-4 rounded-xl border border-cyan-200 bg-cyan-50/60 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs font-bold uppercase tracking-wider text-cyan-900">📋 Kontrak Kerja {{ $p->jenis_pegawai ?? 'PPPK' }}</span>
+                                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-cyan-200 text-cyan-900">Masa Kerja</span>
+                                    </div>
+                                    <div class="text-xs space-y-1 text-slate-700">
+                                        <p>TMT Mulai: <strong class="font-mono text-slate-900">{{ isset($p->tanggal_kontrak_mulai) ? \Carbon\Carbon::parse($p->tanggal_kontrak_mulai)->format('d-m-Y') : (isset($p->tanggal_masuk) ? \Carbon\Carbon::parse($p->tanggal_masuk)->format('d-m-Y') : '-') }}</strong></p>
+                                        <p>Selesai: <strong class="font-mono text-cyan-800">{{ isset($p->tanggal_kontrak_selesai) ? \Carbon\Carbon::parse($p->tanggal_kontrak_selesai)->format('d-m-Y') : '-' }}</strong></p>
+                                    </div>
+                                </div>
+                                <div class="mt-3 text-[11px] font-semibold text-cyan-800 bg-cyan-100 p-2 rounded-lg text-center">
+                                    @if(isset($p->tanggal_kontrak_selesai))
+                                        @php
+                                            $diffKontrak = (int) round(\Carbon\Carbon::now()->diffInMonths(\Carbon\Carbon::parse($p->tanggal_kontrak_selesai), false));
+                                        @endphp
+                                        @if($diffKontrak <= 0)
+                                            ⚠️ Masa Kontrak Berakhir!
+                                        @else
+                                            ⏳ Sisa {{ $diffKontrak }} Bulan Masa Kontrak
+                                        @endif
+                                    @else
+                                        Perjanjian Kerja Aktif
+                                    @endif
+                                </div>
                             </div>
-                        </div>
+                        @else
+                            {{-- 3. Sasaran Kinerja Pegawai (SKP) --}}
+                            <div class="p-4 rounded-xl border border-purple-200 bg-purple-50/60 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs font-bold uppercase tracking-wider text-purple-900">🎯 Sasaran Kinerja (SKP)</span>
+                                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-purple-200 text-purple-900">{{ date('Y') }}</span>
+                                    </div>
+                                    <div class="text-xs space-y-1 text-slate-700">
+                                        <p>Tahun: <strong class="text-slate-900">{{ date('Y') }}</strong></p>
+                                        <p>Status: <strong class="text-purple-800">Evaluasi Tahunan</strong></p>
+                                    </div>
+                                </div>
+                                <div class="mt-3 text-[11px] font-semibold text-purple-800 bg-purple-100 p-2 rounded-lg text-center">
+                                    🎯 Sasaran Kinerja Pegawai
+                                </div>
+                            </div>
+                        @endif
 
                     </div>
                 </div>
 
-                {{-- TABEL PENGANJUAN CUTI PRIBADI TERBARU --}}
+                {{-- TABEL PENGAJUAN CUTI PRIBADI TERBARU --}}
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 mb-4">
                         <div class="flex items-center gap-2">
                             <span class="text-xl">🏖️</span>
                             <h3 class="font-bold text-base text-slate-800">Riwayat Pengajuan Cuti Saya</h3>
                         </div>
-                        <a href="{{ route('pengajuan-cuti.index') }}" class="text-xs font-bold text-blue-600 hover:underline">
-                            Lihat Semua Cuti &rarr;
-                        </a>
+                        <div class="flex items-center gap-3">
+                            <a href="{{ route('pengajuan-cuti.create') }}" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white transition shadow-sm flex items-center gap-1.5">
+                                <span>+</span> Ajukan Cuti Baru
+                            </a>
+                            <a href="{{ route('pengajuan-cuti.index') }}" class="text-xs font-bold text-blue-600 hover:underline">
+                                Lihat Semua Cuti &rarr;
+                            </a>
+                        </div>
                     </div>
 
                     @if(isset($myCuti) && count($myCuti) > 0)
