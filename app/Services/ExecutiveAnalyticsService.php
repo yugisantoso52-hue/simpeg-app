@@ -168,7 +168,7 @@ class ExecutiveAnalyticsService
     public function getRetirementProjections(): array
     {
         $hariIni = Carbon::today('Asia/Jakarta');
-        $paraPegawai = Pegawai::with(['unitKerja', 'jabatanModel'])
+        $paraPegawai = Pegawai::with(['unitKerja', 'jabatan'])
             ->where('status_pegawai', 'Aktif')
             ->get();
 
@@ -201,7 +201,7 @@ class ExecutiveAnalyticsService
                 'nip'           => $p->nip ?? '-',
                 'nama'          => $p->nama_lengkap ?? $p->nama,
                 'unit'          => $p->unitKerja?->nama_unit ?? 'Fakultas Keperawatan',
-                'jabatan'       => $p->jabatanModel?->nama_jabatan ?? $p->jabatan ?? '-',
+                'jabatan'       => $p->jabatan?->nama_jabatan ?? $p->jenis_jabatan ?? '-',
                 'bup'           => $bup,
                 'tgl_pensiun'   => $tglPensiun->format('d-m-Y'),
                 'sisa_bulan'    => (int) $diffMonths,
@@ -242,7 +242,7 @@ class ExecutiveAnalyticsService
      */
     public function getStaffComposition(): array
     {
-        $dosen = Pegawai::with('jabatanModel')
+        $dosen = Pegawai::with('jabatan')
             ->where('status_pegawai', 'Aktif')
             ->where(function ($q) {
                 $q->where('jenis_pegawai', 'Dosen')
@@ -260,7 +260,7 @@ class ExecutiveAnalyticsService
         ];
 
         foreach ($dosen as $d) {
-            $jab = strtolower($d->jabatanModel?->nama_jabatan ?? $d->jabatan ?? '');
+            $jab = strtolower($d->jabatan?->nama_jabatan ?? $d->jenis_jabatan ?? '');
             if (str_contains($jab, 'profesor') || str_contains($jab, 'guru besar')) {
                 $jafungCounts['Guru Besar']++;
             } elseif (str_contains($jab, 'lektor kepala')) {
@@ -313,7 +313,7 @@ class ExecutiveAnalyticsService
      */
     private function hitungBup(Pegawai $pegawai): int
     {
-        $jabatan = strtolower($pegawai->jabatanModel?->nama_jabatan ?? $pegawai->jabatan ?? '');
+        $jabatan = strtolower($pegawai->jabatan?->nama_jabatan ?? $pegawai->jenis_jabatan ?? '');
         $jenisJabatan = strtolower($pegawai->jenis_jabatan ?? '');
 
         if (str_contains($jabatan, 'profesor') || str_contains($jabatan, 'guru besar') || 
