@@ -4,6 +4,13 @@
         <span class="notranslate" translate="no">Dashboard</span>
     </x-responsive-nav-link>
 
+    {{-- Analitik Eksekutif (Pimpinan & Admin) --}}
+    @if(Auth::user()->hasRole(['admin', 'pimpinan']))
+        <x-responsive-nav-link :href="route('pimpinan.analytics')" :active="request()->routeIs('pimpinan.analytics*')">
+            📊 Analitik Eksekutif Dekanat
+        </x-responsive-nav-link>
+    @endif
+
     {{-- Profil Saya (Pegawai) --}}
     @if(Auth::user()->hasRole('pegawai'))
         <x-responsive-nav-link :href="route('pegawai.my-profile')" :active="request()->routeIs('pegawai.my-profile', 'pegawai.show')">

@@ -93,9 +93,11 @@ class AttendanceManageController extends Controller
         $search = $request->get('search');
 
         $query = User::with(['pegawai.unitKerja', 'attendanceLocation'])
-            ->whereNotNull('pegawai_id')
-            ->orWhereHas('role', function ($q) {
-                $q->whereIn('name', ['pegawai', 'admin', 'pimpinan']);
+            ->where(function ($q) {
+                $q->whereNotNull('pegawai_id')
+                  ->orWhereHas('role', function ($qr) {
+                      $qr->whereIn('name', ['pegawai', 'admin', 'pimpinan']);
+                  });
             });
 
         if ($search) {

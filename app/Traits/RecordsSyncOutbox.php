@@ -37,6 +37,10 @@ trait RecordsSyncOutbox
 
     protected static function recordToOutbox($model, $action)
     {
+        if (!config('services.sync.outbox_enabled', env('SYNC_OUTBOX_ENABLED', false))) {
+            return;
+        }
+
         $uuid = $model->sync_uuid;
 
         // Jika sync_uuid masih null (misal hasil impor lama), buatkan otomatis

@@ -12,8 +12,13 @@ class PushSyncCommand extends Command
 
     public function handle()
     {
-        $targetUrl = env('ONLINE_SYNC_URL', 'http://localhost/api/v1/sync/receive');
-        $secretKey = env('SYNC_SECRET_KEY', 'default_secret_key_123!');
+        $targetUrl = config('services.sync.online_url', env('ONLINE_SYNC_URL', 'http://localhost/api/v1/sync/receive'));
+        $secretKey = config('services.sync.secret_key', env('SYNC_SECRET_KEY'));
+
+        if (empty($secretKey)) {
+            $this->error('SYNC_SECRET_KEY is not configured.');
+            return 1;
+        }
 
         $outboxes = DB::table('sync_outboxes')
             ->whereIn('status', ['PENDING', 'FAILED'])

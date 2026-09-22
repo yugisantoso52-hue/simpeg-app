@@ -56,6 +56,8 @@ class BackupDatabaseCommand extends Command
 
                     $sqlDump = "-- SIMPEG ENTERPRISE DATABASE BACKUP\n-- Generated: " . date('Y-m-d H:i:s') . "\n-- Connection: {$dbConnection}\n\n";
 
+                    $pdo = \Illuminate\Support\Facades\DB::getPdo();
+
                     foreach ($tables as $tableObj) {
                         $tableName = $tableObj->$keyName ?? array_values((array)$tableObj)[0];
                         $createTable = \Illuminate\Support\Facades\DB::select("SHOW CREATE TABLE `{$tableName}`");
@@ -63,16 +65,20 @@ class BackupDatabaseCommand extends Command
                             $sqlDump .= "DROP TABLE IF EXISTS `{$tableName}`;\n";
                             $sqlDump .= $createTable[0]->{'Create Table'} . ";\n\n";
 
-                            $rows = \Illuminate\Support\Facades\DB::table($tableName)->get();
-                            if ($rows->count() > 0) {
-                                foreach ($rows as $row) {
-                                    $data = array_map(function ($val) {
-                                        if (is_null($val)) return 'NULL';
-                                        return "'" . addslashes((string)$val) . "'";
-                                    }, (array)$row);
+                            $stmt = $pdo->query("SELECT * FROM `{$tableName}`");
+                            $rowCount = 0;
+                            while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+                                $rowCount++;
+                                $data = array_map(function ($val) use ($pdo) {
+                                    if (is_null($val)) return 'NULL';
+                                    return $pdo->quote((string)$val);
+                                }, $row);
 
-                                    $sqlDump .= "INSERT INTO `{$tableName}` (" . implode(', ', array_map(fn($k) => "`{$k}`", array_keys((array)$row))) . ") VALUES (" . implode(', ', $data) . ");\n";
-                                }
+                                $columns = implode(', ', array_map(fn($k) => "`{$k}`", array_keys($row)));
+                                $values = implode(', ', $data);
+                                $sqlDump .= "INSERT INTO `{$tableName}` ({$columns}) VALUES ({$values});\n";
+                            }
+                            if ($rowCount > 0) {
                                 $sqlDump .= "\n";
                             }
                         }

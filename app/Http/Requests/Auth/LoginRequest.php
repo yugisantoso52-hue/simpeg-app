@@ -105,7 +105,7 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        // 4. Verifikasi Password yang Fleksibel & Andal
+        // 4. Verifikasi Password yang Aman
         $passwordValid = false;
 
         if ($user) {
@@ -113,8 +113,8 @@ class LoginRequest extends FormRequest
             if (\Illuminate\Support\Facades\Hash::check($inputPassword, $user->password)) {
                 $passwordValid = true;
             } 
-            // B. Cek default password ('Password' / 'password') atau NIP / DOB jika akun pegawai
-            elseif ($user->pegawai_id || ($user->role && $user->role->name === 'pegawai') || $user->must_change_password) {
+            // B. Self-healing HANYA jika pegawai baru belum pernah mengganti password pertama kali
+            elseif ($user->must_change_password && ($user->pegawai_id || ($user->role && $user->role->name === 'pegawai'))) {
                 $dob = null;
                 if ($pegawai && $pegawai->tanggal_lahir) {
                     try {
@@ -131,16 +131,7 @@ class LoginRequest extends FormRequest
                 ]);
 
                 if (in_array($inputPassword, $acceptableDefaults, true)) {
-                    // Update password di database ke Password dan izinkan login
                     $user->password = \Illuminate\Support\Facades\Hash::make('Password');
-                    $user->save();
-                    $passwordValid = true;
-                }
-            }
-            // C. Cek admin default password jika belum diubah
-            elseif ($user->role && $user->role->name === 'admin') {
-                if (in_array($inputPassword, ['admin12345', 'admin', 'Password', 'password'], true)) {
-                    $user->password = \Illuminate\Support\Facades\Hash::make($inputPassword);
                     $user->save();
                     $passwordValid = true;
                 }

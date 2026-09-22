@@ -44,6 +44,14 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+/* Public Verification Endpoint (QR Code Document Scanner) */
+Route::get('/verifikasi-dokumen/{code}', [\App\Http\Controllers\PublicVerificationController::class, 'verify'])->name('verify.document');
+
+/* PWA Offline Fallback */
+Route::get('/offline', function () {
+    return view('offline');
+})->name('offline');
+
 // AUTHENTICATED USERS (Semua User Login)
 Route::middleware(['auth', 'force.password.change'])->group(function () {
 
@@ -178,11 +186,29 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     });
 
     // ======================================================================
-    // KHUSUS ADMIN & PIMPINAN (MONITORING, APPROVAL & REPORTS)
+    // APPROVAL CUTI & VERIFIKASI LOGBOOK (ADMIN, PIMPINAN & ATASAN LANGSUNG)
     // ======================================================================
-    Route::middleware(['role:admin,pimpinan'])->group(function () {
+    Route::middleware(['role:admin,pimpinan,atasan'])->group(function () {
         /* Approval Pengajuan Cuti */
         Route::post('/pengajuan-cuti/{id}/approve', [PengajuanCutiController::class, 'approve'])->name('pengajuan-cuti.approve');
+
+        /* Monitoring & Verifikasi Logbook Kinerja Pegawai */
+        Route::prefix('admin/logbook')->name('admin.logbook.')->group(function () {
+            Route::get('/', [LogbookManageController::class, 'index'])->name('index');
+            Route::post('/bulk-verify', [LogbookManageController::class, 'bulkVerify'])->name('bulk-verify');
+            Route::post('/{id}/verify', [LogbookManageController::class, 'verify'])->name('verify');
+            Route::get('/export/pdf', [LogbookManageController::class, 'exportRekapPdf'])->name('export.pdf');
+            Route::get('/export/excel', [LogbookManageController::class, 'exportRekapExcel'])->name('export.excel');
+        });
+    });
+
+    // ======================================================================
+    // KHUSUS ADMIN & PIMPINAN (MONITORING & REPORTS TINGKAT INSTITUSI)
+    // ======================================================================
+    Route::middleware(['role:admin,pimpinan'])->group(function () {
+        /* Executive Analytics Dashboard Dekanat & Pimpinan */
+        Route::get('/pimpinan/analytics', [\App\Http\Controllers\Pimpinan\AnalyticsController::class, 'index'])->name('pimpinan.analytics');
+        Route::get('/pimpinan/analytics/pdf', [\App\Http\Controllers\Pimpinan\AnalyticsController::class, 'exportPdf'])->name('pimpinan.analytics.pdf');
 
         /* Data Kepegawaian Berdasarkan Kategori (Dosen, Tendik, PHL) */
         Route::prefix('kepegawaian')->name('kepegawaian.')->group(function () {
@@ -219,15 +245,6 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
             Route::get('/locations', [AttendanceManageController::class, 'locations'])->name('locations');
             Route::post('/{userId}/reset-location', [AttendanceManageController::class, 'resetLocation'])->name('reset-location');
             Route::delete('/{id}', [AttendanceManageController::class, 'destroy'])->name('destroy');
-        });
-
-        /* Monitoring & Verifikasi Logbook Kinerja Pegawai */
-        Route::prefix('admin/logbook')->name('admin.logbook.')->group(function () {
-            Route::get('/', [LogbookManageController::class, 'index'])->name('index');
-            Route::post('/bulk-verify', [LogbookManageController::class, 'bulkVerify'])->name('bulk-verify');
-            Route::post('/{id}/verify', [LogbookManageController::class, 'verify'])->name('verify');
-            Route::get('/export/pdf', [LogbookManageController::class, 'exportRekapPdf'])->name('export.pdf');
-            Route::get('/export/excel', [LogbookManageController::class, 'exportRekapExcel'])->name('export.excel');
         });
     });
 

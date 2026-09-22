@@ -9,12 +9,14 @@ use App\Models\Jabatan;
 use App\Http\Requests\StoreMutasiRequest;
 use App\Http\Requests\UpdateMutasiRequest; // Menggunakan UpdateMutasiRequest baru
 use App\Services\PegawaiStorageService;
+use App\Traits\AuthorizesRiwayatOwner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 
 class MutasiPegawaiController extends Controller
 {
+    use AuthorizesRiwayatOwner;
     public function index()
     {
         $data = MutasiPegawai::with([
@@ -99,6 +101,8 @@ class MutasiPegawaiController extends Controller
     public function edit(string $id)
     {
         $mutasi = MutasiPegawai::findOrFail($id);
+        $this->authorizeOwnerOrAdmin($mutasi);
+
         $pegawai = Pegawai::orderByRaw("CASE WHEN status_pegawai = 'Aktif' THEN 0 ELSE 1 END")->orderBy('nama')->get();
         $unitKerja = UnitKerja::orderBy('nama_unit')->get();
         $jabatan = Jabatan::orderBy('nama_jabatan')->get();
@@ -111,6 +115,8 @@ class MutasiPegawaiController extends Controller
         try {
             DB::transaction(function () use ($request, $id) {
                 $mutasi = MutasiPegawai::findOrFail($id);
+                $this->authorizeOwnerOrAdmin($mutasi);
+
                 $file = $mutasi->file_sk;
 
                 if ($request->hasFile('file_sk')) {
@@ -166,6 +172,7 @@ class MutasiPegawaiController extends Controller
         try {
             DB::transaction(function () use ($id) {
                 $mutasi = MutasiPegawai::findOrFail($id);
+                $this->authorizeOwnerOrAdmin($mutasi);
 
                 // Kembalikan posisi unit kerja dan jabatan pegawai ke "Unit Lama" & "Jabatan Lama" sebelum dihapus
                 $pegawai = Pegawai::findOrFail($mutasi->pegawai_id);

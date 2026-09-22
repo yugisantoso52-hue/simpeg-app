@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Pegawai;
 use App\Models\RiwayatPendidikan;
 use App\Services\PegawaiStorageService;
+use App\Traits\AuthorizesRiwayatOwner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class RiwayatPendidikanController extends Controller
 {
+    use AuthorizesRiwayatOwner;
     public function index(Request $request)
     {
         $search = $request->get('search');
@@ -90,6 +92,7 @@ class RiwayatPendidikanController extends Controller
     public function edit($id)
     {
         $data = RiwayatPendidikan::findOrFail($id);
+        $this->authorizeOwnerOrAdmin($data);
         $pegawai = Pegawai::orderBy('nama')->get();
 
         return view('riwayat-pendidikan.edit', compact('data', 'pegawai'));
@@ -97,6 +100,9 @@ class RiwayatPendidikanController extends Controller
 
     public function update(Request $request, $id)
     {
+        $data = RiwayatPendidikan::findOrFail($id);
+        $this->authorizeOwnerOrAdmin($data);
+
         $request->validate([
             'pegawai_id'  => 'required',
             'jenjang'     => 'required',
@@ -107,8 +113,9 @@ class RiwayatPendidikanController extends Controller
             'ijazah'      => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
-        DB::transaction(function () use ($request, $id) {
-            $data = RiwayatPendidikan::findOrFail($id);
+        $pegawaiId = auth()->user()->hasRole('admin') ? $request->pegawai_id : $data->pegawai_id;
+
+        DB::transaction(function () use ($request, $data, $pegawaiId) {
             $file = $data->ijazah;
 
             if ($request->hasFile('ijazah')) {
@@ -117,7 +124,7 @@ class RiwayatPendidikanController extends Controller
                 }
                 $file = PegawaiStorageService::store(
                     $request->file('ijazah'),
-                    $request->pegawai_id,
+                    $pegawaiId,
                     'ijazah',
                     $request->jenjang ?? 'ijazah'
                 );
@@ -125,7 +132,7 @@ class RiwayatPendidikanController extends Controller
 
             // Pertahankan data lama jika input nullable dikirim kosong / null
             $updateData = [
-                'pegawai_id'  => $request->pegawai_id,
+                'pegawai_id'  => $pegawaiId,
                 'jenjang'     => $request->jenjang,
                 'institusi'   => $request->institusi,
                 'fakultas'    => $request->filled('fakultas') ? $request->fakultas : $data->fakultas,
@@ -137,7 +144,7 @@ class RiwayatPendidikanController extends Controller
             $data->update($updateData);
 
             // Sync ke tabel utama Pegawai
-            Pegawai::where('id', $request->pegawai_id)->update(['pendidikan_terakhir' => $request->jenjang]);
+            Pegawai::where('id', $pegawaiId)->update(['pendidikan_terakhir' => $request->jenjang]);
         });
 
         if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
@@ -153,11 +160,13 @@ class RiwayatPendidikanController extends Controller
 
     public function destroy($id)
     {
-        $data = RiwayatPendidikan::find($id);
-        if ($data?->ijazah) {
+        $data = RiwayatPendidikan::findOrFail($id);
+        $this->authorizeOwnerOrAdmin($data);
+
+        if ($data->ijazah) {
             PegawaiStorageService::delete($data->ijazah);
         }
-        RiwayatPendidikan::destroy($id);
+        $data->delete();
 
         if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
             return redirect()

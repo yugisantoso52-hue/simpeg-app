@@ -26,8 +26,9 @@ class SyncController extends Controller
 
     public function receive(Request $request)
     {
-        // Simple Security Auth
-        if ($request->header('X-Sync-Secret') !== env('SYNC_SECRET_KEY', 'default_secret_key_123!')) {
+        // Verifikasi Kunci Rahasia Sinkronisasi
+        $secretKey = env('SYNC_SECRET_KEY');
+        if (empty($secretKey) || !hash_equals((string)$secretKey, (string)$request->header('X-Sync-Secret'))) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -90,7 +91,9 @@ class SyncController extends Controller
      */
     public function changes(Request $request)
     {
-        if ($request->header('X-Sync-Secret') !== env('SYNC_SECRET_KEY', 'default_secret_key_123!')) {
+        // Verifikasi Kunci Rahasia Sinkronisasi
+        $secretKey = env('SYNC_SECRET_KEY');
+        if (empty($secretKey) || !hash_equals((string)$secretKey, (string)$request->header('X-Sync-Secret'))) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 

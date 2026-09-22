@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RiwayatDiklat\StoreRiwayatDiklatRequest;
 use App\Http\Requests\RiwayatDiklat\UpdateRiwayatDiklatRequest;
 use App\Services\RiwayatDiklatService;
+use App\Traits\AuthorizesRiwayatOwner;
 
 class RiwayatDiklatController extends Controller
 {
+    use AuthorizesRiwayatOwner;
+
     public function __construct(
         protected RiwayatDiklatService $service
     ) {}
@@ -24,10 +27,7 @@ class RiwayatDiklatController extends Controller
 
         $statistics = $this->service->statistics();
 
-        return view('riwayat-diklat.index', compact(
-            'data',
-            'statistics'
-        ));
+        return view('riwayat-diklat.index', compact('data', 'statistics'));
     }
 
     /**
@@ -45,8 +45,13 @@ class RiwayatDiklatController extends Controller
      */
     public function store(StoreRiwayatDiklatRequest $request)
     {
+        $data = $request->validated();
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            $data['pegawai_id'] = auth()->user()->pegawai_id;
+        }
+
         $this->service->create(
-            $request->validated(),
+            $data,
             $request->file('file_sertifikat')
         );
 
@@ -72,8 +77,11 @@ class RiwayatDiklatController extends Controller
      */
     public function edit($id)
     {
+        $data = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($data);
+
         return view('riwayat-diklat.edit', [
-            'data' => $this->service->find($id),
+            'data' => $data,
             'pegawai' => $this->service->pegawai(),
         ]);
     }
@@ -85,6 +93,8 @@ class RiwayatDiklatController extends Controller
         UpdateRiwayatDiklatRequest $request,
         $id
     ) {
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
 
         $this->service->update(
             $id,
@@ -114,6 +124,9 @@ class RiwayatDiklatController extends Controller
      */
     public function destroy($id)
     {
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
+
         $this->service->delete($id);
 
         if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {

@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RiwayatStrSip\StoreRiwayatStrSipRequest;
 use App\Http\Requests\RiwayatStrSip\UpdateRiwayatStrSipRequest;
 use App\Services\RiwayatStrSipService;
+use App\Traits\AuthorizesRiwayatOwner;
 
 class RiwayatStrSipController extends Controller
 {
+    use AuthorizesRiwayatOwner;
+
     public function __construct(
         protected RiwayatStrSipService $service
     ) {}
@@ -34,8 +37,13 @@ class RiwayatStrSipController extends Controller
 
     public function store(StoreRiwayatStrSipRequest $request)
     {
+        $data = $request->validated();
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            $data['pegawai_id'] = auth()->user()->pegawai_id;
+        }
+
         $this->service->create(
-            $request->validated(),
+            $data,
             $request->file('file_dokumen')
         );
 
@@ -52,17 +60,28 @@ class RiwayatStrSipController extends Controller
 
     public function edit(int $id)
     {
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
+
         return view('riwayat-str-sip.edit', [
-            'data'    => $this->service->find($id),
+            'data'    => $existing,
             'pegawai' => $this->service->pegawai(),
         ]);
     }
 
     public function update(UpdateRiwayatStrSipRequest $request, int $id)
     {
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
+
+        $data = $request->validated();
+        if (auth()->user()->hasRole('pegawai')) {
+            $data['pegawai_id'] = $existing->pegawai_id;
+        }
+
         $this->service->update(
             $id,
-            $request->validated(),
+            $data,
             $request->file('file_dokumen')
         );
 
@@ -79,6 +98,9 @@ class RiwayatStrSipController extends Controller
 
     public function destroy(int $id)
     {
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
+
         $this->service->delete($id);
 
         if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {

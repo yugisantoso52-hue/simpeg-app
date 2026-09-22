@@ -150,6 +150,21 @@ class AttendanceController extends Controller
     public function streamPhoto(int $id, string $type)
     {
         $attendance = Attendance::findOrFail($id);
+        $user = auth()->user();
+
+        if (!$user) {
+            abort(401);
+        }
+
+        // Otorisasi IDOR: Admin, Pimpinan, pemilik presensi, atau atasan langsungnya
+        $isOwn = (int)$attendance->user_id === (int)$user->id;
+        $isPrivileged = $user->hasRole(['admin', 'pimpinan']);
+        $isAtasan = $user->isAtasan() && in_array($attendance->user?->pegawai_id, $user->getBawahanIds());
+
+        if (!$isOwn && !$isPrivileged && !$isAtasan) {
+            abort(403, 'Anda tidak memiliki hak akses untuk melihat foto selfie presensi pegawai ini.');
+        }
+
         $path = strtolower($type) === 'out'
             ? $attendance->check_out_photo_path
             : $attendance->check_in_photo_path;

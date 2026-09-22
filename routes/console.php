@@ -40,7 +40,14 @@ Schedule::command(CekPensiunHarian::class)
     ->onOneServer()
     ->runInBackground();
 
-// 5. Auto Backup Database & Storage - Setiap Hari Jam 00:00 WIB
+// 5. Cek Habis Kontrak Pegawai PHL / Honorer - Jam 02:45 WIB
+Schedule::command(\App\Console\Commands\CekKontrakHarian::class)
+    ->dailyAt('02:45')
+    ->timezone('Asia/Jakarta')
+    ->onOneServer()
+    ->runInBackground();
+
+// 6. Auto Backup Database & Storage - Setiap Hari Jam 00:00 WIB
 Schedule::command(\App\Console\Commands\BackupDatabaseCommand::class)
     ->dailyAt('00:00')
     ->timezone('Asia/Jakarta')
@@ -57,4 +64,10 @@ Schedule::command(\App\Console\Commands\BackupDatabaseCommand::class)
 Schedule::command('model:prune')
     ->weekly()
     ->at('03:00')
+    ->timezone('Asia/Jakarta');
+
+// Bersihkan riwayat log aktivitas yang lebih dari 90 hari (Setiap Minggu Jam 03:30 WIB)
+Schedule::command(\App\Console\Commands\PruneActivityLogsCommand::class, ['--days' => 90])
+    ->weekly()
+    ->at('03:30')
     ->timezone('Asia/Jakarta');

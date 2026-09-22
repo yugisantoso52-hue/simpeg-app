@@ -37,13 +37,13 @@ class CloudSyncController extends Controller
     protected function validateToken(Request $request): bool
     {
         $token = $request->query('key') ?? $request->header('X-Sync-Key');
-        $validTokens = [
-            config('app.key'),
-            env('SYNC_TOKEN', 'sikap-sync-secret-key-2026'),
-            'sikap-sync-secret-key-2026',
-        ];
+        $configuredKey = env('SYNC_TOKEN') ?: config('app.key');
 
-        return !empty($token) && in_array($token, array_filter($validTokens));
+        if (empty($configuredKey) || empty($token)) {
+            return false;
+        }
+
+        return hash_equals((string)$configuredKey, (string)$token);
     }
 
     /**
@@ -110,7 +110,7 @@ class CloudSyncController extends Controller
     }
 
     /**
-     * Download a specific storage file during cloud sync
+     * Download a specific storage file during cloud sync (dengan proteksi Path Traversal)
      */
     public function downloadFile(Request $request, $path)
     {
@@ -118,18 +118,33 @@ class CloudSyncController extends Controller
             return response()->json(['error' => 'Akses ditolak.'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $cleanPath = ltrim($path, '/\\');
-        $fullPath = storage_path('app/public/' . $cleanPath);
-
-        if (!File::exists($fullPath)) {
-            // Check in private storage if not found in public
-            $privatePath = storage_path('app/private/' . $cleanPath);
-            if (File::exists($privatePath)) {
-                return response()->download($privatePath);
-            }
-            return response()->json(['error' => 'Berkas tidak ditemukan'], Response::HTTP_NOT_FOUND);
+        $decodedPath = rawurldecode($path);
+        if (str_contains($decodedPath, '..') || str_contains($decodedPath, "\0")) {
+            return response()->json(['error' => 'Jalur berkas tidak valid.'], Response::HTTP_BAD_REQUEST);
         }
 
-        return response()->download($fullPath);
+        $cleanPath = ltrim(str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $decodedPath), DIRECTORY_SEPARATOR);
+
+        $publicStorageRoot = realpath(storage_path('app/public'));
+        $privateStorageRoot = realpath(storage_path('app/private'));
+
+        $targetPath = storage_path('app/public' . DIRECTORY_SEPARATOR . $cleanPath);
+        if (!file_exists($targetPath)) {
+            $targetPath = storage_path('app/private' . DIRECTORY_SEPARATOR . $cleanPath);
+        }
+
+        if (file_exists($targetPath)) {
+            $realTarget = realpath($targetPath);
+            if ($realTarget !== false) {
+                $isInsidePublic = $publicStorageRoot && str_starts_with($realTarget, $publicStorageRoot . DIRECTORY_SEPARATOR);
+                $isInsidePrivate = $privateStorageRoot && str_starts_with($realTarget, $privateStorageRoot . DIRECTORY_SEPARATOR);
+
+                if ($isInsidePublic || $isInsidePrivate) {
+                    return response()->download($realTarget);
+                }
+            }
+        }
+
+        return response()->json(['error' => 'Berkas tidak ditemukan'], Response::HTTP_NOT_FOUND);
     }
 }

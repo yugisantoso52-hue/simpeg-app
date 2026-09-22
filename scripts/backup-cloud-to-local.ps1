@@ -120,12 +120,22 @@ if (-not $rHost) {
 # --- LANGKAH 2: BACKUP BERKAS DARI CLOUDFLARE R2 ---
 Write-Log "[2/2] Memproses Sinkronisasi Berkas dari Cloudflare R2..." "Yellow"
 
-$phpDir = "C:\laragon\bin\php\php-8.4.12-nts-Win32-vs17-x64"
-$phpExe = "$phpDir\php.exe"
-$env:PATH = "$phpDir;" + $env:PATH
-$env:PHPRC = $phpDir
+# Deteksi path PHP secara dinamis (dari PATH atau direktori Laragon)
+$phpExe = $null
+$phpCmd = Get-Command php -ErrorAction SilentlyContinue
+if ($phpCmd) {
+    $phpExe = $phpCmd.Source
+} else {
+    $laragonPhp = Get-ChildItem "C:\laragon\bin\php" -Filter "php.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+    if ($laragonPhp) {
+        $phpExe = $laragonPhp
+        $phpDir = Split-Path $phpExe
+        $env:PATH = "$phpDir;" + $env:PATH
+        $env:PHPRC = $phpDir
+    }
+}
 
-if (Test-Path $phpExe) {
+if ($phpExe -and (Test-Path $phpExe)) {
     try {
         $artisanPath = "$ProjectRoot\artisan"
         & $phpExe $artisanPath simpeg:backup-r2 --dest="$FileBackupDir" --sync-storage
@@ -133,7 +143,7 @@ if (Test-Path $phpExe) {
         Write-Log "  [ERROR] Gagal menjalankan command simpeg:backup-r2: $_" "Red"
     }
 } else {
-    Write-Log "  [ERROR] PHP tidak ditemukan di $phpExe" "Red"
+    Write-Log "  [ERROR] PHP binary tidak ditemukan di PATH maupun C:\laragon\bin\php" "Red"
 }
 
 # --- LANGKAH 3: ROTASI BERKAS CADANGAN LAMA ---

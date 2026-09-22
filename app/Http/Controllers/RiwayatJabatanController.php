@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RiwayatJabatan\StoreRiwayatJabatanRequest;
 use App\Http\Requests\RiwayatJabatan\UpdateRiwayatJabatanRequest;
 use App\Services\RiwayatJabatanService;
+use App\Traits\AuthorizesRiwayatOwner;
 use Illuminate\Http\Request;
 
 class RiwayatJabatanController extends Controller
 {
+    use AuthorizesRiwayatOwner;
+
     public function __construct(
         protected RiwayatJabatanService $service
     ) {
@@ -66,8 +69,11 @@ class RiwayatJabatanController extends Controller
      */
    public function edit($id)
 {
+    $existing = $this->service->find($id);
+    $this->authorizeOwnerOrAdmin($existing);
+
     return view('riwayat-jabatan.edit', [
-        'data'        => $this->service->find($id),
+        'data'        => $existing,
         'pegawai'     => $this->service->pegawai(),
         'jabatan'     => $this->service->jabatan(),
         'unit_kerja'  => $this->service->unitKerja(),
@@ -82,6 +88,7 @@ class RiwayatJabatanController extends Controller
         int $id
     ) {
         $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
         $pegawaiId = $existing->pegawai_id ?? $request->input('pegawai_id', auth()->user()->pegawai_id);
 
         $this->service->update(
@@ -101,6 +108,7 @@ class RiwayatJabatanController extends Controller
     public function destroy(int $id)
     {
         $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
         $pegawaiId = $existing->pegawai_id ?? auth()->user()->pegawai_id;
 
         $this->service->delete($id);

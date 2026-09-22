@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RiwayatPangkat\StoreRiwayatPangkatRequest;
 use App\Http\Requests\RiwayatPangkat\UpdateRiwayatPangkatRequest;
 use App\Services\RiwayatPangkatService;
+use App\Traits\AuthorizesRiwayatOwner;
 use Illuminate\Http\Request;
 
 class RiwayatPangkatController extends Controller
 {
+    use AuthorizesRiwayatOwner;
+
     public function __construct(
         protected RiwayatPangkatService $service
     ) {}
@@ -57,8 +60,11 @@ class RiwayatPangkatController extends Controller
 
     public function edit($id)
     {
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
+
         return view('riwayat-pangkat.edit', [
-            'data'     => $this->service->find($id),
+            'data'     => $existing,
             'pegawai'  => $this->service->pegawai(),
             'golongan' => $this->service->golongan(),
         ]);
@@ -67,6 +73,7 @@ class RiwayatPangkatController extends Controller
     public function update(UpdateRiwayatPangkatRequest $request, $id)
     {
         $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
         $pegawaiId = $existing->pegawai_id ?? $request->input('pegawai_id', auth()->user()->pegawai_id);
 
         $this->service->update(
@@ -83,6 +90,7 @@ class RiwayatPangkatController extends Controller
     public function destroy($id)
     {
         $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
         $pegawaiId = $existing->pegawai_id ?? auth()->user()->pegawai_id;
 
         $this->service->delete($id);

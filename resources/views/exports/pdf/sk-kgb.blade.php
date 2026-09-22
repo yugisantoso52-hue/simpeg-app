@@ -78,4 +78,26 @@
 <p style="text-indent: 30px; text-align: justify;">
     Berdasarkan Masa Kerja Golongan: <strong>{{ $kgb->masa_kerja_tahun }} Tahun {{ $kgb->masa_kerja_bulan }} Bulan</strong>, Terhitung Mulai Tanggal (TMT): <strong>{{ \Carbon\Carbon::parse($kgb->tmt_kgb_baru)->translatedFormat('d F Y') }}</strong>.
 </p>
+
+@if(isset($verifyUrl))
+<table style="width: 100%; margin-top: 25px;">
+    <tr>
+        <td style="width: 55%; vertical-align: top;">
+            <div style="border: 1px dashed #64748b; padding: 8px; border-radius: 6px; font-size: 8pt; color: #475569; width: 85%;">
+                <strong style="color: #0f172a; display: block; margin-bottom: 3px;">🔒 Otentikasi Digital SIKAP FKP UNRI:</strong>
+                Dokumen ini telah divalidasi dan ditandatangani secara elektronik.<br>
+                Verifikasi keabsahan resmi dapat dipindai pada tautan berikut:<br>
+                <a href="{{ $verifyUrl }}" style="color: #2563eb; font-family: monospace; font-size: 6.5pt; word-break: break-all;">{{ $verifyUrl }}</a>
+            </div>
+        </td>
+        <td style="width: 45%; text-align: center; vertical-align: top; font-size: 9pt;">
+            Pekanbaru, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br>
+            <strong>Dekan Fakultas Keperawatan</strong>
+            <br><br><br><br>
+            <strong>Pimpinan Fakultas Keperawatan UNRI</strong><br>
+            <span style="font-size: 8pt; color: #64748b;">SIKAP Certified E-Signature</span>
+        </td>
+    </tr>
+</table>
+@endif
 @endsection

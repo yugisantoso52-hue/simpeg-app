@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RiwayatOrganisasi\StoreRiwayatOrganisasiRequest;
 use App\Http\Requests\RiwayatOrganisasi\UpdateRiwayatOrganisasiRequest;
 use App\Services\RiwayatOrganisasiService;
+use App\Traits\AuthorizesRiwayatOwner;
 
 class RiwayatOrganisasiController extends Controller
 {
+    use AuthorizesRiwayatOwner;
+
     public function __construct(
         protected RiwayatOrganisasiService $service
     ) {}
@@ -37,7 +40,12 @@ class RiwayatOrganisasiController extends Controller
      */
     public function store(StoreRiwayatOrganisasiRequest $request)
     {
-        $this->service->create($request->validated());
+        $data = $request->validated();
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            $data['pegawai_id'] = auth()->user()->pegawai_id;
+        }
+
+        $this->service->create($data);
 
         if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
             return redirect()
@@ -55,8 +63,11 @@ class RiwayatOrganisasiController extends Controller
      */
     public function edit($id)
     {
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
+
         return view('riwayat-organisasi.edit', [
-            'data'    => $this->service->find($id),
+            'data'    => $existing,
             'pegawai' => $this->service->pegawai(),
         ]);
     }
@@ -66,7 +77,15 @@ class RiwayatOrganisasiController extends Controller
      */
     public function update(UpdateRiwayatOrganisasiRequest $request, $id)
     {
-        $this->service->update($id, $request->validated());
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
+
+        $data = $request->validated();
+        if (auth()->user()->hasRole('pegawai')) {
+            $data['pegawai_id'] = $existing->pegawai_id;
+        }
+
+        $this->service->update($id, $data);
 
         if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
             return redirect()
@@ -84,6 +103,9 @@ class RiwayatOrganisasiController extends Controller
      */
     public function destroy($id)
     {
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
+
         $this->service->delete($id);
 
         if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {

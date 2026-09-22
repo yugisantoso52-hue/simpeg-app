@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RiwayatPublikasi\StoreRiwayatPublikasiRequest;
 use App\Http\Requests\RiwayatPublikasi\UpdateRiwayatPublikasiRequest;
 use App\Services\RiwayatPublikasiService;
+use App\Traits\AuthorizesRiwayatOwner;
 
 class RiwayatPublikasiController extends Controller
 {
+    use AuthorizesRiwayatOwner;
+
     public function __construct(
         protected RiwayatPublikasiService $service
     ) {}
@@ -37,8 +40,13 @@ class RiwayatPublikasiController extends Controller
      */
     public function store(StoreRiwayatPublikasiRequest $request)
     {
+        $data = $request->validated();
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            $data['pegawai_id'] = auth()->user()->pegawai_id;
+        }
+
         $this->service->create(
-            $request->validated(),
+            $data,
             $request->file('file_publikasi')
         );
 
@@ -58,8 +66,11 @@ class RiwayatPublikasiController extends Controller
      */
     public function edit($id)
     {
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
+
         return view('riwayat-publikasi.edit', [
-            'data'    => $this->service->find($id),
+            'data'    => $existing,
             'pegawai' => $this->service->pegawai(),
         ]);
     }
@@ -69,9 +80,17 @@ class RiwayatPublikasiController extends Controller
      */
     public function update(UpdateRiwayatPublikasiRequest $request, $id)
     {
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
+
+        $data = $request->validated();
+        if (auth()->user()->hasRole('pegawai')) {
+            $data['pegawai_id'] = $existing->pegawai_id;
+        }
+
         $this->service->update(
             $id,
-            $request->validated(),
+            $data,
             $request->file('file_publikasi')
         );
 
@@ -91,6 +110,9 @@ class RiwayatPublikasiController extends Controller
      */
     public function destroy($id)
     {
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
+
         $this->service->delete($id);
 
         if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {

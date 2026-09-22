@@ -121,9 +121,12 @@ class LogbookController extends Controller
         $logbook = Logbook::with(['pegawai.unitKerja', 'pegawai.jabatan', 'user', 'verifikator'])->findOrFail($id);
         $user = $request->user();
 
-        // Otorisasi: Pegawai hanya boleh melihat miliknya sendiri
+        // Otorisasi: Pegawai hanya boleh melihat miliknya sendiri, KECUALI jika atasan langsung dari pegawai tersebut
         if ($user->hasRole('pegawai') && !$user->hasRole(['admin', 'pimpinan'])) {
-            if ($logbook->user_id !== $user->id && $logbook->pegawai_id !== $user->pegawai_id) {
+            $isOwn = $logbook->user_id === $user->id || $logbook->pegawai_id === $user->pegawai_id;
+            $isAtasan = $user->isAtasan() && in_array($logbook->pegawai_id, $user->getBawahanIds());
+
+            if (!$isOwn && !$isAtasan) {
                 abort(403, 'Anda tidak memiliki hak akses melihat catatan logbook ini.');
             }
         }

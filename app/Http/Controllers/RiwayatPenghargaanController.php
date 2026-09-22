@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RiwayatPenghargaan\StoreRiwayatPenghargaanRequest;
 use App\Http\Requests\RiwayatPenghargaan\UpdateRiwayatPenghargaanRequest;
 use App\Services\RiwayatPenghargaanService;
+use App\Traits\AuthorizesRiwayatOwner;
 
 class RiwayatPenghargaanController extends Controller
 {
+    use AuthorizesRiwayatOwner;
+
     public function __construct(
         protected RiwayatPenghargaanService $service
     ) {}
@@ -37,8 +40,13 @@ class RiwayatPenghargaanController extends Controller
      */
     public function store(StoreRiwayatPenghargaanRequest $request)
     {
+        $data = $request->validated();
+        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+            $data['pegawai_id'] = auth()->user()->pegawai_id;
+        }
+
         $penghargaan = $this->service->create(
-            $request->validated(),
+            $data,
             $request->file('file_sk')
         );
 
@@ -58,8 +66,11 @@ class RiwayatPenghargaanController extends Controller
      */
     public function edit($id)
     {
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
+
         return view('riwayat-penghargaan.edit', [
-            'data'    => $this->service->find($id),
+            'data'    => $existing,
             'pegawai' => $this->service->pegawai(),
         ]);
     }
@@ -69,9 +80,17 @@ class RiwayatPenghargaanController extends Controller
      */
     public function update(UpdateRiwayatPenghargaanRequest $request, $id)
     {
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
+
+        $data = $request->validated();
+        if (auth()->user()->hasRole('pegawai')) {
+            $data['pegawai_id'] = $existing->pegawai_id;
+        }
+
         $penghargaan = $this->service->update(
             $id,
-            $request->validated(),
+            $data,
             $request->file('file_sk')
         );
 
@@ -91,8 +110,9 @@ class RiwayatPenghargaanController extends Controller
      */
     public function destroy($id)
     {
-        $item = $this->service->find($id);
-        $pegawaiId = $item->pegawai_id ?? null;
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
+
         $this->service->delete($id);
 
         if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {

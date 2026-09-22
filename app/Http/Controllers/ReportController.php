@@ -62,8 +62,14 @@ class ReportController extends Controller
             'tmt_kgb_baru'        => $pegawai->kgb_berikutnya ? $pegawai->kgb_berikutnya->format('Y-m-d') : date('Y-m-d'),
         ];
 
-        $pdf = Pdf::loadView('exports.pdf.sk-kgb', compact('kgb'))
+        $watermarkService = app(\App\Services\DocumentWatermarkService::class);
+        $verifyCode = $watermarkService->generateVerificationCode('SK Kenaikan Gaji Berkala', 'KGB/' . $pegawai->nip . '/' . date('Y'), $pegawai->nama_lengkap ?? $pegawai->nama);
+        $verifyUrl = route('verify.document', ['code' => $verifyCode]);
+
+        $pdf = Pdf::loadView('exports.pdf.sk-kgb', compact('kgb', 'verifyUrl', 'verifyCode'))
             ->setPaper('a4', 'portrait');
+
+        $pdf = $watermarkService->applyWatermark($pdf);
 
         return $pdf->stream('SK_KGB_' . $pegawai->nip . '.pdf');
     }
@@ -77,8 +83,12 @@ class ReportController extends Controller
         $repository = app(\App\Repositories\Contracts\DashboardRepositoryInterface::class);
         $reminder = $repository->getReminder();
 
+        $watermarkService = app(\App\Services\DocumentWatermarkService::class);
+
         $pdf = Pdf::loadView('exports.pdf.reminder', compact('reminder', 'type'))
             ->setPaper('a4', 'portrait');
+
+        $pdf = $watermarkService->applyWatermark($pdf);
 
         return $pdf->stream('Pengingat_Kepegawaian_' . $type . '_' . date('Y-m-d') . '.pdf');
     }

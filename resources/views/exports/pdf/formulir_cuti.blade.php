@@ -296,5 +296,12 @@
         </tr>
     </table>
 
+    @if(isset($verifyUrl))
+    <div style="margin-top: 10px; border: 1px dashed #64748b; padding: 5px 8px; font-size: 7.5pt; color: #475569; background-color: #f8fafc;">
+        <strong>🔒 Otentikasi Digital SIKAP FKP UNRI:</strong> Formulir permohonan cuti ini divalidasi dan tercatat secara elektronik. Tautan verifikasi keabsahan resmi: 
+        <a href="{{ $verifyUrl }}" style="color: #2563eb; font-family: monospace; font-size: 6.5pt;">{{ $verifyUrl }}</a>
+    </div>
+    @endif
+
 </body>
 </html>

@@ -3,6 +3,13 @@
     <span class="notranslate" translate="no">Dashboard</span>
 </x-nav-link>
 
+{{-- 1b. Menu Analitik Eksekutif (Khusus Pimpinan & Admin) --}}
+@if(Auth::user()->hasRole(['admin', 'pimpinan']))
+    <x-nav-link :href="route('pimpinan.analytics')" :active="request()->routeIs('pimpinan.analytics*')">
+        📊 Analitik Eksekutif
+    </x-nav-link>
+@endif
+
 {{-- 2. Menu Profil Saya (Khusus Role Pegawai Biasa) --}}
 @if(Auth::user()->hasRole('pegawai'))
     <x-nav-link :href="route('pegawai.my-profile')" :active="request()->routeIs('pegawai.my-profile', 'pegawai.show')">

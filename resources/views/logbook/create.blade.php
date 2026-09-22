@@ -32,8 +32,35 @@
                     </div>
                 </div>
 
+                {{-- BANNER INDIKATOR JARINGAN PWA OFFLINE / ONLINE --}}
+                <div id="pwa-network-banner" class="hidden mb-6 p-4 rounded-xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all">
+                    <div class="flex items-center gap-2.5">
+                        <span id="network-icon" class="text-xl">📴</span>
+                        <div>
+                            <strong id="network-title" class="block font-bold">Mode Offline Terdeteksi</strong>
+                            <span id="network-desc" class="text-[11px] opacity-90">Koneksi internet terputus. Anda tetap bisa mencatat logbook dan menyimpannya di memori HP/laptop ini.</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="saveToOfflineStorage()" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs shrink-0 shadow-xs self-start sm:self-auto">
+                        💾 Simpan Draf di HP
+                    </button>
+                </div>
+
+                {{-- PANEL DRAF TERSIMPAN SECARA OFFLINE DI PERANGKAT --}}
+                <div id="offline-drafts-panel" class="hidden mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                            <span>📦</span> Draf Logbook Tersimpan di Perangkat Ini (<span id="offline-count">0</span>)
+                        </span>
+                        <span class="text-[10px] text-slate-400">Offline Local Storage</span>
+                    </div>
+                    <div id="offline-drafts-list" class="space-y-2 mt-2">
+                        <!-- Diisi oleh JS -->
+                    </div>
+                </div>
+
                 {{-- FORM ENTRI --}}
-                <form method="POST" action="{{ route('logbook.store') }}" enctype="multipart/form-data" class="space-y-6">
+                <form id="logbook-form" method="POST" action="{{ route('logbook.store') }}" enctype="multipart/form-data" class="space-y-6">
                     @csrf
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
@@ -189,6 +216,11 @@
                             Batal
                         </a>
 
+                        <button type="button" onclick="saveToOfflineStorage()"
+                                class="w-full sm:w-auto px-4 py-2.5 text-center text-xs font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-xl transition flex items-center justify-center gap-1.5 shadow-2xs">
+                            <span>📱</span> Simpan Draf Lokal (HP)
+                        </button>
+
                         <button type="submit" name="action" value="draft"
                                 class="w-full sm:w-auto px-5 py-2.5 text-center text-xs font-bold text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-xl transition">
                             💾 Simpan sebagai Draft
@@ -205,9 +237,149 @@
         </div>
     </div>
 
-    {{-- JAVASCRIPT PERHITUNGAN DURASI OTOMATIS --}}
+    {{-- JAVASCRIPT: PERHITUNGAN DURASI & FITUR PWA OFFLINE STORAGE --}}
     <script>
+        const STORAGE_KEY = 'sikap_logbook_offline_drafts';
+
+        // 1. Simpan Draf Form ke Local Storage
+        function saveToOfflineStorage() {
+            const form = document.getElementById('logbook-form');
+            const tanggal = form.querySelector('[name="tanggal"]').value;
+            const jamMulai = form.querySelector('[name="jam_mulai"]').value;
+            const jamSelesai = form.querySelector('[name="jam_selesai"]').value;
+            const kategori = form.querySelector('[name="kategori_kegiatan"]').value;
+            const deskripsi = form.querySelector('[name="deskripsi_aktivitas"]').value;
+            const output = form.querySelector('[name="output_hasil"]').value;
+            const volume = form.querySelector('[name="volume_capaian"]').value;
+            const satuan = form.querySelector('[name="satuan_output"]').value;
+
+            if (!deskripsi && !kategori) {
+                alert('Silakan isi minimal kategori kegiatan atau uraian aktivitas terlebih dahulu.');
+                return;
+            }
+
+            const draft = {
+                id: Date.now(),
+                tanggal: tanggal,
+                jam_mulai: jamMulai,
+                jam_selesai: jamSelesai,
+                kategori_kegiatan: kategori,
+                deskripsi_aktivitas: deskripsi,
+                output_hasil: output,
+                volume_capaian: volume,
+                satuan_output: satuan,
+                saved_at: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+            };
+
+            let drafts = getOfflineDrafts();
+            drafts.unshift(draft);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts));
+
+            renderOfflineDrafts();
+            alert('✓ Berhasil! Draf logbook telah disimpan di memori HP/laptop Anda.');
+        }
+
+        function getOfflineDrafts() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function deleteOfflineDraft(id) {
+            let drafts = getOfflineDrafts().filter(d => d.id !== id);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts));
+            renderOfflineDrafts();
+        }
+
+        function restoreOfflineDraft(id) {
+            const draft = getOfflineDrafts().find(d => d.id === id);
+            if (!draft) return;
+
+            const form = document.getElementById('logbook-form');
+            if (draft.tanggal) form.querySelector('[name="tanggal"]').value = draft.tanggal;
+            if (draft.jam_mulai) form.querySelector('[name="jam_mulai"]').value = draft.jam_mulai;
+            if (draft.jam_selesai) form.querySelector('[name="jam_selesai"]').value = draft.jam_selesai;
+            if (draft.kategori_kegiatan) form.querySelector('[name="kategori_kegiatan"]').value = draft.kategori_kegiatan;
+            if (draft.deskripsi_aktivitas) form.querySelector('[name="deskripsi_aktivitas"]').value = draft.deskripsi_aktivitas;
+            if (draft.output_hasil) form.querySelector('[name="output_hasil"]').value = draft.output_hasil;
+            if (draft.volume_capaian) form.querySelector('[name="volume_capaian"]').value = draft.volume_capaian;
+            if (draft.satuan_output) form.querySelector('[name="satuan_output"]').value = draft.satuan_output;
+
+            const startInput = document.getElementById('jam_mulai');
+            startInput.dispatchEvent(new Event('input'));
+
+            alert('✓ Draf berhasil dipulihkan ke dalam formulir!');
+            window.scrollTo({ top: form.offsetTop - 50, behavior: 'smooth' });
+        }
+
+        function renderOfflineDrafts() {
+            const panel = document.getElementById('offline-drafts-panel');
+            const list = document.getElementById('offline-drafts-list');
+            const countBadge = document.getElementById('offline-count');
+            const drafts = getOfflineDrafts();
+
+            if (drafts.length === 0) {
+                panel.classList.add('hidden');
+                return;
+            }
+
+            panel.classList.remove('hidden');
+            countBadge.textContent = drafts.length;
+
+            list.innerHTML = '';
+            drafts.forEach((d) => {
+                const item = document.createElement('div');
+                item.className = 'p-3 bg-white rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs shadow-2xs';
+                item.innerHTML = `
+                    <div>
+                        <strong class="text-slate-800">${d.kategori_kegiatan || 'Aktivitas Umum'}</strong>
+                        <span class="text-slate-400 font-mono text-[11px] ml-1.5">(${d.tanggal || '-'} • ${d.jam_mulai}-${d.jam_selesai})</span>
+                        <p class="text-slate-600 line-clamp-1 text-[11px] mt-0.5">${d.deskripsi_aktivitas || '-'}</p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" onclick="restoreOfflineDraft(${d.id})" class="px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg font-bold">
+                            ✏️ Gunakan
+                        </button>
+                        <button type="button" onclick="deleteOfflineDraft(${d.id})" class="px-2 py-1 text-rose-600 hover:bg-rose-50 rounded-lg font-bold">
+                            ✕ Hapus
+                        </button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // 2. Monitoring Status Jaringan Online/Offline
+        function updateNetworkStatus() {
+            const banner = document.getElementById('pwa-network-banner');
+            const icon = document.getElementById('network-icon');
+            const title = document.getElementById('network-title');
+            const desc = document.getElementById('network-desc');
+
+            if (!navigator.onLine) {
+                banner.className = 'mb-6 p-4 rounded-xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all bg-amber-100 border border-amber-300 text-amber-900';
+                icon.textContent = '📴';
+                title.textContent = 'Mode Offline (Tanpa Sinyal Internet)';
+                desc.textContent = 'Anda dapat tetap menulis logbook. Gunakan tombol "Simpan Draf di HP" agar tulisan Anda tidak hilang.';
+                banner.classList.remove('hidden');
+            } else {
+                const drafts = getOfflineDrafts();
+                if (drafts.length > 0) {
+                    banner.className = 'mb-6 p-4 rounded-xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all bg-emerald-100 border border-emerald-300 text-emerald-900';
+                    icon.textContent = '🌐';
+                    title.textContent = 'Koneksi Internet Terhubung';
+                    desc.textContent = `Ada ${drafts.length} draf offline tersimpan di perangkat ini yang siap Anda ajukan ke server.`;
+                    banner.classList.remove('hidden');
+                } else {
+                    banner.classList.add('hidden');
+                }
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
+            // Durasi otomatis
             const startInput = document.getElementById('jam_mulai');
             const endInput = document.getElementById('jam_selesai');
             const badge = document.getElementById('durasi_badge');
@@ -251,6 +423,13 @@
             startInput.addEventListener('input', updateDuration);
             endInput.addEventListener('input', updateDuration);
             updateDuration();
+
+            // PWA Offline logic
+            updateNetworkStatus();
+            renderOfflineDrafts();
+
+            window.addEventListener('online', updateNetworkStatus);
+            window.addEventListener('offline', updateNetworkStatus);
         });
     </script>
 </x-app-layout>

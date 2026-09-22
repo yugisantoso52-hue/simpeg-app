@@ -28,6 +28,7 @@ php artisan route:cache
 php artisan view:cache
 
 # 6. Build ulang asset jika ada perubahan frontend
+npm ci --prefer-offline || npm install
 npm run build || true
 
 # 7. Restart PHP-FPM

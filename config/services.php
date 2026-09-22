@@ -41,4 +41,10 @@ return [
         'root_folder_id' => env('GAS_DRIVE_ROOT_FOLDER_ID', '1Q1pGfeA2brd3KPmErFNiRnzwGnjw0gex'),
     ],
 
+    'sync' => [
+        'outbox_enabled' => env('SYNC_OUTBOX_ENABLED', false),
+        'secret_key'     => env('SYNC_SECRET_KEY'),
+        'online_url'     => env('ONLINE_SYNC_URL', 'http://localhost/api/v1/sync/receive'),
+    ],
+
 ];
