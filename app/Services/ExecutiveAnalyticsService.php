@@ -20,12 +20,12 @@ class ExecutiveAnalyticsService
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
 
-        // Total Pegawai Aktif & Kategori
-        $pegawaiAktif = Pegawai::where('status_pegawai', 'Aktif')->get();
+        // Total Pegawai Aktif & Kategori Resmi (Dosen, Tendik, PHL)
+        $pegawaiAktif = Pegawai::with(['jabatan', 'unitKerja'])->where('status_pegawai', 'Aktif')->get();
         $totalAktif = $pegawaiAktif->count();
-        $totalDosen = $pegawaiAktif->filter(fn($p) => strtolower($p->jenis_pegawai ?? '') === 'dosen')->count();
-        $totalTendik = $pegawaiAktif->filter(fn($p) => strtolower($p->jenis_pegawai ?? '') === 'tendik')->count();
-        $totalPhl = $pegawaiAktif->filter(fn($p) => str_contains(strtolower($p->jenis_pegawai ?? ''), 'phl') || str_contains(strtolower($p->status_kepegawaian ?? ''), 'honorer'))->count();
+        $totalDosen = $pegawaiAktif->filter(fn($p) => $p->kategori_kepegawaian === 'Dosen')->count();
+        $totalTendik = $pegawaiAktif->filter(fn($p) => $p->kategori_kepegawaian === 'Tendik')->count();
+        $totalPhl = $pegawaiAktif->filter(fn($p) => $p->kategori_kepegawaian === 'PHL')->count();
 
         // Kinerja Logbook Bulan Ini
         $logbookTotal = Logbook::whereBetween('tanggal', [$startDate->toDateString(), $endDate->toDateString()])->count();
@@ -105,7 +105,12 @@ class ExecutiveAnalyticsService
                 return 60;
             });
 
-            $labels[] = $unit->nama_unit;
+            $displayName = $unit->nama_unit;
+            if (str_contains(strtolower($unit->nama_unit), 'fakultas keperawatan')) {
+                $displayName = 'Fakultas Keperawatan (Dosen & Dekanat)';
+            }
+
+            $labels[] = $displayName;
             $totalHours[] = round($sumMinutes / 60, 1);
             $approvedCounts[] = $logs->where('status', Logbook::STATUS_DISETUJUI)->count();
             $pendingCounts[] = $logs->where('status', Logbook::STATUS_DIAJUKAN)->count();
@@ -242,13 +247,11 @@ class ExecutiveAnalyticsService
      */
     public function getStaffComposition(): array
     {
-        $dosen = Pegawai::with('jabatan')
+        $allPegawai = Pegawai::with('jabatan')
             ->where('status_pegawai', 'Aktif')
-            ->where(function ($q) {
-                $q->where('jenis_pegawai', 'Dosen')
-                  ->orWhere('jenis_pegawai', 'like', '%dosen%');
-            })
             ->get();
+
+        $dosen = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'Dosen');
 
         // 1. Jabatan Fungsional Dosen
         $jafungCounts = [

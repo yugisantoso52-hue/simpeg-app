@@ -40,80 +40,100 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-            <!-- 1. KARTU KPI EKSEKUTIF UTAMA -->
+            <!-- 1. KARTU KPI EKSEKUTIF UTAMA (INTERAKTIF & DAPAT DIKLIK) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <!-- Total SDM Aktif -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex items-center justify-between">
+                <!-- Total SDM Aktif (Klik untuk menuju Master Pegawai) -->
+                <a href="{{ route('pegawai.index') }}" class="group bg-white rounded-2xl border border-slate-200 hover:border-blue-500 p-5 shadow-2xs hover:shadow-md transition-all flex items-center justify-between block cursor-pointer" title="Klik untuk membuka Master Seluruh Pegawai">
                     <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total SDM Aktif</span>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-blue-600 transition">Total SDM Aktif</span>
                         <h3 class="text-2xl font-black text-slate-800 mt-1">{{ $kpis['total_aktif'] }} <span class="text-xs font-normal text-slate-500">Orang</span></h3>
                         <p class="text-[11px] text-blue-600 font-semibold mt-1">
                             👨‍🏫 {{ $kpis['total_dosen'] }} Dosen • 🧑‍💼 {{ $kpis['total_tendik'] }} Tendik
+                            @if(($kpis['total_phl'] ?? 0) > 0)
+                                • 👷 {{ $kpis['total_phl'] }} PHL
+                            @endif
                         </p>
+                        <span class="text-[10px] text-blue-500 font-semibold group-hover:underline flex items-center gap-1 mt-1.5">
+                            Buka Data Pegawai →
+                        </span>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-2xl">
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center text-2xl transition-colors">
                         👥
                     </div>
-                </div>
+                </a>
 
-                <!-- Capaian Logbook Bulanan -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex items-center justify-between">
+                <!-- Capaian Logbook Bulanan (Klik untuk menuju Verifikasi Logbook) -->
+                <a href="{{ route('admin.logbook.index') }}" class="group bg-white rounded-2xl border border-slate-200 hover:border-emerald-500 p-5 shadow-2xs hover:shadow-md transition-all flex items-center justify-between block cursor-pointer" title="Klik untuk membuka Halaman Verifikasi Logbook">
                     <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Verifikasi Logbook</span>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-emerald-600 transition">Verifikasi Logbook</span>
                         <h3 class="text-2xl font-black text-emerald-600 mt-1">{{ $kpis['logbook_rate'] }}%</h3>
                         <p class="text-[11px] text-slate-500 mt-1">
                             ✓ {{ $kpis['logbook_approved'] }} Selesai • ⏳ {{ $kpis['logbook_pending'] }} Menunggu
                         </p>
+                        <span class="text-[10px] text-emerald-600 font-semibold group-hover:underline flex items-center gap-1 mt-1.5">
+                            Buka Verifikasi Logbook →
+                        </span>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-2xl">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center text-2xl transition-colors">
                         📝
                     </div>
-                </div>
+                </a>
 
-                <!-- Kepatuhan Presensi -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex items-center justify-between">
+                <!-- Kepatuhan Presensi (Klik untuk menuju Rekap Presensi) -->
+                <a href="{{ route('admin.presensi.index') }}" class="group bg-white rounded-2xl border border-slate-200 hover:border-indigo-500 p-5 shadow-2xs hover:shadow-md transition-all flex items-center justify-between block cursor-pointer" title="Klik untuk membuka Rekapitulasi Presensi">
                     <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Kepatuhan Presensi</span>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-indigo-600 transition">Kepatuhan Presensi</span>
                         <h3 class="text-2xl font-black text-indigo-600 mt-1">{{ $kpis['presensi_rate'] }}%</h3>
                         <p class="text-[11px] text-slate-500 mt-1">
-                            Tepat Waktu: {{ $kpis['presensi_tepat'] }} • Telat: {{ $kpis['presensi_telat'] }}
+                            Tepat: {{ $kpis['presensi_tepat'] }} • Telat: {{ $kpis['presensi_telat'] }}
                         </p>
+                        <span class="text-[10px] text-indigo-600 font-semibold group-hover:underline flex items-center gap-1 mt-1.5">
+                            Buka Rekap Presensi →
+                        </span>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-2xl">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center text-2xl transition-colors">
                         📍
                     </div>
-                </div>
+                </a>
 
-                <!-- Radar Pensiun 5 Tahun -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex items-center justify-between">
+                <!-- Radar Pensiun 5 Tahun (Klik untuk scroll ke Tabel Radar Pensiun) -->
+                <a href="#tabel-radar-pensiun" class="group bg-white rounded-2xl border border-slate-200 hover:border-amber-500 p-5 shadow-2xs hover:shadow-md transition-all flex items-center justify-between block cursor-pointer" title="Klik untuk melihat Daftar Nama Pegawai Mendekati Pensiun">
                     <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Radar BUP Pensiun</span>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-amber-600 transition">Radar BUP Pensiun</span>
                         <h3 class="text-2xl font-black text-amber-600 mt-1">{{ $kpis['pensiun_5_tahun'] }} <span class="text-xs font-normal text-slate-500">Pegawai</span></h3>
                         <p class="text-[11px] text-amber-700 font-semibold mt-1">
                             Mendekati BUP (Rentang 1-5 Thn)
                         </p>
+                        <span class="text-[10px] text-amber-700 font-semibold group-hover:underline flex items-center gap-1 mt-1.5">
+                            Lihat Daftar Pegawai ↓
+                        </span>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-2xl">
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center text-2xl transition-colors">
                         ⏳
                     </div>
-                </div>
+                </a>
             </div>
 
             <!-- 2. GRID GRAFIK UTAMA: BEBAN KERJA LOGBOOK & TREN PRESENSI -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Grafik 1: Beban Kerja Jam Efektif Logbook per Unit -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-                                <span>⏱️</span> Beban Kerja Jam Logbook per Unit Kerja
-                            </h3>
-                            <p class="text-[11px] text-slate-500">Total akumulasi jam kerja efektif bulan {{ $namaBulan[$month] }} {{ $year }}</p>
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                                    <span>⏱️</span> Beban Kerja Jam Logbook per Unit Kerja
+                                </h3>
+                                <p class="text-[11px] text-slate-500">Total akumulasi jam kerja efektif bulan {{ $namaBulan[$month] }} {{ $year }}</p>
+                            </div>
                         </div>
                     </div>
                     <div class="relative h-64">
                         <canvas id="chartWorkload"></canvas>
                     </div>
+                    <p class="text-[10px] text-slate-400 mt-3 pt-2 border-t border-slate-100 leading-tight">
+                        💡 <strong>Struktur Unit:</strong> Unit <em>Fakultas Keperawatan</em> menaungi seluruh Dosen (Tenaga Pendidik) & Pimpinan Fakultas, sedangkan unit lainnya merupakan Subbagian Tata Usaha (Tenaga Kependidikan).
+                    </p>
                 </div>
 
                 <!-- Grafik 2: Tren Presensi Harian Fakultas -->
@@ -193,7 +213,7 @@
 
             <!-- 4. TABEL DETAIL RADAR PENSIUN (ACCORDION DETAIL) -->
             @if($retirementRadar['details']['tahun_ini']->isNotEmpty() || $retirementRadar['details']['tahun_1']->isNotEmpty())
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs overflow-hidden">
+            <div id="tabel-radar-pensiun" class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs overflow-hidden scroll-mt-6">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
