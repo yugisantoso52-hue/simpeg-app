@@ -96,7 +96,7 @@
             <div class="relative z-10 pt-4 border-t border-white/15 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-emerald-200/80 gap-2">
                 <div>
                     <span>&copy; {{ date('Y') }} Fakultas Keperawatan Universitas Riau</span>
-                    <span class="block text-[11px] text-emerald-200/90 font-medium mt-0.5">Pengembang Sistem: Rahmad Hidayat Majlan, S.T. (RHM)</span>
+                    <span class="block text-[11px] text-emerald-200/75 mt-0.5">Pengembang Sistem: Rahmad Hidayat Majlan, S.T. (RHM)</span>
                 </div>
                 <span class="text-right text-[11px]">Kampus Bina Widya Gedung HSC Km. 12,5 Pekanbaru</span>
             </div>
@@ -258,8 +258,8 @@
                     </span>
                     <span>Enkripsi TLS/SSL 256-Bit</span>
                 </div>
-                <div class="text-left text-slate-500 pt-1 border-t border-slate-50">
-                    Pengembang: <span class="font-semibold text-slate-700">Rahmad Hidayat Majlan, S.T. (RHM)</span>
+                <div class="text-left text-slate-400 pt-1 border-t border-slate-50">
+                    Pengembang: Rahmad Hidayat Majlan, S.T. (RHM)
                 </div>
             </div>
         </div>

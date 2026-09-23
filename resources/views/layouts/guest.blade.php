@@ -37,7 +37,7 @@
 
                 <div class="mt-6 text-center text-xs text-slate-500 font-medium space-y-1">
                     <div>&copy; {{ date('Y') }} <strong>SIKAP</strong> — Fakultas Keperawatan Universitas Riau</div>
-                    <div class="text-[11px] text-slate-400">Pengembang Sistem: <span class="font-semibold text-slate-600">Rahmad Hidayat Majlan, S.T. (RHM)</span></div>
+                    <div class="text-[11px] text-slate-500">Pengembang Sistem: Rahmad Hidayat Majlan, S.T. (RHM)</div>
                 </div>
             </div>
         @endif
