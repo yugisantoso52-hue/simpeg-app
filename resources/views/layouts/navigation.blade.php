@@ -39,27 +39,35 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- 2. MENU NAVIGASI UTAMA (CENTERED MENU)     -->
+    <!-- 2. MENU NAVIGASI UTAMA (RESPONSIVE FLEX)   -->
     <!-- ========================================== -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 notranslate" translate="no">
-        <div class="relative flex items-center justify-center h-14">
+    <div class="max-w-7xl 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 notranslate" translate="no">
+        <div class="flex items-center justify-between h-14">
 
-            <!-- Navigation Links (Center Aligned Desktop) -->
-            <div class="hidden sm:flex sm:items-center sm:space-x-8 notranslate" translate="no">
-                @include('layouts.partials.nav-desktop')
+            <!-- Mobile Brand Label (Tampil saat Mobile & Tablet) -->
+            <div class="flex items-center lg:hidden">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-[#007a3d]"></span>
+                    SIKAP UNRI
+                </span>
             </div>
 
-            <!-- Profile User (Absolut di Pojok Kanan) -->
-            <div class="hidden sm:flex sm:items-center absolute right-0">
+            <!-- Navigation Links (Desktop: Rata Kiri & Responsif Dinamis) -->
+            <nav class="hidden lg:flex items-center space-x-2 xl:space-x-4 2xl:space-x-6 notranslate" translate="no">
+                @include('layouts.partials.nav-desktop')
+            </nav>
+
+            <!-- Profile User (Desktop: In-flow Flex Child, Mencegah Tumpang Tindih) -->
+            <div class="hidden lg:flex items-center shrink-0 ms-3">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-1.5 border border-gray-200 text-sm leading-4 font-medium rounded-lg text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none transition ease-in-out duration-150 shadow-sm">
+                        <button class="inline-flex items-center px-3 py-1.5 border border-gray-200 text-xs xl:text-sm leading-4 font-medium rounded-lg text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none transition ease-in-out duration-150 shadow-sm cursor-pointer">
                             <div class="flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-green-500"></span>
-                                <span>{{ Auth::user()->name }}</span>
+                                <span class="w-2 h-2 rounded-full bg-green-500 shrink-0"></span>
+                                <span class="max-w-[130px] truncate">{{ Auth::user()->name }}</span>
                             </div>
 
-                            <div class="ms-1.5">
+                            <div class="ms-1.5 shrink-0">
                                 <svg class="fill-current h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                 </svg>
@@ -85,9 +93,9 @@
                 </x-dropdown>
             </div>
 
-            <!-- Hamburger Button (Mobile View - Pojok Kanan) -->
-            <div class="flex items-center sm:hidden absolute right-0">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out">
+            <!-- Hamburger Button (Mobile & Tablet View) -->
+            <div class="flex items-center lg:hidden">
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none transition duration-150 ease-in-out" aria-label="Buka Menu">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -97,8 +105,8 @@
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu (Mobile View) -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden border-t border-gray-200 bg-gray-50">
+    <!-- Responsive Navigation Menu (Mobile & Tablet View) -->
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden lg:hidden border-t border-gray-200 bg-gray-50">
         @include('layouts.partials.nav-mobile')
 
         <!-- Responsive Settings Options -->
