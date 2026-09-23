@@ -1,95 +1,93 @@
-﻿# =============================================================================
-# Docker Compose - SIMPEG-APP Local Server
-# Dibuat untuk: PC Lokal Windows 11 + Tailscale VPN
 # =============================================================================
+# DOCKER COMPOSE - SIKAP (Sistem Informasi Kepegawaian & Kinerja Pegawai)
+# Fakultas Keperawatan Universitas Riau (FKP UNRI)
+# Target Subdomain: sikap.fkp.unri.ac.id
+# =============================================================================
+
+version: '3.8'
 
 services:
 
   # ---------------------------------------------------------------------------
-  # DATABASE: MySQL 8
+  # 1. DATABASE: MySQL 8.0
   # ---------------------------------------------------------------------------
   db:
     image: mysql:8.0
-    container_name: simpeg-db
+    container_name: sikap-mysql
     restart: always
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword_simpeg_2024
-      MYSQL_DATABASE: simpeg
-      MYSQL_USER: simpeg_user
-      MYSQL_PASSWORD: simpeg_pass_lokal_2024
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-RootPass_SIKAP_2026!}
+      MYSQL_DATABASE: ${DB_DATABASE:-simpeg}
+      MYSQL_USER: ${DB_USERNAME:-sikap_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-Pass_SIKAP_UNRI_2026!}
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
     ports:
-      - "3306:3306"
+      - "${DB_EXTERNAL_PORT:-127.0.0.1:3306}:3306"
     networks:
-      - simpeg-network
+      - sikap-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword_simpeg_2024"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-RootPass_SIKAP_2026!}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
 
   # ---------------------------------------------------------------------------
-  # APLIKASI: Laravel + Nginx + PHP-FPM
+  # 2. APLIKASI WEB: PHP 8.3 FPM + Nginx + Queue Worker (Multi-Stage Image)
   # ---------------------------------------------------------------------------
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: simpeg-app
+    image: sikap-fkp-unri:latest
+    container_name: sikap-app
     restart: always
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
-      APP_NAME: "SIKAP FKP UNRI"
-      APP_ENV: production
-      APP_DEBUG: "false"
-      APP_URL: "http://localhost"
-      APP_LOCALE: id
-      APP_FALLBACK_LOCALE: en
-      APP_FAKER_LOCALE: id_ID
-      APP_MAINTENANCE_DRIVER: file
-      BCRYPT_ROUNDS: "12"
-      LOG_CHANNEL: stack
-      LOG_STACK: single
-      LOG_LEVEL: error
+      APP_NAME: "${APP_NAME:-SIKAP FKP UNRI}"
+      APP_ENV: "${APP_ENV:-production}"
+      APP_DEBUG: "${APP_DEBUG:-false}"
+      APP_URL: "${APP_URL:-https://sikap.fkp.unri.ac.id}"
       DB_CONNECTION: mysql
       DB_HOST: db
-      DB_PORT: "3306"
-      DB_DATABASE: simpeg
-      DB_USERNAME: simpeg_user
-      DB_PASSWORD: simpeg_pass_lokal_2024
-      SESSION_DRIVER: database
-      SESSION_LIFETIME: "120"
-      BROADCAST_CONNECTION: log
-      FILESYSTEM_DISK: public
-      QUEUE_CONNECTION: database
-      CACHE_STORE: database
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-simpeg}
+      DB_USERNAME: ${DB_USERNAME:-sikap_user}
+      DB_PASSWORD: ${DB_PASSWORD:-Pass_SIKAP_UNRI_2026!}
+      RUN_MIGRATIONS: "${RUN_MIGRATIONS:-true}"
     ports:
-      - "8080:80"
+      - "${APP_PORT:-80}:80"
     volumes:
-      - app_storage:/var/www/storage/app/public
-      - app_logs:/var/www/storage/logs
+      - storage_data:/var/www/html/storage/app/public
+      - logs_data:/var/www/html/storage/logs
     networks:
-      - simpeg-network
+      - sikap-network
 
 # -----------------------------------------------------------------------------
-# VOLUMES: Data Persisten (tidak hilang saat container restart)
+# VOLUMES PERSISTEN (Data tersimpan aman di host VPS)
 # -----------------------------------------------------------------------------
 volumes:
   mysql_data:
+    name: sikap_mysql_data
     driver: local
-  app_storage:
+  storage_data:
+    name: sikap_storage_data
     driver: local
-  app_logs:
+  logs_data:
+    name: sikap_logs_data
     driver: local
 
 # -----------------------------------------------------------------------------
-# NETWORKS
+# NETWORK ISOLATION
 # -----------------------------------------------------------------------------
 networks:
-  simpeg-network:
+  sikap-network:
+    name: sikap-net
     driver: bridge

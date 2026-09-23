@@ -1,0 +1,2 @@
+-- Letakkan skrip SQL inisialisasi awal (jika ada) di folder ini.
+-- File .sql yang diletakkan di sini akan dieksekusi otomatis saat container MySQL pertama kali dibuat.

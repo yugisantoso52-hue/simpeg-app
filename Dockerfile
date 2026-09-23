@@ -1,125 +1,108 @@
-FROM public.ecr.aws/docker/library/php:8.3-fpm
+# =============================================================================
+# STAGE 1: FRONTEND BUILD (Vite + Tailwind CSS + Alpine.js)
+# =============================================================================
+FROM node:20-alpine AS frontend-builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --ignore-scripts
+COPY resources ./resources
+COPY vite.config.js tailwind.config.js postcss.config.js ./
+COPY public ./public
+RUN npm run build
 
-# Install dependensi sistem, ekstensi PHP, Node.js, dan Composer
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    zip \
-    unzip \
+# =============================================================================
+# STAGE 2: PHP DEPENDENCIES (Composer Vendor Build)
+# =============================================================================
+FROM composer:2.7 AS composer-builder
+WORKDIR /app
+COPY composer*.json ./
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-plugins \
+    --no-scripts \
+    --prefer-dist \
+    --optimize-autoloader
+
+# =============================================================================
+# STAGE 3: PRODUCTION RUNTIME (PHP 8.3 FPM + Nginx + Supervisord)
+# =============================================================================
+FROM php:8.3-fpm-alpine
+
+LABEL maintainer="Tim Pengembang SIKAP FKP UNRI <rahmad.hidayat@staff.unri.ac.id>"
+LABEL description="Sistem Informasi Kepegawaian & Kinerja Pegawai (SIKAP) Fakultas Keperawatan Universitas Riau"
+
+# Set direktori kerja aplikasi
+WORKDIR /var/www/html
+
+# Install paket sistem dependensi runtime & Nginx & Supervisor
+RUN apk add --no-cache \
     nginx \
     supervisor \
-    default-mysql-client \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip opcache \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --version=2.7.7 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    curl \
+    netcat-openbsd \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
+    libwebp-dev \
+    libzip-dev \
+    icu-dev \
+    libxml2-dev \
+    oniguruma-dev \
+    tzdata
 
-# Konfigurasi custom php.ini (Upload & OPcache High Performance)
-RUN echo 'upload_max_filesize = 20M\n\
-post_max_size = 25M\n\
-memory_limit = 256M\n\
-max_execution_time = 300\n\
-opcache.enable = 1\n\
-opcache.enable_cli = 0\n\
-opcache.memory_consumption = 128\n\
-opcache.interned_strings_buffer = 16\n\
-opcache.max_accelerated_files = 10000\n\
-opcache.revalidate_freq = 2\n\
-opcache.fast_shutdown = 1' > /usr/local/etc/php/conf.d/production-tuning.ini
+# Konfigurasi dan compile ekstensi PHP yang diwajibkan oleh UPT TIK UNRI
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) \
+        pdo_mysql \
+        mbstring \
+        gd \
+        zip \
+        intl \
+        bcmath \
+        fileinfo \
+        exif \
+        xml \
+        opcache
 
-# Environment variables Composer
-ENV COMPOSER_ALLOW_SUPERUSER=1 \
-    COMPOSER_MEMORY_LIMIT=-1 \
-    COMPOSER_PROCESS_TIMEOUT=600 \
-    COMPOSER_MAX_PARALLEL_HTTP=4
+# Salin konfigurasi PHP & Nginx & Supervisor
+COPY docker/php/custom.ini /usr/local/etc/php/conf.d/99-custom.ini
+COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
-# Set working directory
-WORKDIR /var/www
+# Beri hak eksekusi pada script entrypoint
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# 1. Optimasi Cache: Install dependencies PHP terlebih dahulu
-COPY composer.json composer.lock ./
+# Salin source code aplikasi
+COPY . .
 
-RUN composer config --global repo.packagist composer https://packagist.org \
-    && (composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist --ignore-platform-req=php \
-        || (echo "Retrying composer install (attempt 2)..." && sleep 5 && composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist --ignore-platform-req=php) \
-        || (echo "Retrying composer install (attempt 3)..." && sleep 10 && composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist --ignore-platform-req=php))
+# Salin vendor dari Stage 2
+COPY --from=composer-builder /app/vendor /var/www/html/vendor
 
-# 2. Optimasi Cache: Install dependencies NPM (termasuk Vite)
-COPY package.json package-lock.json ./
-RUN npm install
+# Salin compiled frontend assets dari Stage 1
+COPY --from=frontend-builder /app/public/build /var/www/html/public/build
 
-# 3. Copy seluruh source code aplikasi
-COPY . /var/www
+# Dump autoload composer final
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+RUN composer dump-autoload --optimize --no-dev --classmap-authoritative \
+    && rm /usr/bin/composer
 
-# 4. Generate optimized autoloader & build asset frontend (Vite)
-RUN composer dump-autoload --optimize --no-dev --ignore-platform-req=php \
-    && npm run build \
-    && rm -rf node_modules
+# Setup permission direktori storage dan cache
+RUN mkdir -p /var/www/html/storage/app/public \
+             /var/www/html/storage/framework/cache/data \
+             /var/www/html/storage/framework/sessions \
+             /var/www/html/storage/framework/views \
+             /var/www/html/storage/logs \
+             /var/www/html/bootstrap/cache \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Set permission storage dan bootstrap/cache
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
-    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-
-# Konfigurasi Nginx Berkecepatan Tinggi (Gzip, FastCGI Buffering, Static Caching)
-RUN echo 'server {\n\
-    listen 80;\n\
-    index index.php index.html;\n\
-    root /var/www/public;\n\
-    client_max_body_size 25M;\n\
-\n\
-    # Gzip Compression\n\
-    gzip on;\n\
-    gzip_vary on;\n\
-    gzip_min_length 256;\n\
-    gzip_proxied any;\n\
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;\n\
-\n\
-    location / {\n\
-        try_files $uri $uri/ /index.php?$query_string;\n\
-    }\n\
-\n\
-    # Static Assets Caching\n\
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff|woff2|ttf|svg)$ {\n\
-        expires 30d;\n\
-        add_header Cache-Control "public, no-transform";\n\
-        access_log off;\n\
-    }\n\
-\n\
-    location ~ \.php$ {\n\
-        fastcgi_pass 127.0.0.1:9000;\n\
-        fastcgi_index index.php;\n\
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n\
-        fastcgi_buffer_size 32k;\n\
-        fastcgi_buffers 16 16k;\n\
-        include fastcgi_params;\n\
-    }\n\
-}' > /etc/nginx/sites-available/default
-
-# Konfigurasi Supervisor & Startup Command yang Cepat & Optimal
-RUN echo '[supervisord]\n\
-nodaemon=true\n\
-\n\
-[program:php-fpm]\n\
-command=php-fpm\n\
-autostart=true\n\
-autorestart=true\n\
-\n\
-[program:nginx]\n\
-command=nginx -g "daemon off;"\n\
-autostart=true\n\
-autorestart=true\n\
-\n\
-[program:startup]\n\
-command=/bin/sh -c "php /var/www/artisan migrate --force && php /var/www/artisan config:cache && php /var/www/artisan route:cache && php /var/www/artisan view:cache && php /var/www/artisan storage:link --force"\n\
-autostart=true\n\
-autorestart=false\n\
-startretries=1\n' > /etc/supervisor/conf.d/supervisord.conf
-
+# Expose Port 80 untuk Nginx
 EXPOSE 80
 
+# Gunakan script entrypoint khusus
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+# Perintah default: Jalankan Supervisord (mengelola PHP-FPM, Nginx, dan Queue Worker)
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
