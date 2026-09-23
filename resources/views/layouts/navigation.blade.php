@@ -23,7 +23,7 @@
                 <x-slot name="content">
                     <div class="px-4 py-2 border-b border-gray-100 bg-gray-50">
                         <div class="text-xs font-bold text-gray-800 truncate">{{ Auth::user()->name }}</div>
-                        <div class="text-[10px] text-gray-500 truncate">{{ Auth::user()->email }}</div>
+                        <div class="text-[10px] text-gray-500 font-mono truncate">{{ Auth::user()->pegawai?->nip ?? str_replace('@staff.unri.ac.id', '', Auth::user()->email) }}</div>
                     </div>
 
                     <x-dropdown-link :href="route('profile.edit')">
@@ -114,7 +114,7 @@
         <div class="pt-4 pb-3 border-t border-gray-200 bg-white">
             <div class="px-4">
                 <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+                <div class="font-medium text-sm text-gray-500 font-mono">{{ Auth::user()->pegawai?->nip ?? str_replace('@staff.unri.ac.id', '', Auth::user()->email) }}</div>
             </div>
 
             <div class="mt-3 space-y-1">
