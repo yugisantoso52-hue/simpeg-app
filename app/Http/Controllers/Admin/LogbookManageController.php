@@ -41,7 +41,11 @@ class LogbookManageController extends Controller
             $bawahanIds = $user->getBawahanIds();
         }
 
+        $viewMode = $request->get('view_mode', 'rekap');
+
         $statistics = $this->service->getAdminStatistics($month, $year, $unitKerjaId, $bawahanIds);
+
+        $pegawaiRecap = $this->service->getAdminPegawaiRecap($month, $year, $unitKerjaId, $kategoriPegawai, $status, $search, $bawahanIds);
 
         $logbooks = $this->service->getAdminQuery($month, $year, $unitKerjaId, $kategoriPegawai, $status, $search, $bawahanIds)
             ->paginate(20)
@@ -51,6 +55,8 @@ class LogbookManageController extends Controller
 
         return view('admin.logbook.index', compact(
             'logbooks',
+            'pegawaiRecap',
+            'viewMode',
             'statistics',
             'unitKerjaList',
             'month',
@@ -107,6 +113,41 @@ class LogbookManageController extends Controller
         $count = $this->service->verifyBulk($ids, $status, $catatan, $verifierId);
 
         return redirect()->back()->with('success', "Sebanyak {$count} aktivitas logbook berhasil disetujui sekaligus.");
+    }
+
+    /**
+     * Verifikasi seluruh aktivitas logbook satu pegawai sekaligus untuk periode bulan berjalan (Pengesahan Bulanan Praktis)
+     */
+    public function verifyPegawaiBulanan(Request $request)
+    {
+        $request->validate([
+            'pegawai_id' => ['required', 'exists:pegawai,id'],
+            'bulan'      => ['required', 'integer', 'min:1', 'max:12'],
+            'tahun'      => ['required', 'integer'],
+            'status'     => ['required', 'in:disetujui,ditolak,perlu_revisi'],
+        ]);
+
+        $pegawaiId = (int) $request->input('pegawai_id');
+        $month = (int) $request->input('bulan');
+        $year = (int) $request->input('tahun');
+        $status = $request->input('status');
+        $catatan = $request->input('catatan_atasan');
+        $verifierId = (int) $request->user()->id;
+
+        $count = $this->service->verifyPegawaiBulanan($pegawaiId, $month, $year, $status, $catatan, $verifierId);
+
+        $pegawai = Pegawai::find($pegawaiId);
+        $nama = $pegawai?->nama_lengkap ?? $pegawai?->nama ?? 'Pegawai';
+        $namaBulan = Carbon::createFromDate($year, $month, 1)->locale('id')->isoFormat('MMMM Y');
+
+        $label = match ($status) {
+            Logbook::STATUS_DISETUJUI    => 'disahkan & disetujui seluruhnya',
+            Logbook::STATUS_PERLU_REVISI => 'dikembalikan untuk direvisi',
+            Logbook::STATUS_DITOLAK      => 'ditolak',
+            default                      => 'diproses',
+        };
+
+        return redirect()->back()->with('success', "Logbook periode {$namaBulan} untuk {$nama} ({$count} aktivitas) berhasil {$label}.");
     }
 
     /**

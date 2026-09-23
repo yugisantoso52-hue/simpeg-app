@@ -49,9 +49,9 @@
     {{-- Atasan Langsung (Verifikator Hierarkis) --}}
     <x-enterprise.forms.row cols="1">
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="Atasan Langsung (Pejabat Penilai / Verifikator)" hint="Pejabat yang berwenang menyetujui logbook kinerja harian dan permohonan cuti pegawai ini (misal: Kaprodi, Ketua Pokja, Kabag TU, WD, atau Dekan)">
+            <x-enterprise.form-group label="Atasan Langsung (Pejabat Penilai / Verifikator)" hint="Pejabat berwenang menyetujui logbook & cuti pegawai ini sesuai hirarki resmi FKp UNRI">
                 <x-enterprise.select name="atasan_id">
-                    <option value="">-- Tidak Ada / Pucuk Pimpinan (Dekan) --</option>
+                    <option value="">-- Tidak Ada / Pucuk Pimpinan (Dekan / Rektor) --</option>
                     @php
                         $listAtasan = $atasanList ?? \App\Models\Pegawai::where('status_pegawai', 'Aktif')->when(isset($pegawai->id), fn($q) => $q->where('id', '!=', $pegawai->id))->orderBy('nama')->get();
                         $selectedAtasan = old('atasan_id', $pegawai->atasan_id ?? '');
@@ -62,6 +62,15 @@
                         </option>
                     @endforeach
                 </x-enterprise.select>
+                <div class="mt-2 text-xs text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200 leading-relaxed">
+                    <span class="font-semibold text-slate-700 block mb-1">📌 Panduan Hirarki Penilai / Verifikator FKp UNRI:</span>
+                    <ul class="list-disc list-inside space-y-0.5 text-slate-600">
+                        <li><strong>Dosen:</strong> Atasan Langsung adalah <em>Kaprodi / Ketua Jurusan</em> ➔ atasan berikutnya <em>Wakil Dekan I (Akademik)</em> ➔ <em>Dekan</em>.</li>
+                        <li><strong>Tendik:</strong> Atasan Langsung adalah <em>Ketua Pokja</em> (Umum & Sarana / Akademik & Kemahasiswaan / Keuangan & Kepegawaian) ➔ <em>Kabag Umum</em> ➔ <em>Wakil Dekan II (Keuangan & Kepegawaian)</em> ➔ <em>Dekan</em>.</li>
+                        <li><strong>Wakil Dekan (WD I, II, III):</strong> Atasan Langsung adalah <em>Dekan</em>.</li>
+                        <li><strong>Dekan:</strong> Atasan Langsung adalah <em>Rektor / Wakil Rektor</em>.</li>
+                    </ul>
+                </div>
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>

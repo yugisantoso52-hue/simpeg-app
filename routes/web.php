@@ -196,6 +196,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::prefix('admin/logbook')->name('admin.logbook.')->group(function () {
             Route::get('/', [LogbookManageController::class, 'index'])->name('index');
             Route::post('/bulk-verify', [LogbookManageController::class, 'bulkVerify'])->name('bulk-verify');
+            Route::post('/verify-pegawai', [LogbookManageController::class, 'verifyPegawaiBulanan'])->name('verify-pegawai');
             Route::post('/{id}/verify', [LogbookManageController::class, 'verify'])->name('verify');
             Route::get('/export/pdf', [LogbookManageController::class, 'exportRekapPdf'])->name('export.pdf');
             Route::get('/export/excel', [LogbookManageController::class, 'exportRekapExcel'])->name('export.excel');

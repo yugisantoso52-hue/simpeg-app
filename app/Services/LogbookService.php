@@ -386,4 +386,81 @@ class LogbookService
 
         return $count;
     }
+
+    /**
+     * Mengambil data rekapitulasi logbook yang dikelompokkan per pegawai untuk memudahkan evaluasi bulanan atasan
+     */
+    public function getAdminPegawaiRecap(?int $month = null, ?int $year = null, ?int $unitKerjaId = null, ?string $kategoriPegawai = null, ?string $status = null, ?string $search = null, ?array $bawahanIds = null): array
+    {
+        $logbooks = $this->getAdminQuery($month, $year, $unitKerjaId, $kategoriPegawai, $status, $search, $bawahanIds)->get();
+
+        $grouped = $logbooks->groupBy('pegawai_id');
+
+        $recap = [];
+        foreach ($grouped as $pegawaiId => $items) {
+            $pegawai = $items->first()->pegawai;
+            if (!$pegawai) continue;
+
+            $totalMenit = (int) $items->sum('durasi_menit');
+            $totalJam = round($totalMenit / 60, 1);
+            $diajukanCount = $items->where('status', Logbook::STATUS_DIAJUKAN)->count();
+            $disetujuiCount = $items->where('status', Logbook::STATUS_DISETUJUI)->count();
+            $revisiCount = $items->where('status', Logbook::STATUS_PERLU_REVISI)->count();
+            $ditolakCount = $items->where('status', Logbook::STATUS_DITOLAK)->count();
+            $draftCount = $items->where('status', Logbook::STATUS_DRAFT)->count();
+
+            // Hitung hari kerja unik
+            $hariKerjaCount = $items->pluck('tanggal')->map(function ($t) {
+                return is_string($t) ? substr($t, 0, 10) : $t->format('Y-m-d');
+            })->unique()->count();
+
+            $diajukanIds = $items->where('status', Logbook::STATUS_DIAJUKAN)->pluck('id')->values()->all();
+
+            $recap[] = [
+                'pegawai'          => $pegawai,
+                'pegawai_id'       => (int) $pegawaiId,
+                'total_kegiatan'   => $items->count(),
+                'total_output'     => (int) $items->sum('jumlah_output'),
+                'total_hari_kerja' => $hariKerjaCount,
+                'total_jam'        => $totalJam,
+                'total_menit'      => $totalMenit,
+                'diajukan_count'   => $diajukanCount,
+                'disetujui_count'  => $disetujuiCount,
+                'revisi_count'     => $revisiCount,
+                'ditolak_count'    => $ditolakCount,
+                'draft_count'      => $draftCount,
+                'diajukan_ids'     => $diajukanIds,
+                'items'            => $items->sortByDesc('tanggal')->values(),
+            ];
+        }
+
+        // Urutkan pegawai yang memiliki pengajuan menunggu verifikasi terbanyak di paling atas
+        usort($recap, function ($a, $b) {
+            if ($a['diajukan_count'] !== $b['diajukan_count']) {
+                return $b['diajukan_count'] <=> $a['diajukan_count'];
+            }
+            return strcmp($a['pegawai']->nama ?? '', $b['pegawai']->nama ?? '');
+        });
+
+        return $recap;
+    }
+
+    /**
+     * Verifikasi seluruh logbook bulan berjalan dari seorang pegawai tertentu (Persetujuan Bulanan Cepat)
+     */
+    public function verifyPegawaiBulanan(int $pegawaiId, int $month, int $year, string $status, ?string $catatanAtasan, int $verifierUserId): int
+    {
+        $ids = Logbook::where('pegawai_id', $pegawaiId)
+            ->whereYear('tanggal', $year)
+            ->whereMonth('tanggal', $month)
+            ->where('status', Logbook::STATUS_DIAJUKAN)
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($ids)) {
+            return 0;
+        }
+
+        return $this->verifyBulk($ids, $status, $catatanAtasan, $verifierUserId);
+    }
 }
