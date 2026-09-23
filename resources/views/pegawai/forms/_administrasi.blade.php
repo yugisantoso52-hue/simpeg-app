@@ -3,6 +3,7 @@
     $activePangkat = isset($pegawai) ? $pegawai->riwayatPangkat()->whereIn('status', ['aktif', 'Aktif'])->first() : null;
 @endphp
 <x-enterprise.forms.section
+    id="section-administrasi"
     title="Administrasi Kepegawaian & Legalitas"
     description="Data tanggal masuk, TMT, upload SK, masa kontrak (PHL), dan pensiun">
 

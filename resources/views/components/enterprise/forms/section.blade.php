@@ -4,7 +4,7 @@
     'icon' => null,
 ])
 
-<div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+<div {{ $attributes->merge(['class' => 'bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6']) }}>
     @if($title || $description || $icon)
         <div class="border-b bg-slate-50 px-6 py-4">
             <div class="flex items-start gap-3">

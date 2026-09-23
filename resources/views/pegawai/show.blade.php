@@ -82,14 +82,6 @@
                                         <td class="py-1.5 font-medium text-gray-500">Nama Lengkap</td>
                                         <td class="py-1.5 text-gray-900 font-semibold">{{ $pegawai->nama_lengkap ?? $pegawai->nama }}</td>
                                     </tr>
-                                    @if($pegawai->gelar_depan || $pegawai->gelar_belakang)
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Gelar Depan / Belakang</td>
-                                        <td class="py-1.5 text-gray-900">
-                                            {{ $pegawai->gelar_depan ?? '-' }} / {{ $pegawai->gelar_belakang ?? '-' }}
-                                        </td>
-                                    </tr>
-                                    @endif
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">Tempat, Tanggal Lahir</td>
                                         <td class="py-1.5 text-gray-900">

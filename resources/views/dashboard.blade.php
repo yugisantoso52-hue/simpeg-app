@@ -329,7 +329,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         
                         {{-- KGB Saya --}}
-                        <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/60 flex flex-col justify-between">
+                        <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/60 flex flex-col justify-between hover:shadow-md transition duration-150">
                             <div>
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-xs font-bold uppercase tracking-wider text-amber-900">💵 Gaji Berkala (KGB)</span>
@@ -340,29 +340,38 @@
                                     <p>Target KGB: <strong class="font-mono text-amber-800">{{ isset($p->kgb_berikutnya) ? \Carbon\Carbon::parse($p->kgb_berikutnya)->format('d-m-Y') : '-' }}</strong></p>
                                 </div>
                             </div>
-                            <div class="mt-3 text-[11px] font-semibold text-amber-800 bg-amber-100 p-2 rounded-lg text-center">
+                            <div>
                                 @if(isset($p->kgb_berikutnya))
                                     @php
                                         $diffKgb = (int) round(\Carbon\Carbon::now()->diffInMonths(\Carbon\Carbon::parse($p->kgb_berikutnya), false));
                                     @endphp
                                     @if($diffKgb <= 0)
-                                        ⚠️ Jatuh Tempo KGB! Silakan ajukan berkas.
+                                        <a href="{{ auth()->user()->hasRole('admin') ? route('kgb.index') : route('pegawai.show', $p->id) }}" 
+                                           class="mt-3 block w-full text-[11px] font-bold text-white bg-amber-600 hover:bg-amber-700 py-2 px-2.5 rounded-lg text-center transition shadow-xs">
+                                            ⚠️ Jatuh Tempo KGB! Ajukan &rarr;
+                                        </a>
                                     @else
                                         @php
                                             $thnKgb = floor($diffKgb / 12);
                                             $blnKgb = $diffKgb % 12;
                                             $labelKgb = $thnKgb > 0 ? "{$thnKgb} Thn " . ($blnKgb > 0 ? "{$blnKgb} Bln" : "") : "{$blnKgb} Bulan";
                                         @endphp
-                                        ⏳ Est. {{ trim($labelKgb) }} ({{ $diffKgb }} Bulan)
+                                        <a href="{{ auth()->user()->hasRole('admin') ? route('kgb.index') : route('pegawai.show', $p->id) }}" 
+                                           class="mt-3 block w-full text-[11px] font-semibold text-amber-800 bg-amber-100 hover:bg-amber-200 py-2 px-2.5 rounded-lg text-center transition">
+                                            ⏳ Est. {{ trim($labelKgb) }} (Lihat Detail) &rarr;
+                                        </a>
                                     @endif
                                 @else
-                                    Info KGB belum diset.
+                                    <a href="{{ route('pegawai.edit', ['pegawai' => $p->id]) }}#section-administrasi" 
+                                       class="mt-3 block w-full text-[11px] font-bold text-amber-900 bg-amber-200/90 hover:bg-amber-300 py-2 px-2.5 rounded-lg text-center transition shadow-xs flex items-center justify-center gap-1">
+                                        <span>✏️</span> Lengkapi SK KGB &rarr;
+                                    </a>
                                 @endif
                             </div>
                         </div>
 
                         {{-- KP Saya --}}
-                        <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/60 flex flex-col justify-between">
+                        <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/60 flex flex-col justify-between hover:shadow-md transition duration-150">
                             <div>
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-xs font-bold uppercase tracking-wider text-emerald-900">🎖️ Kenaikan Pangkat (KP)</span>
@@ -373,29 +382,38 @@
                                     <p>Target KP: <strong class="font-mono text-emerald-800">{{ isset($p->kp_berikutnya) ? \Carbon\Carbon::parse($p->kp_berikutnya)->format('d-m-Y') : '-' }}</strong></p>
                                 </div>
                             </div>
-                            <div class="mt-3 text-[11px] font-semibold text-emerald-800 bg-emerald-100 p-2 rounded-lg text-center">
+                            <div>
                                 @if(isset($p->kp_berikutnya))
                                     @php
                                         $diffKp = (int) round(\Carbon\Carbon::now()->diffInMonths(\Carbon\Carbon::parse($p->kp_berikutnya), false));
                                     @endphp
                                     @if($diffKp <= 0)
-                                        ⚠️ Siap Pengajuan Kenaikan Pangkat!
+                                        <a href="{{ auth()->user()->hasRole('admin') ? route('kp.index') : route('pegawai.show', $p->id) }}" 
+                                           class="mt-3 block w-full text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 py-2 px-2.5 rounded-lg text-center transition shadow-xs">
+                                            ⚠️ Siap Naik Pangkat! Ajukan &rarr;
+                                        </a>
                                     @else
                                         @php
                                             $thnKp = floor($diffKp / 12);
                                             $blnKp = $diffKp % 12;
                                             $labelKp = $thnKp > 0 ? "{$thnKp} Thn " . ($blnKp > 0 ? "{$blnKp} Bln" : "") : "{$blnKp} Bulan";
                                         @endphp
-                                        ⏳ Est. {{ trim($labelKp) }} ({{ $diffKp }} Bulan)
+                                        <a href="{{ auth()->user()->hasRole('admin') ? route('kp.index') : route('pegawai.show', $p->id) }}" 
+                                           class="mt-3 block w-full text-[11px] font-semibold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 py-2 px-2.5 rounded-lg text-center transition">
+                                            ⏳ Est. {{ trim($labelKp) }} (Lihat Detail) &rarr;
+                                        </a>
                                     @endif
                                 @else
-                                    Info KP belum diset.
+                                    <a href="{{ route('pegawai.edit', ['pegawai' => $p->id]) }}#section-administrasi" 
+                                       class="mt-3 block w-full text-[11px] font-bold text-emerald-900 bg-emerald-200/90 hover:bg-emerald-300 py-2 px-2.5 rounded-lg text-center transition shadow-xs flex items-center justify-center gap-1">
+                                        <span>✏️</span> Lengkapi SK Pangkat &rarr;
+                                    </a>
                                 @endif
                             </div>
                         </div>
 
                         {{-- Satyalancana Saya --}}
-                        <div class="p-4 rounded-xl border border-indigo-200 bg-indigo-50/60 flex flex-col justify-between">
+                        <div class="p-4 rounded-xl border border-indigo-200 bg-indigo-50/60 flex flex-col justify-between hover:shadow-md transition duration-150">
                             <div>
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-xs font-bold uppercase tracking-wider text-indigo-900">🏅 Satyalancana</span>
@@ -406,8 +424,18 @@
                                     <p>Prediksi: <strong class="font-mono text-indigo-800">{{ isset($p->satyalancana_berikutnya) ? \Carbon\Carbon::parse($p->satyalancana_berikutnya)->format('d-m-Y') : '-' }}</strong></p>
                                 </div>
                             </div>
-                            <div class="mt-3 text-[11px] font-semibold text-indigo-800 bg-indigo-100 p-2 rounded-lg text-center">
-                                🎖️ Perolehan Kehormatan
+                            <div>
+                                @if(empty($p->satyalancana_berikutnya) && empty($p->tanggal_masuk) && empty($p->tmt_sk_pertama))
+                                    <a href="{{ route('pegawai.edit', ['pegawai' => $p->id]) }}#section-administrasi" 
+                                       class="mt-3 block w-full text-[11px] font-bold text-indigo-900 bg-indigo-200/90 hover:bg-indigo-300 py-2 px-2.5 rounded-lg text-center transition shadow-xs flex items-center justify-center gap-1">
+                                        <span>✏️</span> Atur TMT SK Pertama &rarr;
+                                    </a>
+                                @else
+                                    <a href="{{ route('pegawai.show', $p->id) }}" 
+                                       class="mt-3 block w-full text-[11px] font-semibold text-indigo-800 bg-indigo-100 hover:bg-indigo-200 py-2 px-2.5 rounded-lg text-center transition flex items-center justify-center gap-1">
+                                        <span>🎖️</span> Riwayat Penghargaan &rarr;
+                                    </a>
+                                @endif
                             </div>
                         </div>
 
@@ -419,7 +447,7 @@
 
                         @if($activeStr)
                             {{-- 1. STR & SIP (Khusus Tenaga Medis / Dosen Klinis) --}}
-                            <div class="p-4 rounded-xl border border-sky-200 bg-sky-50/60 flex flex-col justify-between">
+                            <div class="p-4 rounded-xl border border-sky-200 bg-sky-50/60 flex flex-col justify-between hover:shadow-md transition duration-150">
                                 <div>
                                     <div class="flex items-center justify-between mb-2">
                                         <span class="text-xs font-bold uppercase tracking-wider text-sky-900">🩺 STR & SIP Profesi</span>
@@ -432,13 +460,16 @@
                                         </strong></p>
                                     </div>
                                 </div>
-                                <div class="mt-3 text-[11px] font-semibold text-sky-800 bg-sky-100 p-2 rounded-lg text-center">
-                                    🩺 Izin Praktik / Profesi
+                                <div>
+                                    <a href="{{ route('pegawai.show', $p->id) }}" 
+                                       class="mt-3 block w-full text-[11px] font-semibold text-sky-800 bg-sky-100 hover:bg-sky-200 py-2 px-2.5 rounded-lg text-center transition flex items-center justify-center gap-1">
+                                        <span>🩺</span> Cek STR / SIP Profesi &rarr;
+                                    </a>
                                 </div>
                             </div>
                         @elseif($isPppkOrContract)
                             {{-- 2. Kontrak Kerja PPPK / PHL --}}
-                            <div class="p-4 rounded-xl border border-cyan-200 bg-cyan-50/60 flex flex-col justify-between">
+                            <div class="p-4 rounded-xl border border-cyan-200 bg-cyan-50/60 flex flex-col justify-between hover:shadow-md transition duration-150">
                                 <div>
                                     <div class="flex items-center justify-between mb-2">
                                         <span class="text-xs font-bold uppercase tracking-wider text-cyan-900">📋 Kontrak Kerja {{ $p->jenis_pegawai ?? 'PPPK' }}</span>
@@ -449,24 +480,26 @@
                                         <p>Selesai: <strong class="font-mono text-cyan-800">{{ isset($p->tanggal_kontrak_selesai) ? \Carbon\Carbon::parse($p->tanggal_kontrak_selesai)->format('d-m-Y') : '-' }}</strong></p>
                                     </div>
                                 </div>
-                                <div class="mt-3 text-[11px] font-semibold text-cyan-800 bg-cyan-100 p-2 rounded-lg text-center">
+                                <div>
                                     @if(isset($p->tanggal_kontrak_selesai))
                                         @php
                                             $diffKontrak = (int) round(\Carbon\Carbon::now()->diffInMonths(\Carbon\Carbon::parse($p->tanggal_kontrak_selesai), false));
                                         @endphp
-                                        @if($diffKontrak <= 0)
-                                            ⚠️ Masa Kontrak Berakhir!
-                                        @else
-                                            ⏳ Sisa {{ $diffKontrak }} Bulan Masa Kontrak
-                                        @endif
+                                        <a href="{{ route('pegawai.show', $p->id) }}" 
+                                           class="mt-3 block w-full text-[11px] font-semibold text-cyan-800 bg-cyan-100 hover:bg-cyan-200 py-2 px-2.5 rounded-lg text-center transition">
+                                            {{ $diffKontrak <= 0 ? '⚠️ Kontrak Berakhir (Cek SK)' : "⏳ Sisa {$diffKontrak} Bln (Cek SK)" }} &rarr;
+                                        </a>
                                     @else
-                                        Perjanjian Kerja Aktif
+                                        <a href="{{ route('pegawai.edit', ['pegawai' => $p->id]) }}#section-administrasi" 
+                                           class="mt-3 block w-full text-[11px] font-bold text-cyan-900 bg-cyan-200/90 hover:bg-cyan-300 py-2 px-2.5 rounded-lg text-center transition shadow-xs flex items-center justify-center gap-1">
+                                            <span>✏️</span> Lengkapi Masa Kontrak &rarr;
+                                        </a>
                                     @endif
                                 </div>
                             </div>
                         @else
                             {{-- 3. Sasaran Kinerja Pegawai (SKP) --}}
-                            <div class="p-4 rounded-xl border border-purple-200 bg-purple-50/60 flex flex-col justify-between">
+                            <div class="p-4 rounded-xl border border-purple-200 bg-purple-50/60 flex flex-col justify-between hover:shadow-md transition duration-150">
                                 <div>
                                     <div class="flex items-center justify-between mb-2">
                                         <span class="text-xs font-bold uppercase tracking-wider text-purple-900">🎯 Sasaran Kinerja (SKP)</span>
@@ -477,8 +510,11 @@
                                         <p>Status: <strong class="text-purple-800">Evaluasi Tahunan</strong></p>
                                     </div>
                                 </div>
-                                <div class="mt-3 text-[11px] font-semibold text-purple-800 bg-purple-100 p-2 rounded-lg text-center">
-                                    🎯 Sasaran Kinerja Pegawai
+                                <div>
+                                    <a href="{{ route('pegawai.show', $p->id) }}" 
+                                       class="mt-3 block w-full text-[11px] font-semibold text-purple-800 bg-purple-100 hover:bg-purple-200 py-2 px-2.5 rounded-lg text-center transition flex items-center justify-center gap-1">
+                                        <span>🎯</span> Sasaran Kinerja Pegawai &rarr;
+                                    </a>
                                 </div>
                             </div>
                         @endif
