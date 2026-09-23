@@ -96,8 +96,8 @@
                     </div>
                 </a>
 
-                <!-- Radar Pensiun 5 Tahun (Klik untuk scroll ke Tabel Radar Pensiun) -->
-                <a href="#tabel-radar-pensiun" class="group bg-white rounded-2xl border border-slate-200 hover:border-amber-500 p-5 shadow-2xs hover:shadow-md transition-all flex items-center justify-between block cursor-pointer" title="Klik untuk melihat Daftar Nama Pegawai Mendekati Pensiun">
+                <!-- Radar Pensiun 5 Tahun (Klik untuk scroll ke Proyeksi Pensiun) -->
+                <a href="#proyeksi-pensiun" @click="window.dispatchEvent(new CustomEvent('open-retirement-cat', { detail: '{{ $retirementRadar['summary']['tahun_1'] > 0 ? 'tahun_1' : 'tahun_ini' }}' }))" class="group bg-white rounded-2xl border border-slate-200 hover:border-amber-500 p-5 shadow-2xs hover:shadow-md transition-all flex items-center justify-between block cursor-pointer" title="Klik untuk melihat Proyeksi dan Rincian Pegawai Mendekati Pensiun">
                     <div>
                         <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-amber-600 transition">Radar BUP Pensiun</span>
                         <h3 class="text-2xl font-black text-amber-600 mt-1">{{ $kpis['pensiun_5_tahun'] }} <span class="text-xs font-normal text-slate-500">Pegawai</span></h3>
@@ -105,7 +105,7 @@
                             Mendekati BUP (Rentang 1-5 Thn)
                         </p>
                         <span class="text-[10px] text-amber-700 font-semibold group-hover:underline flex items-center gap-1 mt-1.5">
-                            Lihat Daftar Pegawai ↓
+                            Lihat Rincian Pegawai ↓
                         </span>
                     </div>
                     <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center text-2xl transition-colors">
@@ -114,7 +114,7 @@
                 </a>
             </div>
 
-            <!-- 2. GRID GRAFIK UTAMA: BEBAN KERJA LOGBOOK & TREN PRESENSI -->
+            <!-- 2. GRID GRAFIK UTAMA: BEBAN KERJA LOGBOOK & TREN PRESENSI (2 KOLOM KOMPAK) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Grafik 1: Beban Kerja Jam Efektif Logbook per Unit -->
                 <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
@@ -128,136 +128,254 @@
                             </div>
                         </div>
                     </div>
-                    <div class="relative h-64">
+                    <div class="relative h-56">
                         <canvas id="chartWorkload"></canvas>
                     </div>
-                    <p class="text-[10px] text-slate-400 mt-3 pt-2 border-t border-slate-100 leading-tight">
-                        💡 <strong>Struktur Unit:</strong> Unit <em>Fakultas Keperawatan</em> menaungi seluruh Dosen (Tenaga Pendidik) & Pimpinan Fakultas, sedangkan unit lainnya merupakan Subbagian Tata Usaha (Tenaga Kependidikan).
+                    @if(collect($logbookWorkload['hours'])->sum() == 0)
+                        <div class="mt-2 text-center py-1.5 px-3 bg-slate-50 border border-slate-200/80 rounded-xl text-[11px] text-slate-500">
+                            ℹ️ Belum ada pengisian aktivitas logbook kerja pada bulan {{ $namaBulan[$month] }} {{ $year }}.
+                        </div>
+                    @endif
+                    <p class="text-[10px] text-slate-400 mt-2.5 pt-2 border-t border-slate-100 leading-tight">
+                        💡 <strong>Struktur Unit:</strong> Unit <em>Fakultas Keperawatan</em> menaungi seluruh Dosen & Pimpinan, unit lainnya adalah Subbagian Tata Usaha.
                     </p>
                 </div>
 
                 <!-- Grafik 2: Tren Presensi Harian Fakultas -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-                                <span>📈</span> Tren Presensi Harian (Senin - Jumat)
-                            </h3>
-                            <p class="text-[11px] text-slate-500">Perbandingan kehadiran tepat waktu vs terlambat</p>
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                                    <span>📈</span> Tren Presensi Harian (Senin - Jumat)
+                                </h3>
+                                <p class="text-[11px] text-slate-500">Perbandingan kehadiran tepat waktu vs terlambat</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="relative h-64">
+                    <div class="relative h-56">
                         <canvas id="chartAttendance"></canvas>
                     </div>
+                    <p class="text-[10px] text-slate-400 mt-2.5 pt-2 border-t border-slate-100 leading-tight">
+                        💡 Menampilkan fluktuasi ketepatan kehadiran pegawai pada jam masuk kerja resmi hari aktif.
+                    </p>
                 </div>
             </div>
 
-            <!-- 3. GRID PROFIL SDM & RADAR PENSIUN -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 3. GRID PROFIL SDM DOSEN (2 KOLOM BERDAMPINGAN: JAFUNG & PENDIDIKAN) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Grafik 3: Jabatan Fungsional Dosen -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
-                    <h3 class="font-bold text-slate-800 text-sm mb-1 flex items-center gap-1.5">
-                        <span>🎓</span> Jabatan Akademik Dosen
-                    </h3>
-                    <p class="text-[11px] text-slate-500 mb-3">Distribusi Guru Besar s/d Asisten Ahli</p>
-                    <div class="relative h-56 flex items-center justify-center">
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
+                    <div class="mb-2">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                            <span>🎓</span> Jabatan Akademik Dosen
+                        </h3>
+                        <p class="text-[11px] text-slate-500">Distribusi Guru Besar s/d Asisten Ahli & Tenaga Pengajar</p>
+                    </div>
+                    <div class="relative h-52 flex items-center justify-center">
                         <canvas id="chartJafung"></canvas>
                     </div>
+                    <p class="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 leading-tight">
+                        💡 Pemetaan jenjang jabatan fungsional akademik seluruh Dosen Fakultas Keperawatan.
+                    </p>
                 </div>
 
                 <!-- Grafik 4: Kualifikasi Pendidikan Terakhir -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
-                    <h3 class="font-bold text-slate-800 text-sm mb-1 flex items-center gap-1.5">
-                        <span>📚</span> Kualifikasi Pendidikan Dosen
-                    </h3>
-                    <p class="text-[11px] text-slate-500 mb-3">Proporsi jenjang S3 (Doktor) vs S2 (Magister)</p>
-                    <div class="relative h-56 flex items-center justify-center">
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
+                    <div class="mb-2">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                            <span>📚</span> Kualifikasi Pendidikan Dosen
+                        </h3>
+                        <p class="text-[11px] text-slate-500">Proporsi jenjang S3 (Doktor) vs S2 (Magister)</p>
+                    </div>
+                    <div class="relative h-52 flex items-center justify-center">
                         <canvas id="chartPendidikan"></canvas>
                     </div>
+                    <p class="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 leading-tight">
+                        💡 Komposisi jenjang pendidikan terakhir dosen pengampu FKp UNRI.
+                    </p>
                 </div>
+            </div>
 
-                <!-- Grafik 5 / Ringkasan: Radar Proyeksi Pensiun -->
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex flex-col justify-between">
+            <!-- 4. RADAR PROYEKSI PENSIUN ASN (INTERAKTIF & TERINTEGRASI) -->
+            <div id="proyeksi-pensiun" 
+                 x-data="{ 
+                     activeCategory: '{{ $retirementRadar['summary']['tahun_1'] > 0 ? 'tahun_1' : ($retirementRadar['summary']['tahun_ini'] > 0 ? 'tahun_ini' : 'tahun_2') }}',
+                     toggle(cat) {
+                         this.activeCategory = this.activeCategory === cat ? null : cat;
+                     }
+                 }"
+                 @open-retirement-cat.window="activeCategory = $event.detail"
+                 class="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs scroll-mt-6">
+                
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
                     <div>
-                        <h3 class="font-bold text-slate-800 text-sm mb-1 flex items-center gap-1.5">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
                             <span>⏳</span> Proyeksi Masa Pensiun ASN
                         </h3>
-                        <p class="text-[11px] text-slate-500 mb-4">Estimasi kebutuhan formasi pengganti 1-5 tahun</p>
-                        
-                        <div class="space-y-3 text-xs">
-                            <div class="flex items-center justify-between p-2.5 rounded-xl bg-rose-50 border border-rose-200">
-                                <span class="font-semibold text-rose-800">Tahun Ini ({{ date('Y') }})</span>
-                                <strong class="font-bold text-rose-900 font-mono text-sm">{{ $retirementRadar['summary']['tahun_ini'] }} Pegawai</strong>
-                            </div>
-                            <div class="flex items-center justify-between p-2.5 rounded-xl bg-amber-50 border border-amber-200">
-                                <span class="font-semibold text-amber-800">1 Tahun ke Depan ({{ date('Y') + 1 }})</span>
-                                <strong class="font-bold text-amber-900 font-mono text-sm">{{ $retirementRadar['summary']['tahun_1'] }} Pegawai</strong>
-                            </div>
-                            <div class="flex items-center justify-between p-2.5 rounded-xl bg-blue-50 border border-blue-200">
-                                <span class="font-semibold text-blue-800">2 Tahun ke Depan ({{ date('Y') + 2 }})</span>
-                                <strong class="font-bold text-blue-900 font-mono text-sm">{{ $retirementRadar['summary']['tahun_2'] }} Pegawai</strong>
-                            </div>
-                            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                                <span class="font-semibold text-slate-700">3 - 5 Tahun ke Depan</span>
-                                <strong class="font-bold text-slate-800 font-mono text-sm">{{ $retirementRadar['summary']['tahun_3_sd_5'] }} Pegawai</strong>
-                            </div>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Estimasi batas usia pensiun 1–5 tahun ke depan. <strong>Klik salah satu kolom periode di bawah</strong> untuk melihat rincian nama pegawai.
+                        </p>
+                    </div>
+                    <div class="text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 self-start sm:self-auto font-medium">
+                        Total Akumulasi 5 Tahun: <strong class="text-slate-800 font-bold font-mono">{{ $retirementRadar['summary']['total_5_tahun'] }} ASN</strong>
+                    </div>
+                </div>
+
+                <!-- 4 Kolom Periode Interaktif -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- 1. Tahun Ini -->
+                    <button type="button" 
+                            @click="toggle('tahun_ini')"
+                            class="text-left p-4 rounded-xl border transition-all cursor-pointer relative"
+                            :class="activeCategory === 'tahun_ini' ? 'bg-rose-50 border-rose-400 ring-2 ring-rose-300 shadow-xs' : 'bg-rose-50/60 border-rose-200 hover:bg-rose-50 hover:border-rose-300'">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-rose-800">Tahun Ini ({{ date('Y') }})</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                  :class="activeCategory === 'tahun_ini' ? 'bg-rose-600 text-white' : 'bg-rose-200/80 text-rose-800'">
+                                <span x-show="activeCategory === 'tahun_ini'">Dipilih ▼</span>
+                                <span x-show="activeCategory !== 'tahun_ini'">Klik Lihat</span>
+                            </span>
                         </div>
+                        <div class="mt-2 text-2xl font-black text-rose-900 font-mono">
+                            {{ $retirementRadar['summary']['tahun_ini'] }} <span class="text-xs font-normal text-rose-700">Pegawai</span>
+                        </div>
+                    </button>
+
+                    <!-- 2. 1 Tahun ke Depan -->
+                    <button type="button" 
+                            @click="toggle('tahun_1')"
+                            class="text-left p-4 rounded-xl border transition-all cursor-pointer relative"
+                            :class="activeCategory === 'tahun_1' ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs' : 'bg-amber-50/60 border-amber-200 hover:bg-amber-50 hover:border-amber-300'">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-amber-800">1 Tahun ke Depan ({{ date('Y') + 1 }})</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                  :class="activeCategory === 'tahun_1' ? 'bg-amber-600 text-white' : 'bg-amber-200/80 text-amber-800'">
+                                <span x-show="activeCategory === 'tahun_1'">Dipilih ▼</span>
+                                <span x-show="activeCategory !== 'tahun_1'">Klik Lihat</span>
+                            </span>
+                        </div>
+                        <div class="mt-2 text-2xl font-black text-amber-900 font-mono">
+                            {{ $retirementRadar['summary']['tahun_1'] }} <span class="text-xs font-normal text-amber-700">Pegawai</span>
+                        </div>
+                    </button>
+
+                    <!-- 3. 2 Tahun ke Depan -->
+                    <button type="button" 
+                            @click="toggle('tahun_2')"
+                            class="text-left p-4 rounded-xl border transition-all cursor-pointer relative"
+                            :class="activeCategory === 'tahun_2' ? 'bg-blue-50 border-blue-400 ring-2 ring-blue-300 shadow-xs' : 'bg-blue-50/60 border-blue-200 hover:bg-blue-50 hover:border-blue-300'">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-blue-800">2 Tahun ke Depan ({{ date('Y') + 2 }})</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                  :class="activeCategory === 'tahun_2' ? 'bg-blue-600 text-white' : 'bg-blue-200/80 text-blue-800'">
+                                <span x-show="activeCategory === 'tahun_2'">Dipilih ▼</span>
+                                <span x-show="activeCategory !== 'tahun_2'">Klik Lihat</span>
+                            </span>
+                        </div>
+                        <div class="mt-2 text-2xl font-black text-blue-900 font-mono">
+                            {{ $retirementRadar['summary']['tahun_2'] }} <span class="text-xs font-normal text-blue-700">Pegawai</span>
+                        </div>
+                    </button>
+
+                    <!-- 4. 3 - 5 Tahun ke Depan -->
+                    <button type="button" 
+                            @click="toggle('tahun_3_sd_5')"
+                            class="text-left p-4 rounded-xl border transition-all cursor-pointer relative"
+                            :class="activeCategory === 'tahun_3_sd_5' ? 'bg-slate-100 border-slate-400 ring-2 ring-slate-300 shadow-xs' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300'">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-700">3 - 5 Tahun ke Depan</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                  :class="activeCategory === 'tahun_3_sd_5' ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-700'">
+                                <span x-show="activeCategory === 'tahun_3_sd_5'">Dipilih ▼</span>
+                                <span x-show="activeCategory !== 'tahun_3_sd_5'">Klik Lihat</span>
+                            </span>
+                        </div>
+                        <div class="mt-2 text-2xl font-black text-slate-800 font-mono">
+                            {{ $retirementRadar['summary']['tahun_3_sd_5'] }} <span class="text-xs font-normal text-slate-600">Pegawai</span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Bagian Tabel Rincian Data Pegawai (Muncul Dinamis Saat Diklik) -->
+                <div x-show="activeCategory !== null" 
+                     x-transition 
+                     class="mt-6 pt-5 border-t border-slate-200">
+                    
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <h4 class="text-xs font-bold text-slate-800">
+                                📋 Rincian Pegawai Pensiun: 
+                                <span x-show="activeCategory === 'tahun_ini'" class="text-rose-700 font-bold">Tahun Ini ({{ date('Y') }})</span>
+                                <span x-show="activeCategory === 'tahun_1'" class="text-amber-700 font-bold">1 Tahun ke Depan ({{ date('Y') + 1 }})</span>
+                                <span x-show="activeCategory === 'tahun_2'" class="text-blue-700 font-bold">2 Tahun ke Depan ({{ date('Y') + 2 }})</span>
+                                <span x-show="activeCategory === 'tahun_3_sd_5'" class="text-slate-700 font-bold">3 - 5 Tahun ke Depan ({{ date('Y') + 3 }} s/d {{ date('Y') + 5 }})</span>
+                            </h4>
+                        </div>
+                        <button type="button" 
+                                @click="activeCategory = null" 
+                                class="text-xs text-slate-400 hover:text-slate-700 transition flex items-center gap-1 font-medium cursor-pointer">
+                            ✕ Tutup Rincian
+                        </button>
                     </div>
 
-                    <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                        <span>Total Akumulasi 5 Tahun:</span>
-                        <strong class="text-slate-800 font-bold font-mono">{{ $retirementRadar['summary']['total_5_tahun'] }} ASN</strong>
-                    </div>
+                    <!-- Panel Konten Tiap Kategori -->
+                    @foreach(['tahun_ini' => 'Tahun Ini (' . date('Y') . ')', 'tahun_1' => '1 Tahun ke Depan (' . (date('Y') + 1) . ')', 'tahun_2' => '2 Tahun ke Depan (' . (date('Y') + 2) . ')', 'tahun_3_sd_5' => '3 - 5 Tahun ke Depan'] as $catKey => $catLabel)
+                        <div x-show="activeCategory === '{{ $catKey }}'" x-transition>
+                            @if($retirementRadar['details'][$catKey]->isEmpty())
+                                <div class="py-8 text-center text-xs text-slate-500 bg-slate-50/50 rounded-xl border border-slate-200/60">
+                                    <div class="text-2xl mb-1">🎉</div>
+                                    <p class="font-medium text-slate-600">Tidak ada pegawai yang memasuki Batas Usia Pensiun pada periode {{ $catLabel }}.</p>
+                                </div>
+                            @else
+                                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                                    <table class="w-full text-left text-xs text-slate-600">
+                                        <thead class="bg-slate-50 text-[11px] uppercase font-bold text-slate-500 border-b border-slate-200">
+                                            <tr>
+                                                <th class="px-4 py-2.5">Nama & NIP</th>
+                                                <th class="px-4 py-2.5">Unit Kerja</th>
+                                                <th class="px-4 py-2.5">Jabatan</th>
+                                                <th class="px-4 py-2.5 text-center">BUP (Thn)</th>
+                                                <th class="px-4 py-2.5 text-center">TMT Pensiun</th>
+                                                <th class="px-4 py-2.5 text-center">Sisa Waktu</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100 bg-white">
+                                            @foreach($retirementRadar['details'][$catKey] as $p)
+                                                <tr class="hover:bg-slate-50/80 transition">
+                                                    <td class="px-4 py-3">
+                                                        <strong class="text-slate-800 font-semibold block">{{ $p->nama }}</strong>
+                                                        <span class="text-[10px] text-slate-400 font-mono">NIP. {{ $p->nip }}</span>
+                                                    </td>
+                                                    <td class="px-4 py-3">{{ $p->unit }}</td>
+                                                    <td class="px-4 py-3">{{ $p->jabatan }}</td>
+                                                    <td class="px-4 py-3 text-center font-mono font-bold">{{ $p->bup }}</td>
+                                                    <td class="px-4 py-3 text-center font-mono text-slate-700 font-semibold">{{ $p->tgl_pensiun }}</td>
+                                                    <td class="px-4 py-3 text-center">
+                                                        @php
+                                                            $badgeClass = 'bg-slate-100 text-slate-700 border border-slate-200';
+                                                            if ($p->sisa_bulan <= 6) {
+                                                                $badgeClass = 'bg-rose-100 text-rose-800 border border-rose-200';
+                                                            } elseif ($p->sisa_bulan <= 12) {
+                                                                $badgeClass = 'bg-amber-100 text-amber-800 border border-amber-200';
+                                                            } elseif ($p->sisa_bulan <= 24) {
+                                                                $badgeClass = 'bg-blue-100 text-blue-800 border border-blue-200';
+                                                            }
+                                                        @endphp
+                                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ $badgeClass }}">
+                                                            {{ $p->sisa_bulan }} Bulan Lagi
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
                 </div>
             </div>
-
-            <!-- 4. TABEL DETAIL RADAR PENSIUN (ACCORDION DETAIL) -->
-            @if($retirementRadar['details']['tahun_ini']->isNotEmpty() || $retirementRadar['details']['tahun_1']->isNotEmpty())
-            <div id="tabel-radar-pensiun" class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs overflow-hidden scroll-mt-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-                            <span>📋</span> Daftar Pegawai Mendekati Batas Usia Pensiun (Tahun Ini & Tahun Depan)
-                        </h3>
-                        <p class="text-[11px] text-slate-500">Prioritas penyusunan SK Pensiun & usulan formasi pengganti</p>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs text-slate-600">
-                        <thead class="bg-slate-50 text-[11px] uppercase font-bold text-slate-500 border-b border-slate-200">
-                            <tr>
-                                <th class="px-4 py-2.5">Nama & NIP</th>
-                                <th class="px-4 py-2.5">Unit Kerja</th>
-                                <th class="px-4 py-2.5">Jabatan</th>
-                                <th class="px-4 py-2.5 text-center">BUP (Thn)</th>
-                                <th class="px-4 py-2.5 text-center">TMT Pensiun</th>
-                                <th class="px-4 py-2.5 text-center">Sisa Waktu</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            @foreach($retirementRadar['details']['tahun_ini']->merge($retirementRadar['details']['tahun_1']) as $p)
-                                <tr class="hover:bg-slate-50/80 transition">
-                                    <td class="px-4 py-3">
-                                        <strong class="text-slate-800 font-semibold block">{{ $p->nama }}</strong>
-                                        <span class="text-[10px] text-slate-400 font-mono">NIP. {{ $p->nip }}</span>
-                                    </td>
-                                    <td class="px-4 py-3">{{ $p->unit }}</td>
-                                    <td class="px-4 py-3">{{ $p->jabatan }}</td>
-                                    <td class="px-4 py-3 text-center font-mono font-bold">{{ $p->bup }}</td>
-                                    <td class="px-4 py-3 text-center font-mono text-slate-700 font-semibold">{{ $p->tgl_pensiun }}</td>
-                                    <td class="px-4 py-3 text-center">
-                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $p->sisa_bulan <= 6 ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800 border border-amber-200' }}">
-                                            {{ $p->sisa_bulan }} Bulan Lagi
-                                        </span>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            @endif
 
         </div>
     </div>
@@ -314,10 +432,19 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                title: { display: true, text: 'Total Jam', font: { size: 10 } }
+                                suggestedMin: 0,
+                                suggestedMax: 10,
+                                ticks: {
+                                    precision: 0,
+                                    callback: function(value) {
+                                        return value + ' Jam';
+                                    },
+                                    font: { size: 10 }
+                                },
+                                title: { display: true, text: 'Total Jam Efektif', font: { size: 10 } }
                             },
                             x: {
-                                ticks: { maxRotation: 25, minRotation: 0, font: { size: 10 } }
+                                ticks: { maxRotation: 18, minRotation: 0, font: { size: 10 } }
                             }
                         }
                     }
@@ -358,7 +485,12 @@
                             legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } }
                         },
                         scales: {
-                            y: { beginAtZero: true, ticks: { precision: 0 } },
+                            y: { 
+                                beginAtZero: true, 
+                                suggestedMin: 0,
+                                suggestedMax: 5,
+                                ticks: { precision: 0, font: { size: 10 } } 
+                            },
                             x: { ticks: { font: { size: 10 } } }
                         }
                     }
@@ -383,7 +515,14 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } }
+                            legend: { 
+                                position: 'right', 
+                                labels: { 
+                                    boxWidth: 10, 
+                                    font: { size: 10 },
+                                    padding: 6
+                                } 
+                            }
                         }
                     }
                 });
@@ -406,7 +545,14 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } }
+                            legend: { 
+                                position: 'right', 
+                                labels: { 
+                                    boxWidth: 10, 
+                                    font: { size: 10 },
+                                    padding: 6
+                                } 
+                            }
                         }
                     }
                 });

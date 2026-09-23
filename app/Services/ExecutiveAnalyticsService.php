@@ -262,15 +262,26 @@ class ExecutiveAnalyticsService
             'Tenaga Pengajar'=> 0,
         ];
 
+        $riwayatJabs = RiwayatJabatan::with('jabatan')->whereIn('pegawai_id', $dosen->pluck('id'))->get();
+
         foreach ($dosen as $d) {
-            $jab = strtolower($d->jabatan?->nama_jabatan ?? $d->jenis_jabatan ?? '');
-            if (str_contains($jab, 'profesor') || str_contains($jab, 'guru besar')) {
+            $userRws = $riwayatJabs->where('pegawai_id', $d->id);
+            $combinedText = strtolower(implode(' ', array_filter([
+                $d->jabatan?->nama_jabatan,
+                $d->jenis_jabatan,
+                $d->gelar_depan,
+                $d->nama,
+                ...$userRws->pluck('jabatan.nama_jabatan')->toArray(),
+                ...$userRws->pluck('keterangan')->toArray(),
+            ])));
+
+            if (str_contains($combinedText, 'profesor') || str_contains($combinedText, 'guru besar') || str_contains(strtolower($d->gelar_depan ?? ''), 'prof')) {
                 $jafungCounts['Guru Besar']++;
-            } elseif (str_contains($jab, 'lektor kepala')) {
+            } elseif (str_contains($combinedText, 'lektor kepala')) {
                 $jafungCounts['Lektor Kepala']++;
-            } elseif (str_contains($jab, 'lektor')) {
+            } elseif (str_contains($combinedText, 'lektor')) {
                 $jafungCounts['Lektor']++;
-            } elseif (str_contains($jab, 'asisten ahli')) {
+            } elseif (str_contains($combinedText, 'asisten ahli')) {
                 $jafungCounts['Asisten Ahli']++;
             } else {
                 $jafungCounts['Tenaga Pengajar']++;
@@ -290,9 +301,28 @@ class ExecutiveAnalyticsService
 
         foreach ($dosen as $d) {
             $pends = $riwayatPendidikan->where('pegawai_id', $d->id);
-            $hasS3 = $pends->filter(fn($p) => str_contains(strtoupper($p->tingkat_pendidikan ?? ''), 'S3') || str_contains(strtoupper($p->tingkat_pendidikan ?? ''), 'DOKTOR'))->isNotEmpty();
-            $hasSpesialis = $pends->filter(fn($p) => str_contains(strtoupper($p->tingkat_pendidikan ?? ''), 'SP') || str_contains(strtoupper($p->tingkat_pendidikan ?? ''), 'SPESIALIS'))->isNotEmpty();
-            $hasS2 = $pends->filter(fn($p) => str_contains(strtoupper($p->tingkat_pendidikan ?? ''), 'S2') || str_contains(strtoupper($p->tingkat_pendidikan ?? ''), 'MAGISTER'))->isNotEmpty();
+            $pendStr = strtoupper(trim((string)$d->pendidikan_terakhir));
+            $gelarDepan = strtoupper(trim((string)$d->gelar_depan));
+            $gelarBelakang = strtoupper(trim((string)$d->gelar_belakang));
+
+            $hasS3 = $pends->filter(fn($p) => str_contains(strtoupper($p->tingkat_pendidikan ?? ''), 'S3') || str_contains(strtoupper($p->tingkat_pendidikan ?? ''), 'DOKTOR'))->isNotEmpty()
+                || str_contains($pendStr, 'S3')
+                || str_contains($pendStr, 'DOKTOR')
+                || str_contains($gelarDepan, 'DR.')
+                || str_contains($gelarDepan, 'DR ')
+                || str_contains($gelarBelakang, 'PH.D');
+
+            $hasSpesialis = $pends->filter(fn($p) => str_contains(strtoupper($p->tingkat_pendidikan ?? ''), 'SP') || str_contains(strtoupper($p->tingkat_pendidikan ?? ''), 'SPESIALIS'))->isNotEmpty()
+                || str_contains($pendStr, 'SP-')
+                || str_contains($pendStr, 'SP.')
+                || str_contains($pendStr, 'SPESIALIS');
+
+            $hasS2 = $pends->filter(fn($p) => str_contains(strtoupper($p->tingkat_pendidikan ?? ''), 'S2') || str_contains(strtoupper($p->tingkat_pendidikan ?? ''), 'MAGISTER'))->isNotEmpty()
+                || str_contains($pendStr, 'S2')
+                || str_contains($pendStr, 'MAGISTER')
+                || str_contains($gelarBelakang, 'M.')
+                || str_contains($gelarBelakang, 'M.KEP')
+                || str_contains($gelarBelakang, 'M.SI');
 
             if ($hasS3) {
                 $pendidikanCounts['S3 (Doktor)']++;
