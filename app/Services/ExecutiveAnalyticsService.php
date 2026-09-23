@@ -7,6 +7,7 @@ use App\Models\UnitKerja;
 use App\Models\Logbook;
 use App\Models\Attendance;
 use App\Models\RiwayatPendidikan;
+use App\Models\RiwayatJabatan;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
