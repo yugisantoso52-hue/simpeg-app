@@ -35,8 +35,9 @@
                     @yield('content')
                 </div>
 
-                <div class="mt-6 text-center text-xs text-slate-500 font-medium">
-                    &copy; {{ date('Y') }} Fakultas Keperawatan Universitas Riau
+                <div class="mt-6 text-center text-xs text-slate-500 font-medium space-y-1">
+                    <div>&copy; {{ date('Y') }} <strong>SIKAP</strong> — Fakultas Keperawatan Universitas Riau</div>
+                    <div class="text-[11px] text-slate-400">Pengembang Sistem: <span class="font-semibold text-slate-600">Rahmad Hidayat Majlan, S.T. (RHM)</span></div>
                 </div>
             </div>
         @endif

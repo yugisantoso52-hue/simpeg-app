@@ -93,9 +93,12 @@
             </div>
 
             <!-- 3. Footer Kiri -->
-            <div class="relative z-10 pt-4 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between text-xs text-emerald-200/80 gap-2">
-                <span>&copy; {{ date('Y') }} Fakultas Keperawatan Universitas Riau</span>
-                <span>Kampus Bina Widya Gedung HSC Km. 12,5 Pekanbaru</span>
+            <div class="relative z-10 pt-4 border-t border-white/15 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-emerald-200/80 gap-2">
+                <div>
+                    <span>&copy; {{ date('Y') }} Fakultas Keperawatan Universitas Riau</span>
+                    <span class="block text-[11px] text-emerald-200/90 font-medium mt-0.5">Pengembang Sistem: Rahmad Hidayat Majlan, S.T. (RHM)</span>
+                </div>
+                <span class="text-right text-[11px]">Kampus Bina Widya Gedung HSC Km. 12,5 Pekanbaru</span>
             </div>
         </div>
 
@@ -247,12 +250,17 @@
             </div>
 
             <!-- Bagian Bawah Form -->
-            <div class="pt-6 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                <span class="flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    Server SIKAP Online
-                </span>
-                <span>Enkripsi TLS/SSL 256-Bit</span>
+            <div class="pt-6 border-t border-slate-100 flex flex-col gap-2 text-[11px] text-slate-400">
+                <div class="flex items-center justify-between">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        Server SIKAP Online
+                    </span>
+                    <span>Enkripsi TLS/SSL 256-Bit</span>
+                </div>
+                <div class="text-left text-slate-500 pt-1 border-t border-slate-50">
+                    Pengembang: <span class="font-semibold text-slate-700">Rahmad Hidayat Majlan, S.T. (RHM)</span>
+                </div>
             </div>
         </div>
 

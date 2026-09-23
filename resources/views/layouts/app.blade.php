@@ -22,31 +22,48 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
-            @include('layouts.navigation')
+        <div class="min-h-screen bg-gray-100 flex flex-col justify-between">
+            <div>
+                @include('layouts.navigation')
 
-            <!-- Page Heading -->
-            @if(isset($header))
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @elseif(View::hasSection('header'))
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        @yield('header')
-                    </div>
-                </header>
-            @endif
-
-            <!-- Page Content -->
-            <main>
-                @if(isset($slot))
-                    {{ $slot }}
+                <!-- Page Heading -->
+                @if(isset($header))
+                    <header class="bg-white shadow">
+                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                            {{ $header }}
+                        </div>
+                    </header>
+                @elseif(View::hasSection('header'))
+                    <header class="bg-white shadow">
+                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                            @yield('header')
+                        </div>
+                    </header>
                 @endif
-                @yield('content')
-            </main>
+
+                <!-- Page Content -->
+                <main>
+                    @if(isset($slot))
+                        {{ $slot }}
+                    @endif
+                    @yield('content')
+                </main>
+            </div>
+
+            <!-- Footer Hak Cipta & Pengembang -->
+            <footer class="bg-white border-t border-slate-200 mt-12 py-5">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-slate-500">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-[#007a3d]">SIKAP</span>
+                        <span class="text-slate-300">|</span>
+                        <span>&copy; {{ date('Y') }} Fakultas Keperawatan, Universitas Riau</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-slate-600">
+                        <span class="text-slate-400">Pengembang Sistem:</span>
+                        <span class="font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200/60">Rahmad Hidayat Majlan, S.T. (RHM)</span>
+                    </div>
+                </div>
+            </footer>
         </div>
 
         <!-- PWA Service Worker Registration -->

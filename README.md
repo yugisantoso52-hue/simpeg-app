@@ -1,58 +1,48 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="public/logo-unri.png" width="100" alt="Logo UNRI">
 </p>
 
-## About Laravel
+<h1 align="center">SIKAP FKp UNRI</h1>
+<h3 align="center">Sistem Informasi Kepegawaian & Kinerja Pegawai</h3>
+<p align="center"><strong>Fakultas Keperawatan — Universitas Riau</strong></p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<p align="center">
+  <a href="https://sikap.fkp.unri.ac.id">
+    <img src="https://img.shields.io/badge/Production-sikap.fkp.unri.ac.id-007a3d?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Production URL">
+  </a>
+  <img src="https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 11">
+  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Ready">
+</p>
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 📌 Tentang SIKAP FKp UNRI
+**SIKAP** (Sistem Informasi Kepegawaian & Kinerja Pegawai) adalah aplikasi manajemen SDM terpadu di lingkungan **Fakultas Keperawatan Universitas Riau**. Sistem ini dirancang untuk mendigitalkan seluruh administrasi kepegawaian bagi Dosen dan Tenaga Kependidikan (Tendik).
 
-## Learning Laravel
+### 🚀 Fitur Unggulan
+- **Pemberkasan Pegawai Lengkap**: Profil biodata, riwayat kepangkatan/golongan, jabatan struktural/fungsional, pendidikan, sertifikasi STR/SIP, SKP tahunan, hingga tugas belajar.
+- **Pengajuan Cuti Berjenjang Hierarkis**: Alur verifikasi pengajuan cuti berjenjang sesuai struktur organisasi (Atasan Langsung: Kaprodi/Kajur/Pokja $\rightarrow$ Pejabat Berwenang Menyetujui: Dekan / Wadek).
+- **Tata Naskah Dinas Resmi**: Format cetak Formulir Cuti, SK KGB, dan Lembar Profil sesuai regulasi **Permendiktisaintek No. 42 Tahun 2025**.
+- **Tanda Tangan Elektronik & Verifikasi Publik**: Dilengkapi QR Code dan kode hash verifikasi keaslian dokumen publik.
+- **Dashboard Monitoring & Analytics**: Rekapitulasi kelengkapan data pegawai (100% Lengkap, Cukup Lengkap, Perlu Dilengkapi) yang dapat difilter secara interaktif.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 👨‍💻 Inisiator & Tim Pengembang
+Sistem ini diinisiasi, dirancang, dan dikembangkan oleh:
+* **Pengembang Sistem**: **Rahmad Hidayat Majlan, S.T.** `(RHM)`
+* **Instansi**: Fakultas Keperawatan, Universitas Riau
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+Untuk informasi lisensi dan hak kepemilikan inovasi, silakan rujuk berkas [AUTHORS.md](AUTHORS.md).
 
-## Agentic Development
+---
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## 🐳 Panduan Deployment
+Aplikasi telah dilengkapi kontainerisasi Docker multi-stage (PHP 8.3 FPM + Nginx + MySQL 8.0).  
+Silakan baca panduan lengkap pada [DOCKER_DEPLOY_GUIDE_TIK_UNRI.md](DOCKER_DEPLOY_GUIDE_TIK_UNRI.md).
 
-```bash
-composer require laravel/boost --dev
+---
 
-php artisan boost:install
-```
-
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+<p align="center">
+  <sub>&copy; 2026 <strong>SIKAP FKp UNRI</strong>. Dikembangkan oleh <strong>Rahmad Hidayat Majlan, S.T. (RHM)</strong> untuk Fakultas Keperawatan Universitas Riau.</sub>
+</p>
