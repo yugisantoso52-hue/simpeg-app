@@ -63,7 +63,10 @@
                     <ul class="space-y-2 text-xs text-emerald-50/95 leading-relaxed">
                         <li class="flex items-start gap-2">
                             <span class="text-emerald-300 font-bold">•</span>
-                            <span><strong>Jaga Kerahasiaan Akun:</strong> Jangan bagikan NIP dan kata sandi Anda kepada pihak lain yang tidak berwenang.</span>
+                            <div>
+                                <span><strong>Jaga Kerahasiaan Akun:</strong> Jangan bagikan NIP dan kata sandi Anda kepada pihak lain yang tidak berwenang.</span>
+                                <span class="block mt-0.5 text-amber-200 font-medium">Segera ganti Password login pertama Anda.</span>
+                            </div>
                         </li>
                         <li class="flex items-start gap-2">
                             <span class="text-emerald-300 font-bold">•</span>
@@ -112,12 +115,20 @@
                 <a href="/" class="shrink-0 transition transform hover:scale-105 duration-200">
                     <img src="{{ asset('logo-unri.png') }}" alt="Logo UNRI" class="h-14 w-auto object-contain">
                 </a>
-                <h2 class="text-xs font-extrabold uppercase text-[#007a3d] tracking-wider mt-2.5">
-                    FAKULTAS KEPERAWATAN UNIVERSITAS RIAU
-                </h2>
-                <h1 class="text-xl font-black text-slate-900 uppercase tracking-tight mt-0.5">
-                    SIKAP FKP UNRI
-                </h1>
+                <div class="mt-2.5 notranslate" translate="no">
+                    <p class="text-[10px] sm:text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                        KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI
+                    </p>
+                    <h2 class="text-sm sm:text-base font-extrabold tracking-wide uppercase text-[#007a3d] mt-0.5">
+                        UNIVERSITAS RIAU
+                    </h2>
+                    <h3 class="text-xs sm:text-sm font-bold tracking-wider uppercase text-slate-700 mt-0.5">
+                        FAKULTAS KEPERAWATAN
+                    </h3>
+                    <h1 class="text-sm sm:text-base font-black text-slate-900 tracking-tight mt-1.5">
+                        Sistem Informasi Kepegawaian (SIKAP)
+                    </h1>
+                </div>
             </div>
 
             <!-- Bagian Tengah: Kartu Formulir Login -->
