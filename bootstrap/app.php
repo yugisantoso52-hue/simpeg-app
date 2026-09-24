@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         
+        // Dukungan Reverse Proxy / Ingress Kubernetes UNRI (SSL Termination)
+        $middleware->trustProxies(at: '*');
+
         // Pendaftaran Alias Middleware Role & ForcePasswordChange
         $middleware->alias([
             'role' => RoleMiddleware::class,
