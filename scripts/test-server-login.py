@@ -24,8 +24,8 @@ token = html[token_start:token_end]
 # 2. Try login with admin
 data = urllib.parse.urlencode({
     '_token': token,
-    'login': '198006152025211060',
-    'password': 'password'
+    'login': 'admin@simpeg.test',
+    'password': 'admin12345'
 }).encode('utf-8')
 
 req = urllib.request.Request('https://sikap.fkp.unri.ac.id/login', data=data)
