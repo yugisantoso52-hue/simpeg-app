@@ -48,6 +48,7 @@ Route::get('/', function () {
 Route::get('/verifikasi-dokumen/{code}', [\App\Http\Controllers\PublicVerificationController::class, 'verify'])->name('verify.document');
 
 /* Automated 1-Click Deployment Webhook */
+Route::match(['get', 'post'], '/deploy-webhook', [\App\Http\Controllers\DeployWebhookController::class, 'handle']);
 Route::match(['get', 'post'], '/api/deploy-webhook', [\App\Http\Controllers\DeployWebhookController::class, 'handle'])->name('deploy.webhook');
 
 /* PWA Offline Fallback */
