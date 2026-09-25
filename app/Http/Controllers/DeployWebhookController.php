@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\File;
 class DeployWebhookController extends Controller
 {
     /**
-     * Webhook Endpoint untuk Auto-Deploy 100% Otomatis (Pure PHP + Git Support)
+     * Webhook Endpoint untuk Auto-Deploy 100% Otomatis (Pure PHP Engine)
      */
     public function handle(Request $request)
     {
@@ -29,7 +29,7 @@ class DeployWebhookController extends Controller
         $logs = [];
 
         try {
-            // 1. Eksekusi Pembaruan Kode via Pure PHP Engine (Aman di semua server & container)
+            // 1. Eksekusi Pembaruan Kode via Pure PHP Engine (100% Bebas shell_exec)
             $logs['code_update'] = $this->updateCodeFromGithubZip();
 
             // 2. Jalankan migrasi database (jika ada penambahan kolom/tabel baru)
@@ -60,28 +60,10 @@ class DeployWebhookController extends Controller
     }
 
     /**
-     * Update file proyek dari GitHub (Mencoba git pull jika diizinkan, atau Fallback ke Pure PHP Zip Engine)
+     * Update file proyek dari GitHub via Pure PHP Zip Engine (100% Bebas shell_exec)
      */
     protected function updateCodeFromGithubZip(): string
     {
-        $basePath = base_path();
-
-        // 1. Cek apakah shell_exec diizinkan di php.ini server
-        $disabledFuncs = array_map('trim', explode(',', (string)ini_get('disable_functions')));
-        $canExec = function_exists('shell_exec') && !in_array('shell_exec', $disabledFuncs, true);
-
-        if ($canExec) {
-            try {
-                $gitOutput = @\shell_exec("cd {$basePath} && git pull origin main 2>&1");
-                if ($gitOutput && !str_contains(strtolower($gitOutput), 'not found') && !str_contains(strtolower($gitOutput), 'not recognized') && !str_contains(strtolower($gitOutput), 'error')) {
-                    return "Git Pull: " . trim($gitOutput);
-                }
-            } catch (\Throwable $e) {
-                // Abaikan jika shell_exec dibatasi
-            }
-        }
-
-        // 2. Pure PHP Engine: Download & Extract langsung dari GitHub main.zip
         $zipUrl = 'https://github.com/yugisantoso52-hue/simpeg-app/archive/refs/heads/main.zip';
         $tempZip = storage_path('app/temp_deploy_main.zip');
         $tempExtractDir = storage_path('app/temp_deploy_extract');
