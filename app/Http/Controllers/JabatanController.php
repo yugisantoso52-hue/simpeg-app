@@ -57,21 +57,38 @@ class JabatanController extends Controller
         $jabatan = Jabatan::findOrFail($id);
 
         $validated = $request->validate([
-            'kode_jabatan' => 'nullable|string|max:50|unique:jabatan,kode_jabatan,'.$id,
+            'kode_jabatan' => [
+                'nullable',
+                'string',
+                'max:50',
+                \Illuminate\Validation\Rule::unique('jabatan', 'kode_jabatan')->ignore($id),
+            ],
             'nama_jabatan' => 'required|string|max:150',
             'keterangan'   => 'nullable|string|max:255',
         ]);
 
+        // Jika kode_jabatan dikosongkan, jangan ubah kode_jabatan yang sudah ada
         if (empty($validated['kode_jabatan'])) {
             unset($validated['kode_jabatan']);
         }
 
-        $jabatan->update($validated);
+        try {
+            $jabatan->update($validated);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Tangani error duplikat kode_jabatan
+            if ($e->getCode() == 23000) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['kode_jabatan' => 'Kode jabatan sudah digunakan oleh jabatan lain. Gunakan kode yang berbeda atau kosongkan field ini.']);
+            }
+            throw $e;
+        }
 
         return redirect()
             ->route('jabatan.index')
-            ->with('success','Data berhasil diupdate');
+            ->with('success','Data jabatan berhasil diupdate.');
     }
+
 
     public function destroy($id)
     {

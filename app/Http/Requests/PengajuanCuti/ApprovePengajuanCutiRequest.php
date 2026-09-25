@@ -8,7 +8,15 @@ class ApprovePengajuanCutiRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->hasRole(['admin', 'pimpinan']);
+        $user = $this->user();
+
+        // Admin dan Pimpinan selalu bisa
+        if ($user->hasRole(['admin', 'pimpinan'])) {
+            return true;
+        }
+
+        // Atasan Langsung juga bisa memberikan pertimbangan
+        return $user->isAtasan();
     }
 
     public function rules(): array
