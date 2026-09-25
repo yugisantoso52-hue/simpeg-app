@@ -75,7 +75,7 @@ echo ===========================================================================
 echo  SELESAI! PEMBARUAN 100%% SUKSES TERKIRIM DAN AKTIF DI SERVER ONLINE!
 echo ==============================================================================
 echo  Web Resmi: https://sikap.fkp.unri.ac.id
-echo  Data Pegawai di Server Online DIJAMIN 100%% AMAN & TERPROTEKSI.
+echo  Data Pegawai di Server Online DIJAMIN 100%% AMAN DAN TERPROTEKSI.
 echo ==============================================================================
 echo.
 pause
