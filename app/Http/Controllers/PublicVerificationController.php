@@ -8,9 +8,9 @@ use Illuminate\View\View;
 
 class PublicVerificationController extends Controller
 {
-    protected DocumentWatermarkService $watermarkService;
+    protected ?DocumentWatermarkService $watermarkService;
 
-    public function __construct(DocumentWatermarkService $watermarkService)
+    public function __construct(?DocumentWatermarkService $watermarkService = null)
     {
         $this->watermarkService = $watermarkService;
     }
