@@ -66,13 +66,15 @@ class DeployWebhookController extends Controller
     {
         $basePath = base_path();
 
-        // 1. Coba git pull terlebih dahulu jika binary git tersedia di container
-        $gitOutput = @shell_exec("cd {$basePath} && git pull origin main 2>&1");
-        if ($gitOutput && !str_contains(strtolower($gitOutput), 'not found') && !str_contains(strtolower($gitOutput), 'not recognized') && !str_contains(strtolower($gitOutput), 'error')) {
-            return "Git Pull: " . trim($gitOutput);
+        // 1. Coba git pull jika function shell_exec tersedia di PHP global
+        if (function_exists('shell_exec')) {
+            $gitOutput = @\shell_exec("cd {$basePath} && git pull origin main 2>&1");
+            if ($gitOutput && !str_contains(strtolower($gitOutput), 'not found') && !str_contains(strtolower($gitOutput), 'not recognized') && !str_contains(strtolower($gitOutput), 'error')) {
+                return "Git Pull: " . trim($gitOutput);
+            }
         }
 
-        // 2. Fallback: Download & Extract langsung dari GitHub main.zip via Pure PHP
+        // 2. Fallback: Download & Extract langsung dari GitHub main.zip via Pure PHP Engine
         $zipUrl = 'https://github.com/yugisantoso52-hue/simpeg-app/archive/refs/heads/main.zip';
         $tempZip = storage_path('app/temp_deploy_main.zip');
         $tempExtractDir = storage_path('app/temp_deploy_extract');
