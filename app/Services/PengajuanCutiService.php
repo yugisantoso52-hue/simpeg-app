@@ -101,9 +101,19 @@ class PengajuanCutiService
                 );
             }
 
-            $data['pegawai_id']  = $pegawaiId;
-            $data['jumlah_hari'] = $jumlahHari;
-            $data['status']      = 'Menunggu Persetujuan';
+            // Tentukan Atasan Langsung & PYBMC via ApprovalHierarchyService
+            $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
+            $atasanPegawai = $hierarchyService->getAtasanLangsung($pegawai);
+            $pybmcPegawai    = $hierarchyService->getPybmc($pegawai, $data['jenis_cuti']);
+
+            $atasanUser = $atasanPegawai ? \App\Models\User::where('pegawai_id', $atasanPegawai->id)->first() : null;
+            $pybmcUser  = $pybmcPegawai ? \App\Models\User::where('pegawai_id', $pybmcPegawai->id)->first() : null;
+
+            $data['pegawai_id']          = $pegawaiId;
+            $data['jumlah_hari']         = $jumlahHari;
+            $data['atasan_langsung_id']  = $atasanUser?->id;
+            $data['pybmc_id']            = $pybmcUser?->id;
+            $data['status']              = 'Menunggu Persetujuan';
 
             $cuti = $this->repository->create($data);
 
@@ -112,14 +122,14 @@ class PengajuanCutiService
                 app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, "SURAT_LAMPIRAN_{$jenisCuti}", '05_DOKUMEN_LAINNYA', "Permohonan {$data['jenis_cuti']}");
             }
 
-            // Kirim notifikasi lonceng ke Atasan Langsung (fallback ke Pimpinan & Admin)
+            // Kirim notifikasi ke Atasan Langsung & Pimpinan
             try {
                 $targets = collect();
-                if ($pegawai->atasan_id) {
-                    $atasanUser = \App\Models\User::where('pegawai_id', $pegawai->atasan_id)->first();
-                    if ($atasanUser) {
-                        $targets->push($atasanUser);
-                    }
+                if ($atasanUser) {
+                    $targets->push($atasanUser);
+                }
+                if ($pybmcUser && !$targets->contains('id', $pybmcUser->id)) {
+                    $targets->push($pybmcUser);
                 }
 
                 if ($targets->isEmpty()) {
@@ -136,19 +146,39 @@ class PengajuanCutiService
     }
 
     /**
-     * Verifikasi & Approval Pengajuan Cuti oleh Pimpinan
+     * Verifikasi & Approval Pengajuan Cuti oleh Pimpinan (Atasan Langsung & PYBMC)
      */
     public function approve(int $id, array $data, int $approverUserId): PengajuanCuti
     {
         return DB::transaction(function () use ($id, $data, $approverUserId) {
             $cuti = $this->repository->findOrFail($id);
+            $approver = \App\Models\User::find($approverUserId);
 
-            $updateData = [
-                'status'           => $data['status'],
-                'catatan_pimpinan' => $data['catatan_pimpinan'] ?? null,
-                'approved_by'      => $approverUserId,
-                'approved_at'      => now(),
-            ];
+            $updateData = [];
+
+            // Jika role admin atau PYBMC langsung menyetujui/menolak final
+            if ($approver->hasRole('admin') || ($cuti->pybmc_id && (int)$cuti->pybmc_id === $approverUserId)) {
+                $updateData['status']           = $data['status'];
+                $updateData['approved_by']      = $approverUserId;
+                $updateData['approved_at']      = now();
+                $updateData['catatan_pimpinan'] = $data['catatan_pimpinan'] ?? $data['catatan_atasan_langsung'] ?? null;
+            } else {
+                // Pertimbangan Atasan Langsung (Tahap 1 PerBKN 7/2022)
+                $statusAtasan = $data['status'] === 'Disetujui' ? 'Disetujui' : ($data['status'] === 'Ditolak' ? 'Ditolak' : $data['status']);
+                $updateData['pertimbangan_atasan']     = $statusAtasan;
+                $updateData['catatan_atasan_langsung'] = $data['catatan_pimpinan'] ?? $data['catatan_atasan_langsung'] ?? null;
+                $updateData['pertimbangan_atasan_at'] = now();
+                $updateData['atasan_langsung_id']      = $approverUserId;
+
+                if ($statusAtasan === 'Disetujui') {
+                    $updateData['status'] = 'Disetujui Atasan (Menunggu PYBMC)';
+                } else {
+                    $updateData['status']           = $data['status'];
+                    $updateData['approved_by']      = $approverUserId;
+                    $updateData['approved_at']      = now();
+                    $updateData['catatan_pimpinan'] = $data['catatan_pimpinan'] ?? null;
+                }
+            }
 
             if (!empty($data['nomor_surat'])) {
                 $updateData['nomor_surat'] = $data['nomor_surat'];
@@ -158,10 +188,9 @@ class PengajuanCutiService
 
             // Kirim notifikasi lonceng ke Pegawai pemohon cuti
             try {
-                $approver = \App\Models\User::find($approverUserId);
                 $employeeUser = \App\Models\User::where('pegawai_id', $cuti->pegawai_id)->first();
                 if ($employeeUser && $approver) {
-                    $employeeUser->notify(new \App\Notifications\CutiStatusNotification($cuti, $approver, $data['status']));
+                    $employeeUser->notify(new \App\Notifications\CutiStatusNotification($cuti, $approver, $updateData['status']));
                 }
             } catch (\Throwable $e) {
                 // Ignore notification failure

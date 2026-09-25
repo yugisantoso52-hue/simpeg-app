@@ -23,19 +23,22 @@ class AttendanceManageController extends Controller
     ) {}
 
     /**
-     * Rekap Presensi Karyawan (Admin Panel)
+     * Rekap Presensi Karyawan (Admin & Pimpinan Panel)
      */
     public function index(Request $request): View
     {
+        $user = $request->user();
+        $bawahanIds = !$user->hasRole('admin') ? $user->getBawahanIds() : null;
+
         $mode = $request->get('mode', 'daily');
-        $statistics = $this->service->todayStatistics();
+        $statistics = $this->service->todayStatistics($bawahanIds);
 
         if ($mode === 'monthly') {
             $month = (int) $request->get('month', Carbon::now('Asia/Jakarta')->month);
             $year = (int) $request->get('year', Carbon::now('Asia/Jakarta')->year);
             $search = $request->get('search');
 
-            $matrixData = $this->service->getMonthlyMatrix($month, $year, $search, 50);
+            $matrixData = $this->service->getMonthlyMatrix($month, $year, $search, 50, $bawahanIds);
 
             return view('attendance.admin.index', [
                 'mode' => 'monthly',
@@ -54,6 +57,9 @@ class AttendanceManageController extends Controller
         }
 
         $filters = $this->extractFilters($request);
+        if ($bawahanIds !== null) {
+            $filters['bawahan_ids'] = $bawahanIds;
+        }
         $attendances = $this->service->filterAttendances($filters, 20);
 
         return view('attendance.admin.index', [

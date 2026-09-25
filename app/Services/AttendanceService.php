@@ -547,13 +547,19 @@ class AttendanceService
     }
 
     /**
-     * Filter presensi untuk panel rekap Admin
+     * Filter presensi untuk panel rekap Admin & Pimpinan
      */
     public function filterAttendances(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         $query = Attendance::with(['user.pegawai.unitKerja', 'user.pegawai.jabatan'])
             ->latest('attendance_date')
             ->latest('check_in_time');
+
+        if (!empty($filters['bawahan_ids'])) {
+            $query->whereHas('user', function ($q) use ($filters) {
+                $q->whereIn('pegawai_id', $filters['bawahan_ids']);
+            });
+        }
 
         if (!empty($filters['date'])) {
             $query->whereDate('attendance_date', $filters['date']);
@@ -593,22 +599,30 @@ class AttendanceService
     /**
      * Statistik Presensi Hari Ini
      */
-    public function todayStatistics(): array
+    public function todayStatistics(?array $bawahanIds = null): array
     {
         $today = Carbon::now('Asia/Jakarta')->toDateString();
 
-        $totalPegawai = Pegawai::count();
+        $pegawaiQuery = Pegawai::query();
+        $attQuery = Attendance::whereDate('attendance_date', $today);
+
+        if ($bawahanIds !== null) {
+            $pegawaiQuery->whereIn('id', $bawahanIds);
+            $attQuery->whereHas('user', fn($q) => $q->whereIn('pegawai_id', $bawahanIds));
+        }
+
+        $totalPegawai = $pegawaiQuery->count();
         if ($totalPegawai === 0) {
             $totalPegawai = User::count();
         }
 
         $totalUsers = User::count();
-        $presentCount = Attendance::whereDate('attendance_date', $today)->count();
-        $wfoCount = Attendance::whereDate('attendance_date', $today)->where('attendance_type', 'wfo')->count();
-        $wfhCount = Attendance::whereDate('attendance_date', $today)->where('attendance_type', 'wfh')->count();
-        $lateCount = Attendance::whereDate('attendance_date', $today)->where('status', 'late')->count();
+        $presentCount = (clone $attQuery)->count();
+        $wfoCount = (clone $attQuery)->where('attendance_type', 'wfo')->count();
+        $wfhCount = (clone $attQuery)->where('attendance_type', 'wfh')->count();
+        $lateCount = (clone $attQuery)->where('status', 'late')->count();
         $suspiciousCount = Schema::hasColumn('attendances', 'is_suspicious')
-            ? Attendance::whereDate('attendance_date', $today)->where('is_suspicious', true)->count()
+            ? (clone $attQuery)->where('is_suspicious', true)->count()
             : 0;
 
         return [
@@ -624,9 +638,9 @@ class AttendanceService
     }
 
     /**
-     * Dapatkan data Matriks Presensi Bulanan (Kalender 1 - 31) untuk semua pegawai
+     * Dapatkan data Matriks Presensi Bulanan (Kalender 1 - 31) untuk semua pegawai / bawahan
      */
-    public function getMonthlyMatrix(int $month, int $year, ?string $search = null, int $perPage = 50): array
+    public function getMonthlyMatrix(int $month, int $year, ?string $search = null, int $perPage = 50, ?array $bawahanIds = null): array
     {
         $startOfMonth = Carbon::createFromDate($year, $month, 1, 'Asia/Jakarta')->startOfMonth();
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
@@ -654,6 +668,10 @@ class AttendanceService
                 $q->whereBetween('attendance_date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()]);
             }
         ])->where('status_pegawai', 'Aktif');
+
+        if ($bawahanIds !== null) {
+            $query->whereIn('id', $bawahanIds);
+        }
 
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {

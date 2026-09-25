@@ -89,7 +89,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Cek apakah user memiliki pegawai bawahan langsung
+     * Cek apakah user memiliki pegawai bawahan langsung atau bawahan hirarki
      */
     public function isAtasan(): bool
     {
@@ -97,11 +97,11 @@ class User extends Authenticatable
             return false;
         }
 
-        return Pegawai::where('atasan_id', $this->pegawai_id)->exists();
+        return !empty($this->getBawahanIds());
     }
 
     /**
-     * Ambil array ID pegawai bawahan langsung
+     * Ambil array ID pegawai bawahan langsung & hirarki
      */
     public function getBawahanIds(): array
     {
@@ -109,6 +109,11 @@ class User extends Authenticatable
             return [];
         }
 
-        return Pegawai::where('atasan_id', $this->pegawai_id)->pluck('id')->toArray();
+        $pegawai = $this->pegawai ?? Pegawai::find($this->pegawai_id);
+        if (!$pegawai) {
+            return [];
+        }
+
+        return app(\App\Services\ApprovalHierarchyService::class)->getBawahanIdsForPegawai($pegawai);
     }
 }
