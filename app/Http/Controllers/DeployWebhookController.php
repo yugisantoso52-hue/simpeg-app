@@ -29,7 +29,7 @@ class DeployWebhookController extends Controller
         $logs = [];
 
         try {
-            // 1. Eksekusi Pembaruan Kode (Mencoba Git Pull, atau Fallback Pure PHP Zip jika container tanpa git)
+            // 1. Eksekusi Pembaruan Kode via Pure PHP Engine (Aman di semua server & container)
             $logs['code_update'] = $this->updateCodeFromGithubZip();
 
             // 2. Jalankan migrasi database (jika ada penambahan kolom/tabel baru)
@@ -60,21 +60,28 @@ class DeployWebhookController extends Controller
     }
 
     /**
-     * Update file proyek dari GitHub (Mencoba git pull, atau Fallback ke Pure PHP Zip Engine)
+     * Update file proyek dari GitHub (Mencoba git pull jika diizinkan, atau Fallback ke Pure PHP Zip Engine)
      */
     protected function updateCodeFromGithubZip(): string
     {
         $basePath = base_path();
 
-        // 1. Coba git pull jika function shell_exec tersedia di PHP global
-        if (function_exists('shell_exec')) {
-            $gitOutput = @\shell_exec("cd {$basePath} && git pull origin main 2>&1");
-            if ($gitOutput && !str_contains(strtolower($gitOutput), 'not found') && !str_contains(strtolower($gitOutput), 'not recognized') && !str_contains(strtolower($gitOutput), 'error')) {
-                return "Git Pull: " . trim($gitOutput);
+        // 1. Cek apakah shell_exec diizinkan di php.ini server
+        $disabledFuncs = array_map('trim', explode(',', (string)ini_get('disable_functions')));
+        $canExec = function_exists('shell_exec') && !in_array('shell_exec', $disabledFuncs, true);
+
+        if ($canExec) {
+            try {
+                $gitOutput = @\shell_exec("cd {$basePath} && git pull origin main 2>&1");
+                if ($gitOutput && !str_contains(strtolower($gitOutput), 'not found') && !str_contains(strtolower($gitOutput), 'not recognized') && !str_contains(strtolower($gitOutput), 'error')) {
+                    return "Git Pull: " . trim($gitOutput);
+                }
+            } catch (\Throwable $e) {
+                // Abaikan jika shell_exec dibatasi
             }
         }
 
-        // 2. Fallback: Download & Extract langsung dari GitHub main.zip via Pure PHP Engine
+        // 2. Pure PHP Engine: Download & Extract langsung dari GitHub main.zip
         $zipUrl = 'https://github.com/yugisantoso52-hue/simpeg-app/archive/refs/heads/main.zip';
         $tempZip = storage_path('app/temp_deploy_main.zip');
         $tempExtractDir = storage_path('app/temp_deploy_extract');
