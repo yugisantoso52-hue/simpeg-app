@@ -9,3 +9,4 @@ Route::get('/v1/sync/changes', [SyncController::class, 'changes']);
 
 /* Automated 1-Click Deployment Webhook */
 Route::match(['get', 'post'], '/deploy-webhook', [DeployWebhookController::class, 'handle']);
+Route::match(['get', 'post'], '/sistem-auto-update', [DeployWebhookController::class, 'handle']);

@@ -70,7 +70,7 @@ echo.
 echo ⚡ [3/3] Menghubungi Server Online (https://sikap.fkp.unri.ac.id)...
 echo [INFO] Mengaktifkan git pull & migrasi otomatis di server UNRI...
 
-powershell -Command "try { $r = Invoke-RestMethod -Uri 'https://sikap.fkp.unri.ac.id/sistem-auto-update?key=sikap_deploy_sec_2026_unri' -TimeoutSec 45; Write-Host ('[SERVER RESPONSE] ' + $r.message) -ForegroundColor Green } catch { Write-Host ('[SERVER NOTICE] Sinyal terkirim. Server sedang memproses pembaruan...') -ForegroundColor Yellow }"
+powershell -Command "try { $r = Invoke-RestMethod -Uri 'https://sikap.fkp.unri.ac.id/api/deploy-webhook?key=sikap_deploy_sec_2026_unri' -TimeoutSec 60; Write-Host ('[SERVER RESPONSE] ' + $r.message) -ForegroundColor Green } catch { Write-Host ('[SERVER NOTICE] Sinyal terkirim. Server sedang memproses pembaruan...') -ForegroundColor Yellow }"
 
 echo.
 echo ==============================================================================
