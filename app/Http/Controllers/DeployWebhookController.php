@@ -38,6 +38,9 @@ class DeployWebhookController extends Controller
 
             // 3. Bersihkan & optimalkan cache
             Artisan::call('optimize:clear');
+            if (function_exists('opcache_reset')) {
+                @opcache_reset();
+            }
             $logs['optimize_clear'] = trim(Artisan::output());
 
             Log::info('Auto-Deploy Webhook Berhasil Eksekusi:', $logs);
