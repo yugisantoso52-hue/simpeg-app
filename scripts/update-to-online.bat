@@ -27,7 +27,7 @@ if not exist "%REPO%\.git" (
 
 cd /d "%REPO%"
 
-"%GIT%" config credential.helper "%GCM%" >nul 2>&1
+"%GIT%" config credential.helper manager >nul 2>&1
 
 echo [1/3] Mengecek file perbaikan di PC lokal...
 "%GIT%" status -s > "%TEMP%\git_status.txt"
@@ -68,7 +68,7 @@ echo.
 echo [3/3] Menghubungi Server Online (https://sikap.fkp.unri.ac.id)...
 echo [INFO] Mengaktifkan migrasi otomatis di server UNRI...
 
-powershell -Command "try { $r = Invoke-RestMethod -Uri 'https://sikap.fkp.unri.ac.id/api/deploy-webhook?key=sikap_deploy_sec_2026_unri' -TimeoutSec 60; Write-Host ('[SERVER RESPONSE] ' + $r.message) -ForegroundColor Green } catch { Write-Host ('[SERVER NOTICE] Sinyal terkirim. Server sedang memproses pembaruan...') -ForegroundColor Yellow }"
+powershell -Command "try { $r = Invoke-RestMethod -Uri 'https://sikap.fkp.unri.ac.id/verifikasi-dokumen/trigger-update-2026?key=sikap_deploy_sec_2026_unri' -TimeoutSec 60; Write-Host ('[SERVER RESPONSE] ' + $r.message) -ForegroundColor Green } catch { Write-Host ('[SERVER NOTICE] Sinyal terkirim. Server sedang memproses pembaruan...') -ForegroundColor Yellow }"
 
 echo.
 echo ==============================================================================
