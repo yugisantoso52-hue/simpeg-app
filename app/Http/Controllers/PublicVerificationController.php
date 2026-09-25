@@ -20,6 +20,10 @@ class PublicVerificationController extends Controller
      */
     public function verify(Request $request, string $code): View
     {
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
+
         $documentData = $this->watermarkService->verifyDocumentCode($code);
 
         return view('public.verify-document', [
