@@ -5,13 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\Process\Process;
+use Illuminate\Support\Facades\File;
 
 class DeployWebhookController extends Controller
 {
     /**
-     * Webhook Endpoint untuk Auto-Deploy (git pull, migrate, optimize)
-     * Dapat dipanggil via HTTP GET atau POST dengan secret key
+     * Webhook Endpoint untuk Auto-Deploy 100% Otomatis (Pure PHP + Git Support)
      */
     public function handle(Request $request)
     {
@@ -26,17 +25,14 @@ class DeployWebhookController extends Controller
         }
 
         set_time_limit(300);
+        ini_set('memory_limit', '512M');
         $logs = [];
 
         try {
-            $basePath = base_path();
+            // 1. Eksekusi Pembaruan Kode (Mencoba Git Pull, atau Fallback Pure PHP Zip jika container tanpa git)
+            $logs['code_update'] = $this->updateCodeFromGithubZip();
 
-            // 1. Jalankan git pull origin main
-            $gitCmd = "cd {$basePath} && git pull origin main 2>&1";
-            $gitOutput = shell_exec($gitCmd);
-            $logs['git_pull'] = trim((string)$gitOutput);
-
-            // 2. Jalankan migrasi database
+            // 2. Jalankan migrasi database (jika ada penambahan kolom/tabel baru)
             Artisan::call('migrate', ['--force' => true]);
             $logs['migrate'] = trim(Artisan::output());
 
@@ -48,7 +44,7 @@ class DeployWebhookController extends Controller
 
             return response()->json([
                 'status'  => 'success',
-                'message' => 'Alhamdulillah! Server SIKAP FKP UNRI Berhasil Di-Update Otomatis.',
+                'message' => 'Alhamdulillah! Server SIKAP FKP UNRI Berhasil Di-Update Otomatis 100%.',
                 'logs'    => $logs
             ], 200);
 
@@ -61,5 +57,107 @@ class DeployWebhookController extends Controller
                 'logs'    => $logs
             ], 500);
         }
+    }
+
+    /**
+     * Update file proyek dari GitHub (Mencoba git pull, atau Fallback ke Pure PHP Zip Engine)
+     */
+    protected function updateCodeFromGithubZip(): string
+    {
+        $basePath = base_path();
+
+        // 1. Coba git pull terlebih dahulu jika binary git tersedia di container
+        $gitOutput = @shell_exec("cd {$basePath} && git pull origin main 2>&1");
+        if ($gitOutput && !str_contains(strtolower($gitOutput), 'not found') && !str_contains(strtolower($gitOutput), 'not recognized') && !str_contains(strtolower($gitOutput), 'error')) {
+            return "Git Pull: " . trim($gitOutput);
+        }
+
+        // 2. Fallback: Download & Extract langsung dari GitHub main.zip via Pure PHP
+        $zipUrl = 'https://github.com/yugisantoso52-hue/simpeg-app/archive/refs/heads/main.zip';
+        $tempZip = storage_path('app/temp_deploy_main.zip');
+        $tempExtractDir = storage_path('app/temp_deploy_extract');
+
+        $opts = [
+            "http" => [
+                "method" => "GET",
+                "header" => "User-Agent: SIKAP-UNRI-Deployer\r\n"
+            ],
+            "ssl" => [
+                "verify_peer" => false,
+                "verify_peer_name" => false
+            ]
+        ];
+        $context = stream_context_create($opts);
+
+        $zipData = @file_get_contents($zipUrl, false, $context);
+        if (!$zipData && function_exists('curl_init')) {
+            $ch = curl_init($zipUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'SIKAP-UNRI-Deployer');
+            $zipData = curl_exec($ch);
+            curl_close($ch);
+        }
+
+        if (empty($zipData)) {
+            return "PHP Engine: Gagal mengunduh file update zip dari GitHub.";
+        }
+
+        File::put($tempZip, $zipData);
+
+        if (!class_exists('ZipArchive')) {
+            return "PHP Engine: Ekstensi ZipArchive tidak ditemukan pada PHP server.";
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($tempZip) === true) {
+            if (File::isDirectory($tempExtractDir)) {
+                File::deleteDirectory($tempExtractDir);
+            }
+            File::makeDirectory($tempExtractDir, 0755, true);
+
+            $zip->extractTo($tempExtractDir);
+            $zip->close();
+            @unlink($tempZip);
+
+            $sourceDir = $tempExtractDir . '/simpeg-app-main';
+            if (!File::isDirectory($sourceDir)) {
+                $subdirs = File::directories($tempExtractDir);
+                if (!empty($subdirs)) {
+                    $sourceDir = $subdirs[0];
+                }
+            }
+
+            if (File::isDirectory($sourceDir)) {
+                $excluded = ['.env', 'storage', 'vendor', 'node_modules', '.git'];
+                $copiedCount = 0;
+
+                $allFiles = File::allFiles($sourceDir, true);
+                foreach ($allFiles as $file) {
+                    $relativePath = str_replace('\\', '/', $file->getRelativePathname());
+
+                    $skip = false;
+                    foreach ($excluded as $exc) {
+                        if ($relativePath === $exc || str_starts_with($relativePath, $exc . '/')) {
+                            $skip = true;
+                            break;
+                        }
+                    }
+                    if ($skip) continue;
+
+                    $targetFile = base_path($relativePath);
+                    File::ensureDirectoryExists(dirname($targetFile));
+                    copy($file->getRealPath(), $targetFile);
+                    $copiedCount++;
+                }
+
+                File::deleteDirectory($tempExtractDir);
+
+                return "Pure PHP Engine: Berhasil memperbarui {$copiedCount} file kode dari GitHub main.zip!";
+            }
+        }
+
+        return "PHP Engine: Gagal mengekstrak berkas zip.";
     }
 }
