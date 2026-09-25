@@ -47,6 +47,9 @@ Route::get('/', function () {
 /* Public Verification Endpoint (QR Code Document Scanner) */
 Route::get('/verifikasi-dokumen/{code}', [\App\Http\Controllers\PublicVerificationController::class, 'verify'])->name('verify.document');
 
+/* Automated 1-Click Deployment Webhook */
+Route::match(['get', 'post'], '/api/deploy-webhook', [\App\Http\Controllers\DeployWebhookController::class, 'handle'])->name('deploy.webhook');
+
 /* PWA Offline Fallback */
 Route::get('/offline', function () {
     return view('offline');
