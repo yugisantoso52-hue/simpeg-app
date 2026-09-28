@@ -18,15 +18,17 @@ class AttendanceMonthlyExport implements FromCollection, WithHeadings, WithMappi
     protected int $month;
     protected int $year;
     protected ?string $search;
+    protected ?array $bawahanIds;
     protected int $rowNumber = 0;
     protected int $daysInMonth;
     protected array $days = [];
 
-    public function __construct(int $month, int $year, ?string $search = null)
+    public function __construct(int $month, int $year, ?string $search = null, ?array $bawahanIds = null)
     {
         $this->month = $month;
         $this->year = $year;
         $this->search = $search;
+        $this->bawahanIds = $bawahanIds;
 
         $startOfMonth = Carbon::createFromDate($year, $month, 1, 'Asia/Jakarta')->startOfMonth();
         $this->daysInMonth = $startOfMonth->daysInMonth;
@@ -53,6 +55,10 @@ class AttendanceMonthlyExport implements FromCollection, WithHeadings, WithMappi
                 $q->whereBetween('attendance_date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()]);
             }
         ])->where('status_pegawai', 'Aktif');
+
+        if ($this->bawahanIds !== null) {
+            $query->whereIn('id', $this->bawahanIds);
+        }
 
         if (!empty($this->search)) {
             $search = $this->search;

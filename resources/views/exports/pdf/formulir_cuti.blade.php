@@ -162,8 +162,7 @@
     <div class="title">FORMULIR PERMINTAAN DAN PEMBERIAN CUTI</div>
     <div style="text-align: right; font-size: 8.5pt; margin-bottom: 6px;">
         Pekanbaru, {{ $cuti->created_at->translatedFormat('d F Y') }}<br>
-        Kepada Yth. Dekan Fakultas Keperawatan UNRI<br>
-        di Pekanbaru
+        Kepada Yth. Dekan Fakultas Keperawatan UNRI
     </div>
 
     {{-- I. DATA PEGAWAI --}}
@@ -269,6 +268,27 @@
     </table>
 
     {{-- VI. PERTIMBANGAN ATASAN LANGSUNG & PEJABAT YANG BERWENANG --}}
+    @php
+        $pejabatInfo = app(\App\Services\ApprovalHierarchyService::class)->getPejabatCutiInfo($cuti->pegawai);
+        
+        $atasanNama    = $pejabatInfo['atasan_nama'];
+        $atasanJabatan = $pejabatInfo['atasan_jabatan'];
+        $atasanNip     = $pejabatInfo['atasan_nip'];
+
+        if (!empty($cuti->pertimbangan_atasan) && $cuti->atasanLangsung && $cuti->atasanLangsung->pegawai) {
+            $atasanNama = $cuti->atasanLangsung->pegawai->nama_lengkap ?? $cuti->atasanLangsung->pegawai->nama;
+            $atasanNip  = $cuti->atasanLangsung->pegawai->nip;
+        }
+
+        $pybmcNama    = $pejabatInfo['pybmc_nama'];
+        $pybmcJabatan = $pejabatInfo['pybmc_jabatan'];
+        $pybmcNip     = $pejabatInfo['pybmc_nip'];
+
+        if (in_array($cuti->status, ['Disetujui', 'Ditolak']) && $cuti->approvedBy && $cuti->approvedBy->pegawai) {
+            $pybmcNama = $cuti->approvedBy->pegawai->nama_lengkap ?? $cuti->approvedBy->pegawai->nama;
+            $pybmcNip  = $cuti->approvedBy->pegawai->nip;
+        }
+    @endphp
     <table class="bkn-table">
         <tr class="section-title">
             <td style="width: 50%;">VI. PERTIMBANGAN ATASAN LANGSUNG</td>
@@ -276,21 +296,23 @@
         </tr>
         <tr>
             <td>
-                <div>Status: <strong>{{ $cuti->status }}</strong></div>
-                <div style="margin-top: 2px; font-size: 8.5pt;">Catatan: {{ $cuti->catatan_pimpinan ?: '-' }}</div>
+                <div>Status: <strong>{{ $cuti->pertimbangan_atasan ?: ($cuti->status === 'Menunggu Persetujuan' ? 'Menunggu Pertimbangan' : $cuti->status) }}</strong></div>
+                <div style="margin-top: 2px; font-size: 8.5pt;">Catatan: {{ $cuti->catatan_atasan_langsung ?: ($cuti->catatan_pimpinan ?: '-') }}</div>
                 <br><br>
                 <div class="text-center">
-                    <span style="font-weight: normal; text-decoration: none;">KTU / Wakil Dekan II</span><br>
-                    NIP. .....................................................
+                    <span style="font-weight: bold; text-decoration: underline;">{{ $atasanNama }}</span><br>
+                    <span>{{ $atasanJabatan }}</span><br>
+                    NIP. {{ $atasanNip ?: '.....................................................' }}
                 </div>
             </td>
             <td>
-                <div>Status: <strong>{{ $cuti->status }}</strong></div>
+                <div>Status: <strong>{{ in_array($cuti->status, ['Disetujui', 'Ditolak']) ? $cuti->status : 'Menunggu Keputusan' }}</strong></div>
                 <div style="margin-top: 2px; font-size: 8.5pt;">No. SK/Izin: {{ $cuti->nomor_surat ?: '-' }}</div>
                 <br><br>
                 <div class="text-center">
-                    <span style="font-weight: normal; text-decoration: none;">Prof. Dr. Dosen Dekan, M.Kep</span><br>
-                    NIP. .....................................................
+                    <span style="font-weight: bold; text-decoration: underline;">{{ $pybmcNama }}</span><br>
+                    <span>{{ $pybmcJabatan }}</span><br>
+                    NIP. {{ $pybmcNip ?: '.....................................................' }}
                 </div>
             </td>
         </tr>

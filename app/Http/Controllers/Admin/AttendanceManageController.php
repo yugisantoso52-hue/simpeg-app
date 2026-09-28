@@ -157,6 +157,9 @@ class AttendanceManageController extends Controller
      */
     public function exportExcel(Request $request)
     {
+        $user = $request->user();
+        $bawahanIds = !$user->hasRole('admin') ? $user->getBawahanIds() : null;
+
         $mode = $request->get('mode', 'daily');
 
         if ($mode === 'monthly') {
@@ -165,10 +168,13 @@ class AttendanceManageController extends Controller
             $search = $request->get('search');
 
             $filename = 'Matriks_Presensi_' . $year . '_' . sprintf('%02d', $month) . '.xlsx';
-            return Excel::download(new AttendanceMonthlyExport($month, $year, $search), $filename);
+            return Excel::download(new AttendanceMonthlyExport($month, $year, $search, $bawahanIds), $filename);
         }
 
         $filters = $this->extractFilters($request);
+        if ($bawahanIds !== null) {
+            $filters['bawahan_ids'] = $bawahanIds;
+        }
         $filename = 'Rekap_Presensi_' . Carbon::now('Asia/Jakarta')->format('Y-m-d_His') . '.xlsx';
         return Excel::download(new AttendanceExport($filters), $filename);
     }
@@ -178,6 +184,9 @@ class AttendanceManageController extends Controller
      */
     public function exportPdf(Request $request)
     {
+        $user = $request->user();
+        $bawahanIds = !$user->hasRole('admin') ? $user->getBawahanIds() : null;
+
         $mode = $request->get('mode', 'daily');
 
         if ($mode === 'monthly') {
@@ -185,7 +194,7 @@ class AttendanceManageController extends Controller
             $year = (int) $request->get('year', Carbon::now('Asia/Jakarta')->year);
             $search = $request->get('search');
 
-            $matrixData = $this->service->getMonthlyMatrix($month, $year, $search, 5000);
+            $matrixData = $this->service->getMonthlyMatrix($month, $year, $search, 5000, $bawahanIds);
             $pdf = Pdf::loadView('exports.pdf.attendance_monthly', compact('matrixData'))->setPaper('a4', 'landscape');
 
             $filename = 'Matriks_Presensi_' . $year . '_' . sprintf('%02d', $month) . '.pdf';
@@ -193,6 +202,9 @@ class AttendanceManageController extends Controller
         }
 
         $filters = $this->extractFilters($request);
+        if ($bawahanIds !== null) {
+            $filters['bawahan_ids'] = $bawahanIds;
+        }
 
         $paginator = $this->service->filterAttendances($filters, 5000);
         $attendances = collect($paginator->items());

@@ -32,11 +32,32 @@
     📝 Logbook
 </x-nav-link>
 
-{{-- 5b. Menu Khusus Verifikasi Logbook Bawahan (Jika Pegawai adalah Atasan Langsung dan bukan admin) --}}
-@if(Auth::user()->isAtasan() && !Auth::user()->hasRole(['admin', 'pimpinan']))
-    <x-nav-link :href="route('admin.logbook.index')" :active="request()->routeIs('admin.logbook.*')">
-        👥 Verifikasi Logbook Bawahan
-    </x-nav-link>
+{{-- 5b. Menu Supervisi Bawahan (Presensi & Logbook untuk Atasan / Pimpinan yang Memiliki Bawahan) --}}
+@if(Auth::user()->isAtasan() && !Auth::user()->hasRole('admin'))
+    <x-dropdown align="left" width="56">
+        <x-slot name="trigger">
+            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-700 hover:text-gray-900 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('admin.presensi.*', 'admin.logbook.*') ? 'border-indigo-600 text-indigo-700 font-bold' : '' }}">
+                <span>👥 Supervisi Bawahan</span>
+                <svg class="ms-1.5 h-4 w-4 fill-current text-gray-400" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </x-slot>
+        <x-slot name="content">
+            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                Persetujuan & Monitoring Bawahan
+            </div>
+            <x-dropdown-link :href="route('admin.presensi.index')" class="{{ request()->routeIs('admin.presensi.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
+                📊 Rekap Presensi Bawahan
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('admin.logbook.index')" class="{{ request()->routeIs('admin.logbook.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
+                📝 Verifikasi Logbook Bawahan
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('pengajuan-cuti.index')" class="{{ request()->routeIs('pengajuan-cuti.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
+                🏖️ Persetujuan Cuti Bawahan
+            </x-dropdown-link>
+        </x-slot>
+    </x-dropdown>
 @endif
 
 {{-- 6. Dropdown Data Kepegawaian (Khusus Admin & Pimpinan) --}}

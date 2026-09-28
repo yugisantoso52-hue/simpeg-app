@@ -79,13 +79,45 @@ class User extends Authenticatable
             $this->load('role');
         }
 
-        if (!$this->role) {
+        $allowedRoles = is_array($roles) ? $roles : [$roles];
+
+        // 1. Cek role langsung di tabel roles
+        if ($this->role && in_array($this->role->name, $allowedRoles, true)) {
+            return true;
+        }
+
+        // 2. Hak akses pimpinan untuk 15 Jabatan Pimpinan FKP UNRI
+        if (in_array('pimpinan', $allowedRoles, true) && $this->isPimpinan()) {
+            return true;
+        }
+
+        // 3. Hak akses atasan untuk pimpinan / pejabat yang memiliki bawahan
+        if (in_array('atasan', $allowedRoles, true) && $this->isAtasan()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Cek apakah user memegang salah satu dari 15 Jabatan Pimpinan FKP UNRI
+     */
+    public function isPimpinan(): bool
+    {
+        if ($this->role && in_array($this->role->name, ['admin', 'pimpinan'], true)) {
+            return true;
+        }
+
+        if (!$this->pegawai_id) {
             return false;
         }
 
-        $allowedRoles = is_array($roles) ? $roles : [$roles];
+        $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
+        if (!$pegawai) {
+            return false;
+        }
 
-        return in_array($this->role->name, $allowedRoles, true);
+        return $pegawai->isPimpinan();
     }
 
     /**
@@ -93,6 +125,14 @@ class User extends Authenticatable
      */
     public function isAtasan(): bool
     {
+        if ($this->role && in_array($this->role->name, ['admin', 'pimpinan'], true)) {
+            return true;
+        }
+
+        if ($this->isPimpinan()) {
+            return true;
+        }
+
         if (!$this->pegawai_id) {
             return false;
         }

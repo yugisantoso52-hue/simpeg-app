@@ -612,11 +612,11 @@ class AttendanceService
         }
 
         $totalPegawai = $pegawaiQuery->count();
-        if ($totalPegawai === 0) {
+        if ($bawahanIds === null && $totalPegawai === 0) {
             $totalPegawai = User::count();
         }
 
-        $totalUsers = User::count();
+        $totalUsers = $bawahanIds !== null ? $totalPegawai : User::count();
         $presentCount = (clone $attQuery)->count();
         $wfoCount = (clone $attQuery)->where('attendance_type', 'wfo')->count();
         $wfhCount = (clone $attQuery)->where('attendance_type', 'wfh')->count();

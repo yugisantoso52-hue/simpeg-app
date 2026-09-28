@@ -27,8 +27,12 @@ class RoleMiddleware
         }
         $flatRoles = array_map('trim', $flatRoles);
 
-        // Cek apakah user memiliki salah satu dari role yang diizinkan, atau jika role mengandung 'atasan' dan user adalah atasan bawahan
+        // Cek apakah user memiliki salah satu dari role yang diizinkan
         $hasAccess = $request->user()->hasRole($flatRoles);
+
+        if (!$hasAccess && in_array('pimpinan', $flatRoles, true)) {
+            $hasAccess = $request->user()->isPimpinan();
+        }
 
         if (!$hasAccess && in_array('atasan', $flatRoles, true)) {
             $hasAccess = $request->user()->isAtasan();

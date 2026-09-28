@@ -603,6 +603,42 @@ class Pegawai extends Model
     }
 
     /**
+     * Cek apakah pegawai memegang salah satu dari 15 Jabatan Pimpinan FKP UNRI
+     */
+    public function isPimpinan(): bool
+    {
+        $jabatanNama = strtoupper(trim((string)($this->jabatan->nama_jabatan ?? '')));
+
+        $pimpinanKeywords = [
+            'DEKAN',
+            'WAKIL DEKAN',
+            'WADEK',
+            'KETUA JURUSAN',
+            'KAJUR',
+            'KOORDINATOR PRODI',
+            'KOORPRODI',
+            'KOORDINATOR PROGRAM STUDI',
+            'KEPALA BAGIAN UMUM',
+            'KABAG UMUM',
+            'KABAG TU',
+            'KA POKJA',
+            'KEPALA POKJA',
+            'KETUA POKJA',
+            'KEPALA UPT',
+            'KEPALA LABORATORIUM',
+            'KEPALA LAB',
+        ];
+
+        foreach ($pimpinanKeywords as $kw) {
+            if (str_contains($jabatanNama, $kw)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Cek apakah pegawai adalah Pranata Laboratorium Pendidikan (PLP) / Tenaga Laboran
      */
     public function isPlp(): bool

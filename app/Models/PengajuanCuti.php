@@ -69,6 +69,11 @@ class PengajuanCuti extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
     public function getFileLampiranUrlAttribute(): ?string
     {
         return (!empty($this->file_lampiran) && $this->file_lampiran !== '-') 

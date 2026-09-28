@@ -33,10 +33,19 @@
         📝 Logbook Kinerja
     </x-responsive-nav-link>
 
-    {{-- Menu Khusus Atasan Langsung --}}
-    @if(Auth::user()->isAtasan() && !Auth::user()->hasRole(['admin', 'pimpinan']))
+    {{-- Menu Khusus Atasan Langsung & Pimpinan (Supervisi Bawahan) --}}
+    @if(Auth::user()->isAtasan() && !Auth::user()->hasRole('admin'))
+        <div class="px-4 pt-3 pb-1 text-xs font-bold text-indigo-600 uppercase tracking-wider">
+            Supervisi Bawahan
+        </div>
+        <x-responsive-nav-link :href="route('admin.presensi.index')" :active="request()->routeIs('admin.presensi.*')">
+            📊 Rekap Presensi Bawahan
+        </x-responsive-nav-link>
         <x-responsive-nav-link :href="route('admin.logbook.index')" :active="request()->routeIs('admin.logbook.*')">
-            👥 Verifikasi Logbook Bawahan
+            📝 Verifikasi Logbook Bawahan
+        </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('pengajuan-cuti.index')" :active="request()->routeIs('pengajuan-cuti.*')">
+            🏖️ Persetujuan Cuti Bawahan
         </x-responsive-nav-link>
     @endif
 

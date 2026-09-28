@@ -191,7 +191,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     });
 
     // ======================================================================
-    // APPROVAL CUTI & VERIFIKASI LOGBOOK (ADMIN, PIMPINAN & ATASAN LANGSUNG)
+    // APPROVAL CUTI, LOGBOOK & PRESENSI (ADMIN, PIMPINAN & ATASAN LANGSUNG)
     // ======================================================================
     Route::middleware(['role:admin,pimpinan,atasan'])->group(function () {
         /* Approval Pengajuan Cuti */
@@ -205,6 +205,13 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
             Route::post('/{id}/verify', [LogbookManageController::class, 'verify'])->name('verify');
             Route::get('/export/pdf', [LogbookManageController::class, 'exportRekapPdf'])->name('export.pdf');
             Route::get('/export/excel', [LogbookManageController::class, 'exportRekapExcel'])->name('export.excel');
+        });
+
+        /* Rekap Presensi Karyawan & Bawahan (Admin, Pimpinan & Atasan) */
+        Route::prefix('admin/presensi')->name('admin.presensi.')->group(function () {
+            Route::get('/', [AttendanceManageController::class, 'index'])->name('index');
+            Route::get('/export/pdf', [AttendanceManageController::class, 'exportPdf'])->name('export.pdf');
+            Route::get('/export/excel', [AttendanceManageController::class, 'exportExcel'])->name('export.excel');
         });
     });
 
@@ -243,11 +250,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
         Route::post('/audit-logs/prune', [AuditLogController::class, 'prune'])->name('audit-logs.prune');
 
-        /* Rekap Presensi Karyawan & Titik Lokasi (Admin/Pimpinan) */
+        /* Pengaturan Titik Lokasi Acuan Presensi (Admin & Dekanat) */
         Route::prefix('admin/presensi')->name('admin.presensi.')->group(function () {
-            Route::get('/', [AttendanceManageController::class, 'index'])->name('index');
-            Route::get('/export/pdf', [AttendanceManageController::class, 'exportPdf'])->name('export.pdf');
-            Route::get('/export/excel', [AttendanceManageController::class, 'exportExcel'])->name('export.excel');
             Route::get('/locations', [AttendanceManageController::class, 'locations'])->name('locations');
             Route::post('/{userId}/reset-location', [AttendanceManageController::class, 'resetLocation'])->name('reset-location');
             Route::delete('/{id}', [AttendanceManageController::class, 'destroy'])->name('destroy');

@@ -101,10 +101,10 @@ class PengajuanCutiService
                 );
             }
 
-            // Tentukan Atasan Langsung & PYBMC via ApprovalHierarchyService
+            // Tentukan Atasan Langsung & PYBMC via ApprovalHierarchyService sesuai Ketetapan Cuti
             $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
-            $atasanPegawai = $hierarchyService->getAtasanLangsung($pegawai);
-            $pybmcPegawai    = $hierarchyService->getPybmc($pegawai, $data['jenis_cuti']);
+            $atasanPegawai = $hierarchyService->getAtasanLangsungCuti($pegawai);
+            $pybmcPegawai  = $hierarchyService->getPybmcCuti($pegawai, $data['jenis_cuti'] ?? null);
 
             $atasanUser = $atasanPegawai ? \App\Models\User::where('pegawai_id', $atasanPegawai->id)->first() : null;
             $pybmcUser  = $pybmcPegawai ? \App\Models\User::where('pegawai_id', $pybmcPegawai->id)->first() : null;

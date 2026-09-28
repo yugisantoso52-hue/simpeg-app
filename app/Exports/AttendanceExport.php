@@ -28,6 +28,12 @@ class AttendanceExport implements FromCollection, WithHeadings, WithMapping, Sho
             ->latest('attendance_date')
             ->latest('check_in_time');
 
+        if (isset($this->filters['bawahan_ids']) && is_array($this->filters['bawahan_ids'])) {
+            $query->whereHas('user', function ($q) {
+                $q->whereIn('pegawai_id', $this->filters['bawahan_ids']);
+            });
+        }
+
         if (!empty($this->filters['date'])) {
             $query->whereDate('attendance_date', $this->filters['date']);
         }
