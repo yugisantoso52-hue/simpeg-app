@@ -295,24 +295,34 @@
             <td style="width: 50%;">VII. KEPUTUSAN PEJABAT YANG BERWENANG</td>
         </tr>
         <tr>
-            <td>
-                <div>Status: <strong>{{ $cuti->pertimbangan_atasan ?: ($cuti->status === 'Menunggu Persetujuan' ? 'Menunggu Pertimbangan' : $cuti->status) }}</strong></div>
-                <div style="margin-top: 2px; font-size: 8.5pt;">Catatan: {{ $cuti->catatan_atasan_langsung ?: ($cuti->catatan_pimpinan ?: '-') }}</div>
-                <br><br>
-                <div class="text-center">
-                    <span style="font-weight: bold; text-decoration: underline;">{{ $atasanNama }}</span><br>
-                    <span>{{ $atasanJabatan }}</span><br>
-                    NIP. {{ $atasanNip ?: '.....................................................' }}
+            {{-- VI: Jabatan atas → spasi ttd → nama → NIP → Status+Catatan pojok bawah kiri --}}
+            <td style="vertical-align: top; padding: 5px 6px;">
+                {{-- Jabatan di atas (rata tengah) --}}
+                <div style="text-align: center; font-weight: normal; margin-bottom: 0;">{{ $atasanJabatan }}</div>
+                {{-- Spasi untuk tanda tangan --}}
+                <div style="height: 38px;">&nbsp;</div>
+                {{-- Nama (bold, underline, rata tengah) --}}
+                <div style="text-align: center; font-weight: bold; text-decoration: underline;">{{ $atasanNama }}</div>
+                <div style="text-align: center; font-size: 8.5pt;">NIP. {{ $atasanNip ?: '.....................................................' }}</div>
+                {{-- Status dan Catatan di pojok bawah kiri --}}
+                <div style="margin-top: 6px; font-size: 8.5pt; text-align: left;">
+                    <div>Status: <strong>{{ $cuti->pertimbangan_atasan ?: ($cuti->status === 'Menunggu Persetujuan' ? 'Menunggu Pertimbangan' : $cuti->status) }}</strong></div>
+                    <div>Catatan: {{ $cuti->catatan_atasan_langsung ?: ($cuti->catatan_pimpinan ?: '-') }}</div>
                 </div>
             </td>
-            <td>
-                <div>Status: <strong>{{ in_array($cuti->status, ['Disetujui', 'Ditolak']) ? $cuti->status : 'Menunggu Keputusan' }}</strong></div>
-                <div style="margin-top: 2px; font-size: 8.5pt;">No. SK/Izin: {{ $cuti->nomor_surat ?: '-' }}</div>
-                <br><br>
-                <div class="text-center">
-                    <span style="font-weight: bold; text-decoration: underline;">{{ $pybmcNama }}</span><br>
-                    <span>{{ $pybmcJabatan }}</span><br>
-                    NIP. {{ $pybmcNip ?: '.....................................................' }}
+            {{-- VII: Jabatan atas → spasi ttd → nama → NIP → Status+No.SK pojok bawah kiri --}}
+            <td style="vertical-align: top; padding: 5px 6px;">
+                {{-- Jabatan di atas (rata tengah) --}}
+                <div style="text-align: center; font-weight: normal; margin-bottom: 0;">{{ $pybmcJabatan }}</div>
+                {{-- Spasi untuk tanda tangan --}}
+                <div style="height: 38px;">&nbsp;</div>
+                {{-- Nama (bold, underline, rata tengah) --}}
+                <div style="text-align: center; font-weight: bold; text-decoration: underline;">{{ $pybmcNama }}</div>
+                <div style="text-align: center; font-size: 8.5pt;">NIP. {{ $pybmcNip ?: '.....................................................' }}</div>
+                {{-- Status dan No. SK di pojok bawah kiri --}}
+                <div style="margin-top: 6px; font-size: 8.5pt; text-align: left;">
+                    <div>Status: <strong>{{ in_array($cuti->status, ['Disetujui', 'Ditolak']) ? $cuti->status : 'Menunggu Keputusan' }}</strong></div>
+                    <div>No. SK/Izin: {{ $cuti->nomor_surat ?: '-' }}</div>
                 </div>
             </td>
         </tr>
