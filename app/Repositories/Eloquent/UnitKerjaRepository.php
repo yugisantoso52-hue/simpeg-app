@@ -16,14 +16,14 @@ class UnitKerjaRepository implements UnitKerjaRepositoryInterface
                 $query->where('nama_unit', 'like', "%{$search}%")
                       ->orWhere('keterangan', 'like', "%{$search}%");
             })
-            ->latest()
+            ->orderBy('id', 'asc')
             ->paginate($perPage)
             ->withQueryString(); // Memastikan query string pencarian tetap menempel saat pindah halaman
     }
 
     public function all(): Collection
     {
-        return UnitKerja::orderBy('nama_unit', 'asc')->get();
+        return UnitKerja::orderBy('id', 'asc')->get();
     }
 
     public function findOrFail(int|string $id): UnitKerja

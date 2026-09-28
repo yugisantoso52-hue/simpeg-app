@@ -125,8 +125,8 @@ class PegawaiController extends Controller
 
         return view('pegawai.create', [
             'kategori'     => $kategori,
-            'unitKerja'    => UnitKerja::orderBy('nama_unit')->get(),
-            'jabatan'      => Jabatan::orderBy('nama_jabatan')->get(),
+            'unitKerja'    => UnitKerja::orderBy('id', 'asc')->get(),
+            'jabatan'      => Jabatan::orderBy('id', 'asc')->get(),
             'golongan'     => Golongan::orderBy('nama_golongan')->get(),
             'jenisJabatan' => JenisJabatan::orderBy('nama_jenis_jabatan')->get(),
             'atasanList'   => Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->get(['id', 'nama', 'nip', 'jabatan_id']),
@@ -194,8 +194,8 @@ class PegawaiController extends Controller
         return view('pegawai.edit', [
             'pegawai'      => $pegawai,
             'kategori'     => $kategori,
-            'unitKerja'    => UnitKerja::orderBy('nama_unit')->get(),
-            'jabatan'      => Jabatan::orderBy('nama_jabatan')->get(),
+            'unitKerja'    => UnitKerja::orderBy('id', 'asc')->get(),
+            'jabatan'      => Jabatan::orderBy('id', 'asc')->get(),
             'golongan'     => Golongan::orderBy('nama_golongan')->get(),
             'jenisJabatan' => JenisJabatan::orderBy('nama_jenis_jabatan')->get(),
             'atasanList'   => Pegawai::where('status_pegawai', 'Aktif')
