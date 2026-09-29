@@ -75,7 +75,17 @@ class LogbookManageController extends Controller
     public function verify(int $id, VerifyLogbookRequest $request)
     {
         $logbook = Logbook::findOrFail($id);
-        $verifierId = (int) $request->user()->id;
+        $user = $request->user();
+
+        // Otorisasi Hirarki: Jika bukan admin, pastikan pegawai tersebut adalah bawahan sah dari user yang login
+        if (!$user->hasRole('admin')) {
+            $bawahanIds = $user->getBawahanIds();
+            if (!in_array((int) $logbook->pegawai_id, $bawahanIds, true)) {
+                return redirect()->back()->with('error', 'Anda tidak memiliki hak wewenang persetujuan atas aktivitas logbook pegawai ini berdasarkan hierarki.');
+            }
+        }
+
+        $verifierId = (int) $user->id;
 
         $this->service->verify(
             $logbook,
@@ -108,7 +118,18 @@ class LogbookManageController extends Controller
         $ids = $request->get('logbook_ids');
         $status = $request->get('status');
         $catatan = $request->get('catatan_atasan');
-        $verifierId = (int) $request->user()->id;
+        $user = $request->user();
+
+        // Otorisasi Hirarki: Jika bukan admin, pastikan seluruh logbook yang dipilih adalah milik bawahan sah
+        if (!$user->hasRole('admin')) {
+            $bawahanIds = $user->getBawahanIds();
+            $invalidCount = Logbook::whereIn('id', $ids)->whereNotIn('pegawai_id', $bawahanIds)->count();
+            if ($invalidCount > 0) {
+                return redirect()->back()->with('error', 'Terdapat aktivitas logbook yang dipilih berada di luar wewenang hierarki persetujuan Anda.');
+            }
+        }
+
+        $verifierId = (int) $user->id;
 
         $count = $this->service->verifyBulk($ids, $status, $catatan, $verifierId);
 
@@ -128,11 +149,21 @@ class LogbookManageController extends Controller
         ]);
 
         $pegawaiId = (int) $request->input('pegawai_id');
+        $user = $request->user();
+
+        // Otorisasi Hirarki: Jika bukan admin, pastikan pegawai tersebut adalah bawahan sah
+        if (!$user->hasRole('admin')) {
+            $bawahanIds = $user->getBawahanIds();
+            if (!in_array($pegawaiId, $bawahanIds, true)) {
+                return redirect()->back()->with('error', 'Pegawai ini bukan bawahan langsung di bawah wewenang persetujuan Anda.');
+            }
+        }
+
         $month = (int) $request->input('bulan');
         $year = (int) $request->input('tahun');
         $status = $request->input('status');
         $catatan = $request->input('catatan_atasan');
-        $verifierId = (int) $request->user()->id;
+        $verifierId = (int) $user->id;
 
         $count = $this->service->verifyPegawaiBulanan($pegawaiId, $month, $year, $status, $catatan, $verifierId);
 
@@ -170,7 +201,20 @@ class LogbookManageController extends Controller
         $unitKerja = $unitKerjaId ? UnitKerja::find($unitKerjaId) : null;
         $namaBulan = Carbon::createFromDate($year, $month, 1)->locale('id')->isoFormat('MMMM Y');
 
-        $pdf = Pdf::loadView('admin.logbook.rekap-pdf', compact('logbooks', 'unitKerja', 'month', 'year', 'namaBulan', 'status'))
+        // Penandatangan Rekapitulasi (Pejabat yang login / Dekan / Wadek)
+        $signerPegawai = $user->pegawai;
+        if ($signerPegawai && $signerPegawai->jabatan) {
+            $signerTitle = $signerPegawai->jabatan->nama_jabatan;
+            $signerName  = $signerPegawai->nama_lengkap ?? $signerPegawai->nama;
+            $signerNip   = $signerPegawai->nip ?? '-';
+        } else {
+            $dekan = app(\App\Services\ApprovalHierarchyService::class)->findPegawaiByJabatan(['Dekan', 'Wakil Dekan I']);
+            $signerTitle = $dekan?->jabatan?->nama_jabatan ?? 'Dekan Fakultas Keperawatan';
+            $signerName  = $dekan ? ($dekan->nama_lengkap ?? $dekan->nama) : 'Prof. Dr. Wan Nishfa Dewi, S.Kp., M.Ng., Ph.D';
+            $signerNip   = $dekan?->nip ?? '197508222001122001';
+        }
+
+        $pdf = Pdf::loadView('admin.logbook.rekap-pdf', compact('logbooks', 'unitKerja', 'month', 'year', 'namaBulan', 'status', 'signerTitle', 'signerName', 'signerNip'))
             ->setPaper('a4', 'landscape');
 
         $unitName = $unitKerja ? str_replace(' ', '_', $unitKerja->nama_unit) : 'Semua_Unit';

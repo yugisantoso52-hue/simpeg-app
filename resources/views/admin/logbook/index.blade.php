@@ -250,6 +250,14 @@
                                                         {{ $r['pegawai']->jabatan?->nama_jabatan ?? $r['pegawai']->jenis_pegawai ?? '-' }}
                                                         • {{ $r['pegawai']->unitKerja?->nama_unit ?? '-' }}
                                                     </div>
+                                                    @if(!empty($r['approval_rule']))
+                                                        <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200" title="{{ $r['approval_rule']['rule_label'] }}">
+                                                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                                                                Rule {{ $r['approval_rule']['rule_number'] }}: Approved By {{ $r['approval_rule']['approver_title'] }}
+                                                            </span>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </td>
@@ -347,8 +355,12 @@
                                                                 <button type="button" @click="showVerifyModal = false" class="text-gray-400 hover:text-gray-600 font-bold text-lg cursor-pointer">×</button>
                                                             </div>
 
-                                                            <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs space-y-1 text-blue-900">
+                                                            <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs space-y-1.5 text-blue-900">
                                                                 <div><strong>Pegawai:</strong> {{ $r['pegawai']->nama_lengkap ?? $r['pegawai']->nama }} (NIP. {{ $r['pegawai']->nip ?? '-' }})</div>
+                                                                @if(!empty($r['approval_rule']))
+                                                                    <div><strong>Hirarki Matriks:</strong> <span class="font-semibold text-indigo-700">{{ $r['approval_rule']['rule_label'] }}</span></div>
+                                                                    <div><strong>Pejabat Penilai:</strong> <span class="font-semibold text-slate-800">{{ $r['approval_rule']['approver_name'] }}</span> ({{ $r['approval_rule']['approver_title'] }})</div>
+                                                                @endif
                                                                 <div><strong>Total Aktivitas Diajukan:</strong> {{ $r['diajukan_count'] }} Kegiatan</div>
                                                                 <div><strong>Total Jam Kinerja:</strong> {{ $r['total_jam'] }} Jam ({{ $r['total_hari_kerja'] }} Hari Kerja)</div>
                                                             </div>

@@ -283,14 +283,14 @@
         <tr>
             <td style="width: 50%; text-align: center;">
                 Mengetahui,<br>
-                Atasan Langsung / Pimpinan<br><br><br><br><br>
-                ....................................................<br>
-                NIP. ...............................................
+                {{ $approvalInfo['approver_title'] ?? 'Atasan Langsung / Pimpinan' }}<br><br><br><br><br>
+                <strong><u>{{ $approvalInfo['approver_name'] ?? '....................................................' }}</u></strong><br>
+                NIP. {{ $approvalInfo['approver_nip'] ?? '...............................................' }}
             </td>
             <td style="width: 50%; text-align: center;">
                 Pekanbaru, {{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM Y') }}<br>
                 Pegawai yang Bersangkutan<br><br><br><br><br>
-                {{ $pegawai->nama }}<br>
+                <strong><u>{{ $pegawai->nama_lengkap ?? $pegawai->nama }}</u></strong><br>
                 NIP. {{ $pegawai->nip ?? '-' }}
             </td>
         </tr>

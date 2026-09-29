@@ -271,8 +271,9 @@ class LogbookController extends Controller
 
         $statistics = $this->service->getPegawaiStatistics($pegawaiId, $month, $year);
         $namaBulan = Carbon::createFromDate($year, $month, 1)->locale('id')->isoFormat('MMMM Y');
+        $approvalInfo = app(\App\Services\ApprovalHierarchyService::class)->getApprovalRuleInfo($pegawai);
 
-        $pdf = Pdf::loadView('logbook.pdf', compact('pegawai', 'logbooks', 'statistics', 'month', 'year', 'namaBulan'))
+        $pdf = Pdf::loadView('logbook.pdf', compact('pegawai', 'logbooks', 'statistics', 'month', 'year', 'namaBulan', 'approvalInfo'))
             ->setPaper('a4', 'portrait');
 
         $filename = 'Logbook_' . str_replace(' ', '_', $pegawai->nama) . '_' . $namaBulan . '.pdf';

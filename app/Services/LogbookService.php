@@ -251,7 +251,10 @@ class LogbookService
                     $pegawai = $logbook->pegawai;
                     if ($pegawai) {
                         $targets = collect();
-                        if ($pegawai->atasan_id) {
+                        $atasanPegawai = app(\App\Services\ApprovalHierarchyService::class)->getAtasanLangsung($pegawai);
+                        if ($atasanPegawai && $atasanPegawai->user) {
+                            $targets->push($atasanPegawai->user);
+                        } elseif ($pegawai->atasan_id) {
                             $atasanUser = User::where('pegawai_id', $pegawai->atasan_id)->first();
                             if ($atasanUser) {
                                 $targets->push($atasanUser);
@@ -294,7 +297,10 @@ class LogbookService
                 $pegawai = Pegawai::find($pegawaiId);
                 if ($pegawai) {
                     $targets = collect();
-                    if ($pegawai->atasan_id) {
+                    $atasanPegawai = app(\App\Services\ApprovalHierarchyService::class)->getAtasanLangsung($pegawai);
+                    if ($atasanPegawai && $atasanPegawai->user) {
+                        $targets->push($atasanPegawai->user);
+                    } elseif ($pegawai->atasan_id) {
                         $atasanUser = User::where('pegawai_id', $pegawai->atasan_id)->first();
                         if ($atasanUser) {
                             $targets->push($atasanUser);
@@ -430,6 +436,7 @@ class LogbookService
                 'ditolak_count'    => $ditolakCount,
                 'draft_count'      => $draftCount,
                 'diajukan_ids'     => $diajukanIds,
+                'approval_rule'    => app(\App\Services\ApprovalHierarchyService::class)->getApprovalRuleInfo($pegawai),
                 'items'            => $items->sortByDesc('tanggal')->values(),
             ];
         }

@@ -8,7 +8,12 @@ class VerifyLogbookRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->hasRole(['admin', 'pimpinan']);
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        return $user->hasRole(['admin', 'pimpinan']) || $user->isPimpinan() || $user->isAtasan();
     }
 
     public function rules(): array

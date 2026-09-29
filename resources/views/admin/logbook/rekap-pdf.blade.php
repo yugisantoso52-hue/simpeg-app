@@ -233,12 +233,12 @@
     {{-- TANDA TANGAN --}}
     <table class="sign-table">
         <tr>
-            <td style="width: 70%;"></td>
-            <td style="width: 30%; text-align: center;">
+            <td style="width: 65%;"></td>
+            <td style="width: 35%; text-align: center;">
                 Pekanbaru, {{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM Y') }}<br>
-                Dekan / Wakil Dekan,<br><br><br><br><br>
-                ....................................................<br>
-                NIP. ...............................................
+                {{ $signerTitle ?? 'Dekan / Wakil Dekan' }},<br><br><br><br><br>
+                <strong><u>{{ $signerName ?? '....................................................' }}</u></strong><br>
+                NIP. {{ $signerNip ?? '...............................................' }}
             </td>
         </tr>
     </table>
