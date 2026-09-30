@@ -76,15 +76,15 @@ class DashboardController extends Controller
             $now = Carbon::now('Asia/Jakarta');
             $bawahanIds = (!$isAdmin && $isAtasan) ? $user->getBawahanIds() : null;
 
-            $cutiQuery = PengajuanCuti::where('status', 'Menunggu Persetujuan');
-            $logbookQuery = Logbook::where('status', Logbook::STATUS_DIAJUKAN);
+            // Hitung cuti pending yang memerlukan tindakan verifikasi / keputusan user ini
+            $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
+            $data['pendingCutiCount'] = $hierarchyService->countPendingCutiForUser($user);
 
+            $logbookQuery = Logbook::where('status', Logbook::STATUS_DIAJUKAN);
             if ($bawahanIds !== null) {
-                $cutiQuery->whereIn('pegawai_id', $bawahanIds);
                 $logbookQuery->whereIn('pegawai_id', $bawahanIds);
             }
 
-            $data['pendingCutiCount'] = $cutiQuery->count();
             $data['pendingLogbookCount'] = $logbookQuery->count();
             $data['todayPresentCount'] = Attendance::whereDate('attendance_date', $now->toDateString())->count();
             $data['adminLogbookStats'] = app(LogbookService::class)->getAdminStatistics($now->month, $now->year, null, $bawahanIds);

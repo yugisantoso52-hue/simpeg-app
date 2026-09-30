@@ -1300,4 +1300,78 @@ class ApprovalHierarchyService
 
         return $ids->unique()->values()->all();
     }
+
+    /**
+     * Menghitung jumlah permohonan cuti yang saat ini MENUNGGU TINDAKAN verifikasi/keputusan dari user tertentu
+     */
+    public function countPendingCutiForUser(\App\Models\User $user): int
+    {
+        if ($user->hasRole('admin')) {
+            return \App\Models\PengajuanCuti::whereIn('status', [
+                'Menunggu Persetujuan',
+                'Disetujui Atasan (Menunggu PYBMC)'
+            ])->count();
+        }
+
+        if (!$user->pegawai) {
+            return 0;
+        }
+
+        $pegawai = $user->pegawai;
+        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
+        $count   = 0;
+
+        // 1. TAHAP 1: Menunggu Pertimbangan Atasan Langsung
+        // Status 'Menunggu Persetujuan' dan belum ada pertimbangan_atasan
+        $qTahap1 = \App\Models\PengajuanCuti::where('status', 'Menunggu Persetujuan')
+            ->whereNull('pertimbangan_atasan')
+            ->where('pegawai_id', '!=', $pegawai->id);
+
+        if (str_contains($jabatan, 'BAGIAN UMUM') || str_contains($jabatan, 'KABAG')) {
+            // Kabag Umum Atasan untuk seluruh Tendik & Wadek II
+            $tendikIds = Pegawai::where(function ($q) {
+                $q->whereNull('nidn_nuptk')->where('jenis_pegawai', '!=', 'Dosen');
+            })->pluck('id');
+            $wadek2 = $this->findPegawaiByJabatan(['Wakil Dekan II']);
+            if ($wadek2) {
+                $tendikIds->push($wadek2->id);
+            }
+
+            $count += (clone $qTahap1)->where(function($q) use ($tendikIds, $user) {
+                $q->whereIn('pegawai_id', $tendikIds)
+                  ->orWhere('atasan_langsung_id', $user->id);
+            })->count();
+        } elseif (str_contains($jabatan, 'KETUA JURUSAN') || str_contains($jabatan, 'KAJUR')) {
+            // Kajur Atasan untuk seluruh Dosen
+            $dosenIds = Pegawai::where('jenis_pegawai', 'Dosen')->orWhereNotNull('nidn_nuptk')->pluck('id');
+            $count += (clone $qTahap1)->where(function($q) use ($dosenIds, $user) {
+                $q->whereIn('pegawai_id', $dosenIds)
+                  ->orWhere('atasan_langsung_id', $user->id);
+            })->count();
+        } elseif (str_contains($jabatan, 'WAKIL DEKAN II') || str_contains($jabatan, 'WD II')) {
+            // Wadek II Atasan untuk Wadek I, III, Kajur, Kabag
+            $count += (clone $qTahap1)->where('atasan_langsung_id', $user->id)->count();
+        } else {
+            // Atasan struktural lainnya
+            $bawahanIds = $this->getBawahanIdsForPegawai($pegawai);
+            if (!empty($bawahanIds)) {
+                $count += (clone $qTahap1)->whereIn('pegawai_id', $bawahanIds)->count();
+            }
+        }
+
+        // 2. TAHAP 2: Menunggu Keputusan Final PYBMC
+        // Status 'Disetujui Atasan (Menunggu PYBMC)'
+        $qTahap2 = \App\Models\PengajuanCuti::where('status', 'Disetujui Atasan (Menunggu PYBMC)')
+            ->where('pegawai_id', '!=', $pegawai->id);
+
+        if (str_contains($jabatan, 'WAKIL DEKAN II') || str_contains($jabatan, 'WD II')) {
+            // Wadek II adalah PYBMC untuk seluruh Dosen & Tendik
+            $count += (clone $qTahap2)->count();
+        } elseif (str_contains($jabatan, 'DEKAN') && !str_contains($jabatan, 'WAKIL')) {
+            // Dekan adalah PYBMC untuk Wadek I, II, III, Kajur, Kabag
+            $count += (clone $qTahap2)->count();
+        }
+
+        return $count;
+    }
 }
