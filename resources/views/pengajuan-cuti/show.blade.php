@@ -136,9 +136,20 @@
 
                 {{-- Kategori Pegawai Badge --}}
                 @if(isset($pejabatInfo))
-                    <div class="mb-4 flex items-center gap-2">
-                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $pejabatInfo['is_dosen'] ? 'bg-blue-100 text-blue-700 border border-blue-200' : 'bg-purple-100 text-purple-700 border border-purple-200' }}">
-                            {{ $pejabatInfo['is_dosen'] ? '👨‍🏫 Kategori Dosen' : '🏢 Kategori Tendik / Staff' }}
+                    @php
+                        $kategori = $pejabatInfo['kategori'] ?? ($pejabatInfo['is_dosen'] ? 'dosen' : 'tendik');
+                        $kategoriBadge = match($kategori) {
+                            'dosen'               => ['icon' => '👨‍🏫', 'label' => 'Kategori Dosen', 'color' => 'bg-blue-100 text-blue-700 border-blue-200'],
+                            'tendik'              => ['icon' => '🏢', 'label' => 'Kategori Tendik / Staff / Laboran', 'color' => 'bg-purple-100 text-purple-700 border-purple-200'],
+                            'pimpinan_struktural' => ['icon' => '🏛️', 'label' => 'Pimpinan Struktural (Wadek / Kajur / Kabag)', 'color' => 'bg-orange-100 text-orange-700 border-orange-200'],
+                            'wadek2'              => ['icon' => '⚖️', 'label' => 'Wakil Dekan II', 'color' => 'bg-teal-100 text-teal-700 border-teal-200'],
+                            'dekan'               => ['icon' => '🎓', 'label' => 'Dekan (via Rektor)', 'color' => 'bg-rose-100 text-rose-700 border-rose-200'],
+                            default               => ['icon' => '👤', 'label' => 'Pegawai', 'color' => 'bg-gray-100 text-gray-700 border-gray-200'],
+                        };
+                    @endphp
+                    <div class="mb-4 flex flex-wrap items-center gap-2">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold border {{ $kategoriBadge['color'] }}">
+                            {{ $kategoriBadge['icon'] }} {{ $kategoriBadge['label'] }}
                         </span>
                         <span class="text-xs text-gray-400">Pejabat penandatangan disesuaikan dengan kategori pegawai.</span>
                     </div>

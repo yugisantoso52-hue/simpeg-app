@@ -935,31 +935,46 @@ class ApprovalHierarchyService
      * - Dosen ──► Ketua Jurusan (Kajur)
      * - Tendik ──► Kepala Bagian Umum (Kabag Umum)
      */
+    /**
+     * Dapatkan Atasan Langsung Cuti (VI. Pertimbangan Atasan Langsung)
+     *
+     * Aturan SIKAP FKP UNRI:
+     * - Dosen                      → Ketua Jurusan (Kajur)
+     * - Tendik / Staff / Laboran   → Kepala Bagian Umum
+     * - Wadek I, Wadek III, Kajur, Kabag Umum → Wakil Dekan II
+     * - Wadek II                   → Kepala Bagian Umum
+     * - Dekan                      → Rektor (eksternal, fallback ke diri sendiri)
+     */
     public function getAtasanLangsungCuti(Pegawai $pegawai): ?Pegawai
     {
         $jabatanNama = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
 
-        // Jika pemohon adalah Dekan, Atasan Langsung adalah Rektor (fallback Dekan)
+        // Dekan → Rektor (eksternal, fallback ke diri sendiri karena Rektor tidak ada di DB)
         if (str_contains($jabatanNama, 'DEKAN') && !str_contains($jabatanNama, 'WAKIL')) {
             return $pegawai;
         }
 
-        // Jika pemohon adalah Wadek, Atasan Langsung adalah Dekan
+        // Wakil Dekan II → Kepala Bagian Umum memberikan Pertimbangan (kemudian ke Dekan)
+        if (str_contains($jabatanNama, 'WAKIL DEKAN II') || str_contains($jabatanNama, 'WD II')) {
+            return $this->findPegawaiByJabatan(['Kepala Bagian Umum', 'Kabag Umum']);
+        }
+
+        // Wakil Dekan I, Wakil Dekan III → Wakil Dekan II memberikan Pertimbangan (kemudian ke Dekan)
         if (str_contains($jabatanNama, 'WAKIL DEKAN') || str_contains($jabatanNama, 'WADEK')) {
-            return $this->findPegawaiByJabatan(['Dekan']);
+            return $this->findPegawaiByJabatan(['Wakil Dekan II (Bid. Keuangan dan Umum)', 'Wakil Dekan II']);
         }
 
-        // Jika pemohon adalah Ketua Jurusan, Atasan Langsung adalah Wakil Dekan I / Wadek II
+        // Ketua Jurusan (Kajur) → Wakil Dekan II memberikan Pertimbangan (kemudian ke Dekan)
         if (str_contains($jabatanNama, 'KETUA JURUSAN') || str_contains($jabatanNama, 'KAJUR')) {
-            return $this->findPegawaiByJabatan(['Wakil Dekan I (Bid. Akademik)', 'Wakil Dekan II (Bid. Keuangan dan Umum)', 'Dekan']);
+            return $this->findPegawaiByJabatan(['Wakil Dekan II (Bid. Keuangan dan Umum)', 'Wakil Dekan II']);
         }
 
-        // Jika pemohon adalah Kepala Bagian Umum, Atasan Langsung adalah Wakil Dekan II
+        // Kepala Bagian Umum → Wakil Dekan II memberikan Pertimbangan (kemudian ke Dekan)
         if (str_contains($jabatanNama, 'KEPALA BAGIAN UMUM') || str_contains($jabatanNama, 'KABAG UMUM')) {
-            return $this->findPegawaiByJabatan(['Wakil Dekan II (Bid. Keuangan dan Umum)', 'Dekan']);
+            return $this->findPegawaiByJabatan(['Wakil Dekan II (Bid. Keuangan dan Umum)', 'Wakil Dekan II']);
         }
 
-        // Jika Dosen: VI. Pertimbangan Atasan Langsung = Ketua Jurusan
+        // Dosen → Ketua Jurusan memberikan Pertimbangan (kemudian ke Wadek II)
         if ($pegawai->isDosen()) {
             return $this->findPegawaiByJabatan([
                 'Ketua Jurusan (Kajur)',
@@ -968,33 +983,41 @@ class ApprovalHierarchyService
             ]);
         }
 
-        // Jika Tendik (dan PHL/pegawai lainnya): VI. Pertimbangan Atasan Langsung = Kepala Bagian Umum
-        return $this->findPegawaiByJabatan([
-            'Kepala Bagian Umum',
-            'Kabag Umum',
-        ]);
+        // Tendik / Staff / Laboran → Kepala Bagian Umum memberikan Pertimbangan (kemudian ke Wadek II)
+        return $this->findPegawaiByJabatan(['Kepala Bagian Umum', 'Kabag Umum']);
     }
 
     /**
      * Dapatkan Pejabat Yang Berwenang Memberikan Cuti (PYBMC) - Bagian VII
-     * Aturan Resmi SIKAP FKP UNRI:
-     * Baik Dosen maupun Tendik ──► Wakil Dekan II (Bid. Keuangan dan Umum)
+     *
+     * Aturan SIKAP FKP UNRI:
+     * - Dosen / Tendik             → Wakil Dekan II (Bid. Keuangan dan Umum)
+     * - Wadek I, Wadek III, Kajur, Kabag Umum, Wadek II → Dekan
+     * - Dekan                      → Rektor (eksternal, fallback ke diri sendiri)
      */
     public function getPybmcCuti(Pegawai $pegawai, ?string $jenisCuti = null): ?Pegawai
     {
         $jabatanNama = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
 
-        // 1. Jika pemohon adalah Dekan, PYBMC adalah Rektor (fallback ke diri sendiri / admin)
+        // Dekan → Rektor (fallback ke diri sendiri)
         if (str_contains($jabatanNama, 'DEKAN') && !str_contains($jabatanNama, 'WAKIL')) {
             return $pegawai;
         }
 
-        // 2. Jika pemohon adalah Wadek II, PYBMC dialihkan ke Dekan
-        if (str_contains($jabatanNama, 'WAKIL DEKAN II') || str_contains($jabatanNama, 'WD II')) {
+        // Pejabat Struktural (Wadek I, Wadek II, Wadek III, Kajur, Kabag Umum) → PYBMC = Dekan
+        $isPimpinanStruktural =
+            str_contains($jabatanNama, 'WAKIL DEKAN') ||
+            str_contains($jabatanNama, 'WADEK') ||
+            str_contains($jabatanNama, 'KETUA JURUSAN') ||
+            str_contains($jabatanNama, 'KAJUR') ||
+            str_contains($jabatanNama, 'KEPALA BAGIAN UMUM') ||
+            str_contains($jabatanNama, 'KABAG UMUM');
+
+        if ($isPimpinanStruktural) {
             return $this->findPegawaiByJabatan(['Dekan']);
         }
 
-        // 3. Ketetapan Resmi: Wakil Dekan II (Bid. Keuangan dan Umum)
+        // Dosen & Tendik → PYBMC = Wakil Dekan II (Bid. Keuangan dan Umum)
         return $this->findPegawaiByJabatan([
             'Wakil Dekan II (Bid. Keuangan dan Umum)',
             'Wakil Dekan II',
@@ -1003,63 +1026,119 @@ class ApprovalHierarchyService
 
     /**
      * Helper untuk mendapatkan teks Pejabat Cuti (Nama, Jabatan, NIP) untuk formulir PDF & cetak
+     *
+     * Aturan Lengkap:
+     * Kategori A — Dosen:
+     *   VI  = Ketua Jurusan (Kajur)
+     *   VII = Wakil Dekan II (Bid. Keuangan dan Umum)
+     *
+     * Kategori B — Tendik / Staff / Laboran:
+     *   VI  = Kepala Bagian Umum
+     *   VII = Wakil Dekan II (Bid. Keuangan dan Umum)
+     *
+     * Kategori C — Pimpinan Struktural (Wadek I, Wadek III, Kajur, Kabag Umum):
+     *   VI  = Wakil Dekan II (Bid. Keuangan dan Umum)
+     *   VII = Dekan Fakultas Keperawatan
+     *
+     * Kategori D — Wakil Dekan II:
+     *   VI  = Kepala Bagian Umum
+     *   VII = Dekan Fakultas Keperawatan
+     *
+     * Kategori E — Dekan:
+     *   VI  = Rektor Universitas Riau (eksternal)
+     *   VII = Rektor Universitas Riau (eksternal)
      */
     public function getPejabatCutiInfo(?Pegawai $pegawai): array
     {
-        $isDosen = $pegawai ? $pegawai->isDosen() : false;
+        $isDosen     = $pegawai ? $pegawai->isDosen() : false;
         $jabatanNama = strtoupper(trim((string)($pegawai?->jabatan?->nama_jabatan ?? '')));
 
-        $pybmcPegawai  = $pegawai ? $this->getPybmcCuti($pegawai) : null;
-
-        // Label & Nama Atasan Langsung (Bagian VI)
-        // Untuk Dosen: Ketua Jurusan (dari getAtasanLangsungCuti)
-        // Untuk Tendik: SELALU Kabag Umum (lookup by jabatan, bukan atasan personal)
-        if ($isDosen) {
-            $atasanPegawai = $pegawai ? $this->getAtasanLangsungCuti($pegawai) : null;
-            $atasanJabatan = 'Ketua Jurusan';
-            $atasanNama    = $atasanPegawai ? ($atasanPegawai->nama_lengkap ?? $atasanPegawai->nama) : 'Ketua Jurusan';
-            $atasanNip     = $atasanPegawai?->nip ?? '.....................................................';
-        } else {
-            // Tendik: VI selalu ditandatangani Kabag Umum, apapun jabatan pemohon
-            $kabagUmum     = $this->findPegawaiByJabatan(['Kepala Bagian Umum', 'Kabag Umum', 'Kabag. Umum']);
-            $atasanJabatan = 'Kepala Bagian Umum';
-            $atasanNama    = $kabagUmum ? ($kabagUmum->nama_lengkap ?? $kabagUmum->nama) : 'Kepala Bagian Umum';
-            $atasanNip     = $kabagUmum?->nip ?? '.....................................................';
-        }
-
-        // Label & Nama PYBMC (Bagian VII)
-        $pybmcJabatan = 'Wakil Dekan II (Bid. Keuangan dan Umum)';
-        $pybmcNama    = $pybmcPegawai ? ($pybmcPegawai->nama_lengkap ?? $pybmcPegawai->nama) : 'Wakil Dekan II';
-        $pybmcNip     = $pybmcPegawai?->nip ?? '.....................................................';
-
-        // Pengecualian khusus Pejabat Pimpinan Tertinggi:
-        // 1. Jika pemohon adalah Dekan: Atasan & PYBMC adalah Rektor
+        // ── KATEGORI E: DEKAN ──────────────────────────────────────────────────
         if (str_contains($jabatanNama, 'DEKAN') && !str_contains($jabatanNama, 'WAKIL')) {
-            $atasanJabatan = 'Rektor Universitas Riau';
-            $atasanNama    = 'Rektor Universitas Riau';
-            $atasanNip     = '';
-            $pybmcJabatan  = 'Rektor Universitas Riau';
-            $pybmcNama     = 'Rektor Universitas Riau';
-            $pybmcNip      = '';
-        }
-        // 2. Jika pemohon adalah Wadek II: PYBMC adalah Dekan
-        elseif (str_contains($jabatanNama, 'WAKIL DEKAN II') || str_contains($jabatanNama, 'WD II')) {
-            $pybmcJabatan = 'Dekan Fakultas Keperawatan';
-            $dekan = $this->findPegawaiByJabatan(['Dekan']);
-            if ($dekan) {
-                $pybmcNama = $dekan->nama_lengkap ?? $dekan->nama;
-                $pybmcNip  = $dekan->nip ?? '';
-            }
+            return [
+                'is_dosen'       => false,
+                'kategori'       => 'dekan',
+                'atasan_jabatan' => 'Rektor Universitas Riau',
+                'atasan_nama'    => 'Rektor Universitas Riau',
+                'atasan_nip'     => '',
+                'pybmc_jabatan'  => 'Rektor Universitas Riau',
+                'pybmc_nama'     => 'Rektor Universitas Riau',
+                'pybmc_nip'      => '',
+            ];
         }
 
+        // ── KATEGORI D: WAKIL DEKAN II ─────────────────────────────────────────
+        if (str_contains($jabatanNama, 'WAKIL DEKAN II') || str_contains($jabatanNama, 'WD II')) {
+            $kabagUmum = $this->findPegawaiByJabatan(['Kepala Bagian Umum', 'Kabag Umum']);
+            $dekan     = $this->findPegawaiByJabatan(['Dekan']);
+            return [
+                'is_dosen'       => false,
+                'kategori'       => 'wadek2',
+                'atasan_jabatan' => 'Kepala Bagian Umum',
+                'atasan_nama'    => $kabagUmum ? ($kabagUmum->nama_lengkap ?? $kabagUmum->nama) : 'Kepala Bagian Umum',
+                'atasan_nip'     => $kabagUmum?->nip ?? '',
+                'pybmc_jabatan'  => 'Dekan Fakultas Keperawatan',
+                'pybmc_nama'     => $dekan ? ($dekan->nama_lengkap ?? $dekan->nama) : 'Dekan Fakultas Keperawatan',
+                'pybmc_nip'      => $dekan?->nip ?? '',
+            ];
+        }
+
+        // ── KATEGORI C: PIMPINAN STRUKTURAL (Wadek I, Wadek III, Kajur, Kabag) ─
+        $isPimpinanStruktural =
+            str_contains($jabatanNama, 'WAKIL DEKAN') ||
+            str_contains($jabatanNama, 'WADEK') ||
+            str_contains($jabatanNama, 'KETUA JURUSAN') ||
+            str_contains($jabatanNama, 'KAJUR') ||
+            str_contains($jabatanNama, 'KEPALA BAGIAN UMUM') ||
+            str_contains($jabatanNama, 'KABAG UMUM');
+
+        if ($isPimpinanStruktural) {
+            $wadek2 = $this->findPegawaiByJabatan(['Wakil Dekan II (Bid. Keuangan dan Umum)', 'Wakil Dekan II']);
+            $dekan  = $this->findPegawaiByJabatan(['Dekan']);
+            return [
+                'is_dosen'       => false,
+                'kategori'       => 'pimpinan_struktural',
+                'atasan_jabatan' => 'Wakil Dekan II (Bid. Keuangan dan Umum)',
+                'atasan_nama'    => $wadek2 ? ($wadek2->nama_lengkap ?? $wadek2->nama) : 'Wakil Dekan II',
+                'atasan_nip'     => $wadek2?->nip ?? '',
+                'pybmc_jabatan'  => 'Dekan Fakultas Keperawatan',
+                'pybmc_nama'     => $dekan ? ($dekan->nama_lengkap ?? $dekan->nama) : 'Dekan Fakultas Keperawatan',
+                'pybmc_nip'      => $dekan?->nip ?? '',
+            ];
+        }
+
+        // ── KATEGORI A: DOSEN ──────────────────────────────────────────────────
+        if ($isDosen) {
+            $kajur = $this->findPegawaiByJabatan([
+                'Ketua Jurusan (Kajur)',
+                'Ketua Jurusan Preklinik Keperawatan',
+                'Ketua Jurusan Klinik dan Komunitas',
+            ]);
+            $wadek2 = $this->findPegawaiByJabatan(['Wakil Dekan II (Bid. Keuangan dan Umum)', 'Wakil Dekan II']);
+            return [
+                'is_dosen'       => true,
+                'kategori'       => 'dosen',
+                'atasan_jabatan' => 'Ketua Jurusan',
+                'atasan_nama'    => $kajur ? ($kajur->nama_lengkap ?? $kajur->nama) : 'Ketua Jurusan',
+                'atasan_nip'     => $kajur?->nip ?? '',
+                'pybmc_jabatan'  => 'Wakil Dekan II (Bid. Keuangan dan Umum)',
+                'pybmc_nama'     => $wadek2 ? ($wadek2->nama_lengkap ?? $wadek2->nama) : 'Wakil Dekan II',
+                'pybmc_nip'      => $wadek2?->nip ?? '',
+            ];
+        }
+
+        // ── KATEGORI B: TENDIK / STAFF / LABORAN ──────────────────────────────
+        $kabagUmum = $this->findPegawaiByJabatan(['Kepala Bagian Umum', 'Kabag Umum']);
+        $wadek2    = $this->findPegawaiByJabatan(['Wakil Dekan II (Bid. Keuangan dan Umum)', 'Wakil Dekan II']);
         return [
-            'is_dosen'       => $isDosen,
-            'atasan_jabatan' => $atasanJabatan,
-            'atasan_nama'    => $atasanNama,
-            'atasan_nip'     => $atasanNip,
-            'pybmc_jabatan'  => $pybmcJabatan,
-            'pybmc_nama'     => $pybmcNama,
-            'pybmc_nip'      => $pybmcNip,
+            'is_dosen'       => false,
+            'kategori'       => 'tendik',
+            'atasan_jabatan' => 'Kepala Bagian Umum',
+            'atasan_nama'    => $kabagUmum ? ($kabagUmum->nama_lengkap ?? $kabagUmum->nama) : 'Kepala Bagian Umum',
+            'atasan_nip'     => $kabagUmum?->nip ?? '',
+            'pybmc_jabatan'  => 'Wakil Dekan II (Bid. Keuangan dan Umum)',
+            'pybmc_nama'     => $wadek2 ? ($wadek2->nama_lengkap ?? $wadek2->nama) : 'Wakil Dekan II',
+            'pybmc_nip'      => $wadek2?->nip ?? '',
         ];
     }
 

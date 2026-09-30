@@ -155,19 +155,21 @@ class PengajuanCutiService
             $approver = \App\Models\User::find($approverUserId);
 
             $updateData = [];
+            $isKeputusanFinal = false;
 
-            // Jika role admin atau PYBMC langsung menyetujui/menolak final
+            // Jika role admin atau PYBMC → keputusan final
             if ($approver->hasRole('admin') || ($cuti->pybmc_id && (int)$cuti->pybmc_id === $approverUserId)) {
                 $updateData['status']           = $data['status'];
                 $updateData['approved_by']      = $approverUserId;
                 $updateData['approved_at']      = now();
                 $updateData['catatan_pimpinan'] = $data['catatan_pimpinan'] ?? $data['catatan_atasan_langsung'] ?? null;
+                $isKeputusanFinal = true;
             } else {
                 // Pertimbangan Atasan Langsung (Tahap 1 PerBKN 7/2022)
                 $statusAtasan = $data['status'] === 'Disetujui' ? 'Disetujui' : ($data['status'] === 'Ditolak' ? 'Ditolak' : $data['status']);
                 $updateData['pertimbangan_atasan']     = $statusAtasan;
                 $updateData['catatan_atasan_langsung'] = $data['catatan_pimpinan'] ?? $data['catatan_atasan_langsung'] ?? null;
-                $updateData['pertimbangan_atasan_at'] = now();
+                $updateData['pertimbangan_atasan_at']  = now();
                 $updateData['atasan_langsung_id']      = $approverUserId;
 
                 if ($statusAtasan === 'Disetujui') {
@@ -177,6 +179,7 @@ class PengajuanCutiService
                     $updateData['approved_by']      = $approverUserId;
                     $updateData['approved_at']      = now();
                     $updateData['catatan_pimpinan'] = $data['catatan_pimpinan'] ?? null;
+                    $isKeputusanFinal = true;
                 }
             }
 
@@ -186,7 +189,7 @@ class PengajuanCutiService
 
             $updatedCuti = $this->repository->update($id, $updateData);
 
-            // Kirim notifikasi lonceng ke Pegawai pemohon cuti
+            // ── Notifikasi ke Pegawai pemohon ────────────────────────────────
             try {
                 $employeeUser = \App\Models\User::where('pegawai_id', $cuti->pegawai_id)->first();
                 if ($employeeUser && $approver) {
@@ -194,6 +197,60 @@ class PengajuanCutiService
                 }
             } catch (\Throwable $e) {
                 // Ignore notification failure
+            }
+
+            // ── Notifikasi otomatis ke PYBMC setelah Pertimbangan Atasan disetujui ──
+            // Agar PYBMC tahu ada cuti yang menunggu keputusan mereka
+            if (isset($updateData['status']) && $updateData['status'] === 'Disetujui Atasan (Menunggu PYBMC)') {
+                try {
+                    $pybmcUser = $cuti->pybmc_id ? \App\Models\User::find($cuti->pybmc_id) : null;
+                    // Jika pybmc_id belum diset, lookup dari hierarchy service
+                    if (!$pybmcUser && $cuti->pegawai) {
+                        $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
+                        $pybmcPegawai     = $hierarchyService->getPybmcCuti($cuti->pegawai);
+                        $pybmcUser        = $pybmcPegawai ? \App\Models\User::where('pegawai_id', $pybmcPegawai->id)->first() : null;
+                    }
+                    if ($pybmcUser) {
+                        $pybmcUser->notify(new \App\Notifications\CutiSubmittedNotification($updatedCuti, $cuti->pegawai));
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore notification failure
+                }
+            }
+
+            // ── Notifikasi Monitoring/Pengarsipan ke Dekan + Admin/Operator ──
+            // Dikirim setelah keputusan final (Disetujui atau Ditolak)
+            if ($isKeputusanFinal && in_array($updateData['status'], ['Disetujui', 'Ditolak'])) {
+                try {
+                    $monitorTargets = collect();
+
+                    // Dekan sebagai laporan/monitoring
+                    $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
+                    $dekanPegawai     = $hierarchyService->findPegawaiByJabatan(['Dekan']);
+                    if ($dekanPegawai) {
+                        $dekanUser = \App\Models\User::where('pegawai_id', $dekanPegawai->id)->first();
+                        if ($dekanUser && (int)$dekanUser->id !== $approverUserId) {
+                            $monitorTargets->push($dekanUser);
+                        }
+                    }
+
+                    // Admin/Operator sebagai pengarsipan
+                    $adminUsers = \App\Models\User::whereHas('role', fn($q) => $q->whereIn('name', ['admin']))->get();
+                    foreach ($adminUsers as $adminUser) {
+                        if ((int)$adminUser->id !== $approverUserId && !$monitorTargets->contains('id', $adminUser->id)) {
+                            $monitorTargets->push($adminUser);
+                        }
+                    }
+
+                    if ($monitorTargets->isNotEmpty() && $cuti->pegawai) {
+                        \Illuminate\Support\Facades\Notification::send(
+                            $monitorTargets,
+                            new \App\Notifications\CutiSubmittedNotification($updatedCuti, $cuti->pegawai)
+                        );
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore notification failure
+                }
             }
 
             return $updatedCuti;
