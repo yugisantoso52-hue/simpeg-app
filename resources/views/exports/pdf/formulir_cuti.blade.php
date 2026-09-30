@@ -5,7 +5,7 @@
     <title>Formulir Permintaan dan Pemberian Cuti - {{ $cuti->pegawai->nama ?? 'Pegawai' }}</title>
     <style>
         @page {
-            margin: 10mm 12mm 10mm 12mm;
+            margin: 8mm 12mm 6mm 12mm;
             size: a4 portrait;
         }
         body {
@@ -300,7 +300,7 @@
                 {{-- Jabatan di atas (rata tengah) --}}
                 <div style="text-align: center; font-weight: normal; margin-bottom: 0;">{{ $atasanJabatan }}</div>
                 {{-- Spasi untuk tanda tangan --}}
-                <div style="height: 38px;">&nbsp;</div>
+                <div style="height: 58px;">&nbsp;</div>
                 {{-- Nama (bold, underline, rata tengah) --}}
                 <div style="text-align: center; font-weight: bold; text-decoration: underline;">{{ $atasanNama }}</div>
                 <div style="text-align: center; font-size: 8.5pt;">NIP. {{ $atasanNip ?: '.....................................................' }}</div>
@@ -315,7 +315,7 @@
                 {{-- Jabatan di atas (rata tengah) --}}
                 <div style="text-align: center; font-weight: normal; margin-bottom: 0;">{{ $pybmcJabatan }}</div>
                 {{-- Spasi untuk tanda tangan --}}
-                <div style="height: 38px;">&nbsp;</div>
+                <div style="height: 58px;">&nbsp;</div>
                 {{-- Nama (bold, underline, rata tengah) --}}
                 <div style="text-align: center; font-weight: bold; text-decoration: underline;">{{ $pybmcNama }}</div>
                 <div style="text-align: center; font-size: 8.5pt;">NIP. {{ $pybmcNip ?: '.....................................................' }}</div>
@@ -329,9 +329,12 @@
     </table>
 
     @if(isset($verifyUrl))
-    <div style="margin-top: 10px; border: 1px dashed #64748b; padding: 5px 8px; font-size: 7.5pt; color: #475569; background-color: #f8fafc;">
-        <strong>🔒 Otentikasi Digital SIKAP FKP UNRI:</strong> Formulir permohonan cuti ini divalidasi dan tercatat secara elektronik. Tautan verifikasi keabsahan resmi: 
-        <a href="{{ $verifyUrl }}" style="color: #2563eb; font-family: monospace; font-size: 6.5pt;">{{ $verifyUrl }}</a>
+    <div style="margin-top: 8px; border: 1px dashed #64748b; padding: 5px 8px; font-size: 7.5pt; color: #475569; background-color: #f8fafc; line-height: 1.35;">
+        <div style="font-weight: bold; color: #1e293b; margin-bottom: 2px;">Otentikasi Digital SIKAP FKP UNRI:</div>
+        <div>Formulir permohonan cuti ini divalidasi dan tercatat secara elektronik. Tautan verifikasi keabsahan resmi:</div>
+        <div style="margin-top: 2px;">
+            <a href="{{ $verifyUrl }}" style="color: #2563eb; font-family: monospace; font-size: 6.5pt; text-decoration: underline;">{{ chunk_split($verifyUrl, 85, "\n") }}</a>
+        </div>
     </div>
     @endif
 

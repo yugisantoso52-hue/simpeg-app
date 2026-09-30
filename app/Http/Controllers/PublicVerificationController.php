@@ -12,7 +12,7 @@ class PublicVerificationController extends Controller
 
     public function __construct(?DocumentWatermarkService $watermarkService = null)
     {
-        $this->watermarkService = $watermarkService;
+        $this->watermarkService = $watermarkService ?? app(DocumentWatermarkService::class);
     }
 
     /**
@@ -28,7 +28,8 @@ class PublicVerificationController extends Controller
             @opcache_reset();
         }
 
-        $documentData = $this->watermarkService->verifyDocumentCode($code);
+        $service = $this->watermarkService ?? app(DocumentWatermarkService::class);
+        $documentData = $service->verifyDocumentCode($code);
 
         return view('public.verify-document', [
             'isValid'  => $documentData !== null,
