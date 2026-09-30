@@ -161,37 +161,41 @@
                                 </svg>
                             </a>
 
-                            {{-- Tombol Hapus Massal --}}
-                            <div id="bulk-actions-wrapper" class="hidden items-center space-x-2 bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg shadow-sm">
-                                <span id="bulk-counter" class="text-xs font-semibold text-red-700">0 terpilih</span>
-                                <button type="button" 
-                                        id="btn-bulk-delete" 
-                                        class="inline-flex items-center gap-1.5 rounded bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow hover:bg-red-700 transition">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
-                                    <span>Hapus Terpilih</span>
+                            {{-- Tombol Hapus Massal (Khusus Admin) --}}
+                            @if(Auth::user()->hasRole('admin'))
+                                <div id="bulk-actions-wrapper" class="hidden items-center space-x-2 bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg shadow-sm">
+                                    <span id="bulk-counter" class="text-xs font-semibold text-red-700">0 terpilih</span>
+                                    <button type="button" 
+                                            id="btn-bulk-delete" 
+                                            class="inline-flex items-center gap-1.5 rounded bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow hover:bg-red-700 transition">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                        <span>Hapus Terpilih</span>
+                                    </button>
+                                </div>
+
+                                {{-- Form Hapus Massal Tersembunyi --}}
+                                <form id="bulk-delete-form" action="{{ route('pegawai.bulk-delete') }}" method="POST" class="hidden">
+                                    @csrf
+                                </form>
+                            @endif
+
+                            {{-- Tombol Impor Excel (Khusus Admin) --}}
+                            @if(Auth::user()->hasRole('admin'))
+                                <button @click="openImportModal = true"
+                                        type="button"
+                                        class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-700 transition">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    <span>Impor Excel</span>
                                 </button>
-                            </div>
-
-                            {{-- Form Hapus Massal Tersembunyi --}}
-                            <form id="bulk-delete-form" action="{{ route('pegawai.bulk-delete') }}" method="POST" class="hidden">
-                                @csrf
-                            </form>
-
-                            {{-- Tombol Impor Excel --}}
-                            <button @click="openImportModal = true"
-                                    type="button"
-                                    class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-700 transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                <span>Impor Excel</span>
-                            </button>
+                            @endif
                         </div>
                     </div>
 
                     {{-- Toolbar Operasional --}}
                     <x-enterprise.toolbar
-                        :create="route('pegawai.create')"
+                        :create="Auth::user()->hasRole('admin') ? route('pegawai.create') : null"
                         :searchAction="route('pegawai.index')"
                         :searchValue="request('search')"
                         placeholder="Cari NIP atau Nama Pegawai..."
@@ -203,9 +207,11 @@
                         <x-enterprise.data-table>
                             <x-slot name="head">
                                 <tr>
-                                    <th class="w-12 px-4 py-3 text-center">
-                                        <input type="checkbox" id="check-all" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                    </th>
+                                    @if(Auth::user()->hasRole('admin'))
+                                        <th class="w-12 px-4 py-3 text-center">
+                                            <input type="checkbox" id="check-all" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                        </th>
+                                    @endif
                                     <th class="w-12 px-4 py-3 text-center notranslate" translate="no">No.</th>
                                     <th class="w-16 px-4 py-3 text-center">Foto</th>
                                     <th class="px-4 py-3 text-left notranslate" translate="no">NIP</th>
@@ -220,9 +226,11 @@
 
                             @forelse($pegawai as $row)
                                 <tr class="hover:bg-slate-50 transition">
-                                    <td class="px-4 py-3 text-center">
-                                        <input type="checkbox" name="pegawai_ids[]" value="{{ $row->id }}" class="pegawai-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                    </td>
+                                    @if(Auth::user()->hasRole('admin'))
+                                        <td class="px-4 py-3 text-center">
+                                            <input type="checkbox" name="pegawai_ids[]" value="{{ $row->id }}" class="pegawai-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                        </td>
+                                    @endif
                                     <td class="px-4 py-3 text-center font-medium text-slate-600 notranslate" translate="no">
                                         {{ ($pegawai->currentPage()-1)*$pegawai->perPage()+$loop->iteration }}
                                     </td>
@@ -266,29 +274,31 @@
                                                 <span>Detail</span>
                                             </a>
 
-                                            {{-- Edit --}}
-                                            <a href="{{ route('pegawai.edit', $row) }}" 
-                                               title="Edit Pegawai"
-                                               class="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-amber-600 transition">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
-                                                <span>Edit</span>
-                                            </a>
-
-                                            {{-- Hapus --}}
-                                            <form action="{{ route('pegawai.destroy', $row) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pegawai ini?')" class="inline-block">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" 
-                                                        title="Hapus Pegawai"
-                                                        class="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-red-700 transition">
+                                            {{-- Edit (Khusus Admin) --}}
+                                            @if(Auth::user()->hasRole('admin'))
+                                                <a href="{{ route('pegawai.edit', $row) }}" 
+                                                   title="Edit Pegawai"
+                                                   class="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-amber-600 transition">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                     </svg>
-                                                    <span>Hapus</span>
-                                                </button>
-                                            </form>
+                                                    <span>Edit</span>
+                                                </a>
+
+                                                {{-- Hapus (Khusus Admin) --}}
+                                                <form action="{{ route('pegawai.destroy', $row) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pegawai ini?')" class="inline-block">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" 
+                                                            title="Hapus Pegawai"
+                                                            class="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-red-700 transition">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                        <span>Hapus</span>
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>

@@ -40,8 +40,8 @@ $buttonSize = match($size) {
         </a>
     @endif
 
-    {{-- EDIT --}}
-    @if($edit)
+    {{-- EDIT (Khusus Admin atau jika allowNonAdmin = true) --}}
+    @if($edit && (auth()->user()?->hasRole('admin') || ($allowNonAdmin ?? false)))
         <a
             href="{{ $edit }}"
             class="{{ $buttonSize }} inline-flex items-center gap-1.5 rounded-lg bg-amber-500 font-medium text-white hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition"
@@ -57,8 +57,8 @@ $buttonSize = match($size) {
         </a>
     @endif
 
-    {{-- DELETE --}}
-    @if($delete)
+    {{-- DELETE (Khusus Admin) --}}
+    @if($delete && auth()->user()?->hasRole('admin'))
         <form
             method="POST"
             action="{{ $delete }}"

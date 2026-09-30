@@ -121,6 +121,8 @@ class PegawaiController extends Controller
 
     public function create(Request $request)
     {
+        $this->authorize('create', Pegawai::class);
+
         $kategori = strtolower((string)$request->get('kategori', 'all'));
 
         return view('pegawai.create', [
@@ -135,6 +137,8 @@ class PegawaiController extends Controller
 
     public function store(StorePegawaiRequest $request)
     {
+        $this->authorize('create', Pegawai::class);
+
         $newPegawai = null;
         DB::transaction(function () use ($request, &$newPegawai) {
             $newPegawai = $this->pegawaiService->createPegawai(
@@ -310,6 +314,8 @@ class PegawaiController extends Controller
      */
     public function import(Request $request)
     {
+        $this->authorize('create', Pegawai::class);
+
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:10240',
         ]);

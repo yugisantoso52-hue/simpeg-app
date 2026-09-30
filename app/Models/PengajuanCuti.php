@@ -81,14 +81,24 @@ class PengajuanCuti extends Model
             : null;
     }
 
+    public function getStatusLabelAttribute(): string
+    {
+        if ($this->status === 'Disetujui Atasan (Menunggu PYBMC)' || $this->status === 'Disetujui Atasan (Menunggu Keputusan Akhir)') {
+            return 'Disetujui Atasan (Menunggu Keputusan Akhir)';
+        }
+
+        return (string)$this->status;
+    }
+
     public function getStatusBadgeClassAttribute(): string
     {
         return match ($this->status) {
-            'Disetujui'                               => 'bg-emerald-100 text-emerald-800 border-emerald-300',
-            'Disetujui Atasan (Menunggu PYBMC)'       => 'bg-blue-100 text-blue-800 border-blue-300 animate-pulse',
-            'Ditolak'                                 => 'bg-rose-100 text-rose-800 border-rose-300',
-            'Dibatalkan'                              => 'bg-gray-100 text-gray-700 border-gray-300',
-            default                                   => 'bg-amber-100 text-amber-800 border-amber-300 animate-pulse',
+            'Disetujui'                                                 => 'bg-emerald-100 text-emerald-800 border-emerald-300',
+            'Disetujui Atasan (Menunggu PYBMC)',
+            'Disetujui Atasan (Menunggu Keputusan Akhir)'               => 'bg-blue-100 text-blue-800 border-blue-300 animate-pulse',
+            'Ditolak'                                                   => 'bg-rose-100 text-rose-800 border-rose-300',
+            'Dibatalkan'                                                => 'bg-gray-100 text-gray-700 border-gray-300',
+            default                                                     => 'bg-amber-100 text-amber-800 border-amber-300 animate-pulse',
         };
     }
 }

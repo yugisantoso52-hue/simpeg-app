@@ -194,7 +194,7 @@
                                     </td>
                                     <td class="py-3 px-4 text-center">
                                         <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold border {{ $row->status_badge_class }}">
-                                            {{ $row->status }}
+                                            {{ $row->status_label ?? $row->status }}
                                         </span>
                                     </td>
                                     <td class="py-3 px-4 text-center">

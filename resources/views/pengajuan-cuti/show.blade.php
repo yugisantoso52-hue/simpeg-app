@@ -42,7 +42,7 @@
                         <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Status Permohonan Cuti</span>
                         <div class="mt-1 flex items-center gap-3">
                             <span class="px-3 py-1 rounded-full text-sm font-bold border {{ $cuti->status_badge_class }}">
-                                {{ $cuti->status }}
+                                {{ $cuti->status_label ?? $cuti->status }}
                             </span>
                             @if($cuti->nomor_surat)
                                 <span class="text-xs text-gray-600 font-mono bg-gray-100 px-2 py-1 rounded">
@@ -251,7 +251,7 @@
                                     @endif
                                 </div>
                             @else
-                                <div class="mt-2 pt-2 border-t border-blue-200 text-xs text-blue-700 font-semibold">⏳ Menunggu Keputusan PYBMC</div>
+                                <div class="mt-2 pt-2 border-t border-blue-200 text-xs text-blue-700 font-semibold">⏳ Menunggu Keputusan Pejabat Berwenang</div>
                             @endif
                         </div>
                     </div>
@@ -303,7 +303,7 @@
                         <span class="text-xs font-normal text-gray-500">({{ $pejabatInfo['atasan_jabatan'] ?? 'Atasan Langsung' }})</span>
                     </h3>
                     <p class="text-xs text-amber-800 mb-4 bg-amber-50 border border-amber-200 rounded px-3.5 py-2.5 leading-relaxed">
-                        Silakan berikan catatan <strong>PERTIMBANGAN ATASAN LANGSUNG</strong>. Setelah Anda simpan, permohonan akan secara otomatis diteruskan ke <strong>{{ $pejabatInfo['pybmc_jabatan'] ?? 'Pejabat Berwenang (PYBMC)' }}</strong> untuk persetujuan / keputusan akhir.
+                        Silakan berikan catatan <strong>PERTIMBANGAN ATASAN LANGSUNG</strong>. Setelah Anda simpan, permohonan akan secara otomatis diteruskan ke <strong>{{ $pejabatInfo['pybmc_jabatan'] ?? 'Pejabat Berwenang' }}</strong> untuk persetujuan / keputusan akhir.
                     </p>
                     <form action="{{ route('pengajuan-cuti.approve', $cuti->id) }}" method="POST" class="space-y-4">
                         @csrf
@@ -313,7 +313,7 @@
                             </label>
                             <select name="status" required
                                     class="w-full rounded-lg border-gray-300 text-sm focus:ring-amber-500 focus:border-amber-500 font-medium">
-                                <option value="Disetujui">✅ Setuju (Diteruskan ke PYBMC untuk Keputusan Final)</option>
+                                <option value="Disetujui">✅ Setuju (Diteruskan untuk Keputusan Akhir)</option>
                                 <option value="Ditolak">❌ Tidak Disetujui (Ditolak Langsung)</option>
                             </select>
                         </div>
@@ -335,14 +335,14 @@
                 </div>
             @endif
 
-            {{-- NOTIFIKASI INFO: PYBMC Menunggu Pertimbangan Atasan Langsung --}}
+            {{-- NOTIFIKASI INFO: Menunggu Pertimbangan Atasan Langsung --}}
             @if($isPybmcWaitingAtasan)
                 <div class="rounded-xl border border-blue-200 bg-blue-50 p-5 text-blue-800 flex items-start gap-3 shadow-sm">
                     <span class="text-2xl">⏳</span>
                     <div class="text-sm">
                         <div class="font-bold text-blue-900 mb-0.5">Menunggu Pertimbangan Atasan Langsung</div>
                         <div class="text-xs leading-relaxed text-blue-700">
-                            Anda adalah <strong>{{ $pejabatInfo['pybmc_jabatan'] ?? 'PYBMC' }}</strong> untuk permohonan ini.
+                            Anda adalah <strong>{{ $pejabatInfo['pybmc_jabatan'] ?? 'Pejabat Berwenang' }}</strong> untuk permohonan ini.
                             Permohonan saat ini sedang menunggu catatan pertimbangan dari Atasan Langsung: <strong>{{ $pejabatInfo['atasan_jabatan'] ?? 'Atasan Langsung' }} ({{ $pejabatInfo['atasan_nama'] ?? '—' }})</strong>.
                             Form Keputusan Final akan otomatis aktif setelah Atasan Langsung memberikan pertimbangan.
                         </div>
@@ -350,12 +350,12 @@
                 </div>
             @endif
 
-            {{-- FORM TAHAP 2: Keputusan PYBMC --}}
+            {{-- FORM TAHAP 2: Keputusan Pejabat Berwenang --}}
             @if($canGiveKeputusan)
                 <div class="bg-white rounded-xl shadow-sm border border-blue-300 p-6">
                     <h3 class="text-base font-bold text-gray-900 mb-1 flex items-center gap-2">
-                        <span>🏛️</span> VII. Form Keputusan Pejabat Yang Berwenang Memberikan Cuti (PYBMC)
-                        <span class="text-xs font-normal text-gray-500">({{ $pejabatInfo['pybmc_jabatan'] ?? 'PYBMC' }})</span>
+                        <span>🏛️</span> VII. Form Keputusan Pejabat Berwenang
+                        <span class="text-xs font-normal text-gray-500">({{ $pejabatInfo['pybmc_jabatan'] ?? 'Pejabat Berwenang' }})</span>
                     </h3>
                     <p class="text-xs text-blue-800 mb-4 bg-blue-50 border border-blue-200 rounded px-3.5 py-2.5 leading-relaxed">
                         Pertimbangan Atasan Langsung telah diterima: <strong>{{ $cuti->pertimbangan_atasan ?? '-' }}</strong>.
@@ -369,7 +369,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="status" class="block text-xs font-semibold text-gray-700 uppercase mb-1">
-                                    Keputusan Akhir PYBMC <span class="text-red-500">*</span>
+                                    Keputusan Akhir Pejabat Berwenang <span class="text-red-500">*</span>
                                 </label>
                                 <select name="status" id="status" required
                                         class="w-full rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500 font-medium">
@@ -389,7 +389,7 @@
                         </div>
                         <div>
                             <label for="catatan_pimpinan" class="block text-xs font-semibold text-gray-700 uppercase mb-1">
-                                Catatan Keputusan PYBMC
+                                Catatan Keputusan Pejabat Berwenang
                             </label>
                             <textarea name="catatan_pimpinan" id="catatan_pimpinan" rows="2"
                                       placeholder="Tambahkan catatan keputusan jika diperlukan..."

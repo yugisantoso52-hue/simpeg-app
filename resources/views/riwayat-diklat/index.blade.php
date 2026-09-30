@@ -10,10 +10,12 @@
                 </p>
             </div>
 
-            <a href="{{ route('riwayat-diklat.create') }}"
-               class="inline-flex items-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-blue-700 transition">
-                + Tambah Diklat
-            </a>
+            @if(Auth::user()->hasRole('admin'))
+                <a href="{{ route('riwayat-diklat.create') }}"
+                   class="inline-flex items-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-blue-700 transition">
+                    + Tambah Diklat
+                </a>
+            @endif
         </div>
     </x-slot>
 
@@ -178,10 +180,12 @@
                                         </svg>
                                         <h3 class="text-lg font-semibold text-gray-700">Belum ada Riwayat Diklat</h3>
                                         <p class="text-gray-500 mt-1 text-sm">Silakan tambahkan data diklat terlebih dahulu.</p>
+                                        @if(Auth::user()->hasRole('admin'))
                                         <a href="{{ route('riwayat-diklat.create') }}"
                                            class="mt-4 inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition">
                                             + Tambah Riwayat Diklat
                                         </a>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
