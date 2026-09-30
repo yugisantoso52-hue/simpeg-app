@@ -976,11 +976,24 @@ class ApprovalHierarchyService
 
         // Dosen → Ketua Jurusan memberikan Pertimbangan (kemudian ke Wadek II)
         if ($pegawai->isDosen()) {
-            return $this->findPegawaiByJabatan([
+            $kajur = $this->findPegawaiByJabatan([
                 'Ketua Jurusan (Kajur)',
                 'Ketua Jurusan Preklinik Keperawatan',
                 'Ketua Jurusan Klinik dan Komunitas',
             ]);
+
+            if ($kajur) {
+                return $kajur;
+            }
+
+            // Fallback Cerdas: Jika posisi Ketua Jurusan belum terisi definitif,
+            // atasan langsung dosen dialihkan ke Wakil Dekan I (Bidang Akademik) atau Wakil Dekan II
+            $wadek1 = $this->findPegawaiByJabatan(['Wakil Dekan I (Bid. Akademik)', 'Wakil Dekan I']);
+            if ($wadek1) {
+                return $wadek1;
+            }
+
+            return $this->findPegawaiByJabatan(['Wakil Dekan II (Bid. Keuangan dan Umum)', 'Wakil Dekan II']);
         }
 
         // Tendik / Staff / Laboran → Kepala Bagian Umum memberikan Pertimbangan (kemudian ke Wadek II)
@@ -1114,13 +1127,18 @@ class ApprovalHierarchyService
                 'Ketua Jurusan Preklinik Keperawatan',
                 'Ketua Jurusan Klinik dan Komunitas',
             ]);
+            $wadek1 = $this->findPegawaiByJabatan(['Wakil Dekan I (Bid. Akademik)', 'Wakil Dekan I']);
             $wadek2 = $this->findPegawaiByJabatan(['Wakil Dekan II (Bid. Keuangan dan Umum)', 'Wakil Dekan II']);
+
+            $atasanPegawai = $kajur ?: ($wadek1 ?: $wadek2);
+            $atasanJabatan = $kajur ? ($kajur->jabatan->nama_jabatan ?? 'Ketua Jurusan') : ($wadek1 ? 'Wakil Dekan I (Bid. Akademik)' : 'Wakil Dekan II (Bid. Keuangan dan Umum)');
+
             return [
                 'is_dosen'       => true,
                 'kategori'       => 'dosen',
-                'atasan_jabatan' => 'Ketua Jurusan',
-                'atasan_nama'    => $kajur ? ($kajur->nama_lengkap ?? $kajur->nama) : 'Ketua Jurusan',
-                'atasan_nip'     => $kajur?->nip ?? '',
+                'atasan_jabatan' => $atasanJabatan,
+                'atasan_nama'    => $atasanPegawai ? ($atasanPegawai->nama_lengkap ?? $atasanPegawai->nama) : 'Ketua Jurusan',
+                'atasan_nip'     => $atasanPegawai?->nip ?? '',
                 'pybmc_jabatan'  => 'Wakil Dekan II (Bid. Keuangan dan Umum)',
                 'pybmc_nama'     => $wadek2 ? ($wadek2->nama_lengkap ?? $wadek2->nama) : 'Wakil Dekan II',
                 'pybmc_nip'      => $wadek2?->nip ?? '',
@@ -1197,9 +1215,13 @@ class ApprovalHierarchyService
             return str_contains($jabatanPimpinan, 'WAKIL DEKAN II') || str_contains($jabatanPimpinan, 'WD II');
         }
 
-        // Kategori A: Pemohon Dosen -> Atasan Langsung adalah Ketua Jurusan
+        // Kategori A: Pemohon Dosen -> Atasan Langsung adalah Ketua Jurusan (atau fallback Wadek I/II)
         if ($pemohon->isDosen()) {
-            return str_contains($jabatanPimpinan, 'KETUA JURUSAN') || str_contains($jabatanPimpinan, 'KAJUR');
+            if (str_contains($jabatanPimpinan, 'KETUA JURUSAN') || str_contains($jabatanPimpinan, 'KAJUR')) {
+                return true;
+            }
+            $targetAtasan = $this->getAtasanLangsungCuti($pemohon);
+            return $targetAtasan && $targetAtasan->id === $pimpinan->id;
         }
 
         // Kategori B: Pemohon Tendik / Staff / Laboran -> Atasan Langsung adalah Kepala Bagian Umum
@@ -1348,9 +1370,30 @@ class ApprovalHierarchyService
                 $q->whereIn('pegawai_id', $dosenIds)
                   ->orWhere('atasan_langsung_id', $user->id);
             })->count();
+        } elseif (str_contains($jabatan, 'WAKIL DEKAN I') || str_contains($jabatan, 'WD I')) {
+            // Wadek I jika menjadi atasan / fallback atasan Dosen
+            $dosenIds = Pegawai::where('jenis_pegawai', 'Dosen')->orWhereNotNull('nidn_nuptk')->pluck('id');
+            $count += (clone $qTahap1)->where(function($q) use ($dosenIds, $user) {
+                $q->where('atasan_langsung_id', $user->id)
+                  ->orWhere(function($sub) use ($dosenIds) {
+                      $sub->whereIn('pegawai_id', $dosenIds)->whereNull('atasan_langsung_id');
+                  });
+            })->count();
         } elseif (str_contains($jabatan, 'WAKIL DEKAN II') || str_contains($jabatan, 'WD II')) {
-            // Wadek II Atasan untuk Wadek I, III, Kajur, Kabag
-            $count += (clone $qTahap1)->where('atasan_langsung_id', $user->id)->count();
+            // Wadek II Atasan untuk Wadek I, III, Kajur, Kabag (Pejabat Struktural)
+            $strukturalJabatan = ['WAKIL DEKAN I', 'WAKIL DEKAN III', 'KETUA JURUSAN', 'KAJUR', 'KEPALA BAGIAN UMUM', 'KABAG UMUM'];
+            $strukturalIds = Pegawai::whereHas('jabatan', function ($q) use ($strukturalJabatan) {
+                $q->where(function ($sub) use ($strukturalJabatan) {
+                    foreach ($strukturalJabatan as $kw) {
+                        $sub->orWhere('nama_jabatan', 'like', "%{$kw}%");
+                    }
+                });
+            })->pluck('id');
+
+            $count += (clone $qTahap1)->where(function($q) use ($strukturalIds, $user) {
+                $q->whereIn('pegawai_id', $strukturalIds)
+                  ->orWhere('atasan_langsung_id', $user->id);
+            })->count();
         } else {
             // Atasan struktural lainnya
             $bawahanIds = $this->getBawahanIdsForPegawai($pegawai);
@@ -1364,12 +1407,29 @@ class ApprovalHierarchyService
         $qTahap2 = \App\Models\PengajuanCuti::where('status', 'Disetujui Atasan (Menunggu PYBMC)')
             ->where('pegawai_id', '!=', $pegawai->id);
 
+        $strukturalJabatanKeywords = ['WAKIL DEKAN', 'WADEK', 'KETUA JURUSAN', 'KAJUR', 'KEPALA BAGIAN UMUM', 'KABAG UMUM'];
+        $strukturalPegawaiIds = Pegawai::whereHas('jabatan', function ($q) use ($strukturalJabatanKeywords) {
+            $q->where(function ($sub) use ($strukturalJabatanKeywords) {
+                foreach ($strukturalJabatanKeywords as $kw) {
+                    $sub->orWhere('nama_jabatan', 'like', "%{$kw}%");
+                }
+            });
+        })->pluck('id');
+
         if (str_contains($jabatan, 'WAKIL DEKAN II') || str_contains($jabatan, 'WD II')) {
-            // Wadek II adalah PYBMC untuk seluruh Dosen & Tendik
-            $count += (clone $qTahap2)->count();
+            // Wadek II adalah PYBMC HANYA untuk seluruh Dosen & Tendik biasa (BUKAN Pejabat Struktural)
+            $count += (clone $qTahap2)->where(function($q) use ($strukturalPegawaiIds, $user) {
+                $q->where('pybmc_id', $user->id)
+                  ->orWhere(function($sub) use ($strukturalPegawaiIds) {
+                      $sub->whereNotIn('pegawai_id', $strukturalPegawaiIds);
+                  });
+            })->count();
         } elseif (str_contains($jabatan, 'DEKAN') && !str_contains($jabatan, 'WAKIL')) {
-            // Dekan adalah PYBMC untuk Wadek I, II, III, Kajur, Kabag
-            $count += (clone $qTahap2)->count();
+            // Dekan adalah PYBMC HANYA untuk Wadek I, II, III, Kajur, Kabag (Pejabat Struktural)
+            $count += (clone $qTahap2)->where(function($q) use ($strukturalPegawaiIds, $user) {
+                $q->where('pybmc_id', $user->id)
+                  ->orWhereIn('pegawai_id', $strukturalPegawaiIds);
+            })->count();
         }
 
         return $count;

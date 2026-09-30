@@ -22,9 +22,10 @@ class ApprovePengajuanCutiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status'           => 'required|in:Disetujui,Ditolak',
-            'catatan_pimpinan' => 'nullable|string|max:500',
-            'nomor_surat'      => 'nullable|string|max:100',
+            'status'                  => 'required|in:Disetujui,Ditolak',
+            'catatan_atasan_langsung' => 'nullable|string|max:500',
+            'catatan_pimpinan'        => 'nullable|string|max:500',
+            'nomor_surat'             => 'nullable|string|max:100',
         ];
     }
 

@@ -250,13 +250,18 @@ class Pegawai extends Model
 
     /**
      * Hitung sisa kuota cuti tahunan pada tahun berjalan (Standar: 12 hari kerja)
+     * Mengurangi hari yang telah Disetujui maupun yang sedang aktif diajukan (Pending)
      */
     public function getSisaCutiTahunanAttribute(): int
     {
         $currentYear = now()->year;
         $cutiTerpakai = $this->pengajuanCuti()
             ->where('jenis_cuti', 'Cuti Tahunan')
-            ->where('status', 'Disetujui')
+            ->whereIn('status', [
+                'Disetujui',
+                'Menunggu Persetujuan',
+                'Disetujui Atasan (Menunggu PYBMC)'
+            ])
             ->whereYear('tanggal_mulai', $currentYear)
             ->sum('jumlah_hari');
 

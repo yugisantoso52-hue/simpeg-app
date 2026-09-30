@@ -39,9 +39,13 @@ class PengajuanCutiRepository extends BaseRepository implements PengajuanCutiRep
                 $query->where('jenis_cuti', $jenis);
             })
             ->when($status, function ($query) use ($status) {
-                $query->where('status', $status);
+                if ($status === 'Menunggu Persetujuan') {
+                    $query->whereIn('status', ['Menunggu Persetujuan', 'Disetujui Atasan (Menunggu PYBMC)']);
+                } else {
+                    $query->where('status', $status);
+                }
             })
-            ->orderByRaw("CASE WHEN status = 'Menunggu Persetujuan' THEN 0 ELSE 1 END")
+            ->orderByRaw("CASE WHEN status IN ('Menunggu Persetujuan', 'Disetujui Atasan (Menunggu PYBMC)') THEN 0 ELSE 1 END")
             ->latest('created_at')
             ->paginate($perPage)
             ->withQueryString();
@@ -56,7 +60,7 @@ class PengajuanCutiRepository extends BaseRepository implements PengajuanCutiRep
             $q->whereIn('pegawai_id', $bawahanIds);
         })->selectRaw("
             COUNT(*) as total,
-            COALESCE(SUM(CASE WHEN status = 'Menunggu Persetujuan' THEN 1 ELSE 0 END), 0) as menunggu,
+            COALESCE(SUM(CASE WHEN status IN ('Menunggu Persetujuan', 'Disetujui Atasan (Menunggu PYBMC)') THEN 1 ELSE 0 END), 0) as menunggu,
             COALESCE(SUM(CASE WHEN status = 'Disetujui' THEN 1 ELSE 0 END), 0) as disetujui,
             COALESCE(SUM(CASE WHEN status = 'Ditolak' THEN 1 ELSE 0 END), 0) as ditolak,
             COALESCE(SUM(CASE WHEN status = 'Disetujui' AND tanggal_mulai <= ? AND tanggal_selesai >= ? THEN 1 ELSE 0 END), 0) as hari_ini
@@ -81,7 +85,7 @@ class PengajuanCutiRepository extends BaseRepository implements PengajuanCutiRep
 
     public function getPendingCount(?array $bawahanIds = null): int
     {
-        return $this->model->where('status', 'Menunggu Persetujuan')
+        return $this->model->whereIn('status', ['Menunggu Persetujuan', 'Disetujui Atasan (Menunggu PYBMC)'])
             ->when($bawahanIds !== null, function ($q) use ($bawahanIds) {
                 $q->whereIn('pegawai_id', $bawahanIds);
             })
