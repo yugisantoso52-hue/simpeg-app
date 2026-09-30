@@ -288,6 +288,24 @@
             $pybmcNama = $cuti->approvedBy->pegawai->nama_lengkap ?? $cuti->approvedBy->pegawai->nama;
             $pybmcNip  = $cuti->approvedBy->pegawai->nip;
         }
+
+        // TTE Atasan Langsung
+        $isAtasanSigned = !empty($cuti->pertimbangan_atasan) && $cuti->pertimbangan_atasan !== 'Menunggu Persetujuan';
+        $qrAtasanDataUri = null;
+        $atasanSignedAt = '';
+        if ($isAtasanSigned && isset($verifyUrl)) {
+            $qrAtasanDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl);
+            $atasanSignedAt = $cuti->pertimbangan_atasan_at ? $cuti->pertimbangan_atasan_at->translatedFormat('d/m/Y H:i') . ' WIB' : ($cuti->updated_at ? $cuti->updated_at->translatedFormat('d/m/Y H:i') . ' WIB' : '');
+        }
+
+        // TTE Pejabat Berwenang
+        $isPejabatSigned = in_array($cuti->status, ['Disetujui', 'Ditolak']);
+        $qrPejabatDataUri = null;
+        $pejabatSignedAt = '';
+        if ($isPejabatSigned && isset($verifyUrl)) {
+            $qrPejabatDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl);
+            $pejabatSignedAt = $cuti->approved_at ? $cuti->approved_at->translatedFormat('d/m/Y H:i') . ' WIB' : ($cuti->updated_at ? $cuti->updated_at->translatedFormat('d/m/Y H:i') . ' WIB' : '');
+        }
     @endphp
     <table class="bkn-table">
         <tr class="section-title">
@@ -295,12 +313,27 @@
             <td style="width: 50%;">VII. KEPUTUSAN PEJABAT YANG BERWENANG</td>
         </tr>
         <tr>
-            {{-- VI: Jabatan atas → spasi ttd → nama → NIP → Status+Catatan pojok bawah kiri --}}
+            {{-- VI: Jabatan atas → TTE / spasi ttd → nama → NIP → Status+Catatan pojok bawah kiri --}}
             <td style="vertical-align: top; padding: 5px 6px;">
                 {{-- Jabatan di atas (rata tengah) --}}
                 <div style="text-align: center; font-weight: normal; margin-bottom: 0;">{{ $atasanJabatan }}</div>
-                {{-- Spasi untuk tanda tangan --}}
-                <div style="height: 58px;">&nbsp;</div>
+                @if($isAtasanSigned && $qrAtasanDataUri)
+                    {{-- TTE Digital Signature (Opsi A) --}}
+                    <div style="text-align: center; margin: 3px auto 4px auto;">
+                        <img src="{{ $qrAtasanDataUri }}" style="width: 48px; height: 48px; display: inline-block;" />
+                        <div style="font-size: 6pt; color: #15803d; font-weight: bold; margin-top: 1px;">
+                            Ditandatangani secara Elektronik (TTE)
+                        </div>
+                        @if($atasanSignedAt)
+                        <div style="font-size: 5.5pt; color: #64748b;">
+                            SIKAP FKP UNRI &bull; {{ $atasanSignedAt }}
+                        </div>
+                        @endif
+                    </div>
+                @else
+                    {{-- Spasi untuk tanda tangan manual --}}
+                    <div style="height: 58px;">&nbsp;</div>
+                @endif
                 {{-- Nama (bold, underline, rata tengah) --}}
                 <div style="text-align: center; font-weight: bold; text-decoration: underline;">{{ $atasanNama }}</div>
                 <div style="text-align: center; font-size: 8.5pt;">NIP. {{ $atasanNip ?: '.....................................................' }}</div>
@@ -310,12 +343,27 @@
                     <div>Catatan: {{ $cuti->catatan_atasan_langsung ?: ($cuti->catatan_pimpinan ?: '-') }}</div>
                 </div>
             </td>
-            {{-- VII: Jabatan atas → spasi ttd → nama → NIP → Status+No.SK pojok bawah kiri --}}
+            {{-- VII: Jabatan atas → TTE / spasi ttd → nama → NIP → Status+No.SK pojok bawah kiri --}}
             <td style="vertical-align: top; padding: 5px 6px;">
                 {{-- Jabatan di atas (rata tengah) --}}
                 <div style="text-align: center; font-weight: normal; margin-bottom: 0;">{{ $pybmcJabatan }}</div>
-                {{-- Spasi untuk tanda tangan --}}
-                <div style="height: 58px;">&nbsp;</div>
+                @if($isPejabatSigned && $qrPejabatDataUri)
+                    {{-- TTE Digital Signature (Opsi A) --}}
+                    <div style="text-align: center; margin: 3px auto 4px auto;">
+                        <img src="{{ $qrPejabatDataUri }}" style="width: 48px; height: 48px; display: inline-block;" />
+                        <div style="font-size: 6pt; color: #15803d; font-weight: bold; margin-top: 1px;">
+                            Ditandatangani secara Elektronik (TTE)
+                        </div>
+                        @if($pejabatSignedAt)
+                        <div style="font-size: 5.5pt; color: #64748b;">
+                            SIKAP FKP UNRI &bull; {{ $pejabatSignedAt }}
+                        </div>
+                        @endif
+                    </div>
+                @else
+                    {{-- Spasi untuk tanda tangan manual --}}
+                    <div style="height: 58px;">&nbsp;</div>
+                @endif
                 {{-- Nama (bold, underline, rata tengah) --}}
                 <div style="text-align: center; font-weight: bold; text-decoration: underline;">{{ $pybmcNama }}</div>
                 <div style="text-align: center; font-size: 8.5pt;">NIP. {{ $pybmcNip ?: '.....................................................' }}</div>
