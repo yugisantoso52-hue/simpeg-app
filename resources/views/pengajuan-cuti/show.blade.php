@@ -130,12 +130,22 @@
 
             {{-- ===== ALUR PERSETUJUAN 2-TAHAP (PerBKN No. 7 Tahun 2022) ===== --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider mb-1 flex items-center gap-2">
                     <span>📋</span> Alur Persetujuan 2 Tahap (PerBKN No. 7/2022)
                 </h3>
 
+                {{-- Kategori Pegawai Badge --}}
+                @if(isset($pejabatInfo))
+                    <div class="mb-4 flex items-center gap-2">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $pejabatInfo['is_dosen'] ? 'bg-blue-100 text-blue-700 border border-blue-200' : 'bg-purple-100 text-purple-700 border border-purple-200' }}">
+                            {{ $pejabatInfo['is_dosen'] ? '👨‍🏫 Kategori Dosen' : '🏢 Kategori Tendik / Staff' }}
+                        </span>
+                        <span class="text-xs text-gray-400">Pejabat penandatangan disesuaikan dengan kategori pegawai.</span>
+                    </div>
+                @endif
+
                 <div class="flex flex-col md:flex-row gap-4">
-                    {{-- TAHAP 1: Pertimbangan Atasan Langsung --}}
+                    {{-- TAHAP 1: VI. Pertimbangan Atasan Langsung --}}
                     @php
                         $tahap1Color = $cuti->pertimbangan_atasan === 'Disetujui'
                             ? 'border-emerald-300 bg-emerald-50'
@@ -145,18 +155,28 @@
                             : ($cuti->pertimbangan_atasan === 'Ditolak' ? 'bg-rose-600 text-white' : 'bg-amber-400 text-white');
                     @endphp
                     <div class="flex-1 rounded-lg border {{ $tahap1Color }} p-4">
-                        <div class="flex items-center gap-2 mb-2">
+                        <div class="flex items-center gap-2 mb-3">
                             <div class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold {{ $tahap1Badge }}">1</div>
-                            <span class="text-xs font-bold uppercase tracking-wide text-gray-600">Pertimbangan Atasan Langsung</span>
+                            <span class="text-xs font-bold uppercase tracking-wide text-gray-600">VI. Pertimbangan Atasan Langsung</span>
                         </div>
                         <div class="text-sm">
-                            @if($cuti->atasanLangsung)
+                            {{-- Jabatan yang seharusnya (dari hierarchy service) --}}
+                            @if(isset($pejabatInfo))
+                                <div class="font-bold text-gray-900">{{ $pejabatInfo['atasan_jabatan'] }}</div>
+                                @if($pejabatInfo['atasan_nama'])
+                                    <div class="font-semibold text-gray-700 mt-0.5">{{ $pejabatInfo['atasan_nama'] }}</div>
+                                @endif
+                                @if($pejabatInfo['atasan_nip'])
+                                    <div class="text-xs text-gray-400 font-mono">NIP. {{ $pejabatInfo['atasan_nip'] }}</div>
+                                @endif
+                            @elseif($cuti->atasanLangsung)
                                 <div class="font-semibold text-gray-800">{{ $cuti->atasanLangsung->name ?? '-' }}</div>
                             @else
                                 <div class="text-gray-400 italic text-xs">Atasan belum terdeteksi di sistem</div>
                             @endif
+
                             @if($cuti->pertimbangan_atasan)
-                                <div class="mt-1">
+                                <div class="mt-2 pt-2 border-t border-gray-200">
                                     <span class="px-2 py-0.5 rounded text-xs font-bold {{ $cuti->pertimbangan_atasan === 'Disetujui' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
                                         {{ $cuti->pertimbangan_atasan }}
                                     </span>
@@ -168,7 +188,7 @@
                                     @endif
                                 </div>
                             @else
-                                <div class="mt-1 text-xs text-amber-700 font-semibold">⏳ Menunggu Pertimbangan Atasan</div>
+                                <div class="mt-2 pt-2 border-t border-amber-200 text-xs text-amber-700 font-semibold">⏳ Menunggu Pertimbangan</div>
                             @endif
                         </div>
                     </div>
@@ -176,7 +196,7 @@
                     {{-- Panah --}}
                     <div class="hidden md:flex items-center text-gray-400 text-2xl self-center">→</div>
 
-                    {{-- TAHAP 2: Keputusan PYBMC --}}
+                    {{-- TAHAP 2: VII. Keputusan Pejabat Yang Berwenang (PYBMC) --}}
                     @php
                         $tahap2Color = $cuti->status === 'Disetujui'
                             ? 'border-emerald-300 bg-emerald-50'
@@ -186,19 +206,29 @@
                             : ($cuti->status === 'Ditolak' ? 'bg-rose-600 text-white' : 'bg-blue-500 text-white');
                     @endphp
                     <div class="flex-1 rounded-lg border {{ $tahap2Color }} p-4">
-                        <div class="flex items-center gap-2 mb-2">
+                        <div class="flex items-center gap-2 mb-3">
                             <div class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold {{ $tahap2Badge }}">2</div>
-                            <span class="text-xs font-bold uppercase tracking-wide text-gray-600">Keputusan PYBMC</span>
+                            <span class="text-xs font-bold uppercase tracking-wide text-gray-600">VII. Keputusan Pejabat Yang Berwenang</span>
                         </div>
                         <div class="text-sm">
-                            @if($cuti->pybmc)
+                            {{-- PYBMC selalu Wadek II (Bid. Keuangan dan Umum) --}}
+                            @if(isset($pejabatInfo))
+                                <div class="font-bold text-gray-900">{{ $pejabatInfo['pybmc_jabatan'] }}</div>
+                                @if($pejabatInfo['pybmc_nama'])
+                                    <div class="font-semibold text-gray-700 mt-0.5">{{ $pejabatInfo['pybmc_nama'] }}</div>
+                                @endif
+                                @if($pejabatInfo['pybmc_nip'])
+                                    <div class="text-xs text-gray-400 font-mono">NIP. {{ $pejabatInfo['pybmc_nip'] }}</div>
+                                @endif
+                            @elseif($cuti->pybmc)
                                 <div class="font-semibold text-gray-800">{{ $cuti->pybmc->name ?? '-' }}</div>
                                 <div class="text-xs text-gray-500">Pejabat Berwenang Memberikan Cuti</div>
                             @else
                                 <div class="text-gray-400 italic text-xs">Pejabat berwenang belum terdeteksi</div>
                             @endif
+
                             @if($cuti->approved_by && in_array($cuti->status, ['Disetujui', 'Ditolak']))
-                                <div class="mt-1">
+                                <div class="mt-2 pt-2 border-t border-gray-200">
                                     <span class="px-2 py-0.5 rounded text-xs font-bold {{ $cuti->status === 'Disetujui' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
                                         {{ $cuti->status }}
                                     </span>
@@ -210,7 +240,7 @@
                                     @endif
                                 </div>
                             @else
-                                <div class="mt-1 text-xs text-blue-700 font-semibold">⏳ Menunggu Keputusan PYBMC</div>
+                                <div class="mt-2 pt-2 border-t border-blue-200 text-xs text-blue-700 font-semibold">⏳ Menunggu Keputusan PYBMC</div>
                             @endif
                         </div>
                     </div>
@@ -222,7 +252,14 @@
                 $authUser    = Auth::user();
                 $isAdmin     = $authUser->hasRole('admin');
                 $isPybmc     = $cuti->pybmc_id && (int)$cuti->pybmc_id === (int)$authUser->id;
+
+                // Cek apakah auth user adalah atasan langsung:
+                // 1. Via DB FK (atasan_langsung_id di tabel pengajuan_cuti)
+                // 2. Via hierarchy service (getBawahanIds) — untuk pimpinan struktural (Kajur/Kabag Umum)
                 $isAtasanLgs = $cuti->atasan_langsung_id && (int)$cuti->atasan_langsung_id === (int)$authUser->id;
+                if (!$isAtasanLgs && $authUser->pegawai_id && $cuti->pegawai_id) {
+                    $isAtasanLgs = in_array($cuti->pegawai_id, $authUser->getBawahanIds());
+                }
 
                 // Tahap 1: Atasan langsung bisa pertimbangan (atau admin jika belum ada pertimbangan)
                 $canGivePertimbangan = !in_array($cuti->status, ['Disetujui', 'Ditolak', 'Dibatalkan'])

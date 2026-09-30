@@ -1009,18 +1009,22 @@ class ApprovalHierarchyService
         $isDosen = $pegawai ? $pegawai->isDosen() : false;
         $jabatanNama = strtoupper(trim((string)($pegawai?->jabatan?->nama_jabatan ?? '')));
 
-        $atasanPegawai = $pegawai ? $this->getAtasanLangsungCuti($pegawai) : null;
         $pybmcPegawai  = $pegawai ? $this->getPybmcCuti($pegawai) : null;
 
         // Label & Nama Atasan Langsung (Bagian VI)
+        // Untuk Dosen: Ketua Jurusan (dari getAtasanLangsungCuti)
+        // Untuk Tendik: SELALU Kabag Umum (lookup by jabatan, bukan atasan personal)
         if ($isDosen) {
+            $atasanPegawai = $pegawai ? $this->getAtasanLangsungCuti($pegawai) : null;
             $atasanJabatan = 'Ketua Jurusan';
             $atasanNama    = $atasanPegawai ? ($atasanPegawai->nama_lengkap ?? $atasanPegawai->nama) : 'Ketua Jurusan';
             $atasanNip     = $atasanPegawai?->nip ?? '.....................................................';
         } else {
+            // Tendik: VI selalu ditandatangani Kabag Umum, apapun jabatan pemohon
+            $kabagUmum     = $this->findPegawaiByJabatan(['Kepala Bagian Umum', 'Kabag Umum', 'Kabag. Umum']);
             $atasanJabatan = 'Kepala Bagian Umum';
-            $atasanNama    = $atasanPegawai ? ($atasanPegawai->nama_lengkap ?? $atasanPegawai->nama) : 'Kepala Bagian Umum';
-            $atasanNip     = $atasanPegawai?->nip ?? '.....................................................';
+            $atasanNama    = $kabagUmum ? ($kabagUmum->nama_lengkap ?? $kabagUmum->nama) : 'Kepala Bagian Umum';
+            $atasanNip     = $kabagUmum?->nip ?? '.....................................................';
         }
 
         // Label & Nama PYBMC (Bagian VII)
