@@ -26,10 +26,15 @@ class PengajuanCutiController extends Controller
             return redirect()->route('dashboard')->with('error', 'Akun Anda belum terhubung dengan data pegawai.');
         }
 
-        // Jika Atasan Langsung / Pimpinan (bukan Admin penuh), filter cuti bawahan langsungnya
-        $bawahanIds = null;
+        // Scoping daftar cuti berdasarkan Matriks Hierarki E-Cuti:
+        $scopedPegawaiIds = null;
         if (!$isAdmin && $isAtasan) {
-            $bawahanIds = $user->getBawahanIds();
+            if ($user->pegawai) {
+                $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
+                $scopedPegawaiIds = $hierarchyService->getScopedCutiPegawaiIds($user->pegawai);
+            } else {
+                $scopedPegawaiIds = $user->getBawahanIds();
+            }
         }
 
         $data = $this->service->filter(
@@ -38,10 +43,10 @@ class PengajuanCutiController extends Controller
             $request->get('status'),
             $pegawaiId,
             10,
-            $bawahanIds
+            $scopedPegawaiIds
         );
 
-        $statistics = $this->service->statistics($pegawaiId, $bawahanIds);
+        $statistics = $this->service->statistics($pegawaiId, $scopedPegawaiIds);
         $pegawai = $user->pegawai;
 
         return view('pengajuan-cuti.index', compact('data', 'statistics', 'isPegawaiOnly', 'pegawai', 'isAtasan', 'isAdmin'));
@@ -91,21 +96,18 @@ class PengajuanCutiController extends Controller
         // Otorisasi: Pegawai biasa hanya bisa melihat permohonannya sendiri atau permohonan bawahannya jika atasan
         $isAdmin    = $user->hasRole('admin');
         $isOwn      = $user->pegawai_id && $user->pegawai_id === $cuti->pegawai_id;
-        $isPimpinan = $user->hasRole('pimpinan') || $user->isAtasan();
 
-        // Cek apakah user adalah atasan langsung cuti ini (via atasan_id FK atau via hierarchy service)
-        $isMySubordinate = $cuti->pegawai && $cuti->pegawai->atasan_id && $cuti->pegawai->atasan_id === $user->pegawai_id;
-        if (!$isMySubordinate && $user->pegawai_id && $cuti->pegawai) {
-            $bawahanIds = $user->getBawahanIds();
-            $isMySubordinate = in_array($cuti->pegawai_id, $bawahanIds);
-        }
+        $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
+        $isAtasanLgs = $user->pegawai && $cuti->pegawai && $hierarchyService->isAtasanLangsungCuti($user->pegawai, $cuti->pegawai);
+        $isPybmc     = $user->pegawai && $cuti->pegawai && $hierarchyService->isPybmcCuti($user->pegawai, $cuti->pegawai);
+        $isDekan     = $user->pegawai && str_contains(strtoupper((string)($user->pegawai->jabatan->nama_jabatan ?? '')), 'DEKAN') && !str_contains(strtoupper((string)($user->pegawai->jabatan->nama_jabatan ?? '')), 'WAKIL');
 
-        if (!$isAdmin && !$isOwn && !$isMySubordinate && !$isPimpinan) {
+        if (!$isAdmin && !$isOwn && !$isAtasanLgs && !$isPybmc && !$isDekan && !$user->hasRole('pimpinan')) {
             abort(403, 'Anda tidak diizinkan melihat data permohonan cuti ini.');
         }
 
-        // Dapatkan informasi pejabat cuti dinamis berdasarkan kategori pegawai (Dosen/Tendik)
-        $pejabatInfo = app(\App\Services\ApprovalHierarchyService::class)->getPejabatCutiInfo($cuti->pegawai);
+        // Dapatkan informasi pejabat cuti dinamis berdasarkan kategori pegawai (Dosen/Tendik/Pimpinan)
+        $pejabatInfo = $hierarchyService->getPejabatCutiInfo($cuti->pegawai);
 
         return view('pengajuan-cuti.show', compact('cuti', 'pejabatInfo'));
     }

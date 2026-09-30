@@ -157,34 +157,44 @@ class PengajuanCutiService
             $updateData = [];
             $isKeputusanFinal = false;
 
-            // Jika role admin atau PYBMC → keputusan final
-            if ($approver->hasRole('admin') || ($cuti->pybmc_id && (int)$cuti->pybmc_id === $approverUserId)) {
-                $updateData['status']           = $data['status'];
-                $updateData['approved_by']      = $approverUserId;
-                $updateData['approved_at']      = now();
-                $updateData['catatan_pimpinan'] = $data['catatan_pimpinan'] ?? $data['catatan_atasan_langsung'] ?? null;
-                $isKeputusanFinal = true;
-            } else {
+            $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
+            $isPybmc = ($cuti->pybmc_id && (int)$cuti->pybmc_id === $approverUserId)
+                || ($approver->pegawai && $cuti->pegawai && $hierarchyService->isPybmcCuti($approver->pegawai, $cuti->pegawai));
+
+            $isAtasanLgs = ($cuti->atasan_langsung_id && (int)$cuti->atasan_langsung_id === $approverUserId)
+                || ($approver->pegawai && $cuti->pegawai && $hierarchyService->isAtasanLangsungCuti($approver->pegawai, $cuti->pegawai));
+
+            // Jika pertimbangan atasan belum ada dan bukan admin yang menyertakan nomor surat,
+            // maka aksi ini adalah TAHAP 1: PERTIMBANGAN ATASAN LANGSUNG
+            $isTahap1 = empty($cuti->pertimbangan_atasan) && (!$approver->hasRole('admin') || empty($data['nomor_surat']));
+
+            if ($isTahap1) {
                 // Pertimbangan Atasan Langsung (Tahap 1 PerBKN 7/2022)
                 $statusAtasan = $data['status'] === 'Disetujui' ? 'Disetujui' : ($data['status'] === 'Ditolak' ? 'Ditolak' : $data['status']);
                 $updateData['pertimbangan_atasan']     = $statusAtasan;
-                $updateData['catatan_atasan_langsung'] = $data['catatan_pimpinan'] ?? $data['catatan_atasan_langsung'] ?? null;
+                $updateData['catatan_atasan_langsung'] = $data['catatan_atasan_langsung'] ?? $data['catatan_pimpinan'] ?? null;
                 $updateData['pertimbangan_atasan_at']  = now();
                 $updateData['atasan_langsung_id']      = $approverUserId;
 
                 if ($statusAtasan === 'Disetujui') {
                     $updateData['status'] = 'Disetujui Atasan (Menunggu PYBMC)';
                 } else {
-                    $updateData['status']           = $data['status'];
+                    $updateData['status']           = 'Ditolak';
                     $updateData['approved_by']      = $approverUserId;
                     $updateData['approved_at']      = now();
-                    $updateData['catatan_pimpinan'] = $data['catatan_pimpinan'] ?? null;
+                    $updateData['catatan_pimpinan'] = $data['catatan_atasan_langsung'] ?? $data['catatan_pimpinan'] ?? null;
                     $isKeputusanFinal = true;
                 }
-            }
-
-            if (!empty($data['nomor_surat'])) {
-                $updateData['nomor_surat'] = $data['nomor_surat'];
+            } else {
+                // Keputusan Final PYBMC (Tahap 2)
+                $updateData['status']           = $data['status'];
+                $updateData['approved_by']      = $approverUserId;
+                $updateData['approved_at']      = now();
+                $updateData['catatan_pimpinan'] = $data['catatan_pimpinan'] ?? null;
+                if (!empty($data['nomor_surat'])) {
+                    $updateData['nomor_surat'] = $data['nomor_surat'];
+                }
+                $isKeputusanFinal = true;
             }
 
             $updatedCuti = $this->repository->update($id, $updateData);

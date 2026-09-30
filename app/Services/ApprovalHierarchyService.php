@@ -1159,4 +1159,145 @@ class ApprovalHierarchyService
 
         return null;
     }
+
+    /**
+     * Cek apakah $pimpinan adalah Atasan Langsung (Pertimbangan Tahap 1) untuk cuti $pemohon
+     */
+    public function isAtasanLangsungCuti(Pegawai $pimpinan, Pegawai $pemohon): bool
+    {
+        if ($pimpinan->id === $pemohon->id) {
+            return false;
+        }
+
+        // 1. Cek langsung via instance method getAtasanLangsungCuti
+        $targetAtasan = $this->getAtasanLangsungCuti($pemohon);
+        if ($targetAtasan && $targetAtasan->id === $pimpinan->id) {
+            return true;
+        }
+
+        // 2. Fallback cek berbasis nama jabatan pimpinan terhadap kategori pemohon
+        $jabatanPimpinan = strtoupper(trim((string)($pimpinan->jabatan->nama_jabatan ?? '')));
+        $jabatanPemohon  = strtoupper(trim((string)($pemohon->jabatan->nama_jabatan ?? '')));
+
+        // Kategori D: Pemohon Wadek II -> Atasan Langsung adalah Kabag Umum
+        if (str_contains($jabatanPemohon, 'WAKIL DEKAN II') || str_contains($jabatanPemohon, 'WD II')) {
+            return str_contains($jabatanPimpinan, 'BAGIAN UMUM') || str_contains($jabatanPimpinan, 'KABAG');
+        }
+
+        // Kategori C: Pemohon Wadek I, Wadek III, Kajur, Kabag Umum -> Atasan Langsung adalah Wadek II
+        $isPimpinanStruktural =
+            str_contains($jabatanPemohon, 'WAKIL DEKAN') ||
+            str_contains($jabatanPemohon, 'WADEK') ||
+            str_contains($jabatanPemohon, 'KETUA JURUSAN') ||
+            str_contains($jabatanPemohon, 'KAJUR') ||
+            str_contains($jabatanPemohon, 'KEPALA BAGIAN UMUM') ||
+            str_contains($jabatanPemohon, 'KABAG UMUM');
+
+        if ($isPimpinanStruktural) {
+            return str_contains($jabatanPimpinan, 'WAKIL DEKAN II') || str_contains($jabatanPimpinan, 'WD II');
+        }
+
+        // Kategori A: Pemohon Dosen -> Atasan Langsung adalah Ketua Jurusan
+        if ($pemohon->isDosen()) {
+            return str_contains($jabatanPimpinan, 'KETUA JURUSAN') || str_contains($jabatanPimpinan, 'KAJUR');
+        }
+
+        // Kategori B: Pemohon Tendik / Staff / Laboran -> Atasan Langsung adalah Kepala Bagian Umum
+        return str_contains($jabatanPimpinan, 'BAGIAN UMUM') || str_contains($jabatanPimpinan, 'KABAG');
+    }
+
+    /**
+     * Cek apakah $pimpinan adalah PYBMC (Keputusan Tahap 2) untuk cuti $pemohon
+     */
+    public function isPybmcCuti(Pegawai $pimpinan, Pegawai $pemohon): bool
+    {
+        if ($pimpinan->id === $pemohon->id) {
+            return false;
+        }
+
+        // 1. Cek langsung via instance method getPybmcCuti
+        $targetPybmc = $this->getPybmcCuti($pemohon);
+        if ($targetPybmc && $targetPybmc->id === $pimpinan->id) {
+            return true;
+        }
+
+        // 2. Fallback cek berbasis nama jabatan pimpinan terhadap kategori pemohon
+        $jabatanPimpinan = strtoupper(trim((string)($pimpinan->jabatan->nama_jabatan ?? '')));
+        $jabatanPemohon  = strtoupper(trim((string)($pemohon->jabatan->nama_jabatan ?? '')));
+
+        // Dekan sendiri: PYBMC adalah Rektor (bukan pimpinan di fakultas)
+        if (str_contains($jabatanPemohon, 'DEKAN') && !str_contains($jabatanPemohon, 'WAKIL')) {
+            return false;
+        }
+
+        // Pimpinan Struktural (Wadek I, Wadek II, Wadek III, Kajur, Kabag): PYBMC adalah Dekan
+        $isPimpinanStruktural =
+            str_contains($jabatanPemohon, 'WAKIL DEKAN') ||
+            str_contains($jabatanPemohon, 'WADEK') ||
+            str_contains($jabatanPemohon, 'KETUA JURUSAN') ||
+            str_contains($jabatanPemohon, 'KAJUR') ||
+            str_contains($jabatanPemohon, 'KEPALA BAGIAN UMUM') ||
+            str_contains($jabatanPemohon, 'KABAG UMUM');
+
+        if ($isPimpinanStruktural) {
+            return str_contains($jabatanPimpinan, 'DEKAN') && !str_contains($jabatanPimpinan, 'WAKIL');
+        }
+
+        // Dosen & Tendik: PYBMC adalah Wakil Dekan II
+        return str_contains($jabatanPimpinan, 'WAKIL DEKAN II') || str_contains($jabatanPimpinan, 'WD II');
+    }
+
+    /**
+     * Mendapatkan daftar ID pegawai yang cutinya relevan dilihat oleh $pimpinan di halaman index
+     * Return null jika pimpinan adalah Dekan atau Wadek II (artinya melihat seluruh cuti).
+     */
+    public function getScopedCutiPegawaiIds(Pegawai $pimpinan): ?array
+    {
+        $jabatanPimpinan = strtoupper(trim((string)($pimpinan->jabatan->nama_jabatan ?? '')));
+
+        // Dekan -> Melihat semua cuti (Monitoring, Pengarsipan & PYBMC Pejabat Struktural)
+        if (str_contains($jabatanPimpinan, 'DEKAN') && !str_contains($jabatanPimpinan, 'WAKIL')) {
+            return null;
+        }
+
+        // Wakil Dekan II -> Melihat semua cuti (PYBMC untuk seluruh Dosen & Tendik, Atasan Struktural)
+        if (str_contains($jabatanPimpinan, 'WAKIL DEKAN II') || str_contains($jabatanPimpinan, 'WD II')) {
+            return null;
+        }
+
+        $ids = collect([$pimpinan->id]); // Selalu bisa melihat cutinya sendiri
+
+        // Kepala Bagian Umum -> Atasan untuk SEMUA Tendik / Staff / Laboran DAN Wadek II
+        if (str_contains($jabatanPimpinan, 'BAGIAN UMUM') || str_contains($jabatanPimpinan, 'KABAG')) {
+            $tendikIds = Pegawai::where(function ($q) {
+                $q->whereNull('nidn_nuptk')
+                  ->where('jenis_pegawai', '!=', 'Dosen');
+            })->pluck('id');
+            $ids = $ids->merge($tendikIds);
+
+            // Tambahkan Wadek II (karena cuti Wadek II masuk ke Kabag Umum untuk Pertimbangan)
+            $wadek2 = $this->findPegawaiByJabatan(['Wakil Dekan II']);
+            if ($wadek2) {
+                $ids->push($wadek2->id);
+            }
+
+            return $ids->unique()->values()->all();
+        }
+
+        // Ketua Jurusan -> Atasan untuk SEMUA Dosen
+        if (str_contains($jabatanPimpinan, 'KETUA JURUSAN') || str_contains($jabatanPimpinan, 'KAJUR')) {
+            $dosenIds = Pegawai::where('jenis_pegawai', 'Dosen')
+                ->orWhereNotNull('nidn_nuptk')
+                ->pluck('id');
+            $ids = $ids->merge($dosenIds);
+
+            return $ids->unique()->values()->all();
+        }
+
+        // Pimpinan lain (misal Koordinator Prodi / Ka Lab): gunakan bawahan logbook-nya
+        $bawahan = $this->getBawahanIdsForPegawai($pimpinan);
+        $ids = $ids->merge($bawahan);
+
+        return $ids->unique()->values()->all();
+    }
 }
