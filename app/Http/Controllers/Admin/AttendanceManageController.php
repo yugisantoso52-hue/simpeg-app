@@ -60,18 +60,37 @@ class AttendanceManageController extends Controller
             ]);
         }
 
-        $filters = $this->extractFilters($request);
-        if ($bawahanIds !== null) {
-            $filters['bawahan_ids'] = $bawahanIds;
-        }
-        $attendances = $this->service->filterAttendances($filters, 20);
+        // MODE DAILY: Model A (Accordion Lipatan Pegawai - Log Harian Terstruktur 1 Bulan Kerja)
+        $month = (int) $request->get('month', Carbon::now('Asia/Jakarta')->month);
+        $year = (int) $request->get('year', Carbon::now('Asia/Jakarta')->year);
+        $kategori = $request->get('kategori', 'all');
+        $search = $request->get('search');
+
+        $accordionData = $this->service->getDailyAccordionData(
+            $month,
+            $year,
+            $kategori,
+            $search,
+            $bawahanIds,
+            20
+        );
 
         return view('attendance.admin.index', [
             'mode' => 'daily',
-            'attendances' => $attendances,
-            'filters' => array_merge($filters, ['mode' => 'daily']),
+            'month' => $month,
+            'year' => $year,
+            'kategori' => $kategori,
+            'search' => $search,
+            'accordionData' => $accordionData,
             'statistics' => $statistics,
             'scopeLabel' => $scopeLabel,
+            'filters' => [
+                'mode' => 'daily',
+                'month' => $month,
+                'year' => $year,
+                'kategori' => $kategori,
+                'search' => $search,
+            ],
         ]);
     }
 
@@ -81,18 +100,29 @@ class AttendanceManageController extends Controller
     protected function extractFilters(Request $request): array
     {
         $date = $request->get('date');
+        $dateStart = $request->get('date_start');
+        $dateEnd = $request->get('date_end');
+
+        if (!$date && !$dateStart && !$dateEnd && ($request->has('month') || $request->has('year'))) {
+            $month = (int) $request->get('month', Carbon::now('Asia/Jakarta')->month);
+            $year = (int) $request->get('year', Carbon::now('Asia/Jakarta')->year);
+            $dateStart = Carbon::createFromDate($year, $month, 1, 'Asia/Jakarta')->startOfMonth()->toDateString();
+            $dateEnd = Carbon::createFromDate($year, $month, 1, 'Asia/Jakarta')->endOfMonth()->toDateString();
+        }
+
         // Default ke hari ini jika tanpa query params sama sekali
-        if (!$request->has('date') && !$request->has('date_start') && !$request->has('search') && !$request->has('status') && !$request->has('attendance_type')) {
+        if (!$date && !$dateStart && !$dateEnd && !$request->has('search') && !$request->has('status') && !$request->has('attendance_type')) {
             $date = Carbon::today()->toDateString();
         }
 
         return [
             'date' => $date,
-            'date_start' => $request->get('date_start'),
-            'date_end' => $request->get('date_end'),
+            'date_start' => $dateStart,
+            'date_end' => $dateEnd,
             'attendance_type' => $request->get('attendance_type'),
             'status' => $request->get('status'),
             'search' => $request->get('search'),
+            'kategori' => $request->get('kategori', 'all'),
         ];
     }
 

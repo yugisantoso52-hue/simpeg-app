@@ -34,6 +34,15 @@ class AttendanceExport implements FromCollection, WithHeadings, WithMapping, Sho
             });
         }
 
+        if (!empty($this->filters['kategori']) && $this->filters['kategori'] !== 'all') {
+            $kat = $this->filters['kategori'];
+            $query->whereHas('user.pegawai', function ($q) use ($kat) {
+                if ($kat === 'dosen') $q->dosen();
+                elseif ($kat === 'tendik') $q->tendik();
+                elseif ($kat === 'phl') $q->phl();
+            });
+        }
+
         if (!empty($this->filters['date'])) {
             $query->whereDate('attendance_date', $this->filters['date']);
         }

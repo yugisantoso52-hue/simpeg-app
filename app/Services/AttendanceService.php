@@ -561,6 +561,15 @@ class AttendanceService
             });
         }
 
+        if (!empty($filters['kategori']) && $filters['kategori'] !== 'all') {
+            $kat = $filters['kategori'];
+            $query->whereHas('user.pegawai', function ($q) use ($kat) {
+                if ($kat === 'dosen') $q->dosen();
+                elseif ($kat === 'tendik') $q->tendik();
+                elseif ($kat === 'phl') $q->phl();
+            });
+        }
+
         if (!empty($filters['date'])) {
             $query->whereDate('attendance_date', $filters['date']);
         }
@@ -634,6 +643,237 @@ class AttendanceService
             'total_wfh' => $wfhCount,
             'total_late' => $lateCount,
             'total_suspicious' => $suspiciousCount,
+        ];
+    }
+
+    /**
+     * Dapatkan Data Log Harian Terstruktur Per Pegawai (Model A: Accordion Lipatan Pegawai)
+     * Mengelompokkan presensi per pegawai selama 1 bulan kerja (Senin - Jumat resmi, Sabtu & Minggu kondisional)
+     * Terintegrasi pemisahan Dosen, Tendik, PHL serta status E-Cuti
+     */
+    public function getDailyAccordionData(
+        int $month,
+        int $year,
+        ?string $kategori = 'all',
+        ?string $search = null,
+        ?array $bawahanIds = null,
+        int $perPage = 20
+    ): array {
+        $startOfMonth = Carbon::createFromDate($year, $month, 1, 'Asia/Jakarta')->startOfMonth();
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+        $daysInMonth = $startOfMonth->daysInMonth;
+        $now = Carbon::now('Asia/Jakarta');
+        $todayDateStr = $now->toDateString();
+
+        // 1. Hitung total hari kerja resmi (Senin - Jumat) di bulan ini
+        $officialWorkDaysInMonth = 0;
+        $workDaysUpToToday = 0;
+        $monthDaysMeta = [];
+
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $date = Carbon::createFromDate($year, $month, $d, 'Asia/Jakarta');
+            $dateStr = $date->toDateString();
+            $isWeekend = $date->isWeekend();
+            $isFuture = $date->isAfter($now->endOfDay());
+            $isToday = ($dateStr === $todayDateStr);
+
+            if (!$isWeekend) {
+                $officialWorkDaysInMonth++;
+                if (!$isFuture) {
+                    $workDaysUpToToday++;
+                }
+            }
+
+            $monthDaysMeta[$d] = [
+                'day' => $d,
+                'date' => $dateStr,
+                'day_name' => $date->translatedFormat('l'), // Senin, Selasa, ...
+                'day_short' => $date->translatedFormat('D'),
+                'is_weekend' => $isWeekend,
+                'is_future' => $isFuture,
+                'is_today' => $isToday,
+            ];
+        }
+
+        // 2. Query Pegawai sesuai cakupan bawahan dan kategori kepegawaian
+        $pegawaiQuery = Pegawai::with([
+            'unitKerja',
+            'jabatan',
+            'user.attendances' => function ($q) use ($startOfMonth, $endOfMonth) {
+                $q->whereBetween('attendance_date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()]);
+            },
+            'pengajuanCuti' => function ($q) use ($startOfMonth, $endOfMonth) {
+                $q->where('status', 'Disetujui')
+                  ->where(function ($sq) use ($startOfMonth, $endOfMonth) {
+                      $sq->whereBetween('tanggal_mulai', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+                        ->orWhereBetween('tanggal_selesai', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+                        ->orWhere(function ($ssq) use ($startOfMonth, $endOfMonth) {
+                            $ssq->where('tanggal_mulai', '<=', $startOfMonth->toDateString())
+                                ->where('tanggal_selesai', '>=', $endOfMonth->toDateString());
+                        });
+                  });
+            }
+        ])->where('status_pegawai', 'Aktif');
+
+        if ($bawahanIds !== null) {
+            $pegawaiQuery->whereIn('id', $bawahanIds);
+        }
+
+        // Hitung total per kategori sebelum filter kategori spesifik
+        $counterQuery = clone $pegawaiQuery;
+        $totalAll = (clone $counterQuery)->count();
+        $totalDosen = (clone $counterQuery)->dosen()->count();
+        $totalTendik = (clone $counterQuery)->tendik()->count();
+        $totalPhl = (clone $counterQuery)->phl()->count();
+
+        // Terapkan filter kategori (Dosen / Tendik / PHL)
+        if ($kategori === 'dosen') {
+            $pegawaiQuery->dosen();
+        } elseif ($kategori === 'tendik') {
+            $pegawaiQuery->tendik();
+        } elseif ($kategori === 'phl') {
+            $pegawaiQuery->phl();
+        }
+
+        if (!empty($search)) {
+            $pegawaiQuery->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%");
+            });
+        }
+
+        $paginator = $pegawaiQuery->orderBy('nama', 'asc')->paginate($perPage)->withQueryString();
+
+        // 3. Susun Timeline Harian Per Pegawai
+        $pegawaiItems = [];
+        foreach ($paginator as $pegawai) {
+            $attendancesByDate = [];
+            if ($pegawai->user && $pegawai->user->attendances) {
+                foreach ($pegawai->user->attendances as $att) {
+                    $dateKey = Carbon::parse($att->attendance_date)->toDateString();
+                    $attendancesByDate[$dateKey] = $att;
+                }
+            }
+
+            // Kumpulan cuti yang disetujui
+            $cutiList = $pegawai->pengajuanCuti ?? collect();
+
+            $timeline = [];
+            $totalHadir = 0;
+            $totalWfo = 0;
+            $totalWfh = 0;
+            $totalLate = 0;
+            $totalLateMinutes = 0;
+            $totalPsw = 0;
+            $totalPswMinutes = 0;
+            $totalWorkSeconds = 0;
+            $totalCuti = 0;
+            $totalSuspicious = 0;
+
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $dayMeta = $monthDaysMeta[$d];
+                $dateStr = $dayMeta['date'];
+                $att = $attendancesByDate[$dateStr] ?? null;
+
+                // Cek apakah hari Sabtu/Minggu (weekend)
+                if ($dayMeta['is_weekend']) {
+                    // Hanya masukkan hari weekend JIKA pegawai melakukan presensi (Kondisional)
+                    if (!$att) {
+                        continue; // Lewati weekend jika tidak ada presensi
+                    }
+                    $isConditionalWeekend = true;
+                } else {
+                    $isConditionalWeekend = false;
+                }
+
+                // Cek status cuti jika tidak ada presensi pada hari kerja non-masa depan
+                $cutiHariIni = null;
+                if (!$att && !$dayMeta['is_future']) {
+                    $cutiHariIni = $cutiList->first(function ($c) use ($dateStr) {
+                        return $dateStr >= $c->tanggal_mulai->toDateString() && $dateStr <= $c->tanggal_selesai->toDateString();
+                    });
+                }
+
+                if ($cutiHariIni) {
+                    $totalCuti++;
+                }
+
+                // Kalkulasi statistik jika ada presensi
+                if ($att) {
+                    $totalHadir++;
+                    if ($att->attendance_type === 'wfo') $totalWfo++;
+                    if ($att->attendance_type === 'wfh') $totalWfh++;
+                    if ($att->status === 'late' || $att->late_minutes > 0) {
+                        $totalLate++;
+                        $totalLateMinutes += $att->late_minutes;
+                    }
+                    if ($att->early_leave_minutes > 0) {
+                        $totalPsw++;
+                        $totalPswMinutes += $att->early_leave_minutes;
+                    }
+                    if ($att->work_duration_seconds > 0) {
+                        $totalWorkSeconds += $att->work_duration_seconds;
+                    }
+                    if ($att->is_suspicious) {
+                        $totalSuspicious++;
+                    }
+                }
+
+                $timeline[] = [
+                    'day' => $d,
+                    'date' => $dateStr,
+                    'day_name' => $dayMeta['day_name'],
+                    'day_short' => $dayMeta['day_short'],
+                    'is_weekend' => $dayMeta['is_weekend'],
+                    'is_conditional_weekend' => $isConditionalWeekend,
+                    'is_future' => $dayMeta['is_future'],
+                    'is_today' => $dayMeta['is_today'],
+                    'attendance' => $att,
+                    'cuti' => $cutiHariIni,
+                ];
+            }
+
+            // Hitung format durasi jam kerja
+            $hours = floor($totalWorkSeconds / 3600);
+            $minutes = floor(($totalWorkSeconds % 3600) / 60);
+            $formattedTotalDuration = "{$hours} Jam {$minutes} Menit";
+
+            $pegawaiItems[] = [
+                'pegawai' => $pegawai,
+                'user' => $pegawai->user,
+                'kategori' => $pegawai->kategori_kepegawaian, // Dosen / Tendik / PHL
+                'total_hadir' => $totalHadir,
+                'total_wfo' => $totalWfo,
+                'total_wfh' => $totalWfh,
+                'total_late' => $totalLate,
+                'total_late_minutes' => $totalLateMinutes,
+                'total_psw' => $totalPsw,
+                'total_psw_minutes' => $totalPswMinutes,
+                'total_work_seconds' => $totalWorkSeconds,
+                'total_work_duration' => $formattedTotalDuration,
+                'total_cuti' => $totalCuti,
+                'total_suspicious' => $totalSuspicious,
+                'timeline' => $timeline,
+                'timeline_count' => count($timeline),
+            ];
+        }
+
+        return [
+            'paginator' => $paginator,
+            'pegawaiItems' => $pegawaiItems,
+            'month' => $month,
+            'year' => $year,
+            'month_name' => $startOfMonth->translatedFormat('F Y'),
+            'kategori' => $kategori ?? 'all',
+            'search' => $search,
+            'officialWorkDaysInMonth' => $officialWorkDaysInMonth,
+            'workDaysUpToToday' => $workDaysUpToToday,
+            'counts' => [
+                'all' => $totalAll,
+                'dosen' => $totalDosen,
+                'tendik' => $totalTendik,
+                'phl' => $totalPhl,
+            ],
         ];
     }
 
