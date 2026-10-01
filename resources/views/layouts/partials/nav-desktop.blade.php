@@ -17,27 +17,12 @@
     </x-nav-link>
 @endif
 
-{{-- 3. E-Cuti Pegawai (Semua Role) --}}
-<x-nav-link :href="route('pengajuan-cuti.index')" :active="request()->routeIs('pengajuan-cuti.*')">
-    🏖️ E-Cuti
-</x-nav-link>
-
-{{-- 4. Presensi Pegawai (Semua Role) --}}
-<x-nav-link :href="route('presensi.index')" :active="request()->routeIs('presensi.*')">
-    📍 Presensi
-</x-nav-link>
-
-{{-- 5. Logbook Kinerja Pegawai (Semua Role) --}}
-<x-nav-link :href="route('logbook.index')" :active="request()->routeIs('logbook.*')">
-    📝 Logbook
-</x-nav-link>
-
-{{-- 5b. Menu Supervisi Bawahan (Presensi & Logbook untuk Atasan / Pimpinan yang Memiliki Bawahan) --}}
-@if(Auth::user()->isAtasan() && !Auth::user()->hasRole('admin'))
-    <x-dropdown align="left" width="56">
+{{-- 3. Menu E-Cuti Pegawai (Terpadu Pengajuan & Persetujuan) --}}
+@if(Auth::user()->isAtasan() || Auth::user()->hasRole('admin'))
+    <x-dropdown align="left" width="w-56">
         <x-slot name="trigger">
-            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-700 hover:text-gray-900 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('admin.presensi.*', 'admin.logbook.*') ? 'border-indigo-600 text-indigo-700 font-bold' : '' }}">
-                <span>👥 Supervisi Bawahan</span>
+            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-700 hover:text-gray-900 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('pengajuan-cuti.*') ? 'border-amber-500 text-amber-700 font-bold' : '' }}">
+                <span>🏖️ E-Cuti</span>
                 <svg class="ms-1.5 h-4 w-4 fill-current text-gray-400" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                 </svg>
@@ -45,26 +30,161 @@
         </x-slot>
         <x-slot name="content">
             <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
-                Persetujuan & Monitoring Bawahan
+                Persetujuan & Monitoring
             </div>
-            <x-dropdown-link :href="route('admin.presensi.index')" class="{{ request()->routeIs('admin.presensi.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
-                📊 Rekap Presensi Bawahan
+            <x-dropdown-link :href="route('pengajuan-cuti.index')">
+                📑 {{ Auth::user()->hasRole('admin') ? 'Monitoring Cuti Pegawai' : 'Persetujuan Cuti Bawahan' }}
             </x-dropdown-link>
-            <x-dropdown-link :href="route('admin.logbook.index')" class="{{ request()->routeIs('admin.logbook.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
-                📝 Verifikasi Logbook Bawahan
+            <div class="border-t border-gray-100 my-1"></div>
+            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                Layanan Cuti Mandiri
+            </div>
+            <x-dropdown-link :href="route('pengajuan-cuti.index')">
+                🏖️ Permohonan Cuti Saya
             </x-dropdown-link>
-            <x-dropdown-link :href="route('pengajuan-cuti.index')" class="{{ request()->routeIs('pengajuan-cuti.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
-                🏖️ Persetujuan Cuti Bawahan
+            <x-dropdown-link :href="route('pengajuan-cuti.create')">
+                ➕ Buat Pengajuan Cuti Baru
             </x-dropdown-link>
         </x-slot>
     </x-dropdown>
+@else
+    <x-nav-link :href="route('pengajuan-cuti.index')" :active="request()->routeIs('pengajuan-cuti.*')">
+        🏖️ E-Cuti
+    </x-nav-link>
+@endif
+
+{{-- 4. Menu Presensi Pegawai (Terpadu Mandiri, Rekap & Lokasi GPS) --}}
+@if(Auth::user()->hasRole('admin'))
+    <x-dropdown align="left" width="w-60">
+        <x-slot name="trigger">
+            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-700 hover:text-gray-900 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('presensi.*', 'admin.presensi.*') ? 'border-blue-600 text-blue-700 font-bold' : '' }}">
+                <span>📍 Presensi</span>
+                <svg class="ms-1.5 h-4 w-4 fill-current text-gray-400" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </x-slot>
+        <x-slot name="content">
+            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                Presensi & Kehadiran Pegawai
+            </div>
+            <x-dropdown-link :href="route('admin.presensi.index')" class="{{ request()->routeIs('admin.presensi.index') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                📊 Rekap Presensi Pegawai
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('admin.presensi.locations')" class="{{ request()->routeIs('admin.presensi.locations') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                🗺️ Titik Acuan Lokasi Pegawai
+            </x-dropdown-link>
+            <div class="border-t border-gray-100 my-1"></div>
+            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                Presensi Mandiri
+            </div>
+            <x-dropdown-link :href="route('presensi.index')">
+                📍 Presensi Saya
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('presensi.history')">
+                📜 Riwayat Presensi Saya
+            </x-dropdown-link>
+        </x-slot>
+    </x-dropdown>
+@elseif(Auth::user()->isAtasan())
+    <x-dropdown align="left" width="w-56">
+        <x-slot name="trigger">
+            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-700 hover:text-gray-900 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('presensi.*', 'admin.presensi.*') ? 'border-blue-600 text-blue-700 font-bold' : '' }}">
+                <span>📍 Presensi</span>
+                <svg class="ms-1.5 h-4 w-4 fill-current text-gray-400" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </x-slot>
+        <x-slot name="content">
+            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                Monitoring Kehadiran
+            </div>
+            <x-dropdown-link :href="route('admin.presensi.index')" class="{{ request()->routeIs('admin.presensi.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                📊 Rekap Presensi {{ Auth::user()->canAccessExecutiveKepegawaianMenus() ? 'Pegawai' : 'Bawahan' }}
+            </x-dropdown-link>
+            <div class="border-t border-gray-100 my-1"></div>
+            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                Presensi Mandiri
+            </div>
+            <x-dropdown-link :href="route('presensi.index')">
+                📍 Presensi Saya
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('presensi.history')">
+                📜 Riwayat Presensi Saya
+            </x-dropdown-link>
+        </x-slot>
+    </x-dropdown>
+@else
+    <x-nav-link :href="route('presensi.index')" :active="request()->routeIs('presensi.*')">
+        📍 Presensi
+    </x-nav-link>
+@endif
+
+{{-- 5. Menu Logbook Kinerja Pegawai (Terpadu Mandiri & Verifikasi) --}}
+@if(Auth::user()->hasRole('admin'))
+    <x-dropdown align="left" width="w-56">
+        <x-slot name="trigger">
+            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-700 hover:text-gray-900 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('logbook.*', 'admin.logbook.*') ? 'border-blue-600 text-blue-700 font-bold' : '' }}">
+                <span>📝 Logbook</span>
+                <svg class="ms-1.5 h-4 w-4 fill-current text-gray-400" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </x-slot>
+        <x-slot name="content">
+            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                Kinerja Pegawai
+            </div>
+            <x-dropdown-link :href="route('admin.logbook.index')" class="{{ request()->routeIs('admin.logbook.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                📋 Verifikasi Logbook Pegawai
+            </x-dropdown-link>
+            <div class="border-t border-gray-100 my-1"></div>
+            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                Kinerja Mandiri
+            </div>
+            <x-dropdown-link :href="route('logbook.index')">
+                📝 Logbook Kinerja Saya
+            </x-dropdown-link>
+        </x-slot>
+    </x-dropdown>
+@elseif(Auth::user()->isAtasan())
+    <x-dropdown align="left" width="w-56">
+        <x-slot name="trigger">
+            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-700 hover:text-gray-900 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('logbook.*', 'admin.logbook.*') ? 'border-blue-600 text-blue-700 font-bold' : '' }}">
+                <span>📝 Logbook</span>
+                <svg class="ms-1.5 h-4 w-4 fill-current text-gray-400" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </x-slot>
+        <x-slot name="content">
+            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                Verifikasi Kinerja
+            </div>
+            <x-dropdown-link :href="route('admin.logbook.index')" class="{{ request()->routeIs('admin.logbook.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                📋 Verifikasi Logbook Bawahan
+            </x-dropdown-link>
+            <div class="border-t border-gray-100 my-1"></div>
+            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                Kinerja Mandiri
+            </div>
+            <x-dropdown-link :href="route('logbook.index')">
+                📝 Logbook Kinerja Saya
+            </x-dropdown-link>
+        </x-slot>
+    </x-dropdown>
+@else
+    <x-nav-link :href="route('logbook.index')" :active="request()->routeIs('logbook.*')">
+        📝 Logbook
+    </x-nav-link>
 @endif
 
 {{-- 6. Dropdown Data Kepegawaian (Khusus Dekan, Wadek II, Kabag Umum, Ka Pokja Keu-Kepeg & Admin) --}}
 @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
-    <x-dropdown align="left" width="60">
+    <x-dropdown align="left" width="w-60">
         <x-slot name="trigger">
-            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('kepegawaian.*', 'pegawai.*', 'duk.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'admin.presensi.*', 'admin.logbook.*') ? 'border-blue-600 text-blue-700 font-bold' : '' }}">
+            <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('kepegawaian.*', 'pegawai.*', 'duk.*', 'mutasi-pegawai.*', 'tugas-belajar.*') ? 'border-blue-600 text-blue-700 font-bold' : '' }}">
                 <span>Data Kepegawaian</span>
                 <svg class="ms-1.5 h-4 w-4 fill-current text-gray-400" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -112,28 +232,6 @@
             <x-dropdown-link :href="route('tugas-belajar.index')" class="{{ request()->routeIs('tugas-belajar.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                 🎓 Tugas Belajar
             </x-dropdown-link>
-
-            {{-- Presensi & Kinerja Harian di Data Kepegawaian (Khusus Admin, agar tidak duplikat dengan Supervisi Bawahan pada Akun Pimpinan) --}}
-            @if(Auth::user()->hasRole('admin'))
-                <div class="border-t border-gray-100 my-1"></div>
-                <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
-                    Presensi & Kehadiran
-                </div>
-                <x-dropdown-link :href="route('admin.presensi.index')" class="{{ request()->routeIs('admin.presensi.index') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                    📊 Rekap Presensi Pegawai
-                </x-dropdown-link>
-                <x-dropdown-link :href="route('admin.presensi.locations')" class="{{ request()->routeIs('admin.presensi.locations') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                    📍 Titik Acuan Lokasi Pegawai
-                </x-dropdown-link>
-
-                <div class="border-t border-gray-100 my-1"></div>
-                <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
-                    Kinerja Harian
-                </div>
-                <x-dropdown-link :href="route('admin.logbook.index')" class="{{ request()->routeIs('admin.logbook.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                    📝 Verifikasi Logbook Pegawai
-                </x-dropdown-link>
-            @endif
         </x-slot>
     </x-dropdown>
 @endif
