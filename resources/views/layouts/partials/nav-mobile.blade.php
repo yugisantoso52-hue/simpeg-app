@@ -179,6 +179,23 @@
         <x-responsive-nav-link :href="route('riwayat-organisasi.index')" :active="request()->routeIs('riwayat-organisasi.*')">
             🏛️ Riwayat Organisasi
         </x-responsive-nav-link>
+
+        {{-- Group Anjab & ABK --}}
+        <div class="px-4 pt-3 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider">
+            Anjab & Analisis Beban Kerja
+        </div>
+        <x-responsive-nav-link :href="route('anjab.peta-jabatan')" :active="request()->routeIs('anjab.peta-jabatan*')">
+            🏛️ Peta Jabatan Digital
+        </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('abk.index')" :active="request()->routeIs('abk.*')">
+            🧮 Analisis Beban Kerja (ABK)
+        </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('anjab.index')" :active="request()->routeIs('anjab.index', 'anjab.show', 'anjab.edit')">
+            📑 Katalog Dokumen Anjab
+        </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('anjab.create')" :active="request()->routeIs('anjab.create')">
+            ➕ Tambah Anjab Baru
+        </x-responsive-nav-link>
     @endif
 
     {{-- Group Master Data --}}

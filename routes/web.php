@@ -251,6 +251,32 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
             Route::post('/{userId}/reset-location', [AttendanceManageController::class, 'resetLocation'])->name('reset-location');
             Route::delete('/{id}', [AttendanceManageController::class, 'destroy'])->name('destroy');
         });
+
+        /* ======================================================================
+         * MODUL ANALISIS JABATAN (ANJAB) & ANALISIS BEBAN KERJA (ABK)
+         * Acuan: PermenPAN-RB No. 1/2020 & Peraturan BKN No. 12 & 19/2011
+         * ====================================================================== */
+        // Peta Jabatan Digital Interaktif
+        Route::get('/anjab/peta-jabatan', [\App\Http\Controllers\PetaJabatanController::class, 'index'])->name('anjab.peta-jabatan');
+        Route::get('/anjab/peta-jabatan/{jabatan}', [\App\Http\Controllers\PetaJabatanController::class, 'getJabatanDetail'])->name('anjab.peta-jabatan.detail');
+
+        // Analisis Beban Kerja (ABK) & Formasi
+        Route::get('/abk', [\App\Http\Controllers\AbkController::class, 'index'])->name('abk.index');
+        Route::get('/abk/{anjab}/edit', [\App\Http\Controllers\AbkController::class, 'edit'])->name('abk.edit');
+        Route::post('/abk/{anjab}/tugas', [\App\Http\Controllers\AbkController::class, 'storeTugas'])->name('abk.tugas.store');
+        Route::put('/abk/tugas/{tugas}', [\App\Http\Controllers\AbkController::class, 'updateTugas'])->name('abk.tugas.update');
+        Route::delete('/abk/tugas/{tugas}', [\App\Http\Controllers\AbkController::class, 'destroyTugas'])->name('abk.tugas.destroy');
+        Route::get('/abk/print/rekap', [\App\Http\Controllers\AbkController::class, 'printRekap'])->name('abk.print.rekap');
+
+        // Analisis Jabatan (E-Anjab - 17 Butir PermenPAN-RB No. 1/2020)
+        Route::get('/anjab', [\App\Http\Controllers\AnjabController::class, 'index'])->name('anjab.index');
+        Route::get('/anjab/create', [\App\Http\Controllers\AnjabController::class, 'create'])->name('anjab.create');
+        Route::post('/anjab', [\App\Http\Controllers\AnjabController::class, 'store'])->name('anjab.store');
+        Route::get('/anjab/{anjab}', [\App\Http\Controllers\AnjabController::class, 'show'])->name('anjab.show');
+        Route::get('/anjab/{anjab}/edit', [\App\Http\Controllers\AnjabController::class, 'edit'])->name('anjab.edit');
+        Route::put('/anjab/{anjab}', [\App\Http\Controllers\AnjabController::class, 'update'])->name('anjab.update');
+        Route::delete('/anjab/{anjab}', [\App\Http\Controllers\AnjabController::class, 'destroy'])->name('anjab.destroy');
+        Route::get('/anjab/{anjab}/print', [\App\Http\Controllers\AnjabController::class, 'print'])->name('anjab.print');
     });
 
     // ======================================================================
