@@ -1434,4 +1434,153 @@ class ApprovalHierarchyService
 
         return $count;
     }
+
+    /**
+     * Dapatkan Batasan ID Pegawai untuk Monitoring & Rekap Presensi
+     * Berdasarkan Kebijakan Model Proporsional Terstruktur FKP UNRI:
+     * 1. Dekan & Wadek II serta Admin : Melihat 100% Seluruh Pegawai Fakultas (Dosen + Tendik + PHL). Return: null
+     * 2. Kabag Umum: Melihat Seluruh Tenaga Kependidikan & PHL (100% Non-Dosen) di semua bagian/lab/prodi.
+     * 3. Wadek I & Kajur: Melihat Seluruh Dosen Fakultas Keperawatan.
+     * 4. Ka Pokja Akademik, Ka Pokja Keu-Kepeg, Ka Pokja Umum Sarana Akademik, Ka UPT Lab, Koorprodi, Wadek III:
+     *    Hanya bisa melihat pegawai bawahannya saja (khusus unit kerja terkait).
+     * 5. Pegawai Biasa: Hanya diri sendiri.
+     */
+    public function getScopedPresensiPegawaiIds(User $user): ?array
+    {
+        // 1. Admin Sistem: 100% Seluruh Pegawai
+        if ($user->hasRole('admin')) {
+            return null;
+        }
+
+        if (!$user->pegawai) {
+            return $user->pegawai_id ? [$user->pegawai_id] : [];
+        }
+
+        $pegawai = $user->pegawai;
+        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
+
+        // 1. Dekan Fakultas Keperawatan: 100% Seluruh Pegawai
+        if (str_contains($jabatan, 'DEKAN') && !str_contains($jabatan, 'WAKIL') && !str_contains($jabatan, 'WADEK')) {
+            return null;
+        }
+
+        // 2. Wakil Dekan II (Bidang Keuangan, Kepegawaian & Umum): 100% Seluruh Pegawai
+        if ((str_contains($jabatan, 'WAKIL DEKAN II') || str_contains($jabatan, 'WD II') || (str_contains($jabatan, 'WAKIL DEKAN') && str_contains($jabatan, 'KEUANGAN')))
+            && !str_contains($jabatan, 'WAKIL DEKAN III') && !str_contains($jabatan, 'WD III')) {
+            return null;
+        }
+
+        // 3. Kepala Bagian Umum (Kabag Umum): 100% Seluruh Tenaga Kependidikan & PHL (Non-Dosen) di semua bagian/lab/prodi
+        if (str_contains($jabatan, 'KEPALA BAGIAN UMUM') || str_contains($jabatan, 'KABAG UMUM') || str_contains($jabatan, 'KABAG TU')) {
+            return Pegawai::where(function ($q) {
+                $q->whereNull('nidn_nuptk')->where('jenis_pegawai', '!=', 'Dosen');
+            })->pluck('id')->toArray();
+        }
+
+        // 4. Wakil Dekan I (Bidang Akademik): Seluruh Dosen Fakultas Keperawatan
+        if ((str_contains($jabatan, 'WAKIL DEKAN I') || str_contains($jabatan, 'WD I') || (str_contains($jabatan, 'WAKIL DEKAN') && str_contains($jabatan, 'AKADEMIK')))
+            && !str_contains($jabatan, 'WAKIL DEKAN II') && !str_contains($jabatan, 'WAKIL DEKAN III')
+            && !str_contains($jabatan, 'WD II') && !str_contains($jabatan, 'WD III')) {
+            return Pegawai::where('jenis_pegawai', 'Dosen')
+                ->orWhereNotNull('nidn_nuptk')
+                ->pluck('id')
+                ->toArray();
+        }
+
+        // 5. Ketua Jurusan (Kajur Fakultas): Seluruh Dosen Jurusan Keperawatan
+        if ((str_contains($jabatan, 'KETUA JURUSAN') || str_contains($jabatan, 'KAJUR'))
+            && !str_contains($jabatan, 'PREKLINIK') && !str_contains($jabatan, 'KLINIK')) {
+            return Pegawai::where('jenis_pegawai', 'Dosen')
+                ->orWhereNotNull('nidn_nuptk')
+                ->pluck('id')
+                ->toArray();
+        }
+
+        // 6. Ka Pokja, Ka Lab, Koorprodi, Kajur Bagian, Wadek III:
+        // Khusus monitoring bawahan masing-masing unit (hanya bisa melihat bawahannya saja)
+        $isSpecificSupervisor = str_contains($jabatan, 'POKJA')
+            || str_contains($jabatan, 'LABORATORIUM')
+            || str_contains($jabatan, 'LAB')
+            || str_contains($jabatan, 'KOORDINATOR PRODI')
+            || str_contains($jabatan, 'KOORPRODI')
+            || str_contains($jabatan, 'WAKIL DEKAN III')
+            || str_contains($jabatan, 'WD III')
+            || str_contains($jabatan, 'PREKLINIK')
+            || str_contains($jabatan, 'KLINIK');
+
+        if ($isSpecificSupervisor) {
+            $bawahanIds = $this->getBawahanIdsForPegawai($pegawai);
+            if (!empty($bawahanIds)) {
+                return $bawahanIds;
+            }
+            return [$pegawai->id];
+        }
+
+        // 7. General Atasan Fallback (jika ada bawahan di database)
+        $bawahanIds = $this->getBawahanIdsForPegawai($pegawai);
+        if (!empty($bawahanIds)) {
+            return $bawahanIds;
+        }
+
+        // 8. Pegawai Biasa: Hanya melihat presensi diri sendiri
+        return [$pegawai->id];
+    }
+
+    /**
+     * Dapatkan Label Deskripsi Cakupan Presensi untuk UI Badge
+     */
+    public function getPresensiScopeLabel(User $user): string
+    {
+        if ($user->hasRole('admin')) {
+            return 'Seluruh Pegawai Fakultas (Admin - 100%)';
+        }
+
+        if (!$user->pegawai) {
+            return 'Presensi Mandiri';
+        }
+
+        $pegawai = $user->pegawai;
+        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
+
+        if (str_contains($jabatan, 'DEKAN') && !str_contains($jabatan, 'WAKIL') && !str_contains($jabatan, 'WADEK')) {
+            return 'Seluruh Pegawai Fakultas (Dekan - 100%)';
+        }
+
+        if ((str_contains($jabatan, 'WAKIL DEKAN II') || str_contains($jabatan, 'WD II') || (str_contains($jabatan, 'WAKIL DEKAN') && str_contains($jabatan, 'KEUANGAN')))
+            && !str_contains($jabatan, 'WAKIL DEKAN III') && !str_contains($jabatan, 'WD III')) {
+            return 'Seluruh Pegawai Fakultas (Wadek II - 100%)';
+        }
+
+        if (str_contains($jabatan, 'KEPALA BAGIAN UMUM') || str_contains($jabatan, 'KABAG UMUM') || str_contains($jabatan, 'KABAG TU')) {
+            return 'Seluruh Tenaga Kependidikan & PHL (Kabag Umum)';
+        }
+
+        if ((str_contains($jabatan, 'WAKIL DEKAN I') || str_contains($jabatan, 'WD I') || (str_contains($jabatan, 'WAKIL DEKAN') && str_contains($jabatan, 'AKADEMIK')))
+            && !str_contains($jabatan, 'WAKIL DEKAN II') && !str_contains($jabatan, 'WAKIL DEKAN III')
+            && !str_contains($jabatan, 'WD II') && !str_contains($jabatan, 'WD III')) {
+            return 'Seluruh Dosen Fakultas Keperawatan (Wadek I)';
+        }
+
+        if ((str_contains($jabatan, 'KETUA JURUSAN') || str_contains($jabatan, 'KAJUR'))
+            && !str_contains($jabatan, 'PREKLINIK') && !str_contains($jabatan, 'KLINIK')) {
+            return 'Seluruh Dosen Jurusan Keperawatan (Kajur)';
+        }
+
+        if (str_contains($jabatan, 'WAKIL DEKAN III') || str_contains($jabatan, 'WD III') || (str_contains($jabatan, 'WAKIL DEKAN') && str_contains($jabatan, 'KEMAHASISWAAN'))) {
+            return 'Staf / Unit Kemahasiswaan (Wadek III)';
+        }
+
+        if (str_contains($jabatan, 'POKJA') || str_contains($jabatan, 'LABORATORIUM') || str_contains($jabatan, 'LAB') || str_contains($jabatan, 'KOORDINATOR')) {
+            $namaJabatan = $pegawai->jabatan->nama_jabatan ?? 'Unit Kerja';
+            return 'Bawahan ' . $namaJabatan;
+        }
+
+        $bawahanIds = $this->getBawahanIdsForPegawai($pegawai);
+        if (!empty($bawahanIds)) {
+            return 'Bawahan Langsung (' . count($bawahanIds) . ' Pegawai)';
+        }
+
+        return 'Presensi Mandiri (Diri Sendiri)';
+    }
 }
+

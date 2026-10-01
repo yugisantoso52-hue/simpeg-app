@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\EmployeeAttendanceLocation;
 use App\Models\User;
+use App\Services\ApprovalHierarchyService;
 use App\Services\AttendanceService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -19,7 +20,8 @@ use Maatwebsite\Excel\Facades\Excel;
 class AttendanceManageController extends Controller
 {
     public function __construct(
-        protected AttendanceService $service
+        protected AttendanceService $service,
+        protected ApprovalHierarchyService $hierarchy
     ) {}
 
     /**
@@ -28,7 +30,8 @@ class AttendanceManageController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
-        $bawahanIds = !$user->hasRole('admin') ? $user->getBawahanIds() : null;
+        $bawahanIds = $this->hierarchy->getScopedPresensiPegawaiIds($user);
+        $scopeLabel = $this->hierarchy->getPresensiScopeLabel($user);
 
         $mode = $request->get('mode', 'daily');
         $statistics = $this->service->todayStatistics($bawahanIds);
@@ -47,6 +50,7 @@ class AttendanceManageController extends Controller
                 'search' => $search,
                 'matrixData' => $matrixData,
                 'statistics' => $statistics,
+                'scopeLabel' => $scopeLabel,
                 'filters' => [
                     'mode' => 'monthly',
                     'month' => $month,
@@ -67,6 +71,7 @@ class AttendanceManageController extends Controller
             'attendances' => $attendances,
             'filters' => array_merge($filters, ['mode' => 'daily']),
             'statistics' => $statistics,
+            'scopeLabel' => $scopeLabel,
         ]);
     }
 
@@ -96,6 +101,9 @@ class AttendanceManageController extends Controller
      */
     public function locations(Request $request): View
     {
+        $user = $request->user();
+        $bawahanIds = $this->hierarchy->getScopedPresensiPegawaiIds($user);
+
         $search = $request->get('search');
 
         $query = User::with(['pegawai.unitKerja', 'attendanceLocation'])
@@ -105,6 +113,10 @@ class AttendanceManageController extends Controller
                       $qr->whereIn('name', ['pegawai', 'admin', 'pimpinan']);
                   });
             });
+
+        if ($bawahanIds !== null) {
+            $query->whereIn('pegawai_id', $bawahanIds);
+        }
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -127,9 +139,16 @@ class AttendanceManageController extends Controller
      */
     public function resetLocation(Request $request, int $userId): RedirectResponse
     {
-        $type = $request->input('type', 'all');
+        $authUser = $request->user();
+        $bawahanIds = $this->hierarchy->getScopedPresensiPegawaiIds($authUser);
 
         $user = User::findOrFail($userId);
+
+        if ($bawahanIds !== null && (! $user->pegawai_id || ! in_array($user->pegawai_id, $bawahanIds, true))) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mereset lokasi pegawai di luar lingkup kerja Anda.');
+        }
+
+        $type = $request->input('type', 'all');
         $this->service->resetLocation($userId, $type);
 
         $typeLabel = match (strtolower($type)) {
@@ -144,9 +163,19 @@ class AttendanceManageController extends Controller
     /**
      * Hapus Presensi (Koreksi Admin)
      */
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id): RedirectResponse
     {
         $attendance = Attendance::findOrFail($id);
+        $authUser = $request->user();
+        $bawahanIds = $this->hierarchy->getScopedPresensiPegawaiIds($authUser);
+
+        if ($bawahanIds !== null) {
+            $targetPegawaiId = $attendance->user?->pegawai_id;
+            if (! $targetPegawaiId || ! in_array($targetPegawaiId, $bawahanIds, true)) {
+                abort(403, 'Anda tidak memiliki otoritas menghapus catatan presensi pegawai ini.');
+            }
+        }
+
         $attendance->delete();
 
         return redirect()->back()->with('success', 'Data presensi berhasil dihapus.');
@@ -158,7 +187,7 @@ class AttendanceManageController extends Controller
     public function exportExcel(Request $request)
     {
         $user = $request->user();
-        $bawahanIds = !$user->hasRole('admin') ? $user->getBawahanIds() : null;
+        $bawahanIds = $this->hierarchy->getScopedPresensiPegawaiIds($user);
 
         $mode = $request->get('mode', 'daily');
 
@@ -185,7 +214,7 @@ class AttendanceManageController extends Controller
     public function exportPdf(Request $request)
     {
         $user = $request->user();
-        $bawahanIds = !$user->hasRole('admin') ? $user->getBawahanIds() : null;
+        $bawahanIds = $this->hierarchy->getScopedPresensiPegawaiIds($user);
 
         $mode = $request->get('mode', 'daily');
 

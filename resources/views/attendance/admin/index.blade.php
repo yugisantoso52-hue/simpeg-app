@@ -2,9 +2,17 @@
     <x-slot name="header">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
             <div>
-                <h2 class="font-bold text-xl text-gray-800 leading-tight flex items-center gap-2">
-                    <span>📊</span> {{ __('Rekap Presensi Pegawai') }}
-                </h2>
+                <div class="flex flex-wrap items-center gap-2">
+                    <h2 class="font-bold text-xl text-gray-800 leading-tight flex items-center gap-2">
+                        <span>📊</span> {{ __('Rekap Presensi Pegawai') }}
+                    </h2>
+                    @if(!empty($scopeLabel))
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200 shadow-xs">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+                            <span>Cakupan:</span> {{ $scopeLabel }}
+                        </span>
+                    @endif
+                </div>
                 <p class="text-sm text-gray-500 mt-0.5">Pemantauan keberadaan, verifikasi foto selfie, dan radius koordinat GPS.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
@@ -14,9 +22,11 @@
                 <a href="{{ route('admin.presensi.export.pdf', request()->query()) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 border border-transparent rounded-lg text-xs font-semibold text-white shadow-sm transition" style="background-color: #dc2626; color: #ffffff;">
                     <span>🖨️</span> Cetak PDF
                 </a>
+                @if(Auth::user()->hasRole('admin') || Auth::user()->isPimpinan() || Auth::user()->isAtasan())
                 <a href="{{ route('admin.presensi.locations') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-lg text-xs font-semibold text-white shadow-sm transition" style="background-color: #4f46e5; color: #ffffff;">
                     <span>📍</span> Kelola Titik Acuan
                 </a>
+                @endif
                 <a href="{{ route('presensi.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition">
                     <span>📸</span> Presensi Mandiri
                 </a>

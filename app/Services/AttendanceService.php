@@ -555,7 +555,7 @@ class AttendanceService
             ->latest('attendance_date')
             ->latest('check_in_time');
 
-        if (!empty($filters['bawahan_ids'])) {
+        if (isset($filters['bawahan_ids']) && is_array($filters['bawahan_ids'])) {
             $query->whereHas('user', function ($q) use ($filters) {
                 $q->whereIn('pegawai_id', $filters['bawahan_ids']);
             });
