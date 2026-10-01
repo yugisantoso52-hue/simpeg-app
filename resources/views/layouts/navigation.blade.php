@@ -86,7 +86,7 @@
         <div class="flex items-center justify-center min-h-[52px]">
 
             <!-- Desktop & Laptop Navigation Links (Selalu Terbuka & Terpusat Penuh) -->
-            <nav class="hidden sm:flex flex-wrap items-center justify-center gap-x-4 md:gap-x-6 lg:gap-x-8 gap-y-1.5 py-2 notranslate" translate="no">
+            <nav class="hidden sm:flex flex-wrap items-center justify-center gap-x-2.5 md:gap-x-3.5 lg:gap-x-5 xl:gap-x-6 gap-y-1.5 py-2 notranslate" translate="no">
                 @include('layouts.partials.nav-desktop')
             </nav>
 

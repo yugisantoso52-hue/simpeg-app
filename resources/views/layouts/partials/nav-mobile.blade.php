@@ -86,15 +86,17 @@
         <x-responsive-nav-link :href="route('tugas-belajar.index')" :active="request()->routeIs('tugas-belajar.*')">
             🎓 Tugas Belajar
         </x-responsive-nav-link>
-        <x-responsive-nav-link :href="route('admin.presensi.index')" :active="request()->routeIs('admin.presensi.index')">
-            📊 Rekap Presensi Pegawai
-        </x-responsive-nav-link>
-        <x-responsive-nav-link :href="route('admin.presensi.locations')" :active="request()->routeIs('admin.presensi.locations')">
-            📍 Titik Acuan Lokasi Pegawai
-        </x-responsive-nav-link>
-        <x-responsive-nav-link :href="route('admin.logbook.index')" :active="request()->routeIs('admin.logbook.*')">
-            📝 Verifikasi Logbook Pegawai
-        </x-responsive-nav-link>
+        @if(Auth::user()->hasRole('admin'))
+            <x-responsive-nav-link :href="route('admin.presensi.index')" :active="request()->routeIs('admin.presensi.index')">
+                📊 Rekap Presensi Pegawai
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.presensi.locations')" :active="request()->routeIs('admin.presensi.locations')">
+                📍 Titik Acuan Lokasi Pegawai
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.logbook.index')" :active="request()->routeIs('admin.logbook.*')">
+                📝 Verifikasi Logbook Pegawai
+            </x-responsive-nav-link>
+        @endif
     @endif
 
     {{-- Group Riwayat Pegawai (Dekan, Wadek II, Kabag Umum, Ka Pokja Keu-Kepeg & Admin) --}}

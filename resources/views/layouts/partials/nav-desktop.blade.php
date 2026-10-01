@@ -113,24 +113,27 @@
                 🎓 Tugas Belajar
             </x-dropdown-link>
 
-            <div class="border-t border-gray-100 my-1"></div>
-            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
-                Presensi & Kehadiran
-            </div>
-            <x-dropdown-link :href="route('admin.presensi.index')" class="{{ request()->routeIs('admin.presensi.index') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                📊 Rekap Presensi Pegawai
-            </x-dropdown-link>
-            <x-dropdown-link :href="route('admin.presensi.locations')" class="{{ request()->routeIs('admin.presensi.locations') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                📍 Titik Acuan Lokasi Pegawai
-            </x-dropdown-link>
+            {{-- Presensi & Kinerja Harian di Data Kepegawaian (Khusus Admin, agar tidak duplikat dengan Supervisi Bawahan pada Akun Pimpinan) --}}
+            @if(Auth::user()->hasRole('admin'))
+                <div class="border-t border-gray-100 my-1"></div>
+                <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                    Presensi & Kehadiran
+                </div>
+                <x-dropdown-link :href="route('admin.presensi.index')" class="{{ request()->routeIs('admin.presensi.index') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                    📊 Rekap Presensi Pegawai
+                </x-dropdown-link>
+                <x-dropdown-link :href="route('admin.presensi.locations')" class="{{ request()->routeIs('admin.presensi.locations') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                    📍 Titik Acuan Lokasi Pegawai
+                </x-dropdown-link>
 
-            <div class="border-t border-gray-100 my-1"></div>
-            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
-                Kinerja Harian
-            </div>
-            <x-dropdown-link :href="route('admin.logbook.index')" class="{{ request()->routeIs('admin.logbook.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                📝 Verifikasi Logbook Pegawai
-            </x-dropdown-link>
+                <div class="border-t border-gray-100 my-1"></div>
+                <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                    Kinerja Harian
+                </div>
+                <x-dropdown-link :href="route('admin.logbook.index')" class="{{ request()->routeIs('admin.logbook.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                    📝 Verifikasi Logbook Pegawai
+                </x-dropdown-link>
+            @endif
         </x-slot>
     </x-dropdown>
 @endif
