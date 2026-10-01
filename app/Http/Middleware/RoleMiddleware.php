@@ -38,6 +38,10 @@ class RoleMiddleware
             $hasAccess = $request->user()->isAtasan();
         }
 
+        if (!$hasAccess && in_array('executive_kepegawaian', $flatRoles, true)) {
+            $hasAccess = $request->user()->canAccessExecutiveKepegawaianMenus();
+        }
+
         if (!$hasAccess) {
             abort(403, 'Anda tidak memiliki hak akses untuk halaman ini.');
         }

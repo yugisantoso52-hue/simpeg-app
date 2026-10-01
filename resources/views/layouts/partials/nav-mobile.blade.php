@@ -4,8 +4,8 @@
         <span class="notranslate" translate="no">Dashboard</span>
     </x-responsive-nav-link>
 
-    {{-- Analitik Eksekutif (Pimpinan & Admin) --}}
-    @if(Auth::user()->hasRole(['admin', 'pimpinan']))
+    {{-- Analitik Eksekutif (Dekan, Wadek II, Kabag Umum, Ka Pokja Keu-Kepeg & Admin) --}}
+    @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
         <x-responsive-nav-link :href="route('pimpinan.analytics')" :active="request()->routeIs('pimpinan.analytics*')">
             📊 Analitik Eksekutif Dekanat
         </x-responsive-nav-link>
@@ -49,8 +49,8 @@
         </x-responsive-nav-link>
     @endif
 
-    {{-- Group Data Kepegawaian (Admin & Pimpinan) --}}
-    @if(Auth::user()->hasRole(['admin', 'pimpinan']))
+    {{-- Group Data Kepegawaian (Dekan, Wadek II, Kabag Umum, Ka Pokja Keu-Kepeg & Admin) --}}
+    @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
         <div class="px-4 pt-3 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider">
             Data Kepegawaian
         </div>
@@ -97,8 +97,8 @@
         </x-responsive-nav-link>
     @endif
 
-    {{-- Group Riwayat Pegawai --}}
-    @if(Auth::user()->hasRole(['admin', 'pimpinan']))
+    {{-- Group Riwayat Pegawai (Dekan, Wadek II, Kabag Umum, Ka Pokja Keu-Kepeg & Admin) --}}
+    @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
         <div class="px-4 pt-3 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider">
             Riwayat Pegawai
         </div>

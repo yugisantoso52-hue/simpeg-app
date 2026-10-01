@@ -156,4 +156,62 @@ class User extends Authenticatable
 
         return app(\App\Services\ApprovalHierarchyService::class)->getBawahanIdsForPegawai($pegawai);
     }
+
+    /**
+     * Cek apakah user berhak mengakses menu Analitik Eksekutif, Data Kepegawaian, dan Riwayat Pegawai.
+     * Hanya diizinkan untuk:
+     * 1. Admin
+     * 2. Dekan
+     * 3. Wakil Dekan II (Keuangan & Umum)
+     * 4. Kabag Umum (Kepala Bagian Umum)
+     * 5. Ka Pokja Keu-Kepeg (Kepala Pokja Keuangan & Kepegawaian)
+     */
+    public function canAccessExecutiveKepegawaianMenus(): bool
+    {
+        // 1. Admin selalu punya akses penuh
+        if ($this->hasRole('admin')) {
+            return true;
+        }
+
+        if (!$this->pegawai_id) {
+            return false;
+        }
+
+        $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
+        if (!$pegawai || !$pegawai->jabatan) {
+            return false;
+        }
+
+        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
+
+        // 2. Dekan (Bukan Wakil Dekan / Wadek)
+        if (str_contains($jabatan, 'DEKAN') && !str_contains($jabatan, 'WAKIL') && !str_contains($jabatan, 'WADEK')) {
+            return true;
+        }
+
+        // 3. Wakil Dekan II (Keuangan dan Umum) - Pastikan bukan Wadek I atau Wadek III
+        $isWadek2 = (str_contains($jabatan, 'WAKIL DEKAN II') || str_contains($jabatan, 'WADEK II') || str_contains($jabatan, 'WD II') || (str_contains($jabatan, 'WAKIL DEKAN') && str_contains($jabatan, 'KEUANGAN')))
+            && !str_contains($jabatan, 'WAKIL DEKAN III')
+            && !str_contains($jabatan, 'WADEK III')
+            && !str_contains($jabatan, 'WD III')
+            && !str_contains($jabatan, 'WAKIL DEKAN 3');
+        if ($isWadek2) {
+            return true;
+        }
+
+        // 4. Kabag Umum (Kepala Bagian Umum / KABAG TU)
+        if (str_contains($jabatan, 'KEPALA BAGIAN UMUM') || str_contains($jabatan, 'KABAG UMUM') || str_contains($jabatan, 'KABAG TU')) {
+            return true;
+        }
+
+        // 5. Ka Pokja Keu-Kepeg (Kepala Pokja Keuangan & Kepegawaian)
+        $isKaPokja = (str_contains($jabatan, 'KA POKJA') || str_contains($jabatan, 'KEPALA POKJA') || str_contains($jabatan, 'KETUA POKJA'))
+            && !str_contains($jabatan, 'STAFF')
+            && !str_contains($jabatan, 'STAF');
+        if ($isKaPokja && (str_contains($jabatan, 'KEU') || str_contains($jabatan, 'KEPEG'))) {
+            return true;
+        }
+
+        return false;
+    }
 }

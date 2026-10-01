@@ -143,14 +143,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         // Mutasi (Index & Management Khusus Admin)
         Route::get('/mutasi-pegawai', [MutasiPegawaiController::class, 'index'])->name('mutasi-pegawai.index');
 
-        // KGB & KP & Satyalancana
-        Route::get('/kgb', [KgbController::class, 'index'])->name('kgb.index');
+        // KGB & KP (Proses Transaksi Khusus Admin)
         Route::post('/kgb/proses/{id}', [KgbController::class, 'proses'])->name('kgb.proses');
-
-        Route::get('/kenaikan-pangkat', [KpController::class, 'index'])->name('kp.index');
         Route::post('/kenaikan-pangkat/proses/{id}', [KpController::class, 'proses'])->name('kp.proses');
-
-        Route::get('/satyalancana', [SatyalancanaController::class, 'index'])->name('satyalancana.index');
 
         // Impor & Template
         Route::get('/pegawai/template', [PegawaiController::class, 'downloadTemplate'])->name('pegawai.template');
@@ -184,10 +179,6 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'show'])->name('pengajuan-cuti.show');
         Route::post('/pengajuan-cuti/{id}/cancel', [PengajuanCutiController::class, 'cancel'])->name('pengajuan-cuti.cancel');
         Route::get('/pengajuan-cuti/{id}/cetak-pdf', [PengajuanCutiController::class, 'cetakFormPdf'])->name('pengajuan-cuti.cetak-pdf');
-
-        /* Monitoring Tugas Belajar & Riwayat SKP */
-        Route::get('/tugas-belajar', [TugasBelajarController::class, 'index'])->name('tugas-belajar.index');
-        Route::get('/riwayat-skp', [RiwayatSkpController::class, 'index'])->name('riwayat-skp.index');
     });
 
     // ======================================================================
@@ -216,9 +207,10 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     });
 
     // ======================================================================
-    // KHUSUS ADMIN & PIMPINAN (MONITORING & REPORTS TINGKAT INSTITUSI)
     // ======================================================================
-    Route::middleware(['role:admin,pimpinan'])->group(function () {
+    // KHUSUS ADMIN & EXECUTIVE KEPEGAWAIAN (DEKAN, WADEK II, KABAG UMUM, KA POKJA KEU-KEPEG)
+    // ======================================================================
+    Route::middleware(['role:admin,executive_kepegawaian'])->group(function () {
         /* Executive Analytics Dashboard Dekanat & Pimpinan */
         Route::get('/pimpinan/analytics', [\App\Http\Controllers\Pimpinan\AnalyticsController::class, 'index'])->name('pimpinan.analytics');
         Route::get('/pimpinan/analytics/pdf', [\App\Http\Controllers\Pimpinan\AnalyticsController::class, 'exportPdf'])->name('pimpinan.analytics.pdf');
@@ -235,20 +227,23 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/reports/duk/pdf', [PegawaiController::class, 'exportDukPdf'])->name('reports.duk.pdf');
         Route::get('/reports/duk/excel', [PegawaiController::class, 'exportDukExcel'])->name('reports.duk.excel');
 
+        /* Modul Karir & Monitoring Kepegawaian */
+        Route::get('/kgb', [KgbController::class, 'index'])->name('kgb.index');
+        Route::get('/kenaikan-pangkat', [KpController::class, 'index'])->name('kp.index');
+        Route::get('/satyalancana', [SatyalancanaController::class, 'index'])->name('satyalancana.index');
+        Route::get('/tugas-belajar', [TugasBelajarController::class, 'index'])->name('tugas-belajar.index');
+
         /* Read-Only Riwayat List */
         Route::get('/riwayat-pendidikan', [RiwayatPendidikanController::class, 'index'])->name('riwayat-pendidikan.index');
         Route::get('/riwayat-jabatan', [RiwayatJabatanController::class, 'index'])->name('riwayat-jabatan.index');
         Route::get('/riwayat-pangkat', [RiwayatPangkatController::class, 'index'])->name('riwayat-pangkat.index');
         Route::get('/riwayat-diklat', [RiwayatDiklatController::class, 'index'])->name('riwayat-diklat.index');
         Route::get('/riwayat-str-sip', [RiwayatStrSipController::class, 'index'])->name('riwayat-str-sip.index');
+        Route::get('/riwayat-skp', [RiwayatSkpController::class, 'index'])->name('riwayat-skp.index');
 
         Route::get('/reports/kgb/{id}/pdf', [ReportController::class, 'exportKgbPdf'])->name('reports.kgb.pdf');
         Route::get('/reports/reminder/pdf', [ReportController::class, 'exportReminderPdf'])->name('reports.reminder.pdf');
         Route::get('/reports/reminder/excel', [ReportController::class, 'exportReminderExcel'])->name('reports.reminder.excel');
-
-        /* Audit Log & Monitoring Rekam Aktivitas System */
-        Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
-        Route::post('/audit-logs/prune', [AuditLogController::class, 'prune'])->name('audit-logs.prune');
 
         /* Pengaturan Titik Lokasi Acuan Presensi (Admin & Dekanat) */
         Route::prefix('admin/presensi')->name('admin.presensi.')->group(function () {
@@ -256,6 +251,14 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
             Route::post('/{userId}/reset-location', [AttendanceManageController::class, 'resetLocation'])->name('reset-location');
             Route::delete('/{id}', [AttendanceManageController::class, 'destroy'])->name('destroy');
         });
+    });
+
+    // ======================================================================
+    // KHUSUS SUPERADMIN (AUDIT LOG & SYSTEM MAINTENANCE)
+    // ======================================================================
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+        Route::post('/audit-logs/prune', [AuditLogController::class, 'prune'])->name('audit-logs.prune');
     });
 
     /* Fallback Route untuk modul yang masih tahap pengembangan / Coming Soon */

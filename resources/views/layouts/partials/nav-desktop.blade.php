@@ -3,8 +3,8 @@
     <span class="notranslate" translate="no">Dashboard</span>
 </x-nav-link>
 
-{{-- 1b. Menu Analitik Eksekutif (Khusus Pimpinan & Admin) --}}
-@if(Auth::user()->hasRole(['admin', 'pimpinan']))
+{{-- 1b. Menu Analitik Eksekutif (Khusus Dekan, Wadek II, Kabag Umum, Ka Pokja Keu-Kepeg & Admin) --}}
+@if(Auth::user()->canAccessExecutiveKepegawaianMenus())
     <x-nav-link :href="route('pimpinan.analytics')" :active="request()->routeIs('pimpinan.analytics*')">
         📊 Analitik Eksekutif
     </x-nav-link>
@@ -60,8 +60,8 @@
     </x-dropdown>
 @endif
 
-{{-- 6. Dropdown Data Kepegawaian (Khusus Admin & Pimpinan) --}}
-@if(Auth::user()->hasRole(['admin', 'pimpinan']))
+{{-- 6. Dropdown Data Kepegawaian (Khusus Dekan, Wadek II, Kabag Umum, Ka Pokja Keu-Kepeg & Admin) --}}
+@if(Auth::user()->canAccessExecutiveKepegawaianMenus())
     <x-dropdown align="left" width="60">
         <x-slot name="trigger">
             <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('kepegawaian.*', 'pegawai.*', 'duk.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'admin.presensi.*', 'admin.logbook.*') ? 'border-blue-600 text-blue-700 font-bold' : '' }}">
@@ -135,8 +135,8 @@
     </x-dropdown>
 @endif
 
-{{-- 5. Dropdown Riwayat Pegawai (Khusus Admin & Pimpinan) --}}
-@if(Auth::user()->hasRole(['admin', 'pimpinan']))
+{{-- 5. Dropdown Riwayat Pegawai (Khusus Dekan, Wadek II, Kabag Umum, Ka Pokja Keu-Kepeg & Admin) --}}
+@if(Auth::user()->canAccessExecutiveKepegawaianMenus())
     <x-dropdown align="left" width="52">
         <x-slot name="trigger">
             <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('riwayat-*') ? 'border-blue-600 text-blue-700 font-bold' : '' }}">
