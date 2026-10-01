@@ -21,9 +21,23 @@
                 </x-slot>
 
                 <x-slot name="content">
-                    <div class="px-4 py-2 border-b border-gray-100 bg-gray-50">
-                        <div class="text-xs font-bold text-gray-800 truncate">{{ Auth::user()->name }}</div>
-                        <div class="text-[10px] text-gray-500 font-mono truncate">{{ Auth::user()->pegawai?->nip ?? str_replace('@staff.unri.ac.id', '', Auth::user()->email) }}</div>
+                    <div class="px-4 py-2.5 border-b border-gray-100 bg-gray-50/80">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="text-xs font-bold text-gray-800 truncate">{{ Auth::user()->name }}</div>
+                            @if(Auth::user()->hasRole('admin'))
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-100 text-red-800 border border-red-200">Admin</span>
+                            @elseif(Auth::user()->isPimpinan())
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">Pimpinan</span>
+                            @elseif(Auth::user()->isAtasan())
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800 border border-blue-200">Atasan</span>
+                            @else
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-700 border border-gray-200">Pegawai</span>
+                            @endif
+                        </div>
+                        @if(Auth::user()->pegawai?->jabatan?->nama_jabatan)
+                            <div class="text-[10px] font-medium text-slate-600 truncate mt-0.5">{{ Auth::user()->pegawai->jabatan->nama_jabatan }}</div>
+                        @endif
+                        <div class="text-[10px] text-gray-400 font-mono truncate mt-0.5">NIP: {{ Auth::user()->pegawai?->nip ?? '-' }}</div>
                     </div>
 
                     <x-dropdown-link :href="route('profile.edit')">
@@ -113,8 +127,22 @@
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-3 border-t border-gray-200 bg-white">
             <div class="px-4">
-                <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500 font-mono">{{ Auth::user()->pegawai?->nip ?? str_replace('@staff.unri.ac.id', '', Auth::user()->email) }}</div>
+                <div class="flex items-center justify-between gap-2">
+                    <div class="font-bold text-base text-gray-800">{{ Auth::user()->name }}</div>
+                    @if(Auth::user()->hasRole('admin'))
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-red-100 text-red-800 border border-red-200">Admin</span>
+                    @elseif(Auth::user()->isPimpinan())
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">Pimpinan</span>
+                    @elseif(Auth::user()->isAtasan())
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">Atasan</span>
+                    @else
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">Pegawai</span>
+                    @endif
+                </div>
+                @if(Auth::user()->pegawai?->jabatan?->nama_jabatan)
+                    <div class="text-xs font-medium text-slate-600 mt-0.5">{{ Auth::user()->pegawai->jabatan->nama_jabatan }}</div>
+                @endif
+                <div class="font-mono text-xs text-gray-400 mt-0.5">NIP: {{ Auth::user()->pegawai?->nip ?? '-' }}</div>
             </div>
 
             <div class="mt-3 space-y-1">

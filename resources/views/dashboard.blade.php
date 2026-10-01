@@ -595,63 +595,212 @@
                 {{-- 🏢 DASHBOARD MANAJERIAL FAKULTAS (KHUSUS ADMIN & PIMPINAN)                --}}
                 {{-- ========================================================================= --}}
 
-                {{-- Ucapan Selamat Datang --}}
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6 border border-gray-200">
-                    <div class="p-6 text-gray-900">
-                        <h3 class="text-lg font-semibold">Selamat Datang, {{ Auth::user()->name ?? 'Administrator' }}!</h3>
-                        <p class="text-sm text-gray-500 mt-1">Berikut adalah ringkasan data sistem informasi kepegawaian dan operasional harian saat ini.</p>
+                {{-- Banner Ucapan Selamat Datang Manajerial / Eksekutif --}}
+                <div class="rounded-2xl p-6 sm:p-7 shadow-lg text-white relative overflow-hidden mb-6" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #064e3b 100%) !important; color: #ffffff !important;">
+                    <div class="absolute -right-8 -bottom-10 opacity-10 pointer-events-none">
+                        <svg class="w-64 h-64 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                    </div>
+
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative z-10">
+                        <div class="space-y-2">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border border-white/20" style="background-color: rgba(255, 255, 255, 0.15) !important; color: #ffffff !important;">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span>Sistem Informasi Kepegawaian & Kinerja (SIKAP)</span>
+                                <span>•</span>
+                                <span>FKp UNRI</span>
+                            </div>
+
+                            <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white">
+                                Selamat Datang, {{ Auth::user()->name }}! 👋
+                            </h1>
+
+                            <div class="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-slate-200">
+                                @if(Auth::user()->pegawai?->jabatan?->nama_jabatan)
+                                    <span class="inline-flex items-center gap-1.5 font-medium text-emerald-300">
+                                        💼 {{ Auth::user()->pegawai->jabatan->nama_jabatan }}
+                                    </span>
+                                    @if(Auth::user()->pegawai?->nip)
+                                        <span class="text-slate-400 font-mono">• NIP: {{ Auth::user()->pegawai->nip }}</span>
+                                    @endif
+                                @elseif(Auth::user()->hasRole('admin'))
+                                    <span class="inline-flex items-center gap-1.5 font-semibold text-emerald-300">
+                                        🛡️ Administrator Utama Kepegawaian
+                                    </span>
+                                @endif
+                                <span class="text-slate-400">• Fakultas Keperawatan Universitas Riau</span>
+                            </div>
+                        </div>
+
+                        {{-- Panel Waktu & Status Kalender Akademik / Fiskal --}}
+                        <div class="flex sm:flex-row lg:flex-col items-start sm:items-center lg:items-end justify-between sm:justify-start gap-3 bg-white/10 backdrop-blur-md rounded-xl p-3.5 sm:px-5 sm:py-3.5 border border-white/15 shrink-0">
+                            <div class="text-left lg:text-right">
+                                <div class="text-[10px] uppercase font-bold text-slate-300 tracking-wider">Kalender Kerja</div>
+                                <div class="text-sm sm:text-base font-bold text-white font-mono">
+                                    {{ \Carbon\Carbon::now('Asia/Jakarta')->translatedFormat('l, d F Y') }}
+                                </div>
+                            </div>
+                            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                                <span>T.A. {{ date('Y') }}</span>
+                                <span>•</span>
+                                <span>Sem. {{ date('n') >= 7 ? 'Ganjil' : 'Genap' }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {{-- 🚨 PUSAT TINDAKAN & OPERASIONAL HARIAN (ACTION ITEMS) --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     {{-- 1. Pending Cuti --}}
-                    <a href="{{ route('pengajuan-cuti.index') }}" class="p-4 rounded-2xl bg-amber-50 border border-amber-200 shadow-sm hover:shadow-md transition flex items-center justify-between group">
+                    <a href="{{ route('pengajuan-cuti.index') }}" class="p-4 rounded-2xl bg-amber-50/90 border border-amber-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition duration-150 flex items-center justify-between group">
                         <div>
-                            <div class="text-xs font-bold text-amber-700 uppercase tracking-wider">Cuti Menunggu</div>
-                            <div class="text-2xl font-black text-amber-900 mt-1">{{ $pendingCutiCount ?? 0 }}</div>
-                            <div class="text-[11px] text-amber-600 mt-0.5 group-hover:underline">Perlu Persetujuan →</div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-bold text-amber-800 uppercase tracking-wider">Cuti Menunggu</span>
+                                @if(($pendingCutiCount ?? 0) > 0)
+                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-200 text-amber-900 animate-pulse">Respon</span>
+                                @endif
+                            </div>
+                            <div class="text-2xl font-black text-amber-950 mt-1">{{ $pendingCutiCount ?? 0 }}</div>
+                            <div class="text-[11px] font-medium text-amber-700 mt-0.5 group-hover:underline flex items-center gap-1">
+                                <span>{{ ($pendingCutiCount ?? 0) > 0 ? 'Verifikasi Permohonan' : 'Semua Cuti Selesai' }}</span>
+                                <span class="transition-transform group-hover:translate-x-0.5">&rarr;</span>
+                            </div>
                         </div>
-                        <div class="w-12 h-12 rounded-xl bg-amber-200/60 text-amber-800 flex items-center justify-center text-2xl">
+                        <div class="w-12 h-12 rounded-xl bg-amber-200/70 text-amber-900 flex items-center justify-center text-2xl shadow-2xs group-hover:scale-105 transition">
                             🏖️
                         </div>
                     </a>
 
                     {{-- 2. Pending Logbook --}}
-                    <a href="{{ route('admin.logbook.index', ['status' => 'diajukan']) }}" class="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 shadow-sm hover:shadow-md transition flex items-center justify-between group">
+                    <a href="{{ route('admin.logbook.index', ['status' => 'diajukan']) }}" class="p-4 rounded-2xl bg-indigo-50/90 border border-indigo-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition duration-150 flex items-center justify-between group">
                         <div>
-                            <div class="text-xs font-bold text-indigo-700 uppercase tracking-wider">Logbook Menunggu</div>
-                            <div class="text-2xl font-black text-indigo-900 mt-1">{{ $pendingLogbookCount ?? 0 }}</div>
-                            <div class="text-[11px] text-indigo-600 mt-0.5 group-hover:underline">Perlu Diverifikasi →</div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-bold text-indigo-800 uppercase tracking-wider">Logbook Menunggu</span>
+                                @if(($pendingLogbookCount ?? 0) > 0)
+                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-indigo-200 text-indigo-900 animate-pulse">Review</span>
+                                @endif
+                            </div>
+                            <div class="text-2xl font-black text-indigo-950 mt-1">{{ $pendingLogbookCount ?? 0 }}</div>
+                            <div class="text-[11px] font-medium text-indigo-700 mt-0.5 group-hover:underline flex items-center gap-1">
+                                <span>{{ ($pendingLogbookCount ?? 0) > 0 ? 'Verifikasi Kinerja' : 'Semua Logbook Terverifikasi' }}</span>
+                                <span class="transition-transform group-hover:translate-x-0.5">&rarr;</span>
+                            </div>
                         </div>
-                        <div class="w-12 h-12 rounded-xl bg-indigo-200/60 text-indigo-800 flex items-center justify-center text-2xl">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-200/70 text-indigo-900 flex items-center justify-center text-2xl shadow-2xs group-hover:scale-105 transition">
                             📝
                         </div>
                     </a>
 
                     {{-- 3. Presensi Hari Ini --}}
-                    <a href="{{ route('admin.presensi.index') }}" class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 shadow-sm hover:shadow-md transition flex items-center justify-between group">
+                    <a href="{{ route('admin.presensi.index') }}" class="p-4 rounded-2xl bg-emerald-50/90 border border-emerald-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition duration-150 flex items-center justify-between group">
                         <div>
-                            <div class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Presensi Hari Ini</div>
-                            <div class="text-2xl font-black text-emerald-900 mt-1">{{ $todayPresentCount ?? 0 }}</div>
-                            <div class="text-[11px] text-emerald-600 mt-0.5 group-hover:underline">Pegawai Hadir →</div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider">Presensi Hari Ini</span>
+                                <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-emerald-200 text-emerald-900">Live</span>
+                            </div>
+                            <div class="text-2xl font-black text-emerald-950 mt-1">{{ $todayPresentCount ?? 0 }}</div>
+                            <div class="text-[11px] font-medium text-emerald-700 mt-0.5 group-hover:underline flex items-center gap-1">
+                                <span>Pegawai Hadir Hari Ini</span>
+                                <span class="transition-transform group-hover:translate-x-0.5">&rarr;</span>
+                            </div>
                         </div>
-                        <div class="w-12 h-12 rounded-xl bg-emerald-200/60 text-emerald-800 flex items-center justify-center text-2xl">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-200/70 text-emerald-900 flex items-center justify-center text-2xl shadow-2xs group-hover:scale-105 transition">
                             📍
                         </div>
                     </a>
 
                     {{-- 4. Total Jam Logbook Bulan Ini --}}
-                    <a href="{{ route('admin.logbook.index') }}" class="p-4 rounded-2xl bg-blue-50 border border-blue-200 shadow-sm hover:shadow-md transition flex items-center justify-between group">
+                    <a href="{{ route('admin.logbook.index') }}" class="p-4 rounded-2xl bg-blue-50/90 border border-blue-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition duration-150 flex items-center justify-between group">
                         <div>
-                            <div class="text-xs font-bold text-blue-700 uppercase tracking-wider">Kinerja Bulan Ini</div>
-                            <div class="text-2xl font-black text-blue-900 mt-1">{{ $adminLogbookStats['total_jam'] ?? 0 }} Jam</div>
-                            <div class="text-[11px] text-blue-600 mt-0.5 group-hover:underline">{{ $adminLogbookStats['total'] ?? 0 }} Aktivitas Terdata →</div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-bold text-blue-800 uppercase tracking-wider">Kinerja Bulan Ini</span>
+                            </div>
+                            <div class="text-2xl font-black text-blue-950 mt-1">{{ $adminLogbookStats['total_jam'] ?? 0 }} Jam</div>
+                            <div class="text-[11px] font-medium text-blue-700 mt-0.5 group-hover:underline flex items-center gap-1">
+                                <span>{{ $adminLogbookStats['total'] ?? 0 }} Aktivitas Terdata</span>
+                                <span class="transition-transform group-hover:translate-x-0.5">&rarr;</span>
+                            </div>
                         </div>
-                        <div class="w-12 h-12 rounded-xl bg-blue-200/60 text-blue-800 flex items-center justify-center text-2xl">
+                        <div class="w-12 h-12 rounded-xl bg-blue-200/70 text-blue-900 flex items-center justify-center text-2xl shadow-2xs group-hover:scale-105 transition">
                             ⏱️
                         </div>
                     </a>
+                </div>
+
+                {{-- ⚡ PINTASAN CEPAT MODUL POPULER (QUICK ACTIONS) --}}
+                <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3.5 mb-4 border-b border-slate-100 gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-base border border-blue-100 shadow-2xs">
+                                ⚡
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-800">Pintasan Cepat Modul Populer</h4>
+                                <p class="text-[11px] text-slate-500">Akses langsung ke modul operasional, data kepegawaian, dan monitoring harian.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 gap-3">
+                        @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+                            {{-- 1. Master Pegawai --}}
+                            <a href="{{ route('pegawai.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
+                                <span class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition">📋</span>
+                                <span class="text-xs font-semibold text-slate-700 group-hover:text-blue-700">Master Pegawai</span>
+                                <span class="text-[10px] text-slate-400 mt-0.5">Kelola Data</span>
+                            </a>
+                        @endif
+
+                        {{-- 2. Rekap Presensi --}}
+                        <a href="{{ route('admin.presensi.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-emerald-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
+                            <span class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition">📊</span>
+                            <span class="text-xs font-semibold text-slate-700 group-hover:text-emerald-700">Rekap Presensi</span>
+                            <span class="text-[10px] text-slate-400 mt-0.5">Log & GPS</span>
+                        </a>
+
+                        {{-- 3. Verifikasi Logbook --}}
+                        <a href="{{ route('admin.logbook.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-indigo-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
+                            <span class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition">📝</span>
+                            <span class="text-xs font-semibold text-slate-700 group-hover:text-indigo-700">Logbook Kinerja</span>
+                            <span class="text-[10px] text-slate-400 mt-0.5">Verifikasi</span>
+                        </a>
+
+                        {{-- 4. Pengajuan Cuti --}}
+                        <a href="{{ route('pengajuan-cuti.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-amber-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
+                            <span class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition">🏖️</span>
+                            <span class="text-xs font-semibold text-slate-700 group-hover:text-amber-700">Layanan Cuti</span>
+                            <span class="text-[10px] text-slate-400 mt-0.5">Persetujuan</span>
+                        </a>
+
+                        @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+                            {{-- 5. Kenaikan Pangkat --}}
+                            <a href="{{ route('kp.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-purple-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
+                                <span class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition">🎖️</span>
+                                <span class="text-xs font-semibold text-slate-700 group-hover:text-purple-700">Kenaikan Pangkat</span>
+                                <span class="text-[10px] text-slate-400 mt-0.5">Usulan KP</span>
+                            </a>
+
+                            {{-- 6. Kenaikan Gaji Berkala --}}
+                            <a href="{{ route('kgb.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-teal-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
+                                <span class="w-10 h-10 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition">💵</span>
+                                <span class="text-xs font-semibold text-slate-700 group-hover:text-teal-700">Gaji Berkala</span>
+                                <span class="text-[10px] text-slate-400 mt-0.5">Jadwal KGB</span>
+                            </a>
+
+                            {{-- 7. DUK --}}
+                            <a href="{{ route('duk.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-cyan-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
+                                <span class="w-10 h-10 rounded-xl bg-cyan-100 text-cyan-700 flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition">📊</span>
+                                <span class="text-xs font-semibold text-slate-700 group-hover:text-cyan-700">Matriks DUK</span>
+                                <span class="text-[10px] text-slate-400 mt-0.5">Urut Pangkat</span>
+                            </a>
+
+                            {{-- 8. Tugas Belajar --}}
+                            <a href="{{ route('tugas-belajar.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-rose-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
+                                <span class="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition">🎓</span>
+                                <span class="text-xs font-semibold text-slate-700 group-hover:text-rose-700">Tugas Belajar</span>
+                                <span class="text-[10px] text-slate-400 mt-0.5">Studi Pegawai</span>
+                            </a>
+                        @endif
+                    </div>
                 </div>
 
                 {{-- BARIS 1: STATISTIK UTAMA PEGAWAI --}}
@@ -1059,149 +1208,173 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                         
                         {{-- Card 1: Reminder KGB --}}
-                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 flex flex-col justify-between">
+                        <div class="bg-amber-50/90 border border-amber-200/80 rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-xs transition">
                             <div>
-                                <h4 class="font-semibold text-amber-800 flex justify-between items-center mb-2">
+                                <h4 class="font-semibold text-amber-900 flex justify-between items-center mb-2.5">
                                     <div>
-                                        <span>Gaji Berkala (KGB)</span>
-                                        <span class="block text-[10px] text-amber-600 font-normal">3 Bulan ke Depan</span>
+                                        <span class="text-xs font-bold uppercase tracking-wider">Gaji Berkala (KGB)</span>
+                                        <span class="block text-[10px] text-amber-700 font-normal">3 Bulan ke Depan</span>
                                     </div>
-                                    <span class="bg-amber-200 text-amber-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ is_countable($reminder['kgb'] ?? null) ? count($reminder['kgb']) : 0 }}</span>
+                                    <span class="bg-amber-200/90 text-amber-950 text-xs px-2 py-0.5 rounded-full font-bold border border-amber-300/60">{{ is_countable($reminder['kgb'] ?? null) ? count($reminder['kgb']) : 0 }}</span>
                                 </h4>
                                 @if(!empty($reminder['kgb']) && is_countable($reminder['kgb']) && count($reminder['kgb']) > 0)
-                                    <ul class="text-xs text-amber-900 divide-y divide-amber-200 max-h-48 overflow-y-auto">
+                                    <ul class="text-xs text-amber-950 divide-y divide-amber-200/70 max-h-48 overflow-y-auto">
                                         @foreach($reminder['kgb'] as $r)
-                                            <li class="py-1.5 flex justify-between items-center">
-                                                <span class="truncate mr-2" title="{{ $r->nama_lengkap ?? $r->nama }}">{{ $r->nama_lengkap ?? $r->nama }}</span> 
-                                                <strong class="text-amber-700 font-mono flex-shrink-0">{{ $r->tanggal_kegiatan }}</strong>
+                                            <li class="py-2 flex justify-between items-center gap-2">
+                                                <span class="truncate font-medium text-slate-800" title="{{ $r->nama_lengkap ?? $r->nama }}">{{ $r->nama_lengkap ?? $r->nama }}</span> 
+                                                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-amber-200/70 text-amber-900 border border-amber-300/60 shrink-0 font-semibold">{{ $r->tanggal_kegiatan }}</span>
                                             </li>
                                         @endforeach
                                     </ul>
                                 @else
-                                    <p class="text-xs text-amber-600 mt-2 italic">Aman. Tidak ada jatuh tempo.</p>
+                                    <div class="flex items-center gap-1.5 text-xs text-amber-700 mt-2 py-2 italic">
+                                        <span class="text-emerald-600 font-bold">✓</span> Aman. Tidak ada jatuh tempo.
+                                    </div>
                                 @endif
-                            @if(Auth::user()->hasRole('admin'))
+                            </div>
+                            @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
                                 <div class="mt-3 pt-2 border-t border-amber-200/60 text-right">
                                     <a href="{{ route('kgb.index', ['filter' => 'reminder']) }}" class="text-[11px] font-semibold text-amber-800 hover:text-amber-950 hover:underline inline-flex items-center gap-1">
-                                        Buka Monitoring KGB ({{ is_countable($reminder['kgb'] ?? null) ? count($reminder['kgb']) : 0 }} Pegawai) &rarr;
+                                        Buka Monitoring KGB &rarr;
                                     </a>
                                 </div>
                             @endif
-                            </div>
                         </div>
 
                         {{-- Card 2: Reminder Kenaikan Pangkat --}}
-                        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex flex-col justify-between">
+                        <div class="bg-emerald-50/90 border border-emerald-200/80 rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-xs transition">
                             <div>
-                                <h4 class="font-semibold text-emerald-800 flex justify-between items-center mb-2">
+                                <h4 class="font-semibold text-emerald-900 flex justify-between items-center mb-2.5">
                                     <div>
-                                        <span>Kenaikan Pangkat (KP)</span>
-                                        <span class="block text-[10px] text-emerald-600 font-normal">3 Bulan ke Depan</span>
+                                        <span class="text-xs font-bold uppercase tracking-wider">Kenaikan Pangkat (KP)</span>
+                                        <span class="block text-[10px] text-emerald-700 font-normal">3 Bulan ke Depan</span>
                                     </div>
-                                    <span class="bg-emerald-200 text-emerald-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ is_countable($reminder['kp'] ?? null) ? count($reminder['kp']) : 0 }}</span>
+                                    <span class="bg-emerald-200/90 text-emerald-950 text-xs px-2 py-0.5 rounded-full font-bold border border-emerald-300/60">{{ is_countable($reminder['kp'] ?? null) ? count($reminder['kp']) : 0 }}</span>
                                 </h4>
                                 @if(!empty($reminder['kp']) && is_countable($reminder['kp']) && count($reminder['kp']) > 0)
-                                    <ul class="text-xs text-emerald-900 divide-y divide-emerald-200 max-h-48 overflow-y-auto">
+                                    <ul class="text-xs text-emerald-950 divide-y divide-emerald-200/70 max-h-48 overflow-y-auto">
                                         @foreach($reminder['kp'] as $r)
-                                            <li class="py-1.5 flex justify-between items-center">
-                                                <span class="truncate mr-2" title="{{ $r->nama_lengkap ?? $r->nama }}">{{ $r->nama_lengkap ?? $r->nama }}</span> 
-                                                <strong class="text-emerald-700 font-mono flex-shrink-0">{{ $r->tanggal_kegiatan }}</strong>
+                                            <li class="py-2 flex justify-between items-center gap-2">
+                                                <span class="truncate font-medium text-slate-800" title="{{ $r->nama_lengkap ?? $r->nama }}">{{ $r->nama_lengkap ?? $r->nama }}</span> 
+                                                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-200/70 text-emerald-900 border border-emerald-300/60 shrink-0 font-semibold">{{ $r->tanggal_kegiatan }}</span>
                                             </li>
                                         @endforeach
                                     </ul>
                                 @else
-                                    <p class="text-xs text-emerald-600 mt-2 italic">Aman. Tidak ada jatuh tempo.</p>
+                                    <div class="flex items-center gap-1.5 text-xs text-emerald-700 mt-2 py-2 italic">
+                                        <span class="text-emerald-600 font-bold">✓</span> Aman. Tidak ada jatuh tempo.
+                                    </div>
                                 @endif
-                            @if(Auth::user()->hasRole('admin'))
+                            </div>
+                            @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
                                 <div class="mt-3 pt-2 border-t border-emerald-200/60 text-right">
                                     <a href="{{ route('kp.index', ['filter' => 'reminder']) }}" class="text-[11px] font-semibold text-emerald-800 hover:text-emerald-950 hover:underline inline-flex items-center gap-1">
-                                        Buka Monitoring KP ({{ is_countable($reminder['kp'] ?? null) ? count($reminder['kp']) : 0 }} Pegawai) &rarr;
+                                        Buka Monitoring KP &rarr;
                                     </a>
                                 </div>
                             @endif
-                            </div>
                         </div>
 
                         {{-- Card 3: Reminder Satyalancana --}}
-                        <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 flex flex-col justify-between">
+                        <div class="bg-indigo-50/90 border border-indigo-200/80 rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-xs transition">
                             <div>
-                                <h4 class="font-semibold text-indigo-800 flex justify-between items-center mb-2">
+                                <h4 class="font-semibold text-indigo-900 flex justify-between items-center mb-2.5">
                                     <div>
-                                        <span>Satyalancana</span>
-                                        <span class="block text-[10px] text-indigo-600 font-normal">3 Bulan ke Depan</span>
+                                        <span class="text-xs font-bold uppercase tracking-wider">Satyalancana</span>
+                                        <span class="block text-[10px] text-indigo-700 font-normal">3 Bulan ke Depan</span>
                                     </div>
-                                    <span class="bg-indigo-200 text-indigo-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ is_countable($reminder['satyalancana'] ?? null) ? count($reminder['satyalancana']) : 0 }}</span>
+                                    <span class="bg-indigo-200/90 text-indigo-950 text-xs px-2 py-0.5 rounded-full font-bold border border-indigo-300/60">{{ is_countable($reminder['satyalancana'] ?? null) ? count($reminder['satyalancana']) : 0 }}</span>
                                 </h4>
                                 @if(!empty($reminder['satyalancana']) && is_countable($reminder['satyalancana']) && count($reminder['satyalancana']) > 0)
-                                    <ul class="text-xs text-indigo-900 divide-y divide-indigo-200 max-h-48 overflow-y-auto">
+                                    <ul class="text-xs text-indigo-950 divide-y divide-indigo-200/70 max-h-48 overflow-y-auto">
                                         @foreach($reminder['satyalancana'] as $r)
-                                            <li class="py-1.5 flex justify-between items-center">
-                                                <span class="truncate mr-2" title="{{ $r->nama_lengkap ?? $r->nama }}">{{ $r->nama_lengkap ?? $r->nama }}</span> 
-                                                <strong class="text-indigo-700 font-mono flex-shrink-0">{{ $r->tanggal_kegiatan }}</strong>
+                                            <li class="py-2 flex justify-between items-center gap-2">
+                                                <span class="truncate font-medium text-slate-800" title="{{ $r->nama_lengkap ?? $r->nama }}">{{ $r->nama_lengkap ?? $r->nama }}</span> 
+                                                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-indigo-200/70 text-indigo-900 border border-indigo-300/60 shrink-0 font-semibold">{{ $r->tanggal_kegiatan }}</span>
                                             </li>
                                         @endforeach
                                     </ul>
                                 @else
-                                    <p class="text-xs text-indigo-600 mt-2 italic">Aman. Tidak ada jatuh tempo.</p>
+                                    <div class="flex items-center gap-1.5 text-xs text-indigo-700 mt-2 py-2 italic">
+                                        <span class="text-emerald-600 font-bold">✓</span> Aman. Tidak ada jatuh tempo.
+                                    </div>
                                 @endif
-                            @if(Auth::user()->hasRole('admin'))
+                            </div>
+                            @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
                                 <div class="mt-3 pt-2 border-t border-indigo-200/60 text-right">
                                     <a href="{{ route('satyalancana.index') }}" class="text-[11px] font-semibold text-indigo-800 hover:text-indigo-950 hover:underline inline-flex items-center gap-1">
-                                        Buka Monitoring Satyalancana &rarr;
+                                        Buka Satyalancana &rarr;
                                     </a>
                                 </div>
                             @endif
-                            </div>
                         </div>
 
                         {{-- Card 4: Reminder Pensiun --}}
-                        <div class="bg-rose-50 border border-rose-200 rounded-lg p-4 flex flex-col justify-between">
+                        <div class="bg-rose-50/90 border border-rose-200/80 rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-xs transition">
                             <div>
-                                <h4 class="font-semibold text-rose-800 flex justify-between items-center mb-2">
+                                <h4 class="font-semibold text-rose-900 flex justify-between items-center mb-2.5">
                                     <div>
-                                        <span>Masa Pensiun (BUP 58)</span>
-                                        <span class="block text-[10px] text-rose-600 font-semibold">1 Tahun ke Depan</span>
+                                        <span class="text-xs font-bold uppercase tracking-wider">Masa Pensiun (BUP)</span>
+                                        <span class="block text-[10px] text-rose-700 font-semibold">1 Tahun ke Depan</span>
                                     </div>
-                                    <span class="bg-rose-200 text-rose-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ is_countable($reminder['pensiun'] ?? null) ? count($reminder['pensiun']) : 0 }}</span>
+                                    <span class="bg-rose-200/90 text-rose-950 text-xs px-2 py-0.5 rounded-full font-bold border border-rose-300/60">{{ is_countable($reminder['pensiun'] ?? null) ? count($reminder['pensiun']) : 0 }}</span>
                                 </h4>
                                 @if(!empty($reminder['pensiun']) && is_countable($reminder['pensiun']) && count($reminder['pensiun']) > 0)
-                                    <ul class="text-xs text-rose-900 divide-y divide-rose-200 max-h-48 overflow-y-auto">
+                                    <ul class="text-xs text-rose-950 divide-y divide-rose-200/70 max-h-48 overflow-y-auto">
                                         @foreach($reminder['pensiun'] as $r)
-                                            <li class="py-1.5 flex justify-between items-center">
-                                                <span class="truncate mr-2" title="{{ $r->nama_lengkap ?? $r->nama }}">{{ $r->nama_lengkap ?? $r->nama }}</span> 
-                                                <strong class="text-rose-700 font-mono flex-shrink-0">{{ $r->tanggal_kegiatan }}</strong>
+                                            <li class="py-2 flex justify-between items-center gap-2">
+                                                <span class="truncate font-medium text-slate-800" title="{{ $r->nama_lengkap ?? $r->nama }}">{{ $r->nama_lengkap ?? $r->nama }}</span> 
+                                                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-rose-200/70 text-rose-900 border border-rose-300/60 shrink-0 font-semibold">{{ $r->tanggal_kegiatan }}</span>
                                             </li>
                                         @endforeach
                                     </ul>
                                 @else
-                                    <p class="text-xs text-rose-600 mt-2 italic">Aman. Tidak ada masa pensiun terdekat.</p>
+                                    <div class="flex items-center gap-1.5 text-xs text-rose-700 mt-2 py-2 italic">
+                                        <span class="text-emerald-600 font-bold">✓</span> Aman. Tidak ada masa pensiun terdekat.
+                                    </div>
                                 @endif
                             </div>
+                            @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+                                <div class="mt-3 pt-2 border-t border-rose-200/60 text-right">
+                                    <a href="{{ route('pegawai.index', ['filter' => 'pensiun']) }}" class="text-[11px] font-semibold text-rose-800 hover:text-rose-950 hover:underline inline-flex items-center gap-1">
+                                        Lihat Data Pensiun &rarr;
+                                    </a>
+                                </div>
+                            @endif
                         </div>
 
                         {{-- Card 5: Reminder STR & SIP (Khas Ners/Klinis) --}}
-                        <div class="bg-sky-50 border border-sky-200 rounded-lg p-4 flex flex-col justify-between">
+                        <div class="bg-sky-50/90 border border-sky-200/80 rounded-xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-xs transition">
                             <div>
-                                <h4 class="font-semibold text-sky-800 flex justify-between items-center mb-2">
+                                <h4 class="font-semibold text-sky-900 flex justify-between items-center mb-2.5">
                                     <div>
-                                        <span>STR & SIP (Ners/Klinis)</span>
-                                        <span class="block text-[10px] text-sky-600 font-semibold">6 Bulan ke Depan</span>
+                                        <span class="text-xs font-bold uppercase tracking-wider">STR & SIP (Ners)</span>
+                                        <span class="block text-[10px] text-sky-700 font-semibold">6 Bulan ke Depan</span>
                                     </div>
-                                    <span class="bg-sky-200 text-sky-900 text-xs px-2 py-0.5 rounded-full font-bold">{{ is_countable($reminder['str_sip'] ?? null) ? count($reminder['str_sip']) : 0 }}</span>
+                                    <span class="bg-sky-200/90 text-sky-950 text-xs px-2 py-0.5 rounded-full font-bold border border-sky-300/60">{{ is_countable($reminder['str_sip'] ?? null) ? count($reminder['str_sip']) : 0 }}</span>
                                 </h4>
                                 @if(!empty($reminder['str_sip']) && is_countable($reminder['str_sip']) && count($reminder['str_sip']) > 0)
-                                    <ul class="text-xs text-sky-900 divide-y divide-sky-200 max-h-48 overflow-y-auto">
+                                    <ul class="text-xs text-sky-950 divide-y divide-sky-200/70 max-h-48 overflow-y-auto">
                                         @foreach($reminder['str_sip'] as $r)
-                                            <li class="py-1.5 flex justify-between items-center">
-                                                <span class="truncate mr-2" title="{{ $r->nama_lengkap ?? $r->nama }} ({{ $r->jenis_dokumen }})">{{ $r->nama_lengkap ?? $r->nama }}</span> 
-                                                <strong class="text-sky-700 font-mono flex-shrink-0">{{ $r->tanggal_kegiatan }}</strong>
+                                            <li class="py-2 flex justify-between items-center gap-2">
+                                                <span class="truncate font-medium text-slate-800" title="{{ $r->nama_lengkap ?? $r->nama }} ({{ $r->jenis_dokumen }})">{{ $r->nama_lengkap ?? $r->nama }}</span> 
+                                                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-sky-200/70 text-sky-900 border border-sky-300/60 shrink-0 font-semibold">{{ $r->tanggal_kegiatan }}</span>
                                             </li>
                                         @endforeach
                                     </ul>
                                 @else
-                                    <p class="text-xs text-sky-600 mt-2 italic">Aman. Tidak ada STR/SIP kedaluwarsa terdekat.</p>
+                                    <div class="flex items-center gap-1.5 text-xs text-sky-700 mt-2 py-2 italic">
+                                        <span class="text-emerald-600 font-bold">✓</span> Aman. STR/SIP aktif terpantau.
+                                    </div>
                                 @endif
                             </div>
+                            @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+                                <div class="mt-3 pt-2 border-t border-sky-200/60 text-right">
+                                    <a href="{{ route('riwayat-str-sip.index') }}" class="text-[11px] font-semibold text-sky-800 hover:text-sky-950 hover:underline inline-flex items-center gap-1">
+                                        Monitoring STR & SIP &rarr;
+                                    </a>
+                                </div>
+                            @endif
                         </div>
 
                     </div>

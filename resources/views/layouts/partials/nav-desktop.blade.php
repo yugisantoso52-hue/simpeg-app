@@ -238,7 +238,7 @@
 
 {{-- 5. Dropdown Riwayat Pegawai (Khusus Dekan, Wadek II, Kabag Umum, Ka Pokja Keu-Kepeg & Admin) --}}
 @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
-    <x-dropdown align="left" width="52">
+    <x-dropdown align="left" width="56">
         <x-slot name="trigger">
             <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('riwayat-*') ? 'border-blue-600 text-blue-700 font-bold' : '' }}">
                 <span>Riwayat Pegawai</span>
@@ -248,14 +248,11 @@
             </button>
         </x-slot>
         <x-slot name="content">
+            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                Akademik & Fungsional
+            </div>
             <x-dropdown-link :href="route('riwayat-pendidikan.index')" class="{{ request()->routeIs('riwayat-pendidikan.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                 🎓 Riwayat Pendidikan
-            </x-dropdown-link>
-            <x-dropdown-link :href="route('riwayat-jabatan.index')" class="{{ request()->routeIs('riwayat-jabatan.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                💼 Riwayat Jabatan
-            </x-dropdown-link>
-            <x-dropdown-link :href="route('riwayat-pangkat.index')" class="{{ request()->routeIs('riwayat-pangkat.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                🎖️ Riwayat Pangkat
             </x-dropdown-link>
             <x-dropdown-link :href="route('riwayat-diklat.index')" class="{{ request()->routeIs('riwayat-diklat.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                 📜 Riwayat Diklat
@@ -266,14 +263,25 @@
             <x-dropdown-link :href="route('riwayat-skp.index')" class="{{ request()->routeIs('riwayat-skp.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                 📊 Riwayat SKP
             </x-dropdown-link>
+            <x-dropdown-link :href="route('riwayat-publikasi.index')" class="{{ request()->routeIs('riwayat-publikasi.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                📚 Riwayat Publikasi
+            </x-dropdown-link>
+
+            <div class="border-t border-gray-100 my-1"></div>
+            <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                Karir & Pengabdian
+            </div>
+            <x-dropdown-link :href="route('riwayat-pangkat.index')" class="{{ request()->routeIs('riwayat-pangkat.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                🎖️ Riwayat Pangkat
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('riwayat-jabatan.index')" class="{{ request()->routeIs('riwayat-jabatan.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                💼 Riwayat Jabatan
+            </x-dropdown-link>
             <x-dropdown-link :href="route('riwayat-penghargaan.index')" class="{{ request()->routeIs('riwayat-penghargaan.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                 🏅 Riwayat Penghargaan
             </x-dropdown-link>
             <x-dropdown-link :href="route('riwayat-organisasi.index')" class="{{ request()->routeIs('riwayat-organisasi.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                 🏛️ Riwayat Organisasi
-            </x-dropdown-link>
-            <x-dropdown-link :href="route('riwayat-publikasi.index')" class="{{ request()->routeIs('riwayat-publikasi.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                📚 Riwayat Publikasi
             </x-dropdown-link>
         </x-slot>
     </x-dropdown>

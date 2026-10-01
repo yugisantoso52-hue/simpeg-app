@@ -145,14 +145,11 @@
         <div class="px-4 pt-3 pb-1 text-xs font-bold text-gray-500 uppercase tracking-wider">
             Riwayat Pegawai
         </div>
+        <div class="px-4 pt-1.5 pb-0.5 text-[10px] font-extrabold text-blue-600 uppercase tracking-wider">
+            — Akademik & Fungsional
+        </div>
         <x-responsive-nav-link :href="route('riwayat-pendidikan.index')" :active="request()->routeIs('riwayat-pendidikan.*')">
             🎓 Riwayat Pendidikan
-        </x-responsive-nav-link>
-        <x-responsive-nav-link :href="route('riwayat-jabatan.index')" :active="request()->routeIs('riwayat-jabatan.*')">
-            💼 Riwayat Jabatan
-        </x-responsive-nav-link>
-        <x-responsive-nav-link :href="route('riwayat-pangkat.index')" :active="request()->routeIs('riwayat-pangkat.*')">
-            🎖️ Riwayat Pangkat
         </x-responsive-nav-link>
         <x-responsive-nav-link :href="route('riwayat-diklat.index')" :active="request()->routeIs('riwayat-diklat.*')">
             📜 Riwayat Diklat
@@ -163,14 +160,24 @@
         <x-responsive-nav-link :href="route('riwayat-skp.index')" :active="request()->routeIs('riwayat-skp.*')">
             📊 Riwayat SKP
         </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('riwayat-publikasi.index')" :active="request()->routeIs('riwayat-publikasi.*')">
+            📚 Riwayat Publikasi
+        </x-responsive-nav-link>
+
+        <div class="px-4 pt-2 pb-0.5 text-[10px] font-extrabold text-indigo-600 uppercase tracking-wider">
+            — Karir & Pengabdian
+        </div>
+        <x-responsive-nav-link :href="route('riwayat-pangkat.index')" :active="request()->routeIs('riwayat-pangkat.*')">
+            🎖️ Riwayat Pangkat
+        </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('riwayat-jabatan.index')" :active="request()->routeIs('riwayat-jabatan.*')">
+            💼 Riwayat Jabatan
+        </x-responsive-nav-link>
         <x-responsive-nav-link :href="route('riwayat-penghargaan.index')" :active="request()->routeIs('riwayat-penghargaan.*')">
             🏅 Riwayat Penghargaan
         </x-responsive-nav-link>
         <x-responsive-nav-link :href="route('riwayat-organisasi.index')" :active="request()->routeIs('riwayat-organisasi.*')">
             🏛️ Riwayat Organisasi
-        </x-responsive-nav-link>
-        <x-responsive-nav-link :href="route('riwayat-publikasi.index')" :active="request()->routeIs('riwayat-publikasi.*')">
-            📚 Riwayat Publikasi
         </x-responsive-nav-link>
     @endif
 
