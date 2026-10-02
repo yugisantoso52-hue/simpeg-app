@@ -31,38 +31,18 @@ class DeployWebhookController extends Controller
         if ($request->query('diagnose') == '1') {
             try {
                 $anjabs = \App\Models\AnalisisJabatan::with(['jabatan', 'unitKerja'])->get();
-                $allPegDekanRelated = \App\Models\Pegawai::where('nama', 'like', '%Nishfa%')->get();
-                $jabatans = \App\Models\Jabatan::where('nama_jabatan', 'like', '%Dekan%')->orWhere('nama_jabatan', 'like', '%Koor%')->get();
 
                 return response()->json([
                     'status' => 'diagnose',
-                    'kepeg_pegawai' => \App\Models\Pegawai::where('jabatan_id', 22)->orWhere('nama', 'like', '%Dolli%')->orWhere('nama', 'like', '%Vita%')->get(['id', 'nama', 'jabatan_id', 'unit_kerja_id', 'status_pegawai']),
                     'anjabs_count' => $anjabs->count(),
-                    'anjabs' => $anjabs->map(fn($a) => [
-                        'id' => $a->id,
-                        'kode' => $a->kode_anjab,
-                        'jabatan_id' => $a->jabatan_id,
-                        'jabatan_name' => $a->jabatan?->nama_jabatan,
-                        'unit_id' => $a->unit_kerja_id,
-                        'unit_name' => $a->unitKerja?->nama_unit,
-                        'kebutuhan' => $a->formasi_pembulatan,
+                    'total_bezetting' => $anjabs->sum('bezetting'),
+                    'total_kebutuhan' => $anjabs->sum('formasi_pembulatan'),
+                    'ideal_count' => $anjabs->filter(fn($a) => $a->selisih_formasi == 0)->count(),
+                    'defisit_count' => (int) $anjabs->filter(fn($a) => $a->selisih_formasi < 0)->sum(fn($a) => abs($a->selisih_formasi)),
+                    'terisi_jabatan' => $anjabs->filter(fn($a) => $a->bezetting > 0)->map(fn($a) => [
+                        'jabatan' => $a->jabatan?->nama_jabatan,
                         'bezetting' => $a->bezetting,
-                        'selisih' => $a->selisih_formasi,
-                    ]),
-                    'nishfa_pegawai' => $allPegDekanRelated->map(fn($p) => [
-                        'id' => $p->id,
-                        'nama' => $p->nama,
-                        'jabatan_id' => $p->jabatan_id,
-                        'jabatan_name' => $p->jabatan?->nama_jabatan,
-                        'unit_id' => $p->unit_kerja_id,
-                        'unit_name' => $p->unitKerja?->nama_unit,
-                        'status_pegawai' => $p->status_pegawai,
-                    ]),
-                    'jabatans_dekan_or_koor' => $jabatans->map(fn($j) => [
-                        'id' => $j->id,
-                        'nama' => $j->nama_jabatan,
-                        'unit_id' => $j->unit_kerja_id,
-                    ]),
+                    ])->values(),
                 ]);
             } catch (\Throwable $e) {
                 return response()->json([
