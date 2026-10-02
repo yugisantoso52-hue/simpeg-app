@@ -25,7 +25,16 @@ class AnjabController extends Controller
             })->orWhere('kode_anjab', 'like', "%{$search}%");
         }
 
-        $anjabs = $query->paginate(15)->withQueryString();
+        $all = $query->get()->sortByDesc('hierarchy_order')->values();
+        $page = (int) $request->input('page', 1);
+        $perPage = 15;
+        $anjabs = new \Illuminate\Pagination\LengthAwarePaginator(
+            $all->forPage($page, $perPage),
+            $all->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
         $unitKerjas = UnitKerja::orderBy('urutan')->get();
 
         return view('anjab.index', compact('anjabs', 'unitKerjas'));

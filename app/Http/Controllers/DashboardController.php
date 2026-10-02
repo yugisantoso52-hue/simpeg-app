@@ -76,7 +76,7 @@ class DashboardController extends Controller
 
             // Ringkasan Eksekutif Analisis Jabatan & Formasi Beban Kerja (Anjab & ABK)
             // Acuan: PermenPAN-RB No. 1/2020 & Peraturan BKN No. 12 & 19/2011
-            $anjabs = AnalisisJabatan::with(['jabatan', 'unitKerja', 'uraianTugas'])->get();
+            $anjabs = AnalisisJabatan::with(['jabatan', 'unitKerja', 'uraianTugas'])->get()->sortByDesc('hierarchy_order')->values();
             $totalKebutuhan = (int) $anjabs->sum('formasi_pembulatan');
             $totalBezetting = (int) $anjabs->sum('bezetting');
             $rasioKeterisian = $totalKebutuhan > 0 ? round(($totalBezetting / $totalKebutuhan) * 100, 1) : 0;

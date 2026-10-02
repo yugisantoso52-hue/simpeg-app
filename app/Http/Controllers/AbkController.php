@@ -20,7 +20,7 @@ class AbkController extends Controller
             $query->where('unit_kerja_id', $request->unit_kerja_id);
         }
 
-        $anjabs = $query->get();
+        $anjabs = $query->get()->sortByDesc('hierarchy_order')->values();
 
         // Rekapitulasi agregat
         $totalKebutuhan = $anjabs->sum('formasi_pembulatan');
@@ -104,7 +104,7 @@ class AbkController extends Controller
             $query->where('unit_kerja_id', $request->unit_kerja_id);
         }
 
-        $anjabs = $query->get();
+        $anjabs = $query->get()->sortByDesc('hierarchy_order')->values();
         $selectedUnit = $request->filled('unit_kerja_id') ? UnitKerja::find($request->unit_kerja_id) : null;
 
         return view('abk.print_rekap', compact('anjabs', 'selectedUnit'));

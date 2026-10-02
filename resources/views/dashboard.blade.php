@@ -1087,6 +1087,7 @@
                                     <table class="w-full text-xs text-left text-slate-600">
                                         <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-[10px] border-b border-slate-200 sticky top-0 z-10 shadow-2xs">
                                             <tr>
+                                                <th class="px-3 py-2.5 text-center w-10">No</th>
                                                 <th class="px-3 py-2.5">Nama Jabatan & Unit Kerja</th>
                                                 <th class="px-3 py-2.5 text-center">Kelas</th>
                                                 <th class="px-3 py-2.5 text-center">Kebutuhan</th>
@@ -1096,8 +1097,9 @@
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-slate-100">
-                                            <template x-for="item in filteredItems" :key="item.id">
+                                            <template x-for="(item, index) in filteredItems" :key="item.id">
                                                 <tr class="hover:bg-slate-50 transition">
+                                                    <td class="px-3 py-2.5 text-center font-medium text-slate-500" x-text="index + 1"></td>
                                                     <td class="px-3 py-2.5">
                                                         <div class="font-bold text-slate-900" x-text="item.jabatan"></div>
                                                         <div class="text-[10px] text-slate-500">
@@ -1142,7 +1144,7 @@
 
                                             {{-- Pesan saat hasil kosong --}}
                                             <tr x-show="filteredItems.length === 0">
-                                                <td colspan="6" class="px-4 py-8 text-center text-slate-400 text-xs">
+                                                <td colspan="7" class="px-4 py-8 text-center text-slate-400 text-xs">
                                                     <span class="text-2xl block mb-1">🔍</span>
                                                     <p class="font-semibold text-slate-600">Tidak ada jabatan yang sesuai dengan filter atau kata kunci.</p>
                                                     <button type="button" @click="filter = 'all'; search = ''" class="mt-2 text-indigo-600 font-bold hover:underline">
