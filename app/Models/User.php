@@ -159,12 +159,12 @@ class User extends Authenticatable
 
     /**
      * Cek apakah user berhak mengakses menu Analitik Eksekutif, Data Kepegawaian, dan Riwayat Pegawai.
-     * Hanya diizinkan untuk:
+     * Diizinkan untuk:
      * 1. Admin
-     * 2. Dekan
-     * 3. Wakil Dekan II (Keuangan & Umum)
-     * 4. Kabag Umum (Kepala Bagian Umum)
-     * 5. Ka Pokja Keu-Kepeg (Kepala Pokja Keuangan & Kepegawaian)
+     * 2. Dekan & Para Wakil Dekan (Wadek I, Wadek II, Wadek III)
+     * 3. Kepala Bagian Umum
+     * 4. Ka Pokja Keu-Kepeg (Kepala Pokja Keuangan & Kepegawaian)
+     * 5. User dengan role pimpinan / jabatan pimpinan struktural
      */
     public function canAccessExecutiveKepegawaianMenus(): bool
     {
@@ -184,27 +184,17 @@ class User extends Authenticatable
 
         $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
 
-        // 2. Dekan (Bukan Wakil Dekan / Wadek)
-        if (str_contains($jabatan, 'DEKAN') && !str_contains($jabatan, 'WAKIL') && !str_contains($jabatan, 'WADEK')) {
+        // 2. Dekan & Para Wakil Dekan (Wadek I, II, III)
+        if (str_contains($jabatan, 'DEKAN') || str_contains($jabatan, 'WADEK') || str_contains($jabatan, 'WD ')) {
             return true;
         }
 
-        // 3. Wakil Dekan II (Keuangan dan Umum) - Pastikan bukan Wadek I atau Wadek III
-        $isWadek2 = (str_contains($jabatan, 'WAKIL DEKAN II') || str_contains($jabatan, 'WADEK II') || str_contains($jabatan, 'WD II') || (str_contains($jabatan, 'WAKIL DEKAN') && str_contains($jabatan, 'KEUANGAN')))
-            && !str_contains($jabatan, 'WAKIL DEKAN III')
-            && !str_contains($jabatan, 'WADEK III')
-            && !str_contains($jabatan, 'WD III')
-            && !str_contains($jabatan, 'WAKIL DEKAN 3');
-        if ($isWadek2) {
-            return true;
-        }
-
-        // 4. Kabag Umum (Kepala Bagian Umum / KABAG TU)
+        // 3. Kabag Umum (Kepala Bagian Umum / KABAG TU)
         if (str_contains($jabatan, 'KEPALA BAGIAN UMUM') || str_contains($jabatan, 'KABAG UMUM') || str_contains($jabatan, 'KABAG TU')) {
             return true;
         }
 
-        // 5. Ka Pokja Keu-Kepeg (Kepala Pokja Keuangan & Kepegawaian)
+        // 4. Ka Pokja Keu-Kepeg (Kepala Pokja Keuangan & Kepegawaian)
         $isKaPokja = (str_contains($jabatan, 'KA POKJA') || str_contains($jabatan, 'KEPALA POKJA') || str_contains($jabatan, 'KETUA POKJA'))
             && !str_contains($jabatan, 'STAFF')
             && !str_contains($jabatan, 'STAF');
@@ -212,6 +202,59 @@ class User extends Authenticatable
             return true;
         }
 
+        // 5. Unsur Pimpinan Fakultas Lainnya (Koorprodi, Kajur, Ka Lab)
+        if ($this->isPimpinan()) {
+            return true;
+        }
+
         return false;
+    }
+
+    /**
+     * Cek apakah user berhak mengakses Modul Analisis Jabatan (Anjab) & Analisis Beban Kerja (ABK).
+     * Sesuai mandat pimpinan:
+     * - Dekan & Para Wakil Dekan (Wadek I, II, III): Akses Monitoring, Peta Jabatan, Analisis Formasi
+     * - Kabag Umum & Ka Pokja Keu-Kepeg: Akses Monitoring, Evaluasi Kebutuhan SDM
+     * - Admin: Akses Penuh
+     */
+    public function canAccessAnjabAbk(): bool
+    {
+        return $this->canAccessExecutiveKepegawaianMenus();
+    }
+
+    /**
+     * Cek apakah user berhak mengubah/menambah/menghapus master butir tugas ABK dan dokumen Anjab.
+     * Hanya diizinkan untuk Admin dan Ka Pokja Kepegawaian (Tim Penyusun Anjab/ABK Institusi).
+     * Unsur Pimpinan (Dekan, Wadek, Kabag) memiliki hak baca & evaluasi (read-only monitoring).
+     */
+    public function canManageAnjabAbk(): bool
+    {
+        if ($this->hasRole('admin')) {
+            return true;
+        }
+
+        if (!$this->pegawai_id) {
+            return false;
+        }
+
+        $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
+        if (!$pegawai || !$pegawai->jabatan) {
+            return false;
+        }
+
+        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
+        $isKaPokja = (str_contains($jabatan, 'KA POKJA') || str_contains($jabatan, 'KEPALA POKJA') || str_contains($jabatan, 'KETUA POKJA'))
+            && !str_contains($jabatan, 'STAFF')
+            && !str_contains($jabatan, 'STAF');
+
+        return $isKaPokja && (str_contains($jabatan, 'KEU') || str_contains($jabatan, 'KEPEG'));
+    }
+
+    /**
+     * Cek apakah user harus diarahkan ke Dashboard Manajerial (Eksekutif)
+     */
+    public function shouldShowManagerialDashboard(): bool
+    {
+        return $this->hasRole('admin') || $this->canAccessExecutiveKepegawaianMenus();
     }
 }

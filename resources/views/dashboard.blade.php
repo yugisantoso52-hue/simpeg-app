@@ -9,7 +9,7 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            @if(Auth::user()->hasRole('pegawai'))
+            @if(!Auth::user()->shouldShowManagerialDashboard())
                 {{-- ========================================================================= --}}
                 {{-- 👤 DASHBOARD MANDIRI PEGAWAI (PERSONAL INDIVIDUAL DASHBOARD)              --}}
                 {{-- ========================================================================= --}}
@@ -581,6 +581,29 @@
                     @endif
                 </div>
 
+                {{-- 🏛️ TRANSPARANSI STRUKTUR ORGANISASI & PETA JABATAN DIGITAL --}}
+                <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 rounded-2xl p-6 text-white shadow-sm border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-3xl border border-white/15 shrink-0 shadow-inner">
+                            🏛️
+                        </div>
+                        <div>
+                            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/30 text-indigo-300 border border-indigo-400/30 mb-1">
+                                Transparansi Struktur Organisasi Fakultas
+                            </div>
+                            <h3 class="text-base sm:text-lg font-bold text-white">Peta Jabatan & Alur Komando Organisasi FKp UNRI</h3>
+                            <p class="text-xs text-slate-300 mt-0.5 max-w-2xl">
+                                Lihat bagan struktur interaktif Fakultas Keperawatan UNRI: Unsur Pimpinan (Dekan & 3 Wadek), Program Studi, Bagian Umum, serta 27 Unit Penunjang, Lab, dan KJFD.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="shrink-0 w-full md:w-auto">
+                        <a href="{{ route('anjab.peta-jabatan') }}" class="w-full md:w-auto px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2">
+                            <span>Buka Peta Jabatan Digital</span> &rarr;
+                        </a>
+                    </div>
+                </div>
+
                 @else
                     <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-amber-800">
                         <div class="flex items-center gap-3">
@@ -851,7 +874,45 @@
 
                 {{-- ⚖️ ANALISIS JABATAN & KEBUTUHAN FORMASI PEGAWAI (ANJAB & ABK) ⚖️ --}}
                 @if(isset($abkSummary))
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6"
+                         x-data="{
+                             filter: 'all',
+                             search: '',
+                             items: {{ Js::from($abkSummary['items'] ?? []) }},
+                             get filteredItems() {
+                                 let f = this.filter;
+                                 let s = this.search.toLowerCase().trim();
+                                 return this.items.filter(item => {
+                                     let matchFilter = true;
+                                     if (f === 'defisit') matchFilter = item.is_defisit;
+                                     if (f === 'ideal') matchFilter = item.is_ideal;
+                                     if (f === 'lebih') matchFilter = item.is_lebih;
+                                     if (f === 'dokumen') matchFilter = true;
+
+                                     let matchSearch = !s || (
+                                         (item.jabatan && item.jabatan.toLowerCase().includes(s)) ||
+                                         (item.unit && item.unit.toLowerCase().includes(s)) ||
+                                         (item.kode_anjab && item.kode_anjab.toLowerCase().includes(s))
+                                     );
+                                     return matchFilter && matchSearch;
+                                 });
+                             },
+                             get filterTitle() {
+                                 if (this.filter === 'defisit') return 'Daftar Formasi Jabatan Defisit Pegawai (Perlu Rekrutmen / Mutasi)';
+                                 if (this.filter === 'ideal') return 'Daftar Formasi Jabatan Ideal & Terpenuhi (Beban Kerja Seimbang)';
+                                 if (this.filter === 'dokumen') return 'Daftar Dokumen Analisis Jabatan Baku (17 Butir PermenPAN-RB No. 1/2020)';
+                                 return 'Daftar Seluruh Formasi Jabatan Teranalisis (ABK & Bezetting Riil)';
+                             },
+                             get filterBadge() {
+                                 if (this.filter === 'defisit') return '🔴 Formasi Kurang (' + this.items.filter(i => i.is_defisit).length + ' Jabatan)';
+                                 if (this.filter === 'ideal') return '🟢 Formasi Ideal (' + this.items.filter(i => i.is_ideal).length + ' Jabatan)';
+                                 if (this.filter === 'dokumen') return '📑 Dokumen Baku (' + this.items.length + ' Dokumen)';
+                                 return '📋 Semua Formasi (' + this.items.length + ' Jabatan)';
+                             },
+                             setFilter(f) {
+                                 this.filter = (this.filter === f && f !== 'all') ? 'all' : f;
+                             }
+                         }">
                         {{-- Header Eksekutif --}}
                         <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-4 mb-5 gap-3">
                             <div class="flex items-center gap-3">
@@ -865,7 +926,7 @@
                                             PermenPAN-RB No. 1/2020
                                         </span>
                                     </div>
-                                    <p class="text-xs text-slate-500 mt-0.5">Pemetaan standar beban kerja, kebutuhan riil pegawai (bezetting), dan usulan formasi BKN</p>
+                                    <p class="text-xs text-slate-500 mt-0.5">Pemetaan standar beban kerja, kebutuhan riil pegawai (bezetting), dan usulan formasi BKN (Klik kartu untuk melihat rincian)</p>
                                 </div>
                             </div>
                             <div class="flex flex-wrap items-center gap-2">
@@ -881,10 +942,13 @@
                             </div>
                         </div>
 
-                        {{-- 4 Kartu Metrik Formasi --}}
+                        {{-- 4 Kartu Metrik Formasi (INTERAKTIF & BISA DIKLIK) --}}
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                            {{-- Kartu 1: Rasio Keterisian Formasi --}}
-                            <div class="p-4 rounded-xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/70 to-blue-50/50 flex flex-col justify-between shadow-2xs">
+                            {{-- Kartu 1: Rasio Keterisian Formasi (Semua) --}}
+                            <div @click="setFilter('all')"
+                                 :class="filter === 'all' ? 'ring-2 ring-indigo-500 shadow-md bg-indigo-100/90 border-indigo-400 scale-[1.01]' : 'border-indigo-200/80 bg-gradient-to-br from-indigo-50/70 to-blue-50/50 hover:shadow-xs hover:border-indigo-300'"
+                                 class="p-4 rounded-xl border flex flex-col justify-between cursor-pointer transition-all duration-200 select-none group"
+                                 title="Klik untuk melihat seluruh formasi jabatan teranalisis">
                                 <div>
                                     <div class="flex items-center justify-between mb-1.5">
                                         <span class="text-xs font-bold uppercase tracking-wider text-indigo-900">Keterisian Formasi</span>
@@ -900,12 +964,17 @@
                                 </div>
                                 <div class="mt-3 pt-2 border-t border-indigo-200/50 flex items-center justify-between text-[11px] text-indigo-800">
                                     <span>Pegawai Aktif: <strong>{{ $statistik['aktif'] ?? 83 }}</strong></span>
-                                    <span class="text-indigo-600 font-semibold">{{ $abkSummary['totalMasterJabatan'] }} Master Jabatan</span>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold transition" :class="filter === 'all' ? 'bg-indigo-600 text-white' : 'bg-white/80 text-indigo-700 border border-indigo-200'">
+                                        <span x-text="filter === 'all' ? '● Aktif' : 'Lihat Rincian &rarr;'"></span>
+                                    </span>
                                 </div>
                             </div>
 
                             {{-- Kartu 2: Defisit Pegawai (Perlu Rekrutmen / Formasi Kurang) --}}
-                            <div class="p-4 rounded-xl border border-rose-200 bg-rose-50/60 flex flex-col justify-between shadow-2xs">
+                            <div @click="setFilter('defisit')"
+                                 :class="filter === 'defisit' ? 'ring-2 ring-rose-500 shadow-md bg-rose-100 border-rose-400 scale-[1.01]' : 'border-rose-200 bg-rose-50/60 hover:shadow-xs hover:border-rose-300'"
+                                 class="p-4 rounded-xl border flex flex-col justify-between cursor-pointer transition-all duration-200 select-none group"
+                                 title="Klik untuk melihat daftar jabatan yang defisit / kurang pegawai">
                                 <div>
                                     <div class="flex items-center justify-between mb-1.5">
                                         <span class="text-xs font-bold uppercase tracking-wider text-rose-900">Defisit Formasi</span>
@@ -917,15 +986,19 @@
                                     </div>
                                     <p class="text-[11px] text-rose-600 mt-1.5">Kekurangan riil berdasarkan jam beban kerja standar (WKE 1.250 jam/thn)</p>
                                 </div>
-                                <div class="mt-3 pt-2 border-t border-rose-200/60 text-right">
-                                    <a href="{{ route('abk.index') }}" class="text-[11px] font-bold text-rose-700 hover:text-rose-900 hover:underline inline-flex items-center gap-1">
-                                        Prioritas Usulan CASN &rarr;
-                                    </a>
+                                <div class="mt-3 pt-2 border-t border-rose-200/60 flex items-center justify-between text-[11px]">
+                                    <span class="text-rose-700 font-bold">Prioritas Usulan CASN</span>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold transition" :class="filter === 'defisit' ? 'bg-rose-600 text-white' : 'bg-white/80 text-rose-700 border border-rose-200'">
+                                        <span x-text="filter === 'defisit' ? '● Aktif' : 'Lihat Rincian &rarr;'"></span>
+                                    </span>
                                 </div>
                             </div>
 
                             {{-- Kartu 3: Formasi Ideal / Cukup --}}
-                            <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/60 flex flex-col justify-between shadow-2xs">
+                            <div @click="setFilter('ideal')"
+                                 :class="filter === 'ideal' ? 'ring-2 ring-emerald-500 shadow-md bg-emerald-100 border-emerald-400 scale-[1.01]' : 'border-emerald-200 bg-emerald-50/60 hover:shadow-xs hover:border-emerald-300'"
+                                 class="p-4 rounded-xl border flex flex-col justify-between cursor-pointer transition-all duration-200 select-none group"
+                                 title="Klik untuk melihat formasi yang sudah terpenuhi / ideal">
                                 <div>
                                     <div class="flex items-center justify-between mb-1.5">
                                         <span class="text-xs font-bold uppercase tracking-wider text-emerald-900">Formasi Ideal</span>
@@ -937,13 +1010,19 @@
                                     </div>
                                     <p class="text-[11px] text-emerald-600 mt-1.5">Jumlah pegawai aktif saat ini seimbang dengan beban kerja jabatan</p>
                                 </div>
-                                <div class="mt-3 pt-2 border-t border-emerald-200/60 text-right">
-                                    <span class="text-[11px] font-semibold text-emerald-700">Beban Kerja Berimbang</span>
+                                <div class="mt-3 pt-2 border-t border-emerald-200/60 flex items-center justify-between text-[11px]">
+                                    <span class="text-emerald-700 font-semibold">Beban Kerja Seimbang</span>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold transition" :class="filter === 'ideal' ? 'bg-emerald-600 text-white' : 'bg-white/80 text-emerald-700 border border-emerald-200'">
+                                        <span x-text="filter === 'ideal' ? '● Aktif' : 'Lihat Rincian &rarr;'"></span>
+                                    </span>
                                 </div>
                             </div>
 
                             {{-- Kartu 4: Dokumen & Standar Anjab Terisi --}}
-                            <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/60 flex flex-col justify-between shadow-2xs">
+                            <div @click="setFilter('dokumen')"
+                                 :class="filter === 'dokumen' ? 'ring-2 ring-blue-500 shadow-md bg-blue-100 border-blue-400 scale-[1.01]' : 'border-blue-200 bg-blue-50/60 hover:shadow-xs hover:border-blue-300'"
+                                 class="p-4 rounded-xl border flex flex-col justify-between cursor-pointer transition-all duration-200 select-none group"
+                                 title="Klik untuk melihat katalog dokumen analisis jabatan baku">
                                 <div>
                                     <div class="flex items-center justify-between mb-1.5">
                                         <span class="text-xs font-bold uppercase tracking-wider text-blue-900">Dokumen Anjab Baku</span>
@@ -955,80 +1034,135 @@
                                     </div>
                                     <p class="text-[11px] text-blue-600 mt-1.5">Lengkap dengan rincian uraian tugas, kualifikasi, syarat jabatan, & kelas</p>
                                 </div>
-                                <div class="mt-3 pt-2 border-t border-blue-200/60 text-right">
-                                    <a href="{{ route('anjab.create') }}" class="text-[11px] font-bold text-blue-700 hover:text-blue-900 hover:underline inline-flex items-center gap-1">
-                                        + Tambah Anjab Baru &rarr;
-                                    </a>
+                                <div class="mt-3 pt-2 border-t border-blue-200/60 flex items-center justify-between text-[11px]">
+                                    <span class="text-blue-700 font-semibold">Standar KemenPAN-RB</span>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold transition" :class="filter === 'dokumen' ? 'bg-blue-600 text-white' : 'bg-white/80 text-blue-700 border border-blue-200'">
+                                        <span x-text="filter === 'dokumen' ? '● Aktif' : 'Lihat Rincian &rarr;'"></span>
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Sub-Grid: Prioritas Usulan Formasi (Defisit) & Quick Navigation --}}
+                        {{-- Sub-Grid: Tabel Dinamis Interaktif & Panel Alur Struktur Organisasi --}}
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                            {{-- Tabel Defisit SDM (2 Kolom Lebar) --}}
+                            {{-- Tabel Dinamis (2 Kolom Lebar) --}}
                             <div class="lg:col-span-2 border border-slate-200 rounded-xl p-4 bg-slate-50/50">
-                                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-200/80">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-base">🚨</span>
-                                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800">Prioritas Usulan Kebutuhan Formasi (SDM Defisit)</h4>
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-3 pb-3 border-b border-slate-200/80 gap-3">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-base" x-text="filter === 'defisit' ? '🚨' : (filter === 'ideal' ? '🟢' : (filter === 'dokumen' ? '📑' : '📋'))"></span>
+                                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800" x-text="filterTitle"></h4>
+                                        </div>
+                                        <span class="text-[11px] font-bold text-slate-500 mt-0.5 inline-block" x-text="filterBadge"></span>
                                     </div>
-                                    <a href="{{ route('abk.index') }}" class="text-xs font-bold text-blue-600 hover:underline">
-                                        Lihat Semua Matriks &rarr;
-                                    </a>
+
+                                    {{-- Kolom Pencarian Cepat & Tombol Reset --}}
+                                    <div class="flex items-center gap-2">
+                                        <div class="relative w-48 sm:w-56">
+                                            <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-slate-400 text-xs">
+                                                🔍
+                                            </span>
+                                            <input type="text"
+                                                   x-model="search"
+                                                   placeholder="Cari jabatan/unit..."
+                                                   class="w-full pl-7 pr-6 py-1 text-xs bg-white rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                                            <button type="button"
+                                                    x-show="search.length > 0"
+                                                    @click="search = ''"
+                                                    class="absolute inset-y-0 right-0 pr-2 flex items-center text-slate-400 hover:text-slate-600 text-xs">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        <button type="button"
+                                                x-show="filter !== 'all' || search.length > 0"
+                                                @click="filter = 'all'; search = ''"
+                                                class="px-2.5 py-1 text-[11px] font-semibold text-slate-600 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 transition">
+                                            Reset Filter
+                                        </button>
+                                    </div>
                                 </div>
 
-                                @if($abkSummary['prioritasDefisit']->count() > 0)
-                                    <div class="overflow-x-auto">
-                                        <table class="w-full text-xs text-left text-slate-600">
-                                            <thead class="bg-white text-slate-700 uppercase font-bold text-[10px] border-b border-slate-200">
-                                                <tr>
-                                                    <th class="px-3 py-2">Nama Jabatan & Unit Kerja</th>
-                                                    <th class="px-3 py-2 text-center">Kelas</th>
-                                                    <th class="px-3 py-2 text-center">Kebutuhan</th>
-                                                    <th class="px-3 py-2 text-center">Pegawai Ada</th>
-                                                    <th class="px-3 py-2 text-center">Kekurangan</th>
-                                                    <th class="px-3 py-2 text-right">Aksi</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="divide-y divide-slate-100 bg-white">
-                                                @foreach($abkSummary['prioritasDefisit'] as $anjab)
-                                                    <tr class="hover:bg-slate-50 transition">
-                                                        <td class="px-3 py-2.5">
-                                                            <div class="font-bold text-slate-900">{{ $anjab->jabatan?->nama_jabatan ?? '-' }}</div>
-                                                            <div class="text-[10px] text-slate-500">{{ $anjab->unitKerja?->nama_unit ?? 'Fakultas Keperawatan' }}</div>
-                                                        </td>
-                                                        <td class="px-3 py-2.5 text-center">
-                                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                                                                Grade {{ $anjab->kelas_jabatan ?? $anjab->jabatan?->kelas_jabatan ?? '-' }}
-                                                            </span>
-                                                        </td>
-                                                        <td class="px-3 py-2.5 text-center font-bold text-slate-800">
-                                                            {{ $anjab->formasi_pembulatan }}
-                                                        </td>
-                                                        <td class="px-3 py-2.5 text-center font-semibold text-slate-600">
-                                                            {{ $anjab->bezetting }}
-                                                        </td>
-                                                        <td class="px-3 py-2.5 text-center">
-                                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
-                                                                -{{ abs($anjab->selisih_formasi) }} Orang
-                                                            </span>
-                                                        </td>
-                                                        <td class="px-3 py-2.5 text-right whitespace-nowrap">
-                                                            <a href="{{ route('abk.edit', $anjab->id) }}" class="inline-flex items-center px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 font-semibold text-[10px] border border-blue-200 transition">
+                                {{-- Isi Tabel Dinamis --}}
+                                <div class="overflow-x-auto max-h-[360px] overflow-y-auto border border-slate-200 rounded-lg bg-white shadow-2xs">
+                                    <table class="w-full text-xs text-left text-slate-600">
+                                        <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-[10px] border-b border-slate-200 sticky top-0 z-10 shadow-2xs">
+                                            <tr>
+                                                <th class="px-3 py-2.5">Nama Jabatan & Unit Kerja</th>
+                                                <th class="px-3 py-2.5 text-center">Kelas</th>
+                                                <th class="px-3 py-2.5 text-center">Kebutuhan</th>
+                                                <th class="px-3 py-2.5 text-center">Pegawai Riil</th>
+                                                <th class="px-3 py-2.5 text-center">Status Formasi</th>
+                                                <th class="px-3 py-2.5 text-right">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100">
+                                            <template x-for="item in filteredItems" :key="item.id">
+                                                <tr class="hover:bg-slate-50 transition">
+                                                    <td class="px-3 py-2.5">
+                                                        <div class="font-bold text-slate-900" x-text="item.jabatan"></div>
+                                                        <div class="text-[10px] text-slate-500">
+                                                            <span x-text="item.unit"></span>
+                                                            <span class="text-slate-300">•</span>
+                                                            <span class="font-mono text-slate-400" x-text="item.kode_anjab"></span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-3 py-2.5 text-center whitespace-nowrap">
+                                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200" x-text="'Grade ' + item.kelas">
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-3 py-2.5 text-center font-bold text-slate-800" x-text="item.kebutuhan"></td>
+                                                    <td class="px-3 py-2.5 text-center font-semibold text-slate-700" x-text="item.bezetting"></td>
+                                                    <td class="px-3 py-2.5 text-center whitespace-nowrap">
+                                                        <template x-if="item.is_defisit">
+                                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200" x-text="'🔴 Kurang (' + Math.abs(item.selisih) + ')'"></span>
+                                                        </template>
+                                                        <template x-if="item.is_ideal">
+                                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">🟢 Ideal (Cukup)</span>
+                                                        </template>
+                                                        <template x-if="item.is_lebih">
+                                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200" x-text="'🟡 Lebih (+' + item.selisih + ')'"></span>
+                                                        </template>
+                                                    </td>
+                                                    <td class="px-3 py-2.5 text-right whitespace-nowrap space-x-1">
+                                                        @if(Auth::user()->canManageAnjabAbk())
+                                                            <a :href="item.url_abk" class="inline-flex items-center px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 font-semibold text-[10px] border border-blue-200 transition">
                                                                 Kelola ABK &rarr;
                                                             </a>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                @else
-                                    <div class="text-center py-6 text-slate-400 text-xs">
-                                        <span class="text-2xl block mb-1">🎉</span>
-                                        Seluruh formasi jabatan teranalisis saat ini sudah dalam kondisi ideal / terpenuhi.
-                                    </div>
-                                @endif
+                                                        @else
+                                                            <a :href="item.url_abk" class="inline-flex items-center px-2 py-1 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold text-[10px] border border-slate-200 transition">
+                                                                Rincian ABK &rarr;
+                                                            </a>
+                                                        @endif
+                                                        <a :href="item.url_anjab" class="inline-flex items-center px-2 py-1 rounded bg-white text-slate-600 hover:bg-slate-50 font-semibold text-[10px] border border-slate-300 transition" title="Lihat 17 Butir Anjab">
+                                                            Dokumen 👁️
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </template>
+
+                                            {{-- Pesan saat hasil kosong --}}
+                                            <tr x-show="filteredItems.length === 0">
+                                                <td colspan="6" class="px-4 py-8 text-center text-slate-400 text-xs">
+                                                    <span class="text-2xl block mb-1">🔍</span>
+                                                    <p class="font-semibold text-slate-600">Tidak ada jabatan yang sesuai dengan filter atau kata kunci.</p>
+                                                    <button type="button" @click="filter = 'all'; search = ''" class="mt-2 text-indigo-600 font-bold hover:underline">
+                                                        &larr; Tampilkan Semua Formasi Jabatan
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {{-- Footer Tabel dengan Tautan Matriks Lengkap --}}
+                                <div class="mt-3 pt-2 border-t border-slate-200/80 flex items-center justify-between text-xs">
+                                    <span class="text-slate-500">
+                                        Menampilkan <strong class="text-slate-800" x-text="filteredItems.length"></strong> dari <strong class="text-slate-900" x-text="items.length"></strong> jabatan teranalisis
+                                    </span>
+                                    <a href="{{ route('abk.index') }}" class="font-bold text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1">
+                                        Buka Matriks Lengkap Beban Kerja (ABK) &rarr;
+                                    </a>
+                                </div>
                             </div>
 
                             {{-- Peta Struktur & Rekomendasi Cepat (1 Kolom) --}}
@@ -1053,12 +1187,21 @@
                                             <span class="text-slate-300">Pilar Penunjang & Unit:</span>
                                             <span class="font-bold text-blue-300">27 Lab / Unit / KJFD</span>
                                         </div>
+                                        <div class="flex items-center justify-between p-2 rounded-lg bg-white/10 border border-white/10">
+                                            <span class="text-slate-300">Total Formasi Disusun:</span>
+                                            <span class="font-bold text-amber-300">{{ $abkSummary['totalDokumen'] }} Jabatan</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="mt-4 pt-3 border-t border-white/15">
+                                <div class="mt-4 pt-3 border-t border-white/15 space-y-2">
                                     <a href="{{ route('anjab.peta-jabatan') }}" class="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold text-xs text-white flex items-center justify-center gap-2 shadow-md transition">
                                         <span>Buka Peta Jabatan Digital</span> &rarr;
                                     </a>
+                                    @if(Auth::user()->canManageAnjabAbk())
+                                        <a href="{{ route('anjab.create') }}" class="w-full py-2 px-3 rounded-xl bg-white/15 hover:bg-white/25 font-semibold text-xs text-white flex items-center justify-center gap-1.5 transition">
+                                            <span>➕</span> Tambah Dokumen Anjab Baru
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>

@@ -164,9 +164,15 @@
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-right space-x-1 whitespace-nowrap">
-                                        <a href="{{ route('abk.edit', $item) }}" class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition" title="Kelola Butir Tugas ABK">
-                                            ✏️ Tugas
-                                        </a>
+                                        @if(Auth::user()->canManageAnjabAbk())
+                                            <a href="{{ route('abk.edit', $item) }}" class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition" title="Kelola Butir Tugas ABK">
+                                                ✏️ Tugas
+                                            </a>
+                                        @else
+                                            <a href="{{ route('abk.edit', $item) }}" class="inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition" title="Lihat Rincian Tugas ABK">
+                                                📄 Rincian
+                                            </a>
+                                        @endif
                                         <a href="{{ route('anjab.show', $item) }}" class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 transition" title="Detail Anjab">
                                             👁️
                                         </a>

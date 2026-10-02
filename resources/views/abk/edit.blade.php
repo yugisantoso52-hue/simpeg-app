@@ -71,47 +71,57 @@
                 </div>
             </div>
 
-            {{-- Form Tambah Butir Tugas Baru --}}
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                <h2 class="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
-                    <span>➕</span> Tambah Butir Tugas Pokok Baru
-                </h2>
-                <form method="POST" action="{{ route('abk.tugas.store', $anjab) }}" class="space-y-4">
-                    @csrf
+            @if(Auth::user()->canManageAnjabAbk())
+                {{-- Form Tambah Butir Tugas Baru --}}
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                    <h2 class="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
+                        <span>➕</span> Tambah Butir Tugas Pokok Baru
+                    </h2>
+                    <form method="POST" action="{{ route('abk.tugas.store', $anjab) }}" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Uraian Tugas Pokok <span class="text-red-500">*</span></label>
+                            <input type="text" name="uraian_tugas" required placeholder="Contoh: Memeriksa dan merekap kehadiran harian pegawai di sistem..."
+                                   class="w-full text-sm rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Satuan Hasil <span class="text-red-500">*</span></label>
+                                <input type="text" name="satuan_hasil" required placeholder="Kegiatan / Dokumen / Berkas"
+                                       class="w-full text-sm rounded-lg border-gray-300">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Norma Waktu (Menit) <span class="text-red-500">*</span></label>
+                                <input type="number" step="any" min="1" name="norma_waktu_menit" required placeholder="Contoh: 60"
+                                       class="w-full text-sm rounded-lg border-gray-300">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Volume 1 Tahun <span class="text-red-500">*</span></label>
+                                <input type="number" step="any" min="0.1" name="volume_1_tahun" required placeholder="Contoh: 240"
+                                       class="w-full text-sm rounded-lg border-gray-300">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Keterangan (Opsional)</label>
+                                <input type="text" name="keterangan" placeholder="Catatan tambahan"
+                                       class="w-full text-sm rounded-lg border-gray-300">
+                            </div>
+                        </div>
+                        <div class="flex justify-end pt-2">
+                            <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 transition">
+                                ➕ Simpan Butir Tugas
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            @else
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3 text-blue-800">
+                    <span class="text-xl">ℹ️</span>
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Uraian Tugas Pokok <span class="text-red-500">*</span></label>
-                        <input type="text" name="uraian_tugas" required placeholder="Contoh: Memeriksa dan merekap kehadiran harian pegawai di sistem..."
-                               class="w-full text-sm rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                        <div class="font-bold text-xs">Mode Monitoring Eksekutif</div>
+                        <div class="text-[11px] text-blue-700">Anda memiliki akses monitoring rincian butir tugas dan analisis beban kerja. Hak ubah butir tugas baku dikelola oleh Admin / Ka Pokja Kepegawaian.</div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Satuan Hasil <span class="text-red-500">*</span></label>
-                            <input type="text" name="satuan_hasil" required placeholder="Kegiatan / Dokumen / Berkas"
-                                   class="w-full text-sm rounded-lg border-gray-300">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Norma Waktu (Menit) <span class="text-red-500">*</span></label>
-                            <input type="number" step="any" min="1" name="norma_waktu_menit" required placeholder="Contoh: 60"
-                                   class="w-full text-sm rounded-lg border-gray-300">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Volume 1 Tahun <span class="text-red-500">*</span></label>
-                            <input type="number" step="any" min="0.1" name="volume_1_tahun" required placeholder="Contoh: 240"
-                                   class="w-full text-sm rounded-lg border-gray-300">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Keterangan (Opsional)</label>
-                            <input type="text" name="keterangan" placeholder="Catatan tambahan"
-                                   class="w-full text-sm rounded-lg border-gray-300">
-                        </div>
-                    </div>
-                    <div class="flex justify-end pt-2">
-                        <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 transition">
-                            ➕ Simpan Butir Tugas
-                        </button>
-                    </div>
-                </form>
-            </div>
+                </div>
+            @endif
 
             {{-- Tabel Daftar Butir Tugas Eksisting --}}
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -145,13 +155,17 @@
                                     <td class="p-3 text-center font-mono font-bold text-gray-900">{{ number_format($tugas->waktu_beban_menit) }} Menit</td>
                                     <td class="p-3 text-center font-mono font-bold text-blue-700">{{ $tugas->kebutuhan_pegawai }}</td>
                                     <td class="p-3 text-right space-x-1 whitespace-nowrap">
-                                        <form method="POST" action="{{ route('abk.tugas.destroy', $tugas) }}" class="inline" onsubmit="return confirm('Hapus butir tugas ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-50 rounded hover:bg-rose-100 transition">
-                                                Hapus
-                                            </button>
-                                        </form>
+                                        @if(Auth::user()->canManageAnjabAbk())
+                                            <form method="POST" action="{{ route('abk.tugas.destroy', $tugas) }}" class="inline" onsubmit="return confirm('Hapus butir tugas ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-50 rounded hover:bg-rose-100 transition">
+                                                    Hapus
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="text-[10px] text-slate-400 italic">Baku</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty

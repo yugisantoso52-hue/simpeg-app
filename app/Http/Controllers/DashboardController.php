@@ -89,6 +89,28 @@ class DashboardController extends Controller
             // Top formasi yang paling defisit / mendesak untuk diusulkan formasi baru
             $prioritasDefisit = $jabatanKurang->sortBy(fn($a) => $a->selisih_formasi)->take(6)->values();
 
+            // Koleksi lengkap data jabatan teranalisis untuk interaktivitas kartu & tabel (Alpine.js)
+            $allAnjabsFormatted = $anjabs->map(function($a) {
+                return [
+                    'id'           => $a->id,
+                    'jabatan'      => $a->jabatan?->nama_jabatan ?? '-',
+                    'unit'         => $a->unitKerja?->nama_unit ?? 'Fakultas Keperawatan',
+                    'kelas'        => $a->kelas_jabatan ?? $a->jabatan?->kelas_jabatan ?? '-',
+                    'kebutuhan'    => (int) $a->formasi_pembulatan,
+                    'bezetting'    => (int) $a->bezetting,
+                    'selisih'      => (int) $a->selisih_formasi,
+                    'status_label' => $a->status_formasi,
+                    'status_color' => $a->status_color,
+                    'kode_anjab'   => $a->kode_anjab ?? ('ANJAB-' . $a->id),
+                    'total_jam'    => $a->total_jam_beban,
+                    'is_defisit'   => $a->selisih_formasi < 0,
+                    'is_ideal'     => $a->selisih_formasi == 0,
+                    'is_lebih'     => $a->selisih_formasi > 0,
+                    'url_abk'      => route('abk.edit', $a->id),
+                    'url_anjab'    => route('anjab.show', $a->id),
+                ];
+            })->values();
+
             $data['abkSummary'] = [
                 'totalKebutuhan'     => $totalKebutuhan,
                 'totalBezetting'     => $totalBezetting,
@@ -99,6 +121,7 @@ class DashboardController extends Controller
                 'totalDokumen'       => $anjabs->count(),
                 'totalMasterJabatan' => Jabatan::count(),
                 'prioritasDefisit'   => $prioritasDefisit,
+                'items'              => $allAnjabsFormatted,
             ];
 
             // Tambahan Metrik Manajerial (Action Items & Kinerja Terkini)
