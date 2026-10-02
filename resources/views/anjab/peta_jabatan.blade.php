@@ -242,19 +242,58 @@
                                 {{-- Garis Turun ke Ketua Jurusan & Sek. Jurusan --}}
                                 <div class="w-0.5 h-4" style="background-color: #0d9488 !important;"></div>
 
-                                {{-- Kotak KETUA JURUSAN & SEK. JURUSAN --}}
-                                <div class="w-full p-2.5 rounded-lg shadow-sm cursor-pointer hover:opacity-95 transition"
-                                     style="background: linear-gradient(135deg, #0f766e 0%, #115e59 100%) !important; color: #ffffff !important; border: 1.5px solid #2dd4bf !important;"
-                                     @click="openDetail(
-                                         'KETUA JURUSAN & SEK. JURUSAN',
-                                         'Pelaksana Akademik Jurusan Keperawatan (Grade 11)',
-                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%')->orWhere('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->count() }},
-                                         2, 'Ideal',
-                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%')->orWhere('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                         'Mengkoordinasikan penyelenggaraan pendidikan, pengembangan keilmuan keperawatan, dan evaluasi kurikulum program studi.'
-                                     )">
-                                    <div class="text-center font-black text-xs uppercase tracking-wide" style="color: #ffffff !important;">
-                                        KETUA JURUSAN / SEK. JURUSAN
+                                {{-- Kotak KETUA JURUSAN & SEK. JURUSAN (Di bawah WD I, Membawahi 2 Jurusan) --}}
+                                <div class="w-full grid grid-cols-2 gap-2">
+                                    {{-- Ketua Jurusan --}}
+                                    <div class="p-2 rounded-lg shadow-sm cursor-pointer hover:scale-[1.02] transition text-center"
+                                         style="background: linear-gradient(135deg, #0f766e 0%, #115e59 100%) !important; color: #ffffff !important; border: 1.5px solid #2dd4bf !important;"
+                                         @click="openDetail(
+                                             'KETUA JURUSAN (KAJUR)',
+                                             'Pimpinan Jurusan Keperawatan (Grade 11)',
+                                             {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%'))->count() }},
+                                             1, 'Ideal',
+                                             {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             'Memimpin jurusan dalam pengelolaan tridharma, pembagian beban kerja dosen (BKD), dan membawahi Jurusan Preklinik serta Jurusan Klinik & Komunitas di bawah koordinasi Wakil Dekan I.'
+                                         )">
+                                        <div class="flex justify-between items-center text-[9px] mb-1">
+                                            <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 1px 4px; border-radius: 3px;">KAJUR</span>
+                                            <span style="background-color: #fbbf24 !important; color: #0f766e !important; font-weight: 900; padding: 1px 4px; border-radius: 3px; font-family: monospace;">Grade 11</span>
+                                        </div>
+                                        <div class="font-black text-[11px] uppercase tracking-wide" style="color: #ffffff !important;">
+                                            KETUA JURUSAN
+                                        </div>
+                                        <div class="text-[9.5px] mt-1 pt-1 border-t border-white/20 text-teal-100 flex justify-between items-center">
+                                            <span>Bezetting: <strong>{{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%'))->count() }}</strong>/1</span>
+                                            <span class="text-[8.5px] px-1.5 py-0.2 rounded font-bold {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%'))->count() > 0 ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900' }}">
+                                                {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%'))->count() > 0 ? 'Terisi' : 'Butuh SK' }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {{-- Sekretaris Jurusan --}}
+                                    <div class="p-2 rounded-lg shadow-sm cursor-pointer hover:scale-[1.02] transition text-center"
+                                         style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important; color: #ffffff !important; border: 1.5px solid #5eead4 !important;"
+                                         @click="openDetail(
+                                             'SEKRETARIS JURUSAN (SEKJUR)',
+                                             'Pimpinan Administrasi Jurusan Keperawatan (Grade 10)',
+                                             {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->count() }},
+                                             1, 'Ideal',
+                                             {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             'Membantu Ketua Jurusan dalam pengelolaan administrasi akademik, ketatausahaan, dokumentasi kurikulum, dan rekapitulasi BKD/SKP dosen.'
+                                         )">
+                                        <div class="flex justify-between items-center text-[9px] mb-1">
+                                            <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 1px 4px; border-radius: 3px;">SEKJUR</span>
+                                            <span style="background-color: #fbbf24 !important; color: #0d9488 !important; font-weight: 900; padding: 1px 4px; border-radius: 3px; font-family: monospace;">Grade 10</span>
+                                        </div>
+                                        <div class="font-black text-[11px] uppercase tracking-wide" style="color: #ffffff !important;">
+                                            SEKRETARIS JURUSAN
+                                        </div>
+                                        <div class="text-[9.5px] mt-1 pt-1 border-t border-white/20 text-teal-100 flex justify-between items-center">
+                                            <span>Bezetting: <strong>{{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->count() }}</strong>/1</span>
+                                            <span class="text-[8.5px] px-1.5 py-0.2 rounded font-bold {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->count() > 0 ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900' }}">
+                                                {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->count() > 0 ? 'Terisi' : 'Butuh SK' }}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 
