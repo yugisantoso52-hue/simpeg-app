@@ -6,6 +6,8 @@ use App\Models\Pegawai;
 use App\Models\PengajuanCuti;
 use App\Models\Logbook;
 use App\Models\Attendance;
+use App\Models\AnalisisJabatan;
+use App\Models\Jabatan;
 use App\Services\DashboardService;
 use App\Services\LogbookService;
 use App\Services\PegawaiCompletenessService;
@@ -65,12 +67,39 @@ class DashboardController extends Controller
             }
         }
 
-        // Jika user yang login adalah Admin / Pimpinan / Atasan Langsung
+        // Jika user yang login adalah Admin / Pimpinan / Atasan Langsung / Pejabat Eksekutif
         $isAdmin = $user->hasRole('admin');
-        $isAtasan = $user->isAtasan() || $user->hasRole('pimpinan');
+        $isAtasan = $user->isAtasan() || $user->hasRole('pimpinan') || $user->canAccessExecutiveKepegawaianMenus();
 
         if ($isAdmin || $isAtasan) {
             $data['facultyCompleteness'] = PegawaiCompletenessService::getFacultyCompleteness();
+
+            // Ringkasan Eksekutif Analisis Jabatan & Formasi Beban Kerja (Anjab & ABK)
+            // Acuan: PermenPAN-RB No. 1/2020 & Peraturan BKN No. 12 & 19/2011
+            $anjabs = AnalisisJabatan::with(['jabatan', 'unitKerja', 'uraianTugas'])->get();
+            $totalKebutuhan = (int) $anjabs->sum('formasi_pembulatan');
+            $totalBezetting = (int) $anjabs->sum('bezetting');
+            $rasioKeterisian = $totalKebutuhan > 0 ? round(($totalBezetting / $totalKebutuhan) * 100, 1) : 0;
+
+            $jabatanKurang = $anjabs->filter(fn($a) => $a->selisih_formasi < 0);
+            $totalDefisit = (int) $jabatanKurang->sum(fn($a) => abs($a->selisih_formasi));
+            $totalIdeal = $anjabs->filter(fn($a) => $a->selisih_formasi == 0)->count();
+            $totalLebih = (int) $anjabs->filter(fn($a) => $a->selisih_formasi > 0)->sum('selisih_formasi');
+
+            // Top formasi yang paling defisit / mendesak untuk diusulkan formasi baru
+            $prioritasDefisit = $jabatanKurang->sortBy(fn($a) => $a->selisih_formasi)->take(6)->values();
+
+            $data['abkSummary'] = [
+                'totalKebutuhan'     => $totalKebutuhan,
+                'totalBezetting'     => $totalBezetting,
+                'rasioKeterisian'    => $rasioKeterisian,
+                'totalDefisit'       => $totalDefisit,
+                'totalIdeal'         => $totalIdeal,
+                'totalLebih'         => $totalLebih,
+                'totalDokumen'       => $anjabs->count(),
+                'totalMasterJabatan' => Jabatan::count(),
+                'prioritasDefisit'   => $prioritasDefisit,
+            ];
 
             // Tambahan Metrik Manajerial (Action Items & Kinerja Terkini)
             $now = Carbon::now('Asia/Jakarta');
