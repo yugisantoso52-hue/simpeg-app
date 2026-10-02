@@ -174,12 +174,13 @@
                     <div class="w-full flex items-start justify-center gap-6 relative">
 
                         {{-- Garis Horizontal Penghubung 3 Wadek --}}
-                        <div class="absolute top-0 left-1/4 right-1/4 h-0.5 bg-blue-600"></div>
+                        <div class="absolute top-0 left-1/4 right-1/4 h-0.5 bg-blue-600" style="background-color: #2563eb !important;"></div>
 
                         {{-- 1. WD I (Akademik) + GPM --}}
                         <div class="w-72 flex flex-col items-center">
-                            <div class="w-0.5 h-4 bg-blue-600"></div>
-                            <div class="w-full bg-blue-800 text-white p-3.5 rounded-xl shadow-md hover:scale-[1.02] transition cursor-pointer"
+                            <div class="w-0.5 h-4 bg-blue-600" style="background-color: #2563eb !important;"></div>
+                            <div class="w-full p-4 rounded-xl shadow-lg hover:scale-[1.02] transition cursor-pointer"
+                                 style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important; color: #ffffff !important; border: 2px solid #60a5fa !important; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3) !important;"
                                  @click="openDetail(
                                      'WAKIL DEKAN BID. AKADEMIK (WD I)',
                                      'Unsur Pimpinan Bidang Pendidikan, Kurikulum & Penjaminan Mutu (Grade 13)',
@@ -187,33 +188,34 @@
                                      [],
                                      'Membantu Dekan memimpin pelaksanaan pendidikan, penelitian, pengabdian masyarakat, penjaminan mutu, dan evaluasi kurikulum OBE.'
                                  )">
-                                <div class="flex justify-between items-center text-[10px] text-blue-200">
-                                    <span>UNSUR PIMPINAN</span>
-                                    <span class="font-mono">Grade 13</span>
+                                <div class="flex justify-between items-center text-[10px]">
+                                    <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 2px 8px; border-radius: 4px;">UNSUR PIMPINAN</span>
+                                    <span style="background-color: #fbbf24 !important; color: #1e3a8a !important; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-family: monospace;">Grade 13</span>
                                 </div>
-                                <div class="font-bold text-xs uppercase mt-0.5">WAKIL DEKAN BID. AKADEMIK</div>
-                                <div class="mt-2 pt-2 border-t border-blue-700 flex justify-between text-[11px]">
-                                    <span>Bezetting: 1 / Butuh: 1</span>
-                                    <span class="bg-emerald-500 text-white font-bold text-[9px] px-1.5 py-0.2 rounded">Ideal</span>
+                                <div class="font-black text-xs uppercase mt-2" style="color: #ffffff !important; letter-spacing: 0.3px; font-size: 12.5px;">WAKIL DEKAN BID. AKADEMIK</div>
+                                <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
+                                    <span>Bezetting: <strong style="color: #ffffff !important;">1</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
+                                    <span style="background-color: #10b981 !important; color: #ffffff !important; font-weight: 800; font-size: 10px; padding: 2px 8px; border-radius: 9999px;">🟢 Ideal</span>
                                 </div>
                             </div>
 
                             {{-- Sub-Unit di bawah WD I: GPM S1, S2, NERS --}}
-                            <div class="w-0.5 h-3 bg-blue-400"></div>
-                            <div class="w-56 bg-sky-100 border border-sky-300 rounded-lg p-2 text-center text-xs shadow-sm">
-                                <div class="font-bold text-sky-900 text-[11px] mb-1">GUGUS PENJAMIN MUTU (GPM)</div>
-                                <div class="grid grid-cols-3 gap-1 text-[10px] font-semibold text-sky-800">
-                                    <span class="bg-white p-1 rounded border border-sky-200 shadow-2xs">GPM S1</span>
-                                    <span class="bg-white p-1 rounded border border-sky-200 shadow-2xs">GPM S2</span>
-                                    <span class="bg-white p-1 rounded border border-sky-200 shadow-2xs">GPM NERS</span>
+                            <div class="w-0.5 h-3 bg-blue-400" style="background-color: #60a5fa !important;"></div>
+                            <div class="w-60 rounded-xl p-2.5 text-center text-xs shadow-sm" style="background-color: #f0f9ff !important; border: 1.5px solid #7dd3fc !important;">
+                                <div class="font-black text-[11px] mb-1.5" style="color: #0369a1 !important;">GUGUS PENJAMIN MUTU (GPM)</div>
+                                <div class="grid grid-cols-3 gap-1.5 text-[10px] font-black">
+                                    <span class="p-1 rounded shadow-2xs" style="background-color: #ffffff !important; border: 1px solid #bae6fd !important; color: #0284c7 !important;">GPM S1</span>
+                                    <span class="p-1 rounded shadow-2xs" style="background-color: #ffffff !important; border: 1px solid #bae6fd !important; color: #0284c7 !important;">GPM S2</span>
+                                    <span class="p-1 rounded shadow-2xs" style="background-color: #ffffff !important; border: 1px solid #bae6fd !important; color: #0284c7 !important;">GPM NERS</span>
                                 </div>
                             </div>
                         </div>
 
                         {{-- 2. WD II (Keuangan & Umum) --}}
                         <div class="w-72 flex flex-col items-center">
-                            <div class="w-0.5 h-4 bg-blue-600"></div>
-                            <div class="w-full bg-blue-800 text-white p-3.5 rounded-xl shadow-md hover:scale-[1.02] transition cursor-pointer"
+                            <div class="w-0.5 h-4 bg-blue-600" style="background-color: #2563eb !important;"></div>
+                            <div class="w-full p-4 rounded-xl shadow-lg hover:scale-[1.02] transition cursor-pointer"
+                                 style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important; color: #ffffff !important; border: 2px solid #60a5fa !important; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3) !important;"
                                  @click="openDetail(
                                      'WAKIL DEKAN BID. KEUANGAN DAN UMUM (WD II)',
                                      'Unsur Pimpinan Bidang Perencanaan, Anggaran & Kepegawaian (Grade 13)',
@@ -221,22 +223,23 @@
                                      [],
                                      'Membantu Dekan dalam perencanaan anggaran, perbendaharaan, kepegawaian, ketatausahaan, dan sarana prasarana fakultas.'
                                  )">
-                                <div class="flex justify-between items-center text-[10px] text-blue-200">
-                                    <span>UNSUR PIMPINAN</span>
-                                    <span class="font-mono">Grade 13</span>
+                                <div class="flex justify-between items-center text-[10px]">
+                                    <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 2px 8px; border-radius: 4px;">UNSUR PIMPINAN</span>
+                                    <span style="background-color: #fbbf24 !important; color: #1e3a8a !important; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-family: monospace;">Grade 13</span>
                                 </div>
-                                <div class="font-bold text-xs uppercase mt-0.5">WAKIL DEKAN BID. KEUANGAN DAN UMUM</div>
-                                <div class="mt-2 pt-2 border-t border-blue-700 flex justify-between text-[11px]">
-                                    <span>Bezetting: 1 / Butuh: 1</span>
-                                    <span class="bg-emerald-500 text-white font-bold text-[9px] px-1.5 py-0.2 rounded">Ideal</span>
+                                <div class="font-black text-xs uppercase mt-2" style="color: #ffffff !important; letter-spacing: 0.3px; font-size: 12.5px;">WAKIL DEKAN BID. KEUANGAN DAN UMUM</div>
+                                <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
+                                    <span>Bezetting: <strong style="color: #ffffff !important;">1</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
+                                    <span style="background-color: #10b981 !important; color: #ffffff !important; font-weight: 800; font-size: 10px; padding: 2px 8px; border-radius: 9999px;">🟢 Ideal</span>
                                 </div>
                             </div>
                         </div>
 
                         {{-- 3. WD III (Kemahasiswaan, Alumni & Kerjasama) --}}
                         <div class="w-72 flex flex-col items-center">
-                            <div class="w-0.5 h-4 bg-blue-600"></div>
-                            <div class="w-full bg-blue-800 text-white p-3.5 rounded-xl shadow-md hover:scale-[1.02] transition cursor-pointer"
+                            <div class="w-0.5 h-4 bg-blue-600" style="background-color: #2563eb !important;"></div>
+                            <div class="w-full p-4 rounded-xl shadow-lg hover:scale-[1.02] transition cursor-pointer"
+                                 style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important; color: #ffffff !important; border: 2px solid #60a5fa !important; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3) !important;"
                                  @click="openDetail(
                                      'WAKIL DEKAN BID. KEMAHASISWAAN, ALUMNI & KERJASAMA (WD III)',
                                      'Unsur Pimpinan Bidang Penalaran, Minat Bakat, Tracer Study & Kemitraan (Grade 13)',
@@ -244,14 +247,14 @@
                                      [],
                                      'Membantu Dekan dalam pembinaan kegiatan kemahasiswaan, tracer study alumni, dan kerjasama institusional.'
                                  )">
-                                <div class="flex justify-between items-center text-[10px] text-blue-200">
-                                    <span>UNSUR PIMPINAN</span>
-                                    <span class="font-mono">Grade 13</span>
+                                <div class="flex justify-between items-center text-[10px]">
+                                    <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 2px 8px; border-radius: 4px;">UNSUR PIMPINAN</span>
+                                    <span style="background-color: #fbbf24 !important; color: #1e3a8a !important; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-family: monospace;">Grade 13</span>
                                 </div>
-                                <div class="font-bold text-xs uppercase mt-0.5">WAKIL DEKAN BID. KEMAHASISWAAN, ALUMNI & KERJASAMA</div>
-                                <div class="mt-2 pt-2 border-t border-blue-700 flex justify-between text-[11px]">
-                                    <span>Bezetting: 1 / Butuh: 1</span>
-                                    <span class="bg-emerald-500 text-white font-bold text-[9px] px-1.5 py-0.2 rounded">Ideal</span>
+                                <div class="font-black text-xs uppercase mt-2" style="color: #ffffff !important; letter-spacing: 0.3px; font-size: 12.5px;">WAKIL DEKAN BID. KEMAHASISWAAN, ALUMNI & KERJASAMA</div>
+                                <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
+                                    <span>Bezetting: <strong style="color: #ffffff !important;">1</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
+                                    <span style="background-color: #10b981 !important; color: #ffffff !important; font-weight: 800; font-size: 10px; padding: 2px 8px; border-radius: 9999px;">🟢 Ideal</span>
                                 </div>
                             </div>
                         </div>
@@ -259,16 +262,16 @@
                     </div>
 
                     {{-- Garis Vertikal Pemisah ke Tingkat Pelaksana --}}
-                    <div class="w-full border-t-2 border-blue-300 relative my-2">
-                        <div class="absolute left-1/2 -top-2 w-4 h-4 rounded-full bg-blue-600 -translate-x-1/2"></div>
+                    <div class="w-full relative my-2" style="border-top: 2px solid #93c5fd !important;">
+                        <div class="absolute left-1/2 -top-2 w-4 h-4 rounded-full -translate-x-1/2" style="background-color: #2563eb !important;"></div>
                     </div>
 
                     {{-- LEVEL 3: TINGKAT PELAKSANA AKADEMIK, TATA USAHA, LAB & FUNGSIONAL (5 KOLOM UTAMA) --}}
                     <div class="w-full grid grid-cols-1 lg:grid-cols-5 gap-4 items-start">
 
                         {{-- 1. UNIT-UNIT FUNGSIONAL --}}
-                        <div class="bg-white border-2 border-sky-300 rounded-xl p-3.5 shadow-sm">
-                            <div class="bg-sky-700 text-white text-center py-1.5 px-2 rounded-lg font-bold text-xs uppercase tracking-wide mb-2.5">
+                        <div class="p-3.5 shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #0284c7 !important; border-radius: 12px !important;">
+                            <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.3); margin-bottom: 10px;">
                                 UNIT-UNIT FUNGSIONAL
                             </div>
                             <div class="space-y-1 text-[11px]">
@@ -280,28 +283,30 @@
                                     ];
                                 @endphp
                                 @foreach($unitFung as $uf)
-                                    <div class="bg-sky-50/70 hover:bg-sky-100 p-1.5 rounded border border-sky-100 font-medium text-sky-950 flex items-center justify-between cursor-pointer"
+                                    <div class="p-1.5 rounded flex items-center justify-between cursor-pointer hover:opacity-90 transition"
+                                         style="background-color: #f0f9ff !important; border: 1px solid #bae6fd !important; color: #0c4a6e !important; font-weight: 700;"
                                          @click="openDetail('{{ $uf }}', 'Unit Fungsional Khusus Fakultas', 1, 1, 'Ideal', [], 'Melaksanakan fungsi spesifik pendukung akademik dan pelayanan publik.')">
-                                        <span>{{ $uf }}</span>
-                                        <span class="text-[9px] text-sky-600 font-mono">Detail</span>
+                                        <span style="color: #0c4a6e !important;">{{ $uf }}</span>
+                                        <span style="color: #0284c7 !important; font-weight: 800; font-size: 9.5px; font-family: monospace;">Detail ➔</span>
                                     </div>
                                 @endforeach
                             </div>
                         </div>
 
                         {{-- 2. JURUSAN PREKLINIK KEPERAWATAN --}}
-                        <div class="bg-white border-2 border-emerald-400 rounded-xl p-3.5 shadow-sm">
-                            <div class="bg-emerald-700 text-white text-center py-1.5 px-2 rounded-lg font-bold text-xs uppercase tracking-wide mb-2.5">
+                        <div class="p-3.5 shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #059669 !important; border-radius: 12px !important;">
+                            <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(5, 150, 105, 0.3); margin-bottom: 10px;">
                                 JURUSAN PREKLINIK KEPERAWATAN
                             </div>
 
                             {{-- Sub-blok 1: Koordinator Prodi S1 & S2 --}}
                             <div class="mb-3">
-                                <div class="bg-emerald-100 text-emerald-950 font-bold text-[10px] uppercase px-2 py-1 rounded mb-1.5 text-center">
+                                <div style="background-color: #d1fae5 !important; color: #064e3b !important; font-weight: 800; font-size: 10px; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; text-align: center; margin-bottom: 6px; border: 1px solid #a7f3d0 !important;">
                                     KOORDINATOR PROGRAM STUDI
                                 </div>
-                                <div class="space-y-1 text-xs">
-                                    <div class="bg-emerald-50 hover:bg-emerald-100 p-2 rounded border border-emerald-200 cursor-pointer"
+                                <div class="space-y-1.5 text-xs">
+                                    <div class="p-2 rounded cursor-pointer hover:opacity-90 transition"
+                                         style="background-color: #f0fdf4 !important; border: 1.5px solid #86efac !important;"
                                          @click="openDetail(
                                              'Koordinator Prodi S1 Keperawatan',
                                              'Program Studi Sarjana Keperawatan (Grade 10)',
@@ -309,10 +314,11 @@
                                              1, 'Ideal', [],
                                              'Mengkoordinasikan kurikulum S1, pembelajaran OBE, plotting dosen, dan akreditasi LAM-PTKes.'
                                          )">
-                                        <div class="font-bold text-emerald-950 text-[11px]">1. S1 Keperawatan</div>
-                                        <div class="text-[10px] text-gray-600">Bezetting: 1 / Butuh: 1 (Ideal)</div>
+                                        <div class="font-black text-[11px]" style="color: #064e3b !important;">1. S1 Keperawatan</div>
+                                        <div class="text-[10px] text-gray-600 mt-0.5">Bezetting: 1 / Butuh: 1 (🟢 Ideal)</div>
                                     </div>
-                                    <div class="bg-emerald-50 hover:bg-emerald-100 p-2 rounded border border-emerald-200 cursor-pointer"
+                                    <div class="p-2 rounded cursor-pointer hover:opacity-90 transition"
+                                         style="background-color: #f0fdf4 !important; border: 1.5px solid #86efac !important;"
                                          @click="openDetail(
                                              'Koordinator Prodi S2 Keperawatan',
                                              'Program Studi Magister Keperawatan (Grade 10)',
@@ -320,15 +326,15 @@
                                              1, 'Ideal', [],
                                              'Mengkoordinasikan kurikulum Magister S2, riset tesis, dan akreditasi prodi.'
                                          )">
-                                        <div class="font-bold text-emerald-950 text-[11px]">2. S2 Keperawatan</div>
-                                        <div class="text-[10px] text-gray-600">Bezetting: 1 / Butuh: 1 (Ideal)</div>
+                                        <div class="font-black text-[11px]" style="color: #064e3b !important;">2. S2 Keperawatan</div>
+                                        <div class="text-[10px] text-gray-600 mt-0.5">Bezetting: 1 / Butuh: 1 (🟢 Ideal)</div>
                                     </div>
                                 </div>
                             </div>
 
                             {{-- Sub-blok 2: 7 KJFD Preklinik --}}
                             <div>
-                                <div class="bg-emerald-100 text-emerald-950 font-bold text-[10px] uppercase px-2 py-1 rounded mb-1.5 text-center">
+                                <div style="background-color: #d1fae5 !important; color: #064e3b !important; font-weight: 800; font-size: 10px; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; text-align: center; margin-bottom: 6px; border: 1px solid #a7f3d0 !important;">
                                     KJFD KEPERAWATAN (7 BIDANG)
                                 </div>
                                 <div class="grid grid-cols-1 gap-1 text-[10.5px]">
@@ -336,7 +342,7 @@
                                         $kjfd = ['1. Medikal Bedah', '2. Gawat Darurat', '3. Maternitas', '4. Anak', '5. Keluarga Komunitas', '6. Gerontik', '7. Jiwa'];
                                     @endphp
                                     @foreach($kjfd as $k)
-                                        <div class="bg-gray-50 hover:bg-emerald-50 p-1.5 rounded border border-gray-200 text-gray-800 font-medium">
+                                        <div class="p-1.5 rounded font-bold" style="background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; color: #111827 !important;">
                                             {{ $k }}
                                         </div>
                                     @endforeach
@@ -345,17 +351,18 @@
                         </div>
 
                         {{-- 3. JURUSAN KLINIK DAN KOMUNITAS --}}
-                        <div class="bg-white border-2 border-teal-400 rounded-xl p-3.5 shadow-sm">
-                            <div class="bg-teal-700 text-white text-center py-1.5 px-2 rounded-lg font-bold text-xs uppercase tracking-wide mb-2.5">
+                        <div class="p-3.5 shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #0d9488 !important; border-radius: 12px !important;">
+                            <div style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(13, 148, 136, 0.3); margin-bottom: 10px;">
                                 JURUSAN KLINIK DAN KOMUNITAS
                             </div>
 
                             {{-- Koorprodi Ners --}}
                             <div class="mb-3">
-                                <div class="bg-teal-100 text-teal-950 font-bold text-[10px] uppercase px-2 py-1 rounded mb-1.5 text-center">
+                                <div style="background-color: #ccfbf1 !important; color: #115e59 !important; font-weight: 800; font-size: 10px; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; text-align: center; margin-bottom: 6px; border: 1px solid #99f6e4 !important;">
                                     KOORDINATOR PROGRAM STUDI
                                 </div>
-                                <div class="bg-teal-50 hover:bg-teal-100 p-2 rounded border border-teal-200 cursor-pointer"
+                                <div class="p-2 rounded cursor-pointer hover:opacity-90 transition"
+                                     style="background-color: #f0fdfa !important; border: 1.5px solid #99f6e4 !important;"
                                      @click="openDetail(
                                          'Koordinator Prodi Profesi Ners',
                                          'Program Studi Profesi Ners (Grade 10)',
@@ -363,21 +370,21 @@
                                          1, 'Ideal', [],
                                          'Mengkoordinasikan stase kepaniteraan klinik mahasiswa ners di Rumah Sakit dan Puskesmas.'
                                      )">
-                                    <div class="font-bold text-teal-950 text-[11px]">1. Profesi Ners</div>
-                                    <div class="text-[10px] text-gray-600">Bezetting: 1 / Butuh: 1 (Ideal)</div>
+                                    <div class="font-black text-[11px]" style="color: #115e59 !important;">1. Profesi Ners</div>
+                                    <div class="text-[10px] text-gray-600 mt-0.5">Bezetting: 1 / Butuh: 1 (🟢 Ideal)</div>
                                 </div>
                             </div>
 
                             {{-- KJFD Klinik & Komunitas --}}
                             <div>
-                                <div class="bg-teal-100 text-teal-950 font-bold text-[10px] uppercase px-2 py-1 rounded mb-1.5 text-center">
+                                <div style="background-color: #ccfbf1 !important; color: #115e59 !important; font-weight: 800; font-size: 10px; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; text-align: center; margin-bottom: 6px; border: 1px solid #99f6e4 !important;">
                                     KELOMPOK FUNGSIONAL (KJFD)
                                 </div>
                                 <div class="space-y-1.5 text-xs">
-                                    <div class="bg-gray-50 hover:bg-teal-50 p-2 rounded border border-gray-200 font-medium text-gray-800">
+                                    <div class="p-2 rounded font-bold" style="background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; color: #111827 !important;">
                                         1. KJFD Klinik
                                     </div>
-                                    <div class="bg-gray-50 hover:bg-teal-50 p-2 rounded border border-gray-200 font-medium text-gray-800">
+                                    <div class="p-2 rounded font-bold" style="background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; color: #111827 !important;">
                                         2. KJFD Komunitas
                                     </div>
                                 </div>
@@ -385,11 +392,12 @@
                         </div>
 
                         {{-- 4. LABORATORIUM KEPERAWATAN (9 RUANG LAB) --}}
-                        <div class="bg-white border-2 border-indigo-400 rounded-xl p-3.5 shadow-sm">
-                            <div class="bg-indigo-700 text-white text-center py-1.5 px-2 rounded-lg font-bold text-xs uppercase tracking-wide mb-2.5">
+                        <div class="p-3.5 shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #4f46e5 !important; border-radius: 12px !important;">
+                            <div style="background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3); margin-bottom: 10px;">
                                 LABORATORIUM KEPERAWATAN
                             </div>
-                            <div class="bg-indigo-50 border border-indigo-200 rounded p-1.5 text-[10px] text-center font-bold text-indigo-900 mb-2 cursor-pointer"
+                            <div class="p-2 rounded text-center mb-2.5 cursor-pointer hover:opacity-90 transition"
+                                 style="background-color: #eef2ff !important; border: 1.5px solid #c7d2fe !important;"
                                  @click="openDetail(
                                      'Pranata Laboratorium Pendidikan (PLP)',
                                      'Fungsional PLP / Laboran (Grade 8)',
@@ -397,8 +405,8 @@
                                      2, '🔴 Kurang 1', [],
                                      'Mengelola 9 ruang laboratorium keperawatan, manikin medis, bahan habis pakai, dan keselamatan kerja K3 praktikum.'
                                  )">
-                                Kepala Lab & Pranata Lab (PLP)
-                                <span class="block text-[9px] text-rose-600 font-bold mt-0.5">Bezetting: 1 / Kebutuhan: 2 (Kurang 1)</span>
+                                <div class="font-black text-[11px]" style="color: #312e81 !important;">Kepala Lab & Pranata Lab (PLP)</div>
+                                <span class="font-extrabold text-[9.5px] block mt-0.5" style="color: #dc2626 !important;">Bezetting: 1 / Kebutuhan: 2 (🔴 Kurang 1)</span>
                             </div>
                             <div class="space-y-1 text-[10.5px]">
                                 @php
@@ -409,7 +417,7 @@
                                     ];
                                 @endphp
                                 @foreach($labs as $lb)
-                                    <div class="bg-gray-50 hover:bg-indigo-50 p-1.5 rounded border border-gray-200 font-medium text-gray-800">
+                                    <div class="p-1.5 rounded font-bold" style="background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; color: #111827 !important;">
                                         {{ $lb }}
                                     </div>
                                 @endforeach
@@ -417,16 +425,17 @@
                         </div>
 
                         {{-- 5. KEPALA BAGIAN UMUM (BAGIAN UMUM & POKJA) --}}
-                        <div class="bg-white border-2 border-amber-400 rounded-xl p-3.5 shadow-sm">
-                            <div class="bg-amber-600 text-white text-center py-1.5 px-2 rounded-lg font-bold text-xs uppercase tracking-wide mb-2">
+                        <div class="p-3.5 shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #d97706 !important; border-radius: 12px !important;">
+                            <div style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(217, 119, 6, 0.3); margin-bottom: 8px;">
                                 KEPALA BAGIAN UMUM
                             </div>
-                            <div class="bg-amber-50 text-[10px] font-bold text-amber-950 p-1.5 rounded border border-amber-200 text-center mb-2.5">
+                            <div style="background-color: #fef3c7 !important; border: 1px solid #fde68a !important; color: #78350f !important; font-weight: 800; font-size: 10px; text-align: center; padding: 4px 8px; border-radius: 6px; margin-bottom: 10px;">
                                 KELOMPOK KERJA (POKJA)
                             </div>
                             <div class="space-y-2 text-xs">
                                 {{-- Pokja 1: Akademik & Kemahasiswaan --}}
-                                <div class="bg-white hover:bg-amber-50 p-2 rounded-lg border border-amber-200 shadow-2xs cursor-pointer"
+                                <div class="p-2 rounded-lg cursor-pointer hover:opacity-90 transition"
+                                     style="background-color: #fffbeb !important; border: 1.5px solid #fde68a !important;"
                                      @click="openDetail(
                                          'Pokja Akademik & Kemahasiswaan',
                                          'Kelompok Kerja Layanan Registrasi, Perkuliahan & Yudisium (Grade 9 & 6)',
@@ -434,12 +443,13 @@
                                          4, 'Ideal', [],
                                          'Melaksanakan pelayanan administrasi nilai, KRS mahasiswa, surat keterangan aktif, dan kelengkapan yudisium.'
                                      )">
-                                    <div class="font-bold text-gray-900 text-[11px]">1. Bidang Akademik & Kemahasiswaan</div>
-                                    <div class="text-[10px] text-gray-500 mt-0.5">Ka Pokja & Staf Pelaksana</div>
+                                    <div class="font-black text-[11px]" style="color: #78350f !important;">1. Bidang Akademik & Kemahasiswaan</div>
+                                    <div class="text-[10px] text-gray-600 mt-0.5">Ka Pokja & Staf Pelaksana</div>
                                 </div>
 
                                 {{-- Pokja 2: Keuangan & Kepegawaian --}}
-                                <div class="bg-white hover:bg-amber-50 p-2 rounded-lg border border-amber-200 shadow-2xs cursor-pointer"
+                                <div class="p-2 rounded-lg cursor-pointer hover:opacity-90 transition"
+                                     style="background-color: #fffbeb !important; border: 1.5px solid #fde68a !important;"
                                      @click="openDetail(
                                          'Pokja Keuangan dan Kepegawaian',
                                          'Kelompok Kerja Pengelolaan Anggaran, Presensi & Karir ASN (Grade 9 & 6)',
@@ -447,12 +457,13 @@
                                          3, 'Ideal', [],
                                          'Melaksanakan verifikasi presensi mobile, rekapitulasi logbook harian, usulan kenaikan pangkat, gaji berkala, dan berkas cuti pegawai.'
                                      )">
-                                    <div class="font-bold text-gray-900 text-[11px]">2. Keuangan dan Kepegawaian</div>
-                                    <div class="text-[10px] text-gray-500 mt-0.5">Ka Pokja & Staf Kepegawaian</div>
+                                    <div class="font-black text-[11px]" style="color: #78350f !important;">2. Keuangan dan Kepegawaian</div>
+                                    <div class="text-[10px] text-gray-600 mt-0.5">Ka Pokja & Staf Kepegawaian</div>
                                 </div>
 
                                 {{-- Pokja 3: Umum Sarana Akademik --}}
-                                <div class="bg-white hover:bg-amber-50 p-2 rounded-lg border border-amber-200 shadow-2xs cursor-pointer"
+                                <div class="p-2 rounded-lg cursor-pointer hover:opacity-90 transition"
+                                     style="background-color: #fffbeb !important; border: 1.5px solid #fde68a !important;"
                                      @click="openDetail(
                                          'Pokja Umum Sarana Akademik',
                                          'Kelompok Kerja Pengelolaan BMN, Perlengkapan & Sarana (Grade 9 & 6)',
@@ -460,8 +471,8 @@
                                          3, '🔴 Kurang 1', [],
                                          'Melaksanakan inventarisasi BMN, pemeliharaan gedung kuliah, kebersihan lingkungan, dan sarana prasarana.'
                                      )">
-                                    <div class="font-bold text-gray-900 text-[11px]">3. Kemahasiswaan, Alumni & Kerjasama / Sarana</div>
-                                    <div class="text-[10px] text-gray-500 mt-0.5">Ka Pokja & Staf Perlengkapan</div>
+                                    <div class="font-black text-[11px]" style="color: #78350f !important;">3. Kemahasiswaan, Alumni & Kerjasama / Sarana</div>
+                                    <div class="text-[10px] text-gray-600 mt-0.5">Ka Pokja & Staf Perlengkapan</div>
                                 </div>
                             </div>
                         </div>
