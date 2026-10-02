@@ -41,4 +41,12 @@ class Jabatan extends Model
     {
         return $this->hasOne(AnalisisJabatan::class, 'jabatan_id');
     }
+
+    /**
+     * Bobot hierarki jabatan untuk pengurutan struktur organisasi
+     */
+    public function getHierarchyOrderAttribute(): int
+    {
+        return AnalisisJabatan::hierarchyOrderWeight($this->nama_jabatan, $this->kelas_jabatan ?? 0);
+    }
 }

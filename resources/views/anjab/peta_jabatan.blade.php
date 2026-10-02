@@ -27,11 +27,42 @@
         </div>
     </x-slot>
 
+    @php
+        $getAnjab = function($namaKey) use ($anjabMap) {
+            $key = strtolower(trim($namaKey));
+            $anjab = $anjabMap[$key] ?? null;
+            if (!$anjab) {
+                foreach ($anjabMap as $k => $item) {
+                    if (str_contains($k, $key) || str_contains($key, $k)) {
+                        $anjab = $item;
+                        break;
+                    }
+                }
+            }
+            $bezetting = $anjab ? (int) $anjab->bezetting : 0;
+            $kebutuhan = $anjab ? (int) $anjab->formasi_pembulatan : 1;
+            $selisih = $bezetting - $kebutuhan;
+            $status = $selisih < 0 ? ('🔴 Kurang ' . abs($selisih)) : ($selisih > 0 ? ('🟡 Lebih +' . $selisih) : '🟢 Ideal');
+            return (object) [
+                'kebutuhan'      => $kebutuhan,
+                'bezetting'      => $bezetting,
+                'selisih'        => $selisih,
+                'status'         => $status,
+                'status_raw'     => $anjab ? $anjab->status_formasi : 'Ideal',
+                'status_color'   => $anjab ? $anjab->status_color : 'emerald',
+                'ikhtisar'       => $anjab->ikhtisar_jabatan ?? 'Melaksanakan tugas pokok dan fungsi sesuai mandat organisasi.',
+                'anjab_url'      => $anjab ? route('anjab.show', $anjab->id) : '#',
+                'abk_url'        => $anjab ? route('abk.edit', $anjab->id) : route('abk.index'),
+                'id'             => $anjab?->id,
+            ];
+        };
+    @endphp
+
     <div class="py-6" x-data="{
         showModal: false,
         activeNode: null,
         loading: false,
-        openDetail(title, subtitle, bezetting, kebutuhan, status, pegawaiList, ikhtisar, anjabUrl) {
+        openDetail(title, subtitle, bezetting, kebutuhan, status, pegawaiList, ikhtisar, anjabUrl, abkUrl) {
             this.activeNode = {
                 title: title,
                 subtitle: subtitle,
@@ -40,7 +71,8 @@
                 status: status,
                 pegawaiList: pegawaiList || [],
                 ikhtisar: ikhtisar || 'Belum ada ikhtisar tugas.',
-                anjabUrl: anjabUrl || '#'
+                anjabUrl: anjabUrl || '#',
+                abkUrl: abkUrl || '#'
             };
             this.showModal = true;
         }
@@ -105,16 +137,21 @@
                     <div class="w-full flex items-center justify-center gap-4 relative">
 
                         {{-- Sayap Kiri: SATUAN PENJAMINAN MUTU (SPMF) dengan GPM S1, S2, NERS --}}
+                        {{-- Sayap Kiri: SATUAN PENJAMINAN MUTU (SPMF) dengan GPM S1, S2, NERS --}}
+                        @php $spmfAnjab = $getAnjab('Kepala SPMF / GPM'); @endphp
                         <div class="w-72">
                             <div class="p-3.5 rounded-xl shadow-md cursor-pointer hover:scale-[1.02] transition"
                                  style="background-color: #ffffff !important; border: 2px solid #0284c7 !important;"
                                  @click="openDetail(
                                      'SATUAN PENJAMINAN MUTU (SPMF)',
-                                     'Unsur Penjaminan Mutu & Gugus Penjamin Mutu (GPM)',
-                                     {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%SPMF%')->orWhere('nama_jabatan', 'like', '%GPM%'))->count() }},
-                                     1, 'Ideal',
+                                     'Unsur Penjaminan Mutu & Gugus Penjamin Mutu (GPM) (Grade 11)',
+                                     {{ $spmfAnjab->bezetting }},
+                                     {{ $spmfAnjab->kebutuhan }},
+                                     '{{ $spmfAnjab->status }}',
                                      {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%SPMF%')->orWhere('nama_jabatan', 'like', '%GPM%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                     'Mengkoordinasikan sistem penjaminan mutu internal (SPMI), monev pembelajaran OBE, dan akreditasi internasional/LAM-PTKes.'
+                                     '{{ addslashes($spmfAnjab->ikhtisar) }}',
+                                     '{{ $spmfAnjab->anjab_url }}',
+                                     '{{ $spmfAnjab->abk_url }}'
                                  )">
                                 <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11px; letter-spacing: 0.3px; padding: 6px 8px; border-radius: 6px; text-align: center; text-transform: uppercase;">
                                     SATUAN PENJAMINAN MUTU (SPMF)
@@ -137,16 +174,20 @@
                         <div class="h-0.5 w-12" style="background-color: #0284c7 !important;"></div>
 
                         {{-- Pusat Puncak: KOTAK DEKAN --}}
+                        @php $dekanAnjab = $getAnjab('Dekan'); @endphp
                         <div class="w-80">
                             <div class="p-4 rounded-2xl shadow-xl hover:scale-105 transition cursor-pointer"
                                  style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%) !important; color: #ffffff !important; border: 2.5px solid #fbbf24 !important; box-shadow: 0 6px 15px rgba(30, 58, 138, 0.4) !important;"
                                  @click="openDetail(
                                      'DEKAN',
                                      'Pimpinan Tertinggi Fakultas Keperawatan UNRI (Grade 15)',
-                                     {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'Dekan'))->count() }},
-                                     1, 'Ideal',
+                                     {{ $dekanAnjab->bezetting }},
+                                     {{ $dekanAnjab->kebutuhan }},
+                                     '{{ $dekanAnjab->status }}',
                                      {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'Dekan'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                     'Memimpin penyelenggaraan tridharma perguruan tinggi, pembinaan sivitas akademika, pengelolaan keuangan, SDM, sarana prasarana, serta pengembangan mutu dan kerjasama Fakultas.'
+                                     '{{ addslashes($dekanAnjab->ikhtisar) }}',
+                                     '{{ $dekanAnjab->anjab_url }}',
+                                     '{{ $dekanAnjab->abk_url }}'
                                  )">
                                 <div class="flex items-center justify-between text-[10px]">
                                     <span style="background-color: #fbbf24 !important; color: #1e3a8a !important; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">PIMPINAN FAKULTAS</span>
@@ -159,8 +200,10 @@
                                     Fakultas Keperawatan UNRI
                                 </div>
                                 <div class="mt-3 pt-2 flex items-center justify-between text-xs" style="border-top: 1px solid rgba(255,255,255,0.2) !important; color: #e0e7ff !important;">
-                                    <span>Bezetting: <strong style="color: #ffffff !important;">1</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
-                                    <span style="background-color: #10b981 !important; color: #ffffff !important; font-weight: 800; font-size: 10px; padding: 2px 8px; border-radius: 9999px;">🟢 Ideal</span>
+                                    <span>Bezetting: <strong style="color: #ffffff !important;">{{ $dekanAnjab->bezetting }}</strong> / Butuh: <strong style="color: #ffffff !important;">{{ $dekanAnjab->kebutuhan }}</strong></span>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background-color: {{ $dekanAnjab->selisih < 0 ? '#e11d48' : '#10b981' }} !important; color: #ffffff !important;">
+                                        {{ $dekanAnjab->status }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -216,15 +259,19 @@
                                 <div class="w-0.5 h-4" style="background-color: #1e3a8a !important;"></div>
 
                                 {{-- Kartu WD I --}}
+                                @php $wd1Anjab = $getAnjab('Wakil Dekan I (Bid. Akademik)'); @endphp
                                 <div class="w-full p-4 rounded-xl shadow-lg hover:scale-[1.02] transition cursor-pointer"
                                      style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important; color: #ffffff !important; border: 2px solid #60a5fa !important; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3) !important;"
                                      @click="openDetail(
                                          'WAKIL DEKAN BIDANG AKADEMIK (WD I)',
                                          'Unsur Pimpinan Bidang Pendidikan, Kurikulum & Penjaminan Mutu (Grade 13)',
-                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan I%'))->count() }},
-                                         1, 'Ideal',
+                                         {{ $wd1Anjab->bezetting }},
+                                         {{ $wd1Anjab->kebutuhan }},
+                                         '{{ $wd1Anjab->status }}',
                                          {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan I%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                         'Membantu Dekan memimpin pelaksanaan pendidikan, penelitian, pengabdian masyarakat, penjaminan mutu, dan evaluasi kurikulum OBE.'
+                                         '{{ addslashes($wd1Anjab->ikhtisar) }}',
+                                         '{{ $wd1Anjab->anjab_url }}',
+                                         '{{ $wd1Anjab->abk_url }}'
                                      )">
                                     <div class="flex justify-between items-center text-[10px]">
                                         <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 2px 8px; border-radius: 4px;">UNSUR PIMPINAN</span>
@@ -234,8 +281,10 @@
                                         WAKIL DEKAN BIDANG AKADEMIK
                                     </div>
                                     <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
-                                        <span>Bezetting: <strong style="color: #ffffff !important;">1</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
-                                        <span style="background-color: #10b981 !important; color: #ffffff !important; font-weight: 800; font-size: 10px; padding: 2px 8px; border-radius: 9999px;">🟢 Ideal</span>
+                                        <span>Bezetting: <strong style="color: #ffffff !important;">{{ $wd1Anjab->bezetting }}</strong> / Butuh: <strong style="color: #ffffff !important;">{{ $wd1Anjab->kebutuhan }}</strong></span>
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background-color: {{ $wd1Anjab->selisih < 0 ? '#e11d48' : '#10b981' }} !important; color: #ffffff !important;">
+                                            {{ $wd1Anjab->status }}
+                                        </span>
                                     </div>
                                 </div>
 
@@ -243,6 +292,10 @@
                                 <div class="w-0.5 h-4" style="background-color: #0d9488 !important;"></div>
 
                                 {{-- Kotak KETUA JURUSAN & SEK. JURUSAN (Di bawah WD I, Membawahi 2 Jurusan) --}}
+                                @php
+                                    $kajurAnjab = $getAnjab('Ketua Jurusan (Kajur)');
+                                    $sekjurAnjab = $getAnjab('Sekretaris Jurusan');
+                                @endphp
                                 <div class="w-full grid grid-cols-2 gap-2">
                                     {{-- Ketua Jurusan --}}
                                     <div class="p-2 rounded-lg shadow-sm cursor-pointer hover:scale-[1.02] transition text-center"
@@ -250,10 +303,13 @@
                                          @click="openDetail(
                                              'KETUA JURUSAN (KAJUR)',
                                              'Pimpinan Jurusan Keperawatan (Grade 11)',
-                                             {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%'))->count() }},
-                                             1, 'Ideal',
+                                             {{ $kajurAnjab->bezetting }},
+                                             {{ $kajurAnjab->kebutuhan }},
+                                             '{{ $kajurAnjab->status }}',
                                              {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                             'Memimpin jurusan dalam pengelolaan tridharma, pembagian beban kerja dosen (BKD), dan membawahi Jurusan Preklinik serta Jurusan Klinik & Komunitas di bawah koordinasi Wakil Dekan I.'
+                                             '{{ addslashes($kajurAnjab->ikhtisar) }}',
+                                             '{{ $kajurAnjab->anjab_url }}',
+                                             '{{ $kajurAnjab->abk_url }}'
                                          )">
                                         <div class="flex justify-between items-center text-[9px] mb-1">
                                             <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 1px 4px; border-radius: 3px;">KAJUR</span>
@@ -263,9 +319,9 @@
                                             KETUA JURUSAN
                                         </div>
                                         <div class="text-[9.5px] mt-1 pt-1 border-t border-white/20 text-teal-100 flex justify-between items-center">
-                                            <span>Bezetting: <strong>{{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%'))->count() }}</strong>/1</span>
-                                            <span class="text-[8.5px] px-1.5 py-0.2 rounded font-bold {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%'))->count() > 0 ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900' }}">
-                                                {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%'))->count() > 0 ? 'Terisi' : 'Butuh SK' }}
+                                            <span>Bezetting: <strong>{{ $kajurAnjab->bezetting }}</strong>/{{ $kajurAnjab->kebutuhan }}</span>
+                                            <span class="text-[8.5px] px-1.5 py-0.2 rounded font-bold {{ $kajurAnjab->bezetting > 0 ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900' }}">
+                                                {{ $kajurAnjab->bezetting > 0 ? 'Terisi' : 'Butuh SK' }}
                                             </span>
                                         </div>
                                     </div>
@@ -276,10 +332,13 @@
                                          @click="openDetail(
                                              'SEKRETARIS JURUSAN (SEKJUR)',
                                              'Pimpinan Administrasi Jurusan Keperawatan (Grade 10)',
-                                             {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->count() }},
-                                             1, 'Ideal',
+                                             {{ $sekjurAnjab->bezetting }},
+                                             {{ $sekjurAnjab->kebutuhan }},
+                                             '{{ $sekjurAnjab->status }}',
                                              {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                             'Membantu Ketua Jurusan dalam pengelolaan administrasi akademik, ketatausahaan, dokumentasi kurikulum, dan rekapitulasi BKD/SKP dosen.'
+                                             '{{ addslashes($sekjurAnjab->ikhtisar) }}',
+                                             '{{ $sekjurAnjab->anjab_url }}',
+                                             '{{ $sekjurAnjab->abk_url }}'
                                          )">
                                         <div class="flex justify-between items-center text-[9px] mb-1">
                                             <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 1px 4px; border-radius: 3px;">SEKJUR</span>
@@ -289,9 +348,9 @@
                                             SEKRETARIS JURUSAN
                                         </div>
                                         <div class="text-[9.5px] mt-1 pt-1 border-t border-white/20 text-teal-100 flex justify-between items-center">
-                                            <span>Bezetting: <strong>{{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->count() }}</strong>/1</span>
-                                            <span class="text-[8.5px] px-1.5 py-0.2 rounded font-bold {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->count() > 0 ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900' }}">
-                                                {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->count() > 0 ? 'Terisi' : 'Butuh SK' }}
+                                            <span>Bezetting: <strong>{{ $sekjurAnjab->bezetting }}</strong>/{{ $sekjurAnjab->kebutuhan }}</span>
+                                            <span class="text-[8.5px] px-1.5 py-0.2 rounded font-bold {{ $sekjurAnjab->bezetting > 0 ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900' }}">
+                                                {{ $sekjurAnjab->bezetting > 0 ? 'Terisi' : 'Butuh SK' }}
                                             </span>
                                         </div>
                                     </div>
@@ -302,6 +361,12 @@
                                 <div class="w-4/5 h-0.5" style="background-color: #0d9488 !important;"></div>
 
                                 {{-- Cabang 2 Jurusan: Preklinik & Klinik Komunitas --}}
+                                @php
+                                    $prodiS1Anjab = $getAnjab('Koordinator Prodi S1 Keperawatan');
+                                    $prodiS2Anjab = $getAnjab('Koordinator Prodi S2 Keperawatan');
+                                    $prodiS3Anjab = $getAnjab('Koordinator Prodi S3 Keperawatan');
+                                    $prodiNersAnjab = $getAnjab('Koordinator Prodi Ners');
+                                @endphp
                                 <div class="w-full grid grid-cols-2 gap-3 mt-1.5">
 
                                     {{-- 1. JURUSAN PREKLINIK KEPERAWATAN --}}
@@ -321,13 +386,16 @@
                                                      @click="openDetail(
                                                          'Koordinator Program Studi S1 Keperawatan',
                                                          'Program Studi Sarjana Keperawatan (Grade 10)',
-                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S1%'))->count() }},
-                                                         1, 'Ideal',
+                                                         {{ $prodiS1Anjab->bezetting }},
+                                                         {{ $prodiS1Anjab->kebutuhan }},
+                                                         '{{ $prodiS1Anjab->status }}',
                                                          {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S1%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                                         'Mengkoordinasikan kurikulum S1, pembelajaran OBE, plotting dosen, dan akreditasi LAM-PTKes.'
+                                                         '{{ addslashes($prodiS1Anjab->ikhtisar) }}',
+                                                         '{{ $prodiS1Anjab->anjab_url }}',
+                                                         '{{ $prodiS1Anjab->abk_url }}'
                                                      )">
                                                     <div class="font-black text-[10.5px]" style="color: #064e3b !important;">1. S1 KEPERAWATAN</div>
-                                                    <div class="text-[9.5px] text-gray-600">Bezetting: 1 / Butuh: 1 (🟢 Ideal)</div>
+                                                    <div class="text-[9.5px] text-gray-600">Bezetting: {{ $prodiS1Anjab->bezetting }} / Butuh: {{ $prodiS1Anjab->kebutuhan }} ({{ $prodiS1Anjab->status }})</div>
                                                 </div>
                                                 {{-- S2 --}}
                                                 <div class="p-1.5 rounded cursor-pointer hover:opacity-90 transition"
@@ -335,13 +403,16 @@
                                                      @click="openDetail(
                                                          'Koordinator Program Studi S2 Keperawatan',
                                                          'Program Studi Magister Keperawatan (Grade 10)',
-                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S2%'))->count() }},
-                                                         1, 'Ideal',
+                                                         {{ $prodiS2Anjab->bezetting }},
+                                                         {{ $prodiS2Anjab->kebutuhan }},
+                                                         '{{ $prodiS2Anjab->status }}',
                                                          {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S2%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                                         'Mengkoordinasikan kurikulum Magister S2, bimbingan riset tesis, dan akreditasi prodi.'
+                                                         '{{ addslashes($prodiS2Anjab->ikhtisar) }}',
+                                                         '{{ $prodiS2Anjab->anjab_url }}',
+                                                         '{{ $prodiS2Anjab->abk_url }}'
                                                      )">
                                                     <div class="font-black text-[10.5px]" style="color: #064e3b !important;">2. S2 KEPERAWATAN</div>
-                                                    <div class="text-[9.5px] text-gray-600">Bezetting: 1 / Butuh: 1 (🟢 Ideal)</div>
+                                                    <div class="text-[9.5px] text-gray-600">Bezetting: {{ $prodiS2Anjab->bezetting }} / Butuh: {{ $prodiS2Anjab->kebutuhan }} ({{ $prodiS2Anjab->status }})</div>
                                                 </div>
                                                 {{-- S3 --}}
                                                 <div class="p-1.5 rounded cursor-pointer hover:opacity-90 transition"
@@ -349,13 +420,16 @@
                                                      @click="openDetail(
                                                          'Koordinator Program Studi S3 Keperawatan',
                                                          'Program Studi Doktor Keperawatan (Grade 10)',
-                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S3%'))->count() }},
-                                                         1, 'Ideal',
+                                                         {{ $prodiS3Anjab->bezetting }},
+                                                         {{ $prodiS3Anjab->kebutuhan }},
+                                                         '{{ $prodiS3Anjab->status }}',
                                                          {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S3%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                                         'Mengkoordinasikan kurikulum Doktor S3, riset lanjutan translasi keperawatan, dan publikasi internasional bereputasi.'
+                                                         '{{ addslashes($prodiS3Anjab->ikhtisar) }}',
+                                                         '{{ $prodiS3Anjab->anjab_url }}',
+                                                         '{{ $prodiS3Anjab->abk_url }}'
                                                      )">
                                                     <div class="font-black text-[10.5px]" style="color: #064e3b !important;">3. S3 KEPERAWATAN</div>
-                                                    <div class="text-[9.5px] text-gray-600">Bezetting: 1 / Butuh: 1 (🟢 Ideal)</div>
+                                                    <div class="text-[9.5px] text-gray-600">Bezetting: {{ $prodiS3Anjab->bezetting }} / Butuh: {{ $prodiS3Anjab->kebutuhan }} ({{ $prodiS3Anjab->status }})</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -378,13 +452,16 @@
                                                      @click="openDetail(
                                                          'Koordinator Program Studi Profesi Ners',
                                                          'Program Studi Profesi Ners (Grade 10)',
-                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi Ners%'))->count() }},
-                                                         1, 'Ideal',
+                                                         {{ $prodiNersAnjab->bezetting }},
+                                                         {{ $prodiNersAnjab->kebutuhan }},
+                                                         '{{ $prodiNersAnjab->status }}',
                                                          {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi Ners%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                                         'Mengkoordinasikan stase kepaniteraan klinik mahasiswa ners di Rumah Sakit, Puskesmas, dan persiapan Uji Kompetensi Ners (UKNI).'
+                                                         '{{ addslashes($prodiNersAnjab->ikhtisar) }}',
+                                                         '{{ $prodiNersAnjab->anjab_url }}',
+                                                         '{{ $prodiNersAnjab->abk_url }}'
                                                      )">
                                                     <div class="font-black text-[11px]" style="color: #115e59 !important;">1. NERS</div>
-                                                    <div class="text-[9.5px] text-gray-600 mt-0.5">Bezetting: 1 / Butuh: 1 (🟢 Ideal)</div>
+                                                    <div class="text-[9.5px] text-gray-600 mt-0.5">Bezetting: {{ $prodiNersAnjab->bezetting }} / Butuh: {{ $prodiNersAnjab->kebutuhan }} ({{ $prodiNersAnjab->status }})</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -396,6 +473,13 @@
                             {{-- ================================================================= --}}
                             {{-- SAYAP 2 (TENGAH): WAKIL DEKAN BIDANG KEUANGAN DAN UMUM             --}}
                             {{-- ================================================================= --}}
+                            @php
+                                $wd2Anjab = $getAnjab('Wakil Dekan Bidang Keuangan dan Umum');
+                                $kabagAnjab = $getAnjab('Kepala Bagian Umum');
+                                $pokjaAkadAnjab = $getAnjab('Ketua Pokja Akademik');
+                                $pokjaKeuAnjab = $getAnjab('Ketua Pokja Keuangan');
+                                $pokjaUmumAnjab = $getAnjab('Ketua Pokja Umum');
+                            @endphp
                             <div class="flex flex-col items-center">
                                 <div class="w-0.5 h-4" style="background-color: #1e3a8a !important;"></div>
 
@@ -405,10 +489,13 @@
                                      @click="openDetail(
                                          'WAKIL DEKAN BIDANG KEUANGAN DAN UMUM (WD II)',
                                          'Unsur Pimpinan Bidang Perencanaan, Anggaran & Kepegawaian (Grade 13)',
-                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan II%'))->count() }},
-                                         1, 'Ideal',
-                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan II%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                         'Membantu Dekan dalam perencanaan anggaran, perbendaharaan, kepegawaian, ketatausahaan, dan sarana prasarana fakultas.'
+                                         {{ $wd2Anjab->bezetting }},
+                                         {{ $wd2Anjab->kebutuhan }},
+                                         '{{ $wd2Anjab->status }}',
+                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan II%')->orWhere('nama_jabatan', 'like', '%Keuangan dan Umum%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                         '{{ addslashes($wd2Anjab->ikhtisar) }}',
+                                         '{{ $wd2Anjab->anjab_url }}',
+                                         '{{ $wd2Anjab->abk_url }}'
                                      )">
                                     <div class="flex justify-between items-center text-[10px]">
                                         <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 2px 8px; border-radius: 4px;">UNSUR PIMPINAN</span>
@@ -418,8 +505,10 @@
                                         WAKIL DEKAN BIDANG KEUANGAN DAN UMUM
                                     </div>
                                     <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
-                                        <span>Bezetting: <strong style="color: #ffffff !important;">1</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
-                                        <span style="background-color: #10b981 !important; color: #ffffff !important; font-weight: 800; font-size: 10px; padding: 2px 8px; border-radius: 9999px;">🟢 Ideal</span>
+                                        <span>Bezetting: <strong style="color: #ffffff !important;">{{ $wd2Anjab->bezetting }}</strong> / Butuh: <strong style="color: #ffffff !important;">{{ $wd2Anjab->kebutuhan }}</strong></span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold {{ $wd2Anjab->selisih < 0 ? 'bg-rose-500 text-white' : ($wd2Anjab->selisih > 0 ? 'bg-amber-400 text-amber-950' : 'bg-emerald-500 text-white') }}">
+                                            {{ $wd2Anjab->status }}
+                                        </span>
                                     </div>
                                 </div>
 
@@ -432,13 +521,22 @@
                                      @click="openDetail(
                                          'KEPALA BAGIAN UMUM',
                                          'Kepala Bagian Tata Usaha Fakultas Keperawatan (Grade 11)',
-                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Kepala Bagian Umum%'))->count() }},
-                                         1, 'Ideal',
+                                         {{ $kabagAnjab->bezetting }},
+                                         {{ $kabagAnjab->kebutuhan }},
+                                         '{{ $kabagAnjab->status }}',
                                          {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Kepala Bagian Umum%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                         'Memimpin dan mengkoordinasikan pelaksanaan urusan akademik, keuangan, kepegawaian, persuratan, BMN, dan perlengkapan sarana prasarana.'
+                                         '{{ addslashes($kabagAnjab->ikhtisar) }}',
+                                         '{{ $kabagAnjab->anjab_url }}',
+                                         '{{ $kabagAnjab->abk_url }}'
                                      )">
                                     <div class="text-center font-black text-xs uppercase tracking-wide" style="color: #ffffff !important;">
                                         KEPALA BAGIAN UMUM
+                                    </div>
+                                    <div class="text-[9.5px] mt-1.5 pt-1 border-t border-white/20 text-amber-100 flex justify-between items-center px-1">
+                                        <span>Bezetting: <strong>{{ $kabagAnjab->bezetting }}</strong>/{{ $kabagAnjab->kebutuhan }}</span>
+                                        <span class="text-[8.5px] px-1.5 py-0.2 rounded font-bold {{ $kabagAnjab->selisih < 0 ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white' }}">
+                                            {{ $kabagAnjab->status }}
+                                        </span>
                                     </div>
                                 </div>
 
@@ -451,45 +549,63 @@
                                     <div class="p-2.5 rounded-lg cursor-pointer hover:opacity-90 transition"
                                          style="background-color: #fffbeb !important; border: 1.5px solid #fde68a !important;"
                                          @click="openDetail(
-                                             'Ka. POKJA AKADEMIK DAN KEMAHASISWAAN',
+                                             'Ketua Pokja Akademik dan Kemahasiswaan',
                                              'Kelompok Kerja Layanan Registrasi, Perkuliahan & Kemahasiswaan (Grade 9 & 6)',
-                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 11)->count() }},
-                                             4, 'Ideal',
-                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 11)->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                             'Melaksanakan pelayanan administrasi nilai, KRS mahasiswa, surat keterangan aktif, kelengkapan yudisium, dan beasiswa.'
+                                             {{ $pokjaAkadAnjab->bezetting }},
+                                             {{ $pokjaAkadAnjab->kebutuhan }},
+                                             '{{ $pokjaAkadAnjab->status }}',
+                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 11)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Akademik%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             '{{ addslashes($pokjaAkadAnjab->ikhtisar) }}',
+                                             '{{ $pokjaAkadAnjab->anjab_url }}',
+                                             '{{ $pokjaAkadAnjab->abk_url }}'
                                          )">
                                         <div class="font-black text-[11px]" style="color: #78350f !important;">Ka. POKJA AKADEMIK DAN KEMAHASISWAAN</div>
-                                        <div class="text-[10px] text-gray-600 mt-0.5">Ka Pokja & Staf Pelaksana Akademik</div>
+                                        <div class="text-[9.5px] text-gray-600 mt-0.5 flex justify-between items-center">
+                                            <span>Bezetting: <strong>{{ $pokjaAkadAnjab->bezetting }}</strong>/{{ $pokjaAkadAnjab->kebutuhan }}</span>
+                                            <span class="text-[8.5px] font-bold px-1.5 rounded {{ $pokjaAkadAnjab->selisih < 0 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800' }}">{{ $pokjaAkadAnjab->status }}</span>
+                                        </div>
                                     </div>
 
                                     {{-- Pokja 2: Keuangan & Kepegawaian --}}
                                     <div class="p-2.5 rounded-lg cursor-pointer hover:opacity-90 transition"
                                          style="background-color: #fffbeb !important; border: 1.5px solid #fde68a !important;"
                                          @click="openDetail(
-                                             'Ka. POKJA KEUANGAN DAN KEPEGAWAIAN',
+                                             'Ketua Pokja Keuangan dan Kepegawaian',
                                              'Kelompok Kerja Pengelolaan Anggaran, Presensi & Karir ASN (Grade 9 & 6)',
-                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 12)->count() }},
-                                             3, 'Ideal',
-                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 12)->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                             'Melaksanakan verifikasi presensi, rekapitulasi logbook harian, usulan kenaikan pangkat, gaji berkala, SPJ keuangan, dan berkas cuti pegawai.'
+                                             {{ $pokjaKeuAnjab->bezetting }},
+                                             {{ $pokjaKeuAnjab->kebutuhan }},
+                                             '{{ $pokjaKeuAnjab->status }}',
+                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 12)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Keuangan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             '{{ addslashes($pokjaKeuAnjab->ikhtisar) }}',
+                                             '{{ $pokjaKeuAnjab->anjab_url }}',
+                                             '{{ $pokjaKeuAnjab->abk_url }}'
                                          )">
                                         <div class="font-black text-[11px]" style="color: #78350f !important;">Ka. POKJA KEUANGAN DAN KEPEGAWAIAN</div>
-                                        <div class="text-[10px] text-gray-600 mt-0.5">Ka Pokja & Staf Kepegawaian / Keuangan</div>
+                                        <div class="text-[9.5px] text-gray-600 mt-0.5 flex justify-between items-center">
+                                            <span>Bezetting: <strong>{{ $pokjaKeuAnjab->bezetting }}</strong>/{{ $pokjaKeuAnjab->kebutuhan }}</span>
+                                            <span class="text-[8.5px] font-bold px-1.5 rounded {{ $pokjaKeuAnjab->selisih < 0 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800' }}">{{ $pokjaKeuAnjab->status }}</span>
+                                        </div>
                                     </div>
 
                                     {{-- Pokja 3: Umum dan Sarana Akademik --}}
                                     <div class="p-2.5 rounded-lg cursor-pointer hover:opacity-90 transition"
                                          style="background-color: #fffbeb !important; border: 1.5px solid #fde68a !important;"
                                          @click="openDetail(
-                                             'Ka. POKJA UMUM DAN SARANA AKADEMIK',
+                                             'Ketua Pokja Umum dan Sarana Akademik',
                                              'Kelompok Kerja Pengelolaan BMN, Perlengkapan & Sarana (Grade 9 & 6)',
-                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 13)->count() }},
-                                             3, '🔴 Kurang 1',
-                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 13)->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                             'Melaksanakan inventarisasi BMN, pemeliharaan gedung kuliah, kebersihan lingkungan, persuratan umum, dan sarana prasarana.'
+                                             {{ $pokjaUmumAnjab->bezetting }},
+                                             {{ $pokjaUmumAnjab->kebutuhan }},
+                                             '{{ $pokjaUmumAnjab->status }}',
+                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 13)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Umum%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             '{{ addslashes($pokjaUmumAnjab->ikhtisar) }}',
+                                             '{{ $pokjaUmumAnjab->anjab_url }}',
+                                             '{{ $pokjaUmumAnjab->abk_url }}'
                                          )">
                                         <div class="font-black text-[11px]" style="color: #78350f !important;">Ka. POKJA UMUM DAN SARANA AKADEMIK</div>
-                                        <div class="text-[10px] text-gray-600 mt-0.5">Ka Pokja & Staf Perlengkapan / BMN</div>
+                                        <div class="text-[9.5px] text-gray-600 mt-0.5 flex justify-between items-center">
+                                            <span>Bezetting: <strong>{{ $pokjaUmumAnjab->bezetting }}</strong>/{{ $pokjaUmumAnjab->kebutuhan }}</span>
+                                            <span class="text-[8.5px] font-bold px-1.5 rounded {{ $pokjaUmumAnjab->selisih < 0 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800' }}">{{ $pokjaUmumAnjab->status }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -497,6 +613,9 @@
                             {{-- ================================================================= --}}
                             {{-- SAYAP 3 (KANAN): WAKIL DEKAN BIDANG KEMAHASISWAAN, ALUMNI & KERJASAMA--}}
                             {{-- ================================================================= --}}
+                            @php
+                                $wd3Anjab = $getAnjab('Wakil Dekan Bidang Kemahasiswaan');
+                            @endphp
                             <div class="flex flex-col items-center">
                                 <div class="w-0.5 h-4" style="background-color: #1e3a8a !important;"></div>
 
@@ -506,10 +625,13 @@
                                      @click="openDetail(
                                          'WAKIL DEKAN BIDANG KEMAHASISWAAN, ALUMNI & KERJASAMA (WD III)',
                                          'Unsur Pimpinan Bidang Penalaran, Minat Bakat, Tracer Study & Kemitraan (Grade 13)',
-                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan III%'))->count() }},
-                                         1, 'Ideal',
-                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan III%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                         'Membantu Dekan dalam pembinaan kegiatan kemahasiswaan, tracer study alumni, dan kerjasama institusional.'
+                                         {{ $wd3Anjab->bezetting }},
+                                         {{ $wd3Anjab->kebutuhan }},
+                                         '{{ $wd3Anjab->status }}',
+                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan III%')->orWhere('nama_jabatan', 'like', '%Kemahasiswaan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                         '{{ addslashes($wd3Anjab->ikhtisar) }}',
+                                         '{{ $wd3Anjab->anjab_url }}',
+                                         '{{ $wd3Anjab->abk_url }}'
                                      )">
                                     <div class="flex justify-between items-center text-[10px]">
                                         <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 2px 8px; border-radius: 4px;">UNSUR PIMPINAN</span>
@@ -519,8 +641,10 @@
                                         WAKIL DEKAN BIDANG KEMAHASISWAAN, ALUMNI DAN KERJASAMA
                                     </div>
                                     <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
-                                        <span>Bezetting: <strong style="color: #ffffff !important;">1</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
-                                        <span style="background-color: #10b981 !important; color: #ffffff !important; font-weight: 800; font-size: 10px; padding: 2px 8px; border-radius: 9999px;">🟢 Ideal</span>
+                                        <span>Bezetting: <strong style="color: #ffffff !important;">{{ $wd3Anjab->bezetting }}</strong> / Butuh: <strong style="color: #ffffff !important;">{{ $wd3Anjab->kebutuhan }}</strong></span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold {{ $wd3Anjab->selisih < 0 ? 'bg-rose-500 text-white' : ($wd3Anjab->selisih > 0 ? 'bg-amber-400 text-amber-950' : 'bg-emerald-500 text-white') }}">
+                                            {{ $wd3Anjab->status }}
+                                        </span>
                                     </div>
                                 </div>
 
@@ -540,10 +664,10 @@
                                              'Melaksanakan program kerja penalaran, advokasi, pengabdian mahasiswa kepada masyarakat, dan minat bakat sivitas mahasiswa.'
                                          )">
                                         <div style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11px; padding: 4px 6px; border-radius: 6px; text-transform: uppercase;">
-                                            BEM
+                                             BEM
                                         </div>
                                         <div class="text-[9.5px] font-bold mt-1.5" style="color: #5b21b6 !important;">
-                                            BADAN EKSEKUTIF MAHASISWA
+                                             BADAN EKSEKUTIF MAHASISWA
                                         </div>
                                     </div>
 
@@ -557,10 +681,10 @@
                                              'Melaksanakan fungsi legislasi kemahasiswaan, pengawasan program BEM, dan penyaluran aspirasi mahasiswa fakultas.'
                                          )">
                                         <div style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11px; padding: 4px 6px; border-radius: 6px; text-transform: uppercase;">
-                                            DPM
+                                             DPM
                                         </div>
                                         <div class="text-[9.5px] font-bold mt-1.5" style="color: #5b21b6 !important;">
-                                            DEWAN PERWAKILAN MAHASISWA
+                                             DEWAN PERWAKILAN MAHASISWA
                                         </div>
                                     </div>
 
@@ -574,10 +698,10 @@
                                              'Mewadahi jejaring alumni perawat, tracer study lulusan, pendayagunaan karir ners di RS nasional dan internasional.'
                                          )">
                                         <div style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11px; padding: 4px 6px; border-radius: 6px; text-transform: uppercase;">
-                                            ALUMNI
+                                             ALUMNI
                                         </div>
                                         <div class="text-[9.5px] font-bold mt-1.5" style="color: #5b21b6 !important;">
-                                            IKATAN ALUMNI FKp
+                                             IKATAN ALUMNI FKp
                                         </div>
                                     </div>
                                 </div>
@@ -595,14 +719,24 @@
                     {{-- ========================================================================= --}}
                     {{-- LEVEL 3: TIGA PILAR UTAMA FUNGSIONAL & PENUNJANG (3 KOLOM BERDAMPINGAN)   --}}
                     {{-- ========================================================================= --}}
+                    @php
+                        $dosenAnjab = $getAnjab('Dosen');
+                        $unitKhususAnjab = $getAnjab('Unit Khusus');
+                        $kepalaLabAnjab = $getAnjab('Kepala Laboratorium');
+                        $plpAnjab = $getAnjab('Pranata Laboratorium');
+                    @endphp
                     <div class="w-full grid grid-cols-3 gap-6 items-start">
 
                         {{-- --------------------------------------------------------------------- --}}
                         {{-- PILAR 1 (KIRI): KELOMPOK JABATAN FUNGSIONAL DOSEN (KJFD - 9 BIDANG)   --}}
                         {{-- --------------------------------------------------------------------- --}}
                         <div class="p-4 rounded-xl shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #059669 !important;">
-                            <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11.5px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(5, 150, 105, 0.3); margin-bottom: 10px;">
+                            <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11.5px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(5, 150, 105, 0.3); margin-bottom: 6px;">
                                 KELOMPOK JABATAN FUNGSIONAL DOSEN (KJFD)
+                            </div>
+                            <div class="text-[9.5px] p-1.5 mb-2 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 flex justify-between items-center font-bold">
+                                <span>Bezetting: <strong>{{ $dosenAnjab->bezetting }}</strong> / Butuh: <strong>{{ $dosenAnjab->kebutuhan }}</strong></span>
+                                <span class="px-1.5 py-0.2 rounded {{ $dosenAnjab->selisih < 0 ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white' }}">{{ $dosenAnjab->status }}</span>
                             </div>
                             <div class="space-y-1.5 text-xs">
                                 @php
@@ -622,11 +756,15 @@
                                     <div class="p-2 rounded flex items-center justify-between cursor-pointer hover:opacity-90 transition"
                                          style="background-color: #f0fdf4 !important; border: 1px solid #86efac !important; font-weight: 800;"
                                          @click="openDetail(
-                                             '{{ $k }}',
-                                             'Kelompok Jabatan Fungsional Dosen (KJFD)',
-                                             {{ \App\Models\Pegawai::where('jenis_pegawai', 'like', '%Dosen%')->count() > 0 ? round(\App\Models\Pegawai::where('jenis_pegawai', 'like', '%Dosen%')->count() / 9) : 6 }},
-                                             6, 'Ideal', [],
-                                             'Melaksanakan tridharma perguruan tinggi pada rumpun keahlian {{ $k }}, pembimbingan tugas akhir, praktikum klinik dan riset keperawatan.'
+                                             'KJFD Keperawatan: {{ $k }}',
+                                             'Kelompok Jabatan Fungsional Dosen (Grade 9-14)',
+                                             {{ $dosenAnjab->bezetting }},
+                                             {{ $dosenAnjab->kebutuhan }},
+                                             '{{ $dosenAnjab->status }}',
+                                             {{ \App\Models\Pegawai::where('jenis_pegawai', 'like', '%Dosen%')->take(6)->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             'Melaksanakan tridharma perguruan tinggi pada rumpun keahlian {{ $k }}, pembimbingan tugas akhir, praktikum klinik dan riset keperawatan. {{ addslashes($dosenAnjab->ikhtisar) }}',
+                                             '{{ $dosenAnjab->anjab_url }}',
+                                             '{{ $dosenAnjab->abk_url }}'
                                          )">
                                         <span style="color: #064e3b !important; font-size: 11px;">{{ $k }}</span>
                                         <span style="color: #059669 !important; font-weight: 800; font-size: 9.5px; font-family: monospace;">Detail ➔</span>
@@ -639,8 +777,12 @@
                         {{-- PILAR 2 (TENGAH): UNIT-UNIT FUNGSIONAL (9 UNIT)                       --}}
                         {{-- --------------------------------------------------------------------- --}}
                         <div class="p-4 rounded-xl shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #0284c7 !important;">
-                            <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11.5px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.3); margin-bottom: 10px;">
+                            <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11.5px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.3); margin-bottom: 6px;">
                                 UNIT-UNIT FUNGSIONAL
+                            </div>
+                            <div class="text-[9.5px] p-1.5 mb-2 rounded bg-sky-50 border border-sky-200 text-sky-800 flex justify-between items-center font-bold">
+                                <span>Bezetting: <strong>{{ $unitKhususAnjab->bezetting }}</strong> / Butuh: <strong>{{ $unitKhususAnjab->kebutuhan }}</strong></span>
+                                <span class="px-1.5 py-0.2 rounded {{ $unitKhususAnjab->selisih < 0 ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white' }}">{{ $unitKhususAnjab->status }}</span>
                             </div>
                             <div class="space-y-1.5 text-xs">
                                 @php
@@ -650,7 +792,7 @@
                                         '3. COMPUTER BASED TEST (CBT)',
                                         '4. KERJASAMA',
                                         '5. PENELITIAN DAN PENGABMASY',
-                                        '6. NURSING EDUCATION DEVELOPMENT UNIT (NEDU) S1, NERS DAN S2',
+                                        '6. NURSING EDUCATION DEVELOPMENT UNIT (NEDU)',
                                         '7. BIMBINGAN KONSELING',
                                         '8. HUMAS',
                                         '9. PPID',
@@ -662,8 +804,13 @@
                                          @click="openDetail(
                                              '{{ $uf }}',
                                              'Unit Fungsional Khusus Fakultas',
-                                             1, 1, 'Ideal', [],
-                                             'Melaksanakan fungsi penunjang akademik, kepatuhan etik, pengujian CBT, kemitraan institusi, dan layanan keterbukaan informasi publik.'
+                                             {{ $unitKhususAnjab->bezetting }},
+                                             {{ $unitKhususAnjab->kebutuhan }},
+                                             '{{ $unitKhususAnjab->status }}',
+                                             [],
+                                             'Melaksanakan fungsi penunjang akademik, kepatuhan etik, pengujian CBT, kemitraan institusi, bimbingan konseling dan layanan keterbukaan informasi publik. {{ addslashes($unitKhususAnjab->ikhtisar) }}',
+                                             '{{ $unitKhususAnjab->anjab_url }}',
+                                             '{{ $unitKhususAnjab->abk_url }}'
                                          )">
                                         <span style="color: #0c4a6e !important; font-size: 11px;">{{ $uf }}</span>
                                         <span style="color: #0284c7 !important; font-weight: 800; font-size: 9.5px; font-family: monospace;">Detail ➔</span>
@@ -686,13 +833,18 @@
                                  @click="openDetail(
                                      'Pranata Laboratorium Pendidikan (PLP)',
                                      'Fungsional PLP / Laboran (Grade 8)',
-                                     {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Laboran%')->orWhere('nama_jabatan', 'like', '%PLP%'))->count() }},
-                                     2, '🔴 Kurang 1',
+                                     {{ $plpAnjab->bezetting }},
+                                     {{ $plpAnjab->kebutuhan }},
+                                     '{{ $plpAnjab->status }}',
                                      {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Laboran%')->orWhere('nama_jabatan', 'like', '%PLP%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                     'Mengelola 9 ruang laboratorium keperawatan, manikin medis, bahan habis pakai, dan keselamatan kerja K3 praktikum.'
+                                     '{{ addslashes($plpAnjab->ikhtisar) }}',
+                                     '{{ $plpAnjab->anjab_url }}',
+                                     '{{ $plpAnjab->abk_url }}'
                                  )">
                                 <div class="font-black text-[11px]" style="color: #312e81 !important;">Kepala Lab & Pranata Lab (PLP)</div>
-                                <span class="font-extrabold text-[9.5px] block mt-0.5" style="color: #dc2626 !important;">Bezetting: 1 / Kebutuhan: 2 (🔴 Kurang 1)</span>
+                                <span class="font-extrabold text-[9.5px] block mt-0.5" style="color: {{ $plpAnjab->selisih < 0 ? '#dc2626' : '#059669' }} !important;">
+                                    Bezetting: {{ $plpAnjab->bezetting }} / Kebutuhan: {{ $plpAnjab->kebutuhan }} ({{ $plpAnjab->status }})
+                                </span>
                             </div>
 
                             <div class="space-y-1.5 text-xs">
@@ -715,8 +867,13 @@
                                          @click="openDetail(
                                              '{{ $lb }}',
                                              'Ruang Praktikum Laboratorium Keperawatan',
-                                             1, 1, 'Ideal', [],
-                                             'Fasilitas praktikum simulasi medis, manikin keperawatan, dan ujian Objective Structured Clinical Examination (OSCE).'
+                                             {{ $plpAnjab->bezetting }},
+                                             {{ $plpAnjab->kebutuhan }},
+                                             '{{ $plpAnjab->status }}',
+                                             {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Laboran%')->orWhere('nama_jabatan', 'like', '%PLP%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             'Fasilitas praktikum simulasi medis, manikin keperawatan, dan ujian Objective Structured Clinical Examination (OSCE). {{ addslashes($kepalaLabAnjab->ikhtisar) }}',
+                                             '{{ $kepalaLabAnjab->anjab_url }}',
+                                             '{{ $kepalaLabAnjab->abk_url }}'
                                          )">
                                         <span style="color: #1e1b4b !important; font-size: 11px;">{{ $lb }}</span>
                                         <span style="color: #4f46e5 !important; font-weight: 800; font-size: 9.5px; font-family: monospace;">Detail ➔</span>
@@ -797,13 +954,25 @@
                     </template>
                 </div>
 
-                <div class="mt-6 pt-4 border-t border-gray-200 flex justify-end gap-2">
-                    <button @click="showModal = false" class="px-4 py-2 text-xs font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                <div class="mt-6 pt-4 border-t border-gray-200 flex flex-wrap items-center justify-end gap-2">
+                    <button @click="showModal = false" class="px-3.5 py-2 text-xs font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
                         Tutup
                     </button>
-                    <a :href="'{{ route('abk.index') }}'" class="px-4 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
-                        Buka Rekap ABK ➔
-                    </a>
+                    <template x-if="activeNode && activeNode.anjabUrl && activeNode.anjabUrl !== '#'">
+                        <a :href="activeNode.anjabUrl" class="px-3.5 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition">
+                            📑 Dokumen Anjab
+                        </a>
+                    </template>
+                    <template x-if="activeNode && activeNode.abkUrl && activeNode.abkUrl !== '#'">
+                        <a :href="activeNode.abkUrl" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+                            🧮 Rincian / Formasi ABK ➔
+                        </a>
+                    </template>
+                    <template x-if="!activeNode || !activeNode.abkUrl || activeNode.abkUrl === '#'">
+                        <a :href="'{{ route('abk.index') }}'" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+                            Buka Rekap ABK ➔
+                        </a>
+                    </template>
                 </div>
             </div>
         </div>

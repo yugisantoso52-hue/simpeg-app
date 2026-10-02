@@ -685,19 +685,6 @@ class PegawaiController extends Controller
      */
     private function getOrderedJabatan()
     {
-        return Jabatan::with('unitKerja')->orderByRaw("CASE 
-            WHEN kelompok_jabatan = 'Pimpinan Fakultas' THEN 1
-            WHEN kelompok_jabatan = 'Badan Pertimbangan (Senat)' THEN 2
-            WHEN kelompok_jabatan = 'Penjaminan Mutu (SPMF)' THEN 3
-            WHEN kelompok_jabatan = 'Pimpinan Jurusan' THEN 4
-            WHEN kelompok_jabatan = 'Koordinator Program Studi' THEN 5
-            WHEN kelompok_jabatan = 'Kelompok Jabatan Fungsional Dosen (KJFD)' THEN 6
-            WHEN kelompok_jabatan = 'Unit-Unit Fungsional' THEN 7
-            WHEN kelompok_jabatan = 'Laboratorium Keperawatan' THEN 8
-            WHEN kelompok_jabatan = 'Tenaga Kependidikan & Tata Usaha' THEN 9
-            WHEN kelompok_jabatan = 'Jabatan Fungsional Dosen' THEN 10
-            WHEN kelompok_jabatan = 'Fungsional Tertentu & Pelaksana' THEN 11
-            WHEN kelompok_jabatan = 'Pelaksana & Administrasi' THEN 12
-            ELSE 13 END, kelas_jabatan DESC, nama_jabatan ASC")->get();
+        return Jabatan::with(['unitKerja', 'analisisJabatan'])->get()->sortByDesc('hierarchy_order')->values();
     }
 }

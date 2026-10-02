@@ -27,7 +27,7 @@ class JabatanController extends Controller
 
     public function index(Request $request)
     {
-        $query = Jabatan::with('unitKerja')->withCount('pegawai');
+        $query = Jabatan::with(['unitKerja', 'analisisJabatan.uraianTugas'])->withCount('pegawai');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -47,22 +47,16 @@ class JabatanController extends Controller
             $query->where('unit_kerja_id', $request->unit_kerja_id);
         }
 
-        $jabatan = $query->orderByRaw("CASE 
-            WHEN kelompok_jabatan = 'Pimpinan Fakultas' THEN 1
-            WHEN kelompok_jabatan = 'Badan Pertimbangan (Senat)' THEN 2
-            WHEN kelompok_jabatan = 'Penjaminan Mutu (SPMF)' THEN 3
-            WHEN kelompok_jabatan = 'Pimpinan Jurusan' THEN 4
-            WHEN kelompok_jabatan = 'Koordinator Program Studi' THEN 5
-            WHEN kelompok_jabatan = 'Kelompok Jabatan Fungsional Dosen (KJFD)' THEN 6
-            WHEN kelompok_jabatan = 'Unit-Unit Fungsional' THEN 7
-            WHEN kelompok_jabatan = 'Laboratorium Keperawatan' THEN 8
-            WHEN kelompok_jabatan = 'Tenaga Kependidikan & Tata Usaha' THEN 9
-            WHEN kelompok_jabatan = 'Jabatan Fungsional Dosen' THEN 10
-            WHEN kelompok_jabatan = 'Fungsional Tertentu & Pelaksana' THEN 11
-            WHEN kelompok_jabatan = 'Pelaksana & Administrasi' THEN 12
-            ELSE 13 END, kelas_jabatan DESC, nama_jabatan ASC")
-            ->paginate(50)
-            ->withQueryString();
+        $all = $query->get()->sortByDesc('hierarchy_order')->values();
+        $page = (int) $request->input('page', 1);
+        $perPage = 50;
+        $jabatan = new \Illuminate\Pagination\LengthAwarePaginator(
+            $all->forPage($page, $perPage),
+            $all->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         $unitKerjas = UnitKerja::orderBy('urutan')->orderBy('nama_unit')->get();
         $kelompokOptions = self::KELOMPOK_OPTIONS;

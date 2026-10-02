@@ -27,19 +27,25 @@ class PetaJabatanController extends Controller
           ->orderBy('urutan')
           ->get();
 
-        // Data ringkasan bezetting & kebutuhan
-        $allAnjabs = AnalisisJabatan::with('uraianTugas')->get();
+        // Data ringkasan bezetting & kebutuhan tersinkronisasi dengan tabel ABK
+        $allAnjabs = AnalisisJabatan::with(['jabatan', 'unitKerja', 'uraianTugas'])->get();
         $totalKebutuhan = $allAnjabs->sum('formasi_pembulatan');
         $totalPegawaiAktif = Pegawai::where('status_pegawai', 'Aktif')->count();
         $totalJabatan = Jabatan::count();
         $totalUnitKerja = UnitKerja::count();
+
+        // Map data anjab berdasarkan nama jabatan lowercase untuk sinkronisasi kanvas
+        $anjabMap = $allAnjabs->keyBy(function ($a) {
+            return strtolower(trim($a->jabatan->nama_jabatan ?? ''));
+        });
 
         return view('anjab.peta_jabatan', compact(
             'unitKerjas',
             'totalKebutuhan',
             'totalPegawaiAktif',
             'totalJabatan',
-            'totalUnitKerja'
+            'totalUnitKerja',
+            'anjabMap'
         ));
     }
 

@@ -117,6 +117,16 @@
                                             @if($row->ikhtisar_jabatan)
                                                 <div class="text-[11px] text-gray-500 line-clamp-1 italic mt-0.5">{{ $row->ikhtisar_jabatan }}</div>
                                             @endif
+                                            @if($row->analisisJabatan)
+                                                <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                                                    <a href="{{ route('abk.edit', $row->analisisJabatan->id) }}" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition" title="Kelola Butir Tugas ABK">
+                                                        <span>🧮 ABK: {{ $row->analisisJabatan->formasi_pembulatan }} Formasi</span>
+                                                    </a>
+                                                    <a href="{{ route('anjab.show', $row->analisisJabatan->id) }}" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition" title="Lihat Dokumen 17 Butir Anjab">
+                                                        <span>📑 {{ $row->analisisJabatan->kode_anjab ?? 'E-Anjab' }}</span>
+                                                    </a>
+                                                </div>
+                                            @endif
                                         </td>
                                         <td class="px-4 py-3">
                                             <span class="inline-block px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-slate-100 text-slate-800 border border-slate-200">
@@ -146,6 +156,13 @@
                                         </td>
                                         <td class="px-4 py-3 text-center whitespace-nowrap">
                                             <div class="flex items-center justify-center gap-1.5">
+                                                @if($row->analisisJabatan)
+                                                    <a href="{{ route('abk.edit', $row->analisisJabatan->id) }}"
+                                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow-2xs transition"
+                                                       title="Kelola Beban Kerja ABK">
+                                                        🧮 ABK
+                                                    </a>
+                                                @endif
                                                 <a href="{{ route('jabatan.edit', $row->id) }}"
                                                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded shadow-2xs transition">
                                                     ✏️ Edit

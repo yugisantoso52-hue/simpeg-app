@@ -65,7 +65,7 @@ class RiwayatJabatanService
 
     public function jabatan()
     {
-        return Jabatan::orderBy('nama_jabatan')->get();
+        return Jabatan::with('unitKerja')->get()->sortByDesc('hierarchy_order')->values();
     }
 
     public function unitKerja()
