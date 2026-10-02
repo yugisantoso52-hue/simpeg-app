@@ -1166,40 +1166,41 @@
                             </div>
 
                             {{-- Peta Struktur & Rekomendasi Cepat (1 Kolom) --}}
-                            <div class="border border-slate-200 rounded-xl p-4 bg-gradient-to-br from-indigo-900 via-slate-900 to-blue-950 text-white flex flex-col justify-between shadow-sm">
+                            <div class="rounded-xl p-5 flex flex-col justify-between shadow-md"
+                                 style="background-color: #0f172a !important; background-image: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #172554 100%) !important; border: 1px solid #334155 !important; color: #ffffff !important;">
                                 <div>
                                     <div class="flex items-center gap-2 mb-2">
-                                        <span class="text-lg">🏛️</span>
-                                        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-300">Peta Struktur & Alur Jabatan</h4>
+                                        <span class="text-xl">🏛️</span>
+                                        <h4 class="text-xs font-bold uppercase tracking-wider" style="color: #93c5fd !important;">Peta Struktur & Alur Jabatan</h4>
                                     </div>
-                                    <h5 class="text-sm font-bold text-white mb-2 leading-snug">
+                                    <h5 class="text-sm font-bold mb-2 leading-snug" style="color: #ffffff !important;">
                                         Struktur Hirarki Organisasi Fakultas Keperawatan UNRI
                                     </h5>
-                                    <p class="text-[11px] text-slate-300 leading-relaxed mb-4">
+                                    <p class="text-[11px] leading-relaxed mb-4" style="color: #cbd5e1 !important;">
                                         Bagan interaktif 3 Sayap Wakil Dekan, Jurusan Klinik & Komunitas, Program Studi (S1, S2, S3, Ners), SPMF/GPM, serta 27 Unit/Lab/KJFD.
                                     </p>
                                     <div class="space-y-2 text-xs">
-                                        <div class="flex items-center justify-between p-2 rounded-lg bg-white/10 border border-white/10">
-                                            <span class="text-slate-300">Total Unsur Pimpinan:</span>
-                                            <span class="font-bold text-emerald-300">Dekan & 3 Wadek</span>
+                                        <div class="flex items-center justify-between p-2.5 rounded-lg" style="background-color: rgba(255, 255, 255, 0.08) !important; border: 1px solid rgba(255, 255, 255, 0.12) !important;">
+                                            <span style="color: #cbd5e1 !important;">Total Unsur Pimpinan:</span>
+                                            <span class="font-bold" style="color: #6ee7b7 !important;">Dekan & 3 Wadek</span>
                                         </div>
-                                        <div class="flex items-center justify-between p-2 rounded-lg bg-white/10 border border-white/10">
-                                            <span class="text-slate-300">Pilar Penunjang & Unit:</span>
-                                            <span class="font-bold text-blue-300">27 Lab / Unit / KJFD</span>
+                                        <div class="flex items-center justify-between p-2.5 rounded-lg" style="background-color: rgba(255, 255, 255, 0.08) !important; border: 1px solid rgba(255, 255, 255, 0.12) !important;">
+                                            <span style="color: #cbd5e1 !important;">Pilar Penunjang & Unit:</span>
+                                            <span class="font-bold" style="color: #93c5fd !important;">27 Lab / Unit / KJFD</span>
                                         </div>
-                                        <div class="flex items-center justify-between p-2 rounded-lg bg-white/10 border border-white/10">
-                                            <span class="text-slate-300">Total Formasi Disusun:</span>
-                                            <span class="font-bold text-amber-300">{{ $abkSummary['totalDokumen'] }} Jabatan</span>
+                                        <div class="flex items-center justify-between p-2.5 rounded-lg" style="background-color: rgba(255, 255, 255, 0.08) !important; border: 1px solid rgba(255, 255, 255, 0.12) !important;">
+                                            <span style="color: #cbd5e1 !important;">Total Formasi Disusun:</span>
+                                            <span class="font-bold" style="color: #fde047 !important;">{{ $abkSummary['totalDokumen'] }} Jabatan</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="mt-4 pt-3 border-t border-white/15 space-y-2">
-                                    <a href="{{ route('anjab.peta-jabatan') }}" class="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold text-xs text-white flex items-center justify-center gap-2 shadow-md transition">
+                                <div class="mt-4 pt-3 space-y-2" style="border-top: 1px solid rgba(255, 255, 255, 0.15) !important;">
+                                    <a href="{{ route('anjab.peta-jabatan') }}" class="w-full py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow transition hover:opacity-95" style="background-color: #2563eb !important; color: #ffffff !important; text-decoration: none !important;">
                                         <span>Buka Peta Jabatan Digital</span> &rarr;
                                     </a>
                                     @if(Auth::user()->canManageAnjabAbk())
-                                        <a href="{{ route('anjab.create') }}" class="w-full py-2 px-3 rounded-xl bg-white/15 hover:bg-white/25 font-semibold text-xs text-white flex items-center justify-center gap-1.5 transition">
-                                            <span>➕</span> Tambah Dokumen Anjab Baru
+                                        <a href="{{ route('anjab.create') }}" class="w-full py-2 px-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-1.5 transition hover:bg-white/20" style="background-color: rgba(255, 255, 255, 0.12) !important; color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.25) !important; text-decoration: none !important;">
+                                            <span class="font-bold text-sm">+</span> Tambah Dokumen Anjab Baru
                                         </a>
                                     @endif
                                 </div>
