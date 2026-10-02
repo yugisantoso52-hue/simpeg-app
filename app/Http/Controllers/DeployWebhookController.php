@@ -36,6 +36,7 @@ class DeployWebhookController extends Controller
 
                 return response()->json([
                     'status' => 'diagnose',
+                    'dolli' => \App\Models\Pegawai::where('nama', 'like', '%Dolli%')->first(['id', 'nama', 'jabatan_id', 'unit_kerja_id', 'status_pegawai']),
                     'anjabs_count' => $anjabs->count(),
                     'anjabs' => $anjabs->map(fn($a) => [
                         'id' => $a->id,
