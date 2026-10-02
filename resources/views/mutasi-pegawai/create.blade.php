@@ -109,15 +109,20 @@
                                 required>
 
                             <option value="">
-                                Pilih Jabatan Baru
+                                -- Pilih Jabatan Baru --
                             </option>
 
-                            @foreach($jabatan as $j)
-
-                                <option value="{{ $j->id }}">
-                                    {{ $j->nama_jabatan }}
-                                </option>
-
+                            @php
+                                $groupedMutasiJabatan = $jabatan->groupBy(fn($j) => $j->kelompok_jabatan ?: 'Jabatan Lainnya');
+                            @endphp
+                            @foreach($groupedMutasiJabatan as $kelompok => $items)
+                                <optgroup label="📂 {{ strtoupper($kelompok) }}">
+                                    @foreach($items as $j)
+                                        <option value="{{ $j->id }}">
+                                            {{ $j->nama_jabatan }} @if($j->kelas_jabatan)(Grade {{ $j->kelas_jabatan }})@endif
+                                        </option>
+                                    @endforeach
+                                </optgroup>
                             @endforeach
 
                         </select>

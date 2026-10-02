@@ -21,12 +21,14 @@ class ApprovalHierarchyService
         'Ketua Jurusan Preklinik Keperawatan',
         'Koordinator Prodi S1 Keperawatan',
         'Koordinator Prodi S2 Keperawatan',
+        'Koordinator Prodi S3 Keperawatan',
         'Koordinator Prodi Ners',
         'Kepala Bagian Umum',
         'Ka Pokja Akademik',
         'Ka Pokja Keu-Kepeg',
         'Ka Pokja Umum Sarana Akademik',
         'Kepala UPT Laboratorium Keperawatan',
+        'Kepala SPMF / GPM',
         'Kepala Unit Fungsional',
     ];
 
@@ -417,6 +419,28 @@ class ApprovalHierarchyService
         // HIERARKI DOSEN (RULES 1, 2, 3, 8, 9, DAN FALLBACK)
         // =================================================================================================
         if ($isDosen) {
+            // RULE S3: Dosen S3 Keperawatan ──► Approved By ──► Koordinator Prodi S3 Keperawatan
+            if (str_contains($jabatanNama, 'S3') || str_contains($unitNama, 'S3')) {
+                $koor = $this->findPegawaiByJabatan([
+                    'Koordinator Prodi S3 Keperawatan',
+                    'Koordinator Program Studi S3 Keperawatan',
+                    'Koorprodi S3',
+                    'Ketua Jurusan Preklinik Keperawatan',
+                    'Ketua Jurusan (Kajur)'
+                ]);
+                return [
+                    'rule_number'            => 1,
+                    'rule_label'             => 'Rule S3: Dosen S3 Keperawatan ──► Disetujui Koordinator Prodi S3 Keperawatan',
+                    'subject_role'           => 'Dosen S3 Keperawatan',
+                    'approver_title'         => 'Koordinator Prodi S3 Keperawatan',
+                    'approver_pegawai'       => $koor,
+                    'approver_name'          => $koor ? ($koor->nama_lengkap ?? $koor->nama) : 'Koordinator Prodi S3 Keperawatan',
+                    'approver_nip'           => $koor?->nip ?? '-',
+                    'secondary_approver_title' => null,
+                    'secondary_approver_pegawai' => null,
+                ];
+            }
+
             // RULE 1: Dosen S2 Keperawatan ──► Approved By ──► Koordinator Prodi S2 Keperawatan
             if (str_contains($jabatanNama, 'S2') || str_contains($unitNama, 'S2')) {
                 $koor = $this->findPegawaiByJabatan([

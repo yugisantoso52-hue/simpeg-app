@@ -5,11 +5,11 @@
     <x-enterprise.forms.row cols="3">
         <x-enterprise.forms.field>
             <x-enterprise.form-group label="Unit Kerja / Program Studi" required>
-                <x-enterprise.select name="unit_kerja_id" required>
-                    <option value="">Pilih Unit Kerja</option>
+                <x-enterprise.select name="unit_kerja_id" id="field_unit_kerja_id" required>
+                    <option value="">-- Pilih Unit Kerja --</option>
                     @foreach($unitKerja as $item)
                         <option value="{{ $item->id }}" @selected(old('unit_kerja_id', $pegawai->unit_kerja_id ?? '')==$item->id)>
-                            {{ $item->nama_unit ?? $item->nama_unit_kerja ?? $item->nama }}
+                            @if($item->parent_id) └─ @endif {{ $item->nama_unit ?? $item->nama_unit_kerja ?? $item->nama }}
                         </option>
                     @endforeach
                 </x-enterprise.select>
@@ -17,13 +17,22 @@
         </x-enterprise.forms.field>
 
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="Jabatan">
-                <x-enterprise.select name="jabatan_id">
-                    <option value="">Pilih Jabatan</option>
-                    @foreach($jabatan as $item)
-                        <option value="{{ $item->id }}" @selected(old('jabatan_id', $pegawai->jabatan_id ?? '')==$item->id)>
-                            {{ $item->nama_jabatan ?? $item->nama }}
-                        </option>
+            <x-enterprise.form-group label="Jabatan Struktural / Fungsional / Pelaksana">
+                <x-enterprise.select name="jabatan_id" id="field_jabatan_id" onchange="autoSyncUnitKerja(this)">
+                    <option value="">-- Pilih Jabatan --</option>
+                    @php
+                        $groupedJabatan = $jabatan->groupBy(fn($j) => $j->kelompok_jabatan ?: 'Jabatan Lainnya');
+                    @endphp
+                    @foreach($groupedJabatan as $kelompok => $items)
+                        <optgroup label="📂 {{ strtoupper($kelompok) }}">
+                            @foreach($items as $item)
+                                <option value="{{ $item->id }}"
+                                        data-unit-id="{{ $item->unit_kerja_id }}"
+                                        @selected(old('jabatan_id', $pegawai->jabatan_id ?? '')==$item->id)>
+                                    {{ $item->nama_jabatan ?? $item->nama }} @if($item->kelas_jabatan)(Grade {{ $item->kelas_jabatan }})@endif
+                                </option>
+                            @endforeach
+                        </optgroup>
                     @endforeach
                 </x-enterprise.select>
             </x-enterprise.form-group>
@@ -216,3 +225,15 @@
     </div>
 
 </x-enterprise.forms.section>
+
+<script>
+    function autoSyncUnitKerja(selectElem) {
+        const selectedOpt = selectElem.options[selectElem.selectedIndex];
+        if (!selectedOpt) return;
+        const unitId = selectedOpt.getAttribute('data-unit-id');
+        const unitSelect = document.getElementById('field_unit_kerja_id');
+        if (unitId && unitSelect && !unitSelect.value) {
+            unitSelect.value = unitId;
+        }
+    }
+</script>

@@ -127,8 +127,8 @@ class PegawaiController extends Controller
 
         return view('pegawai.create', [
             'kategori'     => $kategori,
-            'unitKerja'    => UnitKerja::orderBy('id', 'asc')->get(),
-            'jabatan'      => Jabatan::orderBy('id', 'asc')->get(),
+            'unitKerja'    => UnitKerja::orderBy('urutan', 'asc')->orderBy('id', 'asc')->get(),
+            'jabatan'      => $this->getOrderedJabatan(),
             'golongan'     => Golongan::orderBy('nama_golongan')->get(),
             'jenisJabatan' => JenisJabatan::orderBy('nama_jenis_jabatan')->get(),
             'atasanList'   => Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->get(['id', 'nama', 'nip', 'jabatan_id']),
@@ -198,8 +198,8 @@ class PegawaiController extends Controller
         return view('pegawai.edit', [
             'pegawai'      => $pegawai,
             'kategori'     => $kategori,
-            'unitKerja'    => UnitKerja::orderBy('id', 'asc')->get(),
-            'jabatan'      => Jabatan::orderBy('id', 'asc')->get(),
+            'unitKerja'    => UnitKerja::orderBy('urutan', 'asc')->orderBy('id', 'asc')->get(),
+            'jabatan'      => $this->getOrderedJabatan(),
             'golongan'     => Golongan::orderBy('nama_golongan')->get(),
             'jenisJabatan' => JenisJabatan::orderBy('nama_jenis_jabatan')->get(),
             'atasanList'   => Pegawai::where('status_pegawai', 'Aktif')
@@ -678,5 +678,26 @@ class PegawaiController extends Controller
         $moduleTitle = $moduleNames[$module] ?? ucwords(str_replace('-', ' ', (string)($module ?? 'Fitur SIKAP Enterprise')));
 
         return view('pages.coming-soon', compact('moduleTitle'));
+    }
+
+    /**
+     * Dapatkan daftar jabatan terstruktur rapi untuk form pegawai
+     */
+    private function getOrderedJabatan()
+    {
+        return Jabatan::with('unitKerja')->orderByRaw("CASE 
+            WHEN kelompok_jabatan = 'Pimpinan Fakultas' THEN 1
+            WHEN kelompok_jabatan = 'Badan Pertimbangan (Senat)' THEN 2
+            WHEN kelompok_jabatan = 'Penjaminan Mutu (SPMF)' THEN 3
+            WHEN kelompok_jabatan = 'Pimpinan Jurusan' THEN 4
+            WHEN kelompok_jabatan = 'Koordinator Program Studi' THEN 5
+            WHEN kelompok_jabatan = 'Kelompok Jabatan Fungsional Dosen (KJFD)' THEN 6
+            WHEN kelompok_jabatan = 'Unit-Unit Fungsional' THEN 7
+            WHEN kelompok_jabatan = 'Laboratorium Keperawatan' THEN 8
+            WHEN kelompok_jabatan = 'Tenaga Kependidikan & Tata Usaha' THEN 9
+            WHEN kelompok_jabatan = 'Jabatan Fungsional Dosen' THEN 10
+            WHEN kelompok_jabatan = 'Fungsional Tertentu & Pelaksana' THEN 11
+            WHEN kelompok_jabatan = 'Pelaksana & Administrasi' THEN 12
+            ELSE 13 END, kelas_jabatan DESC, nama_jabatan ASC")->get();
     }
 }

@@ -109,15 +109,18 @@
                         <select name="jabatan_baru_id"
                                 class="w-full border rounded p-2">
 
-                            @foreach($jabatan as $j)
-
-                                <option value="{{ $j->id }}"
-                                    {{ $mutasi->jabatan_baru_id == $j->id ? 'selected' : '' }}>
-
-                                    {{ $j->nama_jabatan }}
-
-                                </option>
-
+                            @php
+                                $groupedMutasiJabatan = $jabatan->groupBy(fn($j) => $j->kelompok_jabatan ?: 'Jabatan Lainnya');
+                            @endphp
+                            @foreach($groupedMutasiJabatan as $kelompok => $items)
+                                <optgroup label="📂 {{ strtoupper($kelompok) }}">
+                                    @foreach($items as $j)
+                                        <option value="{{ $j->id }}"
+                                            {{ $mutasi->jabatan_baru_id == $j->id ? 'selected' : '' }}>
+                                            {{ $j->nama_jabatan }} @if($j->kelas_jabatan)(Grade {{ $j->kelas_jabatan }})@endif
+                                        </option>
+                                    @endforeach
+                                </optgroup>
                             @endforeach
 
                         </select>

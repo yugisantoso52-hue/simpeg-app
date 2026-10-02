@@ -31,7 +31,7 @@
                             <select name="riwayat_jabatan[{{ $index }}][jabatan_id]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="">-- Pilih Jabatan --</option>
                                 @foreach($jabatan as $j)
-                                    <option value="{{ $j->id }}" @selected($rj->jabatan_id == $j->id)>{{ $j->nama_jabatan }}</option>
+                                    <option value="{{ $j->id }}" @selected($rj->jabatan_id == $j->id)>{{ $j->nama_jabatan }} @if($j->kelas_jabatan)(Grade {{ $j->kelas_jabatan }})@endif</option>
                                 @endforeach
                             </select>
                         </td>
@@ -76,7 +76,7 @@
                             <select name="riwayat_jabatan[0][jabatan_id]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="">-- Pilih Jabatan --</option>
                                 @foreach($jabatan as $j)
-                                    <option value="{{ $j->id }}">{{ $j->nama_jabatan }}</option>
+                                    <option value="{{ $j->id }}">{{ $j->nama_jabatan }} @if($j->kelas_jabatan)(Grade {{ $j->kelas_jabatan }})@endif</option>
                                 @endforeach
                             </select>
                         </td>
@@ -120,7 +120,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const tbody = document.getElementById('jabatan-tbody');
     const addBtn = document.getElementById('add-jabatan-btn');
-    const jabatanOptions = `@foreach($jabatan as $j)<option value="{{ $j->id }}">{{ $j->nama_jabatan }}</option>@endforeach`;
+    const jabatanOptions = `@foreach($jabatan as $j)<option value="{{ $j->id }}">{{ addslashes($j->nama_jabatan) }} @if($j->kelas_jabatan)(Grade {{ $j->kelas_jabatan }})@endif</option>@endforeach`;
     const unitOptions = `@foreach($unitKerja as $u)<option value="{{ $u->id }}">{{ $u->nama_unit }}</option>@endforeach`;
 
     if (addBtn && tbody) {
