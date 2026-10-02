@@ -94,7 +94,10 @@ class AnalisisJabatan extends Model
             ->where('status_pegawai', 'Aktif');
 
         if ($this->unit_kerja_id) {
-            $query->where('unit_kerja_id', $this->unit_kerja_id);
+            $query->where(function($q) {
+                $q->where('unit_kerja_id', $this->unit_kerja_id)
+                  ->orWhereNull('unit_kerja_id');
+            });
         }
 
         return $query->count();
