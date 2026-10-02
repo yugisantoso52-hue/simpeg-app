@@ -66,414 +66,623 @@
                 </div>
             </div>
 
-            {{-- KANVAS BAGAN STRUKTUR ORGANISASI (SESUAI DOKUMEN RESMI FKP UNRI) --}}
+            {{-- KANVAS BAGAN STRUKTUR ORGANISASI (SESUAI DOKUMEN RESMI TERBARU FKP UNRI) --}}
             <div class="bg-gradient-to-b from-sky-50/50 via-white to-gray-50 rounded-2xl border-2 border-blue-200/80 p-6 md:p-8 shadow-md overflow-x-auto">
 
                 {{-- Header Resmi Bagan --}}
-                <div class="text-center pb-6 border-b border-blue-100 mb-8">
-                    <div class="inline-flex items-center gap-3 justify-center mb-2">
-                        <div class="w-10 h-10 rounded-full bg-blue-700 text-white font-black flex items-center justify-center text-sm shadow">
+                <div class="text-center pb-6 border-b-2 border-blue-200 mb-8 flex items-center justify-between px-4">
+                    {{-- Logo UNRI --}}
+                    <div class="flex items-center gap-3">
+                        <div style="background-color: #047857 !important; color: #ffffff !important; width: 48px; height: 48px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; border: 2px solid #a7f3d0; box-shadow: 0 2px 6px rgba(4, 120, 87, 0.3);">
                             UNRI
                         </div>
-                        <div>
-                            <h2 class="text-lg md:text-xl font-black text-blue-950 uppercase tracking-wide">
-                                STRUKTUR ORGANISASI & PETA JABATAN
-                            </h2>
-                            <p class="text-xs font-bold text-blue-700 uppercase tracking-widest">
-                                FAKULTAS KEPERAWATAN UNIVERSITAS RIAU
-                            </p>
+                    </div>
+
+                    {{-- Judul Tengah --}}
+                    <div>
+                        <h2 class="text-xl md:text-2xl font-black uppercase tracking-wider" style="color: #0284c7 !important; letter-spacing: 0.5px;">
+                            STRUKTUR ORGANISASI
+                        </h2>
+                        <h3 class="text-lg md:text-xl font-black uppercase tracking-wide" style="color: #0369a1 !important;">
+                            FAKULTAS KEPERAWATAN UNIVERSITAS RIAU
+                        </h3>
+                    </div>
+
+                    {{-- Tut Wuri Handayani Badge --}}
+                    <div class="flex items-center gap-3">
+                        <div style="background-color: #0284c7 !important; color: #ffffff !important; width: 48px; height: 48px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 11px; border: 2px solid #bae6fd; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3); text-align: center; line-height: 1.1;">
+                            KEMDIK<br>TI
                         </div>
                     </div>
                 </div>
 
                 {{-- TREE DIAGRAM CONTAINER --}}
-                <div class="min-w-[950px] flex flex-col items-center gap-8">
+                <div class="min-w-[1150px] flex flex-col items-center gap-6">
 
-                    {{-- LEVEL 1: DEKAN & STAF PENUNJANG (SPMF & SENAT) --}}
-                    <div class="w-full flex items-center justify-center gap-6 relative">
+                    {{-- ========================================================================= --}}
+                    {{-- LEVEL 1: DEKAN, SATUAN PENJAMINAN MUTU (SPMF), DAN SENAT FAKULTAS         --}}
+                    {{-- ========================================================================= --}}
+                    <div class="w-full flex items-center justify-center gap-4 relative">
 
-                        {{-- Sayap Kiri: SPMF (Garis Koordinasi Putus-putus) --}}
-                        <div class="w-64">
-                            <div class="bg-sky-600 text-white p-3 rounded-xl shadow-md border-2 border-dashed border-sky-400 hover:scale-[1.02] transition cursor-pointer"
+                        {{-- Sayap Kiri: SATUAN PENJAMINAN MUTU (SPMF) dengan GPM S1, S2, NERS --}}
+                        <div class="w-72">
+                            <div class="p-3.5 rounded-xl shadow-md cursor-pointer hover:scale-[1.02] transition"
+                                 style="background-color: #ffffff !important; border: 2px solid #0284c7 !important;"
                                  @click="openDetail(
-                                     'SATUAN PENJAMIN MUTU (SPMF)',
-                                     'Unsur Penjaminan Mutu Fakultas & Gugus Penjamin Mutu (GPM)',
-                                     {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%SPMF%'))->count() }},
-                                     1,
-                                     'Ideal',
-                                     {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%SPMF%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                     'Mengkoordinasikan penjaminan mutu akademik, akreditasi LAM-PTKes, dan evaluasi pembelajaran internal fakultas.'
+                                     'SATUAN PENJAMINAN MUTU (SPMF)',
+                                     'Unsur Penjaminan Mutu & Gugus Penjamin Mutu (GPM)',
+                                     {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%SPMF%')->orWhere('nama_jabatan', 'like', '%GPM%'))->count() }},
+                                     1, 'Ideal',
+                                     {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%SPMF%')->orWhere('nama_jabatan', 'like', '%GPM%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                     'Mengkoordinasikan sistem penjaminan mutu internal (SPMI), monev pembelajaran OBE, dan akreditasi internasional/LAM-PTKes.'
                                  )">
-                                <div class="text-[10px] font-bold tracking-wider uppercase text-sky-200">Garis Koordinasi</div>
-                                <div class="font-extrabold text-xs mt-0.5">SATUAN PENJAMIN MUTU (SPMF)</div>
-                                <div class="mt-2 pt-2 border-t border-sky-400/40 flex items-center justify-between text-[11px]">
-                                    <span>Kepala: <strong>Dosen SPMF</strong></span>
-                                    <span class="bg-sky-700 px-1.5 py-0.5 rounded text-[10px]">Detail ➔</span>
+                                <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11px; letter-spacing: 0.3px; padding: 6px 8px; border-radius: 6px; text-align: center; text-transform: uppercase;">
+                                    SATUAN PENJAMINAN MUTU (SPMF)
+                                </div>
+                                <div class="mt-2 space-y-1 text-xs">
+                                    <div class="py-1 px-2 rounded font-bold text-center text-[10.5px]" style="background-color: #f0f9ff !important; border: 1px solid #bae6fd !important; color: #0369a1 !important;">
+                                        GPM S1
+                                    </div>
+                                    <div class="py-1 px-2 rounded font-bold text-center text-[10.5px]" style="background-color: #f0f9ff !important; border: 1px solid #bae6fd !important; color: #0369a1 !important;">
+                                        GPM S2
+                                    </div>
+                                    <div class="py-1 px-2 rounded font-bold text-center text-[10.5px]" style="background-color: #f0f9ff !important; border: 1px solid #bae6fd !important; color: #0369a1 !important;">
+                                        GPM NERS
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Garis Penghubung Kiri ke Dekan --}}
-                        <div class="h-0.5 w-10 border-t-2 border-dashed border-sky-400"></div>
+                        {{-- Garis Solid Penghubung Kiri ke Dekan --}}
+                        <div class="h-0.5 w-12" style="background-color: #0284c7 !important;"></div>
 
-                        {{-- Kotak Dekan (Pusat Pimpinan) --}}
-                        <div class="w-72">
-                            <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-4 rounded-2xl shadow-xl border-2 border-amber-400 hover:scale-105 transition cursor-pointer"
+                        {{-- Pusat Puncak: KOTAK DEKAN --}}
+                        <div class="w-80">
+                            <div class="p-4 rounded-2xl shadow-xl hover:scale-105 transition cursor-pointer"
+                                 style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%) !important; color: #ffffff !important; border: 2.5px solid #fbbf24 !important; box-shadow: 0 6px 15px rgba(30, 58, 138, 0.4) !important;"
                                  @click="openDetail(
                                      'DEKAN',
                                      'Pimpinan Tertinggi Fakultas Keperawatan UNRI (Grade 15)',
                                      {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'Dekan'))->count() }},
-                                     1,
-                                     'Ideal',
+                                     1, 'Ideal',
                                      {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'Dekan'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
                                      'Memimpin penyelenggaraan tridharma perguruan tinggi, pembinaan sivitas akademika, pengelolaan keuangan, SDM, sarana prasarana, serta pengembangan mutu dan kerjasama Fakultas.'
                                  )">
-                                <div class="flex items-center justify-between">
-                                    <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded bg-amber-400 text-blue-950">PIMPINAN FAKULTAS</span>
-                                    <span class="text-[10px] font-mono text-blue-200">Grade 15</span>
+                                <div class="flex items-center justify-between text-[10px]">
+                                    <span style="background-color: #fbbf24 !important; color: #1e3a8a !important; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">PIMPINAN FAKULTAS</span>
+                                    <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 2px 8px; border-radius: 4px; font-family: monospace;">Grade 15</span>
                                 </div>
-                                <div class="text-base font-black tracking-wider uppercase mt-1">DEKAN</div>
-                                <div class="text-xs text-blue-200 font-medium">Fakultas Keperawatan UNRI</div>
-                                <div class="mt-3 pt-2 border-t border-blue-700/60 flex items-center justify-between text-xs">
-                                    <span class="text-blue-100">Bezetting: <strong>1</strong> / Butuh: <strong>1</strong></span>
-                                    <span class="bg-emerald-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full">🟢 Ideal</span>
+                                <div class="text-lg font-black tracking-wider uppercase mt-2 text-center" style="color: #ffffff !important; letter-spacing: 1px;">
+                                    DEKAN
+                                </div>
+                                <div class="text-xs text-center font-semibold mt-0.5" style="color: #93c5fd !important;">
+                                    Fakultas Keperawatan UNRI
+                                </div>
+                                <div class="mt-3 pt-2 flex items-center justify-between text-xs" style="border-top: 1px solid rgba(255,255,255,0.2) !important; color: #e0e7ff !important;">
+                                    <span>Bezetting: <strong style="color: #ffffff !important;">1</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
+                                    <span style="background-color: #10b981 !important; color: #ffffff !important; font-weight: 800; font-size: 10px; padding: 2px 8px; border-radius: 9999px;">🟢 Ideal</span>
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Garis Penghubung Kanan ke Senat --}}
-                        <div class="h-0.5 w-10 border-t-2 border-dashed border-sky-400"></div>
+                        {{-- Garis Putus-putus Penghubung Kanan ke Senat (Pertimbangan) --}}
+                        <div class="h-0.5 w-12 border-t-2 border-dashed" style="border-color: #64748b !important;"></div>
 
-                        {{-- Sayap Kanan: Senat Fakultas (Garis Pertimbangan) --}}
-                        <div class="w-64">
-                            <div class="bg-slate-800 text-white p-3 rounded-xl shadow-md border-2 border-dashed border-slate-500 hover:scale-[1.02] transition cursor-pointer"
+                        {{-- Sayap Kanan: SENAT FAKULTAS (SEKRETARIS) --}}
+                        <div class="w-72">
+                            <div class="p-3.5 rounded-xl shadow-md cursor-pointer hover:scale-[1.02] transition"
+                                 style="background-color: #ffffff !important; border: 2px dashed #475569 !important;"
                                  @click="openDetail(
                                      'SENAT FAKULTAS',
-                                     'Unsur Pertimbangan Normatif dan Perwakilan Fakultas',
+                                     'Badan Pertimbangan Normatif Fakultas',
                                      {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Senat%'))->count() }},
-                                     2,
-                                     'Ideal',
+                                     2, 'Ideal',
                                      {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Senat%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
                                      'Merumuskan kebijakan akademik, memberikan pertimbangan dan pengawasan terhadap pelaksanaan proses akademik di lingkungan Fakultas Keperawatan.'
                                  )">
-                                <div class="text-[10px] font-bold tracking-wider uppercase text-slate-300">Badan Pertimbangan</div>
-                                <div class="font-extrabold text-xs mt-0.5">SENAT FAKULTAS</div>
-                                <div class="mt-2 pt-2 border-t border-slate-600 flex items-center justify-between text-[11px]">
-                                    <span>Ketua & Sekretaris</span>
-                                    <span class="bg-slate-700 px-1.5 py-0.5 rounded text-[10px]">Detail ➔</span>
+                                <div style="background: linear-gradient(135deg, #334155 0%, #1e293b 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11px; letter-spacing: 0.3px; padding: 6px 8px; border-radius: 6px; text-align: center; text-transform: uppercase;">
+                                    SENAT FAKULTAS
+                                </div>
+                                <div class="mt-2 space-y-1 text-xs">
+                                    <div class="py-1 px-2 rounded font-bold text-center text-[10.5px]" style="background-color: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #334155 !important;">
+                                        SEKRETARIS
+                                    </div>
+                                    <div class="py-1 px-2 rounded font-bold text-center text-[10.5px]" style="background-color: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #64748b !important;">
+                                        Komisi Akademik & Etik
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                     </div>
 
-                    {{-- Garis Vertikal dari Dekan ke Para Wakil Dekan --}}
-                    <div class="w-0.5 h-6 bg-blue-600"></div>
+                    {{-- Garis Vertikal dari Dekan ke Tiga Wakil Dekan --}}
+                    <div class="w-0.5 h-6" style="background-color: #1e3a8a !important;"></div>
 
-                    {{-- LEVEL 2: PARA WAKIL DEKAN (WD I, WD II, WD III) --}}
-                    <div class="w-full flex items-start justify-center gap-6 relative">
+                    {{-- ========================================================================= --}}
+                    {{-- LEVEL 2: TIGA SAYAP WAKIL DEKAN BESERTA SELURUH UNIT PELAKSANA DI BAWAHNYA--}}
+                    {{-- ========================================================================= --}}
+                    <div class="w-full relative">
 
-                        {{-- Garis Horizontal Penghubung 3 Wadek --}}
-                        <div class="absolute top-0 left-1/4 right-1/4 h-0.5 bg-blue-600" style="background-color: #2563eb !important;"></div>
+                        {{-- Garis Horizontal Penghubung 3 Sayap Wakil Dekan --}}
+                        <div class="w-5/6 mx-auto h-0.5" style="background-color: #1e3a8a !important;"></div>
 
-                        {{-- 1. WD I (Akademik) + GPM --}}
-                        <div class="w-72 flex flex-col items-center">
-                            <div class="w-0.5 h-4 bg-blue-600" style="background-color: #2563eb !important;"></div>
-                            <div class="w-full p-4 rounded-xl shadow-lg hover:scale-[1.02] transition cursor-pointer"
-                                 style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important; color: #ffffff !important; border: 2px solid #60a5fa !important; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3) !important;"
-                                 @click="openDetail(
-                                     'WAKIL DEKAN BID. AKADEMIK (WD I)',
-                                     'Unsur Pimpinan Bidang Pendidikan, Kurikulum & Penjaminan Mutu (Grade 13)',
-                                     1, 1, 'Ideal',
-                                     [],
-                                     'Membantu Dekan memimpin pelaksanaan pendidikan, penelitian, pengabdian masyarakat, penjaminan mutu, dan evaluasi kurikulum OBE.'
-                                 )">
-                                <div class="flex justify-between items-center text-[10px]">
-                                    <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 2px 8px; border-radius: 4px;">UNSUR PIMPINAN</span>
-                                    <span style="background-color: #fbbf24 !important; color: #1e3a8a !important; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-family: monospace;">Grade 13</span>
+                        <div class="w-full grid grid-cols-3 gap-6 items-start mt-2">
+
+                            {{-- ================================================================= --}}
+                            {{-- SAYAP 1 (KIRI): WAKIL DEKAN BIDANG AKADEMIK                       --}}
+                            {{-- ================================================================= --}}
+                            <div class="flex flex-col items-center">
+                                <div class="w-0.5 h-4" style="background-color: #1e3a8a !important;"></div>
+
+                                {{-- Kartu WD I --}}
+                                <div class="w-full p-4 rounded-xl shadow-lg hover:scale-[1.02] transition cursor-pointer"
+                                     style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important; color: #ffffff !important; border: 2px solid #60a5fa !important; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3) !important;"
+                                     @click="openDetail(
+                                         'WAKIL DEKAN BIDANG AKADEMIK (WD I)',
+                                         'Unsur Pimpinan Bidang Pendidikan, Kurikulum & Penjaminan Mutu (Grade 13)',
+                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan I%'))->count() }},
+                                         1, 'Ideal',
+                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan I%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                         'Membantu Dekan memimpin pelaksanaan pendidikan, penelitian, pengabdian masyarakat, penjaminan mutu, dan evaluasi kurikulum OBE.'
+                                     )">
+                                    <div class="flex justify-between items-center text-[10px]">
+                                        <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 2px 8px; border-radius: 4px;">UNSUR PIMPINAN</span>
+                                        <span style="background-color: #fbbf24 !important; color: #1e3a8a !important; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-family: monospace;">Grade 13</span>
+                                    </div>
+                                    <div class="font-black text-xs uppercase mt-2 text-center" style="color: #ffffff !important; letter-spacing: 0.3px; font-size: 12.5px;">
+                                        WAKIL DEKAN BIDANG AKADEMIK
+                                    </div>
+                                    <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
+                                        <span>Bezetting: <strong style="color: #ffffff !important;">1</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
+                                        <span style="background-color: #10b981 !important; color: #ffffff !important; font-weight: 800; font-size: 10px; padding: 2px 8px; border-radius: 9999px;">🟢 Ideal</span>
+                                    </div>
                                 </div>
-                                <div class="font-black text-xs uppercase mt-2" style="color: #ffffff !important; letter-spacing: 0.3px; font-size: 12.5px;">WAKIL DEKAN BID. AKADEMIK</div>
-                                <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
-                                    <span>Bezetting: <strong style="color: #ffffff !important;">1</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
-                                    <span style="background-color: #10b981 !important; color: #ffffff !important; font-weight: 800; font-size: 10px; padding: 2px 8px; border-radius: 9999px;">🟢 Ideal</span>
+
+                                {{-- Garis Turun ke Ketua Jurusan & Sek. Jurusan --}}
+                                <div class="w-0.5 h-4" style="background-color: #0d9488 !important;"></div>
+
+                                {{-- Kotak KETUA JURUSAN & SEK. JURUSAN --}}
+                                <div class="w-full p-2.5 rounded-lg shadow-sm cursor-pointer hover:opacity-95 transition"
+                                     style="background: linear-gradient(135deg, #0f766e 0%, #115e59 100%) !important; color: #ffffff !important; border: 1.5px solid #2dd4bf !important;"
+                                     @click="openDetail(
+                                         'KETUA JURUSAN & SEK. JURUSAN',
+                                         'Pelaksana Akademik Jurusan Keperawatan (Grade 11)',
+                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%')->orWhere('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->count() }},
+                                         2, 'Ideal',
+                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%')->orWhere('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                         'Mengkoordinasikan penyelenggaraan pendidikan, pengembangan keilmuan keperawatan, dan evaluasi kurikulum program studi.'
+                                     )">
+                                    <div class="text-center font-black text-xs uppercase tracking-wide" style="color: #ffffff !important;">
+                                        KETUA JURUSAN / SEK. JURUSAN
+                                    </div>
+                                </div>
+
+                                {{-- Garis Turun Bercabang ke 2 Jurusan --}}
+                                <div class="w-0.5 h-3" style="background-color: #0d9488 !important;"></div>
+                                <div class="w-4/5 h-0.5" style="background-color: #0d9488 !important;"></div>
+
+                                {{-- Cabang 2 Jurusan: Preklinik & Klinik Komunitas --}}
+                                <div class="w-full grid grid-cols-2 gap-3 mt-1.5">
+
+                                    {{-- 1. JURUSAN PREKLINIK KEPERAWATAN --}}
+                                    <div class="p-2.5 rounded-xl shadow-sm" style="background-color: #ffffff !important; border: 2px solid #059669 !important;">
+                                        <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 10.5px; letter-spacing: 0.3px; padding: 5px 6px; border-radius: 6px; text-align: center; text-transform: uppercase;">
+                                            JURUSAN PREKLINIK KEPERAWATAN
+                                        </div>
+
+                                        <div class="mt-2">
+                                            <div style="background-color: #d1fae5 !important; color: #064e3b !important; font-weight: 800; font-size: 9px; text-transform: uppercase; padding: 3px 6px; border-radius: 4px; text-align: center; margin-bottom: 5px;">
+                                                KOORDINATOR PROGRAM STUDI
+                                            </div>
+                                            <div class="space-y-1.5 text-xs">
+                                                {{-- S1 --}}
+                                                <div class="p-1.5 rounded cursor-pointer hover:opacity-90 transition"
+                                                     style="background-color: #f0fdf4 !important; border: 1px solid #86efac !important;"
+                                                     @click="openDetail(
+                                                         'Koordinator Program Studi S1 Keperawatan',
+                                                         'Program Studi Sarjana Keperawatan (Grade 10)',
+                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S1%'))->count() }},
+                                                         1, 'Ideal',
+                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S1%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                                         'Mengkoordinasikan kurikulum S1, pembelajaran OBE, plotting dosen, dan akreditasi LAM-PTKes.'
+                                                     )">
+                                                    <div class="font-black text-[10.5px]" style="color: #064e3b !important;">1. S1 KEPERAWATAN</div>
+                                                    <div class="text-[9.5px] text-gray-600">Bezetting: 1 / Butuh: 1 (🟢 Ideal)</div>
+                                                </div>
+                                                {{-- S2 --}}
+                                                <div class="p-1.5 rounded cursor-pointer hover:opacity-90 transition"
+                                                     style="background-color: #f0fdf4 !important; border: 1px solid #86efac !important;"
+                                                     @click="openDetail(
+                                                         'Koordinator Program Studi S2 Keperawatan',
+                                                         'Program Studi Magister Keperawatan (Grade 10)',
+                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S2%'))->count() }},
+                                                         1, 'Ideal',
+                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S2%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                                         'Mengkoordinasikan kurikulum Magister S2, bimbingan riset tesis, dan akreditasi prodi.'
+                                                     )">
+                                                    <div class="font-black text-[10.5px]" style="color: #064e3b !important;">2. S2 KEPERAWATAN</div>
+                                                    <div class="text-[9.5px] text-gray-600">Bezetting: 1 / Butuh: 1 (🟢 Ideal)</div>
+                                                </div>
+                                                {{-- S3 --}}
+                                                <div class="p-1.5 rounded cursor-pointer hover:opacity-90 transition"
+                                                     style="background-color: #f0fdf4 !important; border: 1px solid #86efac !important;"
+                                                     @click="openDetail(
+                                                         'Koordinator Program Studi S3 Keperawatan',
+                                                         'Program Studi Doktor Keperawatan (Grade 10)',
+                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S3%'))->count() }},
+                                                         1, 'Ideal',
+                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S3%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                                         'Mengkoordinasikan kurikulum Doktor S3, riset lanjutan translasi keperawatan, dan publikasi internasional bereputasi.'
+                                                     )">
+                                                    <div class="font-black text-[10.5px]" style="color: #064e3b !important;">3. S3 KEPERAWATAN</div>
+                                                    <div class="text-[9.5px] text-gray-600">Bezetting: 1 / Butuh: 1 (🟢 Ideal)</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- 2. JURUSAN KLINIK DAN KOMUNITAS --}}
+                                    <div class="p-2.5 rounded-xl shadow-sm" style="background-color: #ffffff !important; border: 2px solid #0d9488 !important;">
+                                        <div style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 10.5px; letter-spacing: 0.3px; padding: 5px 6px; border-radius: 6px; text-align: center; text-transform: uppercase;">
+                                            JURUSAN KLINIK & KOMUNITAS
+                                        </div>
+
+                                        <div class="mt-2">
+                                            <div style="background-color: #ccfbf1 !important; color: #115e59 !important; font-weight: 800; font-size: 9px; text-transform: uppercase; padding: 3px 6px; border-radius: 4px; text-align: center; margin-bottom: 5px;">
+                                                KOORDINATOR PROGRAM STUDI
+                                            </div>
+                                            <div class="space-y-1.5 text-xs">
+                                                {{-- NERS --}}
+                                                <div class="p-2 rounded cursor-pointer hover:opacity-90 transition"
+                                                     style="background-color: #f0fdfa !important; border: 1px solid #99f6e4 !important;"
+                                                     @click="openDetail(
+                                                         'Koordinator Program Studi Profesi Ners',
+                                                         'Program Studi Profesi Ners (Grade 10)',
+                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi Ners%'))->count() }},
+                                                         1, 'Ideal',
+                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi Ners%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                                         'Mengkoordinasikan stase kepaniteraan klinik mahasiswa ners di Rumah Sakit, Puskesmas, dan persiapan Uji Kompetensi Ners (UKNI).'
+                                                     )">
+                                                    <div class="font-black text-[11px]" style="color: #115e59 !important;">1. NERS</div>
+                                                    <div class="text-[9.5px] text-gray-600 mt-0.5">Bezetting: 1 / Butuh: 1 (🟢 Ideal)</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
 
-                            {{-- Sub-Unit di bawah WD I: GPM S1, S2, NERS --}}
-                            <div class="w-0.5 h-3 bg-blue-400" style="background-color: #60a5fa !important;"></div>
-                            <div class="w-60 rounded-xl p-2.5 text-center text-xs shadow-sm" style="background-color: #f0f9ff !important; border: 1.5px solid #7dd3fc !important;">
-                                <div class="font-black text-[11px] mb-1.5" style="color: #0369a1 !important;">GUGUS PENJAMIN MUTU (GPM)</div>
-                                <div class="grid grid-cols-3 gap-1.5 text-[10px] font-black">
-                                    <span class="p-1 rounded shadow-2xs" style="background-color: #ffffff !important; border: 1px solid #bae6fd !important; color: #0284c7 !important;">GPM S1</span>
-                                    <span class="p-1 rounded shadow-2xs" style="background-color: #ffffff !important; border: 1px solid #bae6fd !important; color: #0284c7 !important;">GPM S2</span>
-                                    <span class="p-1 rounded shadow-2xs" style="background-color: #ffffff !important; border: 1px solid #bae6fd !important; color: #0284c7 !important;">GPM NERS</span>
+                            {{-- ================================================================= --}}
+                            {{-- SAYAP 2 (TENGAH): WAKIL DEKAN BIDANG KEUANGAN DAN UMUM             --}}
+                            {{-- ================================================================= --}}
+                            <div class="flex flex-col items-center">
+                                <div class="w-0.5 h-4" style="background-color: #1e3a8a !important;"></div>
+
+                                {{-- Kartu WD II --}}
+                                <div class="w-full p-4 rounded-xl shadow-lg hover:scale-[1.02] transition cursor-pointer"
+                                     style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important; color: #ffffff !important; border: 2px solid #60a5fa !important; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3) !important;"
+                                     @click="openDetail(
+                                         'WAKIL DEKAN BIDANG KEUANGAN DAN UMUM (WD II)',
+                                         'Unsur Pimpinan Bidang Perencanaan, Anggaran & Kepegawaian (Grade 13)',
+                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan II%'))->count() }},
+                                         1, 'Ideal',
+                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan II%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                         'Membantu Dekan dalam perencanaan anggaran, perbendaharaan, kepegawaian, ketatausahaan, dan sarana prasarana fakultas.'
+                                     )">
+                                    <div class="flex justify-between items-center text-[10px]">
+                                        <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 2px 8px; border-radius: 4px;">UNSUR PIMPINAN</span>
+                                        <span style="background-color: #fbbf24 !important; color: #1e3a8a !important; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-family: monospace;">Grade 13</span>
+                                    </div>
+                                    <div class="font-black text-xs uppercase mt-2 text-center" style="color: #ffffff !important; letter-spacing: 0.3px; font-size: 12.5px;">
+                                        WAKIL DEKAN BIDANG KEUANGAN DAN UMUM
+                                    </div>
+                                    <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
+                                        <span>Bezetting: <strong style="color: #ffffff !important;">1</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
+                                        <span style="background-color: #10b981 !important; color: #ffffff !important; font-weight: 800; font-size: 10px; padding: 2px 8px; border-radius: 9999px;">🟢 Ideal</span>
+                                    </div>
+                                </div>
+
+                                {{-- Garis Turun ke Kepala Bagian Umum --}}
+                                <div class="w-0.5 h-4" style="background-color: #d97706 !important;"></div>
+
+                                {{-- Kotak KEPALA BAGIAN UMUM --}}
+                                <div class="w-full p-2.5 rounded-lg shadow-sm cursor-pointer hover:opacity-95 transition"
+                                     style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important; color: #ffffff !important; border: 1.5px solid #fde68a !important;"
+                                     @click="openDetail(
+                                         'KEPALA BAGIAN UMUM',
+                                         'Kepala Bagian Tata Usaha Fakultas Keperawatan (Grade 11)',
+                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Kepala Bagian Umum%'))->count() }},
+                                         1, 'Ideal',
+                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Kepala Bagian Umum%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                         'Memimpin dan mengkoordinasikan pelaksanaan urusan akademik, keuangan, kepegawaian, persuratan, BMN, dan perlengkapan sarana prasarana.'
+                                     )">
+                                    <div class="text-center font-black text-xs uppercase tracking-wide" style="color: #ffffff !important;">
+                                        KEPALA BAGIAN UMUM
+                                    </div>
+                                </div>
+
+                                {{-- Garis Turun ke 3 Pokja --}}
+                                <div class="w-0.5 h-3" style="background-color: #d97706 !important;"></div>
+
+                                {{-- 3 Kotak Ka. POKJA --}}
+                                <div class="w-full space-y-2 mt-1">
+                                    {{-- Pokja 1: Akademik & Kemahasiswaan --}}
+                                    <div class="p-2.5 rounded-lg cursor-pointer hover:opacity-90 transition"
+                                         style="background-color: #fffbeb !important; border: 1.5px solid #fde68a !important;"
+                                         @click="openDetail(
+                                             'Ka. POKJA AKADEMIK DAN KEMAHASISWAAN',
+                                             'Kelompok Kerja Layanan Registrasi, Perkuliahan & Kemahasiswaan (Grade 9 & 6)',
+                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 11)->count() }},
+                                             4, 'Ideal',
+                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 11)->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             'Melaksanakan pelayanan administrasi nilai, KRS mahasiswa, surat keterangan aktif, kelengkapan yudisium, dan beasiswa.'
+                                         )">
+                                        <div class="font-black text-[11px]" style="color: #78350f !important;">Ka. POKJA AKADEMIK DAN KEMAHASISWAAN</div>
+                                        <div class="text-[10px] text-gray-600 mt-0.5">Ka Pokja & Staf Pelaksana Akademik</div>
+                                    </div>
+
+                                    {{-- Pokja 2: Keuangan & Kepegawaian --}}
+                                    <div class="p-2.5 rounded-lg cursor-pointer hover:opacity-90 transition"
+                                         style="background-color: #fffbeb !important; border: 1.5px solid #fde68a !important;"
+                                         @click="openDetail(
+                                             'Ka. POKJA KEUANGAN DAN KEPEGAWAIAN',
+                                             'Kelompok Kerja Pengelolaan Anggaran, Presensi & Karir ASN (Grade 9 & 6)',
+                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 12)->count() }},
+                                             3, 'Ideal',
+                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 12)->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             'Melaksanakan verifikasi presensi, rekapitulasi logbook harian, usulan kenaikan pangkat, gaji berkala, SPJ keuangan, dan berkas cuti pegawai.'
+                                         )">
+                                        <div class="font-black text-[11px]" style="color: #78350f !important;">Ka. POKJA KEUANGAN DAN KEPEGAWAIAN</div>
+                                        <div class="text-[10px] text-gray-600 mt-0.5">Ka Pokja & Staf Kepegawaian / Keuangan</div>
+                                    </div>
+
+                                    {{-- Pokja 3: Umum dan Sarana Akademik --}}
+                                    <div class="p-2.5 rounded-lg cursor-pointer hover:opacity-90 transition"
+                                         style="background-color: #fffbeb !important; border: 1.5px solid #fde68a !important;"
+                                         @click="openDetail(
+                                             'Ka. POKJA UMUM DAN SARANA AKADEMIK',
+                                             'Kelompok Kerja Pengelolaan BMN, Perlengkapan & Sarana (Grade 9 & 6)',
+                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 13)->count() }},
+                                             3, '🔴 Kurang 1',
+                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 13)->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             'Melaksanakan inventarisasi BMN, pemeliharaan gedung kuliah, kebersihan lingkungan, persuratan umum, dan sarana prasarana.'
+                                         )">
+                                        <div class="font-black text-[11px]" style="color: #78350f !important;">Ka. POKJA UMUM DAN SARANA AKADEMIK</div>
+                                        <div class="text-[10px] text-gray-600 mt-0.5">Ka Pokja & Staf Perlengkapan / BMN</div>
+                                    </div>
                                 </div>
                             </div>
+
+                            {{-- ================================================================= --}}
+                            {{-- SAYAP 3 (KANAN): WAKIL DEKAN BIDANG KEMAHASISWAAN, ALUMNI & KERJASAMA--}}
+                            {{-- ================================================================= --}}
+                            <div class="flex flex-col items-center">
+                                <div class="w-0.5 h-4" style="background-color: #1e3a8a !important;"></div>
+
+                                {{-- Kartu WD III --}}
+                                <div class="w-full p-4 rounded-xl shadow-lg hover:scale-[1.02] transition cursor-pointer"
+                                     style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important; color: #ffffff !important; border: 2px solid #60a5fa !important; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3) !important;"
+                                     @click="openDetail(
+                                         'WAKIL DEKAN BIDANG KEMAHASISWAAN, ALUMNI & KERJASAMA (WD III)',
+                                         'Unsur Pimpinan Bidang Penalaran, Minat Bakat, Tracer Study & Kemitraan (Grade 13)',
+                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan III%'))->count() }},
+                                         1, 'Ideal',
+                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan III%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                         'Membantu Dekan dalam pembinaan kegiatan kemahasiswaan, tracer study alumni, dan kerjasama institusional.'
+                                     )">
+                                    <div class="flex justify-between items-center text-[10px]">
+                                        <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 2px 8px; border-radius: 4px;">UNSUR PIMPINAN</span>
+                                        <span style="background-color: #fbbf24 !important; color: #1e3a8a !important; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-family: monospace;">Grade 13</span>
+                                    </div>
+                                    <div class="font-black text-xs uppercase mt-2 text-center" style="color: #ffffff !important; letter-spacing: 0.3px; font-size: 12px; line-height: 1.3;">
+                                        WAKIL DEKAN BIDANG KEMAHASISWAAN, ALUMNI DAN KERJASAMA
+                                    </div>
+                                    <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
+                                        <span>Bezetting: <strong style="color: #ffffff !important;">1</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
+                                        <span style="background-color: #10b981 !important; color: #ffffff !important; font-weight: 800; font-size: 10px; padding: 2px 8px; border-radius: 9999px;">🟢 Ideal</span>
+                                    </div>
+                                </div>
+
+                                {{-- Garis Turun ke BEM, DPM, ALUMNI --}}
+                                <div class="w-0.5 h-4" style="background-color: #7c3aed !important;"></div>
+                                <div class="w-5/6 h-0.5" style="background-color: #7c3aed !important;"></div>
+
+                                {{-- 3 Kotak Organisasi Mahasiswa & Alumni: BEM, DPM, ALUMNI --}}
+                                <div class="w-full grid grid-cols-3 gap-2 mt-2">
+                                    {{-- BEM --}}
+                                    <div class="p-2.5 rounded-xl shadow-sm text-center cursor-pointer hover:scale-105 transition"
+                                         style="background-color: #ffffff !important; border: 1.5px solid #8b5cf6 !important;"
+                                         @click="openDetail(
+                                             'BADAN EKSEKUTIF MAHASISWA (BEM)',
+                                             'Lembaga Eksekutif Kemahasiswaan Fakultas Keperawatan',
+                                             1, 1, 'Ideal', [],
+                                             'Melaksanakan program kerja penalaran, advokasi, pengabdian mahasiswa kepada masyarakat, dan minat bakat sivitas mahasiswa.'
+                                         )">
+                                        <div style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11px; padding: 4px 6px; border-radius: 6px; text-transform: uppercase;">
+                                            BEM
+                                        </div>
+                                        <div class="text-[9.5px] font-bold mt-1.5" style="color: #5b21b6 !important;">
+                                            BADAN EKSEKUTIF MAHASISWA
+                                        </div>
+                                    </div>
+
+                                    {{-- DPM --}}
+                                    <div class="p-2.5 rounded-xl shadow-sm text-center cursor-pointer hover:scale-105 transition"
+                                         style="background-color: #ffffff !important; border: 1.5px solid #8b5cf6 !important;"
+                                         @click="openDetail(
+                                             'DEWAN PERWAKILAN MAHASISWA (DPM)',
+                                             'Lembaga Legislatif dan Pengawasan Kemahasiswaan',
+                                             1, 1, 'Ideal', [],
+                                             'Melaksanakan fungsi legislasi kemahasiswaan, pengawasan program BEM, dan penyaluran aspirasi mahasiswa fakultas.'
+                                         )">
+                                        <div style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11px; padding: 4px 6px; border-radius: 6px; text-transform: uppercase;">
+                                            DPM
+                                        </div>
+                                        <div class="text-[9.5px] font-bold mt-1.5" style="color: #5b21b6 !important;">
+                                            DEWAN PERWAKILAN MAHASISWA
+                                        </div>
+                                    </div>
+
+                                    {{-- ALUMNI --}}
+                                    <div class="p-2.5 rounded-xl shadow-sm text-center cursor-pointer hover:scale-105 transition"
+                                         style="background-color: #ffffff !important; border: 1.5px solid #8b5cf6 !important;"
+                                         @click="openDetail(
+                                             'IKATAN ALUMNI FAKULTAS KEPERAWATAN',
+                                             'Organisasi Alumni & Jejaring Kemitraan Profesi',
+                                             1, 1, 'Ideal', [],
+                                             'Mewadahi jejaring alumni perawat, tracer study lulusan, pendayagunaan karir ners di RS nasional dan internasional.'
+                                         )">
+                                        <div style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11px; padding: 4px 6px; border-radius: 6px; text-transform: uppercase;">
+                                            ALUMNI
+                                        </div>
+                                        <div class="text-[9.5px] font-bold mt-1.5" style="color: #5b21b6 !important;">
+                                            IKATAN ALUMNI FKp
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
-
-                        {{-- 2. WD II (Keuangan & Umum) --}}
-                        <div class="w-72 flex flex-col items-center">
-                            <div class="w-0.5 h-4 bg-blue-600" style="background-color: #2563eb !important;"></div>
-                            <div class="w-full p-4 rounded-xl shadow-lg hover:scale-[1.02] transition cursor-pointer"
-                                 style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important; color: #ffffff !important; border: 2px solid #60a5fa !important; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3) !important;"
-                                 @click="openDetail(
-                                     'WAKIL DEKAN BID. KEUANGAN DAN UMUM (WD II)',
-                                     'Unsur Pimpinan Bidang Perencanaan, Anggaran & Kepegawaian (Grade 13)',
-                                     1, 1, 'Ideal',
-                                     [],
-                                     'Membantu Dekan dalam perencanaan anggaran, perbendaharaan, kepegawaian, ketatausahaan, dan sarana prasarana fakultas.'
-                                 )">
-                                <div class="flex justify-between items-center text-[10px]">
-                                    <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 2px 8px; border-radius: 4px;">UNSUR PIMPINAN</span>
-                                    <span style="background-color: #fbbf24 !important; color: #1e3a8a !important; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-family: monospace;">Grade 13</span>
-                                </div>
-                                <div class="font-black text-xs uppercase mt-2" style="color: #ffffff !important; letter-spacing: 0.3px; font-size: 12.5px;">WAKIL DEKAN BID. KEUANGAN DAN UMUM</div>
-                                <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
-                                    <span>Bezetting: <strong style="color: #ffffff !important;">1</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
-                                    <span style="background-color: #10b981 !important; color: #ffffff !important; font-weight: 800; font-size: 10px; padding: 2px 8px; border-radius: 9999px;">🟢 Ideal</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- 3. WD III (Kemahasiswaan, Alumni & Kerjasama) --}}
-                        <div class="w-72 flex flex-col items-center">
-                            <div class="w-0.5 h-4 bg-blue-600" style="background-color: #2563eb !important;"></div>
-                            <div class="w-full p-4 rounded-xl shadow-lg hover:scale-[1.02] transition cursor-pointer"
-                                 style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important; color: #ffffff !important; border: 2px solid #60a5fa !important; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3) !important;"
-                                 @click="openDetail(
-                                     'WAKIL DEKAN BID. KEMAHASISWAAN, ALUMNI & KERJASAMA (WD III)',
-                                     'Unsur Pimpinan Bidang Penalaran, Minat Bakat, Tracer Study & Kemitraan (Grade 13)',
-                                     1, 1, 'Ideal',
-                                     [],
-                                     'Membantu Dekan dalam pembinaan kegiatan kemahasiswaan, tracer study alumni, dan kerjasama institusional.'
-                                 )">
-                                <div class="flex justify-between items-center text-[10px]">
-                                    <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 2px 8px; border-radius: 4px;">UNSUR PIMPINAN</span>
-                                    <span style="background-color: #fbbf24 !important; color: #1e3a8a !important; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-family: monospace;">Grade 13</span>
-                                </div>
-                                <div class="font-black text-xs uppercase mt-2" style="color: #ffffff !important; letter-spacing: 0.3px; font-size: 12.5px;">WAKIL DEKAN BID. KEMAHASISWAAN, ALUMNI & KERJASAMA</div>
-                                <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
-                                    <span>Bezetting: <strong style="color: #ffffff !important;">1</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
-                                    <span style="background-color: #10b981 !important; color: #ffffff !important; font-weight: 800; font-size: 10px; padding: 2px 8px; border-radius: 9999px;">🟢 Ideal</span>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
 
-                    {{-- Garis Vertikal Pemisah ke Tingkat Pelaksana --}}
-                    <div class="w-full relative my-2" style="border-top: 2px solid #93c5fd !important;">
-                        <div class="absolute left-1/2 -top-2 w-4 h-4 rounded-full -translate-x-1/2" style="background-color: #2563eb !important;"></div>
+                    {{-- Garis Penghubung Vertikal Besar Menuju Tiga Pilar Fungsional Bawah --}}
+                    <div class="w-full relative my-3">
+                        <div class="w-full h-0.5" style="background-color: #0284c7 !important;"></div>
+                        <div class="absolute left-1/2 -top-1.5 w-3.5 h-3.5 rounded-full -translate-x-1/2" style="background-color: #0284c7 !important;"></div>
                     </div>
 
-                    {{-- LEVEL 3: TINGKAT PELAKSANA AKADEMIK, TATA USAHA, LAB & FUNGSIONAL (5 KOLOM UTAMA) --}}
-                    <div class="w-full grid grid-cols-1 lg:grid-cols-5 gap-4 items-start">
+                    {{-- ========================================================================= --}}
+                    {{-- LEVEL 3: TIGA PILAR UTAMA FUNGSIONAL & PENUNJANG (3 KOLOM BERDAMPINGAN)   --}}
+                    {{-- ========================================================================= --}}
+                    <div class="w-full grid grid-cols-3 gap-6 items-start">
 
-                        {{-- 1. UNIT-UNIT FUNGSIONAL --}}
-                        <div class="p-3.5 shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #0284c7 !important; border-radius: 12px !important;">
-                            <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.3); margin-bottom: 10px;">
+                        {{-- --------------------------------------------------------------------- --}}
+                        {{-- PILAR 1 (KIRI): KELOMPOK JABATAN FUNGSIONAL DOSEN (KJFD - 9 BIDANG)   --}}
+                        {{-- --------------------------------------------------------------------- --}}
+                        <div class="p-4 rounded-xl shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #059669 !important;">
+                            <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11.5px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(5, 150, 105, 0.3); margin-bottom: 10px;">
+                                KELOMPOK JABATAN FUNGSIONAL DOSEN (KJFD)
+                            </div>
+                            <div class="space-y-1.5 text-xs">
+                                @php
+                                    $kjfds = [
+                                        '1. MEDIKAL BEDAH',
+                                        '2. GAWAT DARURAT',
+                                        '3. MATERNITAS',
+                                        '4. ANAK',
+                                        '5. KELUARGA KOMUNITAS',
+                                        '6. GERONTIK',
+                                        '7. JIWA',
+                                        '8. KLINIK',
+                                        '9. KOMUNITAS',
+                                    ];
+                                @endphp
+                                @foreach($kjfds as $idx => $k)
+                                    <div class="p-2 rounded flex items-center justify-between cursor-pointer hover:opacity-90 transition"
+                                         style="background-color: #f0fdf4 !important; border: 1px solid #86efac !important; font-weight: 800;"
+                                         @click="openDetail(
+                                             '{{ $k }}',
+                                             'Kelompok Jabatan Fungsional Dosen (KJFD)',
+                                             {{ \App\Models\Pegawai::where('jenis_pegawai', 'like', '%Dosen%')->count() > 0 ? round(\App\Models\Pegawai::where('jenis_pegawai', 'like', '%Dosen%')->count() / 9) : 6 }},
+                                             6, 'Ideal', [],
+                                             'Melaksanakan tridharma perguruan tinggi pada rumpun keahlian {{ $k }}, pembimbingan tugas akhir, praktikum klinik dan riset keperawatan.'
+                                         )">
+                                        <span style="color: #064e3b !important; font-size: 11px;">{{ $k }}</span>
+                                        <span style="color: #059669 !important; font-weight: 800; font-size: 9.5px; font-family: monospace;">Detail ➔</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        {{-- --------------------------------------------------------------------- --}}
+                        {{-- PILAR 2 (TENGAH): UNIT-UNIT FUNGSIONAL (9 UNIT)                       --}}
+                        {{-- --------------------------------------------------------------------- --}}
+                        <div class="p-4 rounded-xl shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #0284c7 !important;">
+                            <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11.5px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.3); margin-bottom: 10px;">
                                 UNIT-UNIT FUNGSIONAL
                             </div>
-                            <div class="space-y-1 text-[11px]">
+                            <div class="space-y-1.5 text-xs">
                                 @php
                                     $unitFung = [
-                                        '1. Etik Riset', '2. Komite Etik', '3. CBT (Computer Based Test)',
-                                        '4. Kerjasama', '5. Penelitian & Pengabmasy', '6. NEDU (S1, Ners, S2)',
-                                        '7. Bimbingan Konseling', '8. Humas', '9. PPID'
+                                        '1. ETIK RISET',
+                                        '2. KOMITE ETIK',
+                                        '3. COMPUTER BASED TEST (CBT)',
+                                        '4. KERJASAMA',
+                                        '5. PENELITIAN DAN PENGABMASY',
+                                        '6. NURSING EDUCATION DEVELOPMENT UNIT (NEDU) S1, NERS DAN S2',
+                                        '7. BIMBINGAN KONSELING',
+                                        '8. HUMAS',
+                                        '9. PPID',
                                     ];
                                 @endphp
                                 @foreach($unitFung as $uf)
-                                    <div class="p-1.5 rounded flex items-center justify-between cursor-pointer hover:opacity-90 transition"
-                                         style="background-color: #f0f9ff !important; border: 1px solid #bae6fd !important; color: #0c4a6e !important; font-weight: 700;"
-                                         @click="openDetail('{{ $uf }}', 'Unit Fungsional Khusus Fakultas', 1, 1, 'Ideal', [], 'Melaksanakan fungsi spesifik pendukung akademik dan pelayanan publik.')">
-                                        <span style="color: #0c4a6e !important;">{{ $uf }}</span>
+                                    <div class="p-2 rounded flex items-center justify-between cursor-pointer hover:opacity-90 transition"
+                                         style="background-color: #f0f9ff !important; border: 1px solid #bae6fd !important; font-weight: 800;"
+                                         @click="openDetail(
+                                             '{{ $uf }}',
+                                             'Unit Fungsional Khusus Fakultas',
+                                             1, 1, 'Ideal', [],
+                                             'Melaksanakan fungsi penunjang akademik, kepatuhan etik, pengujian CBT, kemitraan institusi, dan layanan keterbukaan informasi publik.'
+                                         )">
+                                        <span style="color: #0c4a6e !important; font-size: 11px;">{{ $uf }}</span>
                                         <span style="color: #0284c7 !important; font-weight: 800; font-size: 9.5px; font-family: monospace;">Detail ➔</span>
                                     </div>
                                 @endforeach
                             </div>
                         </div>
 
-                        {{-- 2. JURUSAN PREKLINIK KEPERAWATAN --}}
-                        <div class="p-3.5 shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #059669 !important; border-radius: 12px !important;">
-                            <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(5, 150, 105, 0.3); margin-bottom: 10px;">
-                                JURUSAN PREKLINIK KEPERAWATAN
+                        {{-- --------------------------------------------------------------------- --}}
+                        {{-- PILAR 3 (KANAN): LABORATORIUM / RUANG KEPERAWATAN (9 RUANG)           --}}
+                        {{-- --------------------------------------------------------------------- --}}
+                        <div class="p-4 rounded-xl shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #4f46e5 !important;">
+                            <div style="background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11.5px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3); margin-bottom: 8px;">
+                                LABORATORIUM / RUANG KEPERAWATAN
                             </div>
 
-                            {{-- Sub-blok 1: Koordinator Prodi S1 & S2 --}}
-                            <div class="mb-3">
-                                <div style="background-color: #d1fae5 !important; color: #064e3b !important; font-weight: 800; font-size: 10px; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; text-align: center; margin-bottom: 6px; border: 1px solid #a7f3d0 !important;">
-                                    KOORDINATOR PROGRAM STUDI
-                                </div>
-                                <div class="space-y-1.5 text-xs">
-                                    <div class="p-2 rounded cursor-pointer hover:opacity-90 transition"
-                                         style="background-color: #f0fdf4 !important; border: 1.5px solid #86efac !important;"
-                                         @click="openDetail(
-                                             'Koordinator Prodi S1 Keperawatan',
-                                             'Program Studi Sarjana Keperawatan (Grade 10)',
-                                             {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S1%'))->count() }},
-                                             1, 'Ideal', [],
-                                             'Mengkoordinasikan kurikulum S1, pembelajaran OBE, plotting dosen, dan akreditasi LAM-PTKes.'
-                                         )">
-                                        <div class="font-black text-[11px]" style="color: #064e3b !important;">1. S1 Keperawatan</div>
-                                        <div class="text-[10px] text-gray-600 mt-0.5">Bezetting: 1 / Butuh: 1 (🟢 Ideal)</div>
-                                    </div>
-                                    <div class="p-2 rounded cursor-pointer hover:opacity-90 transition"
-                                         style="background-color: #f0fdf4 !important; border: 1.5px solid #86efac !important;"
-                                         @click="openDetail(
-                                             'Koordinator Prodi S2 Keperawatan',
-                                             'Program Studi Magister Keperawatan (Grade 10)',
-                                             {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S2%'))->count() }},
-                                             1, 'Ideal', [],
-                                             'Mengkoordinasikan kurikulum Magister S2, riset tesis, dan akreditasi prodi.'
-                                         )">
-                                        <div class="font-black text-[11px]" style="color: #064e3b !important;">2. S2 Keperawatan</div>
-                                        <div class="text-[10px] text-gray-600 mt-0.5">Bezetting: 1 / Butuh: 1 (🟢 Ideal)</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Sub-blok 2: 7 KJFD Preklinik --}}
-                            <div>
-                                <div style="background-color: #d1fae5 !important; color: #064e3b !important; font-weight: 800; font-size: 10px; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; text-align: center; margin-bottom: 6px; border: 1px solid #a7f3d0 !important;">
-                                    KJFD KEPERAWATAN (7 BIDANG)
-                                </div>
-                                <div class="grid grid-cols-1 gap-1 text-[10.5px]">
-                                    @php
-                                        $kjfd = ['1. Medikal Bedah', '2. Gawat Darurat', '3. Maternitas', '4. Anak', '5. Keluarga Komunitas', '6. Gerontik', '7. Jiwa'];
-                                    @endphp
-                                    @foreach($kjfd as $k)
-                                        <div class="p-1.5 rounded font-bold" style="background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; color: #111827 !important;">
-                                            {{ $k }}
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- 3. JURUSAN KLINIK DAN KOMUNITAS --}}
-                        <div class="p-3.5 shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #0d9488 !important; border-radius: 12px !important;">
-                            <div style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(13, 148, 136, 0.3); margin-bottom: 10px;">
-                                JURUSAN KLINIK DAN KOMUNITAS
-                            </div>
-
-                            {{-- Koorprodi Ners --}}
-                            <div class="mb-3">
-                                <div style="background-color: #ccfbf1 !important; color: #115e59 !important; font-weight: 800; font-size: 10px; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; text-align: center; margin-bottom: 6px; border: 1px solid #99f6e4 !important;">
-                                    KOORDINATOR PROGRAM STUDI
-                                </div>
-                                <div class="p-2 rounded cursor-pointer hover:opacity-90 transition"
-                                     style="background-color: #f0fdfa !important; border: 1.5px solid #99f6e4 !important;"
-                                     @click="openDetail(
-                                         'Koordinator Prodi Profesi Ners',
-                                         'Program Studi Profesi Ners (Grade 10)',
-                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi Ners%'))->count() }},
-                                         1, 'Ideal', [],
-                                         'Mengkoordinasikan stase kepaniteraan klinik mahasiswa ners di Rumah Sakit dan Puskesmas.'
-                                     )">
-                                    <div class="font-black text-[11px]" style="color: #115e59 !important;">1. Profesi Ners</div>
-                                    <div class="text-[10px] text-gray-600 mt-0.5">Bezetting: 1 / Butuh: 1 (🟢 Ideal)</div>
-                                </div>
-                            </div>
-
-                            {{-- KJFD Klinik & Komunitas --}}
-                            <div>
-                                <div style="background-color: #ccfbf1 !important; color: #115e59 !important; font-weight: 800; font-size: 10px; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; text-align: center; margin-bottom: 6px; border: 1px solid #99f6e4 !important;">
-                                    KELOMPOK FUNGSIONAL (KJFD)
-                                </div>
-                                <div class="space-y-1.5 text-xs">
-                                    <div class="p-2 rounded font-bold" style="background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; color: #111827 !important;">
-                                        1. KJFD Klinik
-                                    </div>
-                                    <div class="p-2 rounded font-bold" style="background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; color: #111827 !important;">
-                                        2. KJFD Komunitas
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- 4. LABORATORIUM KEPERAWATAN (9 RUANG LAB) --}}
-                        <div class="p-3.5 shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #4f46e5 !important; border-radius: 12px !important;">
-                            <div style="background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3); margin-bottom: 10px;">
-                                LABORATORIUM KEPERAWATAN
-                            </div>
+                            {{-- Badge Pranata Lab (PLP) --}}
                             <div class="p-2 rounded text-center mb-2.5 cursor-pointer hover:opacity-90 transition"
                                  style="background-color: #eef2ff !important; border: 1.5px solid #c7d2fe !important;"
                                  @click="openDetail(
                                      'Pranata Laboratorium Pendidikan (PLP)',
                                      'Fungsional PLP / Laboran (Grade 8)',
                                      {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Laboran%')->orWhere('nama_jabatan', 'like', '%PLP%'))->count() }},
-                                     2, '🔴 Kurang 1', [],
+                                     2, '🔴 Kurang 1',
+                                     {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Laboran%')->orWhere('nama_jabatan', 'like', '%PLP%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
                                      'Mengelola 9 ruang laboratorium keperawatan, manikin medis, bahan habis pakai, dan keselamatan kerja K3 praktikum.'
                                  )">
                                 <div class="font-black text-[11px]" style="color: #312e81 !important;">Kepala Lab & Pranata Lab (PLP)</div>
                                 <span class="font-extrabold text-[9.5px] block mt-0.5" style="color: #dc2626 !important;">Bezetting: 1 / Kebutuhan: 2 (🔴 Kurang 1)</span>
                             </div>
-                            <div class="space-y-1 text-[10.5px]">
+
+                            <div class="space-y-1.5 text-xs">
                                 @php
                                     $labs = [
-                                        '1. Biomedik', '2. Medikal Bedah', '3. Gawat Darurat',
-                                        '4. Jiwa', '5. Keluarga Komunitas', '6. Gerontik',
-                                        '7. Maternitas', '8. Anak', '9. Tumbuh Kembang Anak'
+                                        '1. BIOMEDIK',
+                                        '2. MEDIKAL BEDAH',
+                                        '3. GAWAT DARURAT',
+                                        '4. JIWA',
+                                        '5. KELUARGA KOMUNITAS',
+                                        '6. GERONTIK',
+                                        '7. MATERNITAS',
+                                        '8. ANAK',
+                                        '9. TUMBUH KEMBANG ANAK',
                                     ];
                                 @endphp
                                 @foreach($labs as $lb)
-                                    <div class="p-1.5 rounded font-bold" style="background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; color: #111827 !important;">
-                                        {{ $lb }}
+                                    <div class="p-2 rounded flex items-center justify-between cursor-pointer hover:opacity-90 transition"
+                                         style="background-color: #f8fafc !important; border: 1px solid #e2e8f0 !important; font-weight: 800;"
+                                         @click="openDetail(
+                                             '{{ $lb }}',
+                                             'Ruang Praktikum Laboratorium Keperawatan',
+                                             1, 1, 'Ideal', [],
+                                             'Fasilitas praktikum simulasi medis, manikin keperawatan, dan ujian Objective Structured Clinical Examination (OSCE).'
+                                         )">
+                                        <span style="color: #1e1b4b !important; font-size: 11px;">{{ $lb }}</span>
+                                        <span style="color: #4f46e5 !important; font-weight: 800; font-size: 9.5px; font-family: monospace;">Detail ➔</span>
                                     </div>
                                 @endforeach
-                            </div>
-                        </div>
-
-                        {{-- 5. KEPALA BAGIAN UMUM (BAGIAN UMUM & POKJA) --}}
-                        <div class="p-3.5 shadow-sm" style="background-color: #ffffff !important; border: 2.5px solid #d97706 !important; border-radius: 12px !important;">
-                            <div style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 12px; letter-spacing: 0.5px; padding: 8px 10px; border-radius: 8px; text-align: center; text-transform: uppercase; box-shadow: 0 2px 4px rgba(217, 119, 6, 0.3); margin-bottom: 8px;">
-                                KEPALA BAGIAN UMUM
-                            </div>
-                            <div style="background-color: #fef3c7 !important; border: 1px solid #fde68a !important; color: #78350f !important; font-weight: 800; font-size: 10px; text-align: center; padding: 4px 8px; border-radius: 6px; margin-bottom: 10px;">
-                                KELOMPOK KERJA (POKJA)
-                            </div>
-                            <div class="space-y-2 text-xs">
-                                {{-- Pokja 1: Akademik & Kemahasiswaan --}}
-                                <div class="p-2 rounded-lg cursor-pointer hover:opacity-90 transition"
-                                     style="background-color: #fffbeb !important; border: 1.5px solid #fde68a !important;"
-                                     @click="openDetail(
-                                         'Pokja Akademik & Kemahasiswaan',
-                                         'Kelompok Kerja Layanan Registrasi, Perkuliahan & Yudisium (Grade 9 & 6)',
-                                         {{ \App\Models\Pegawai::where('unit_kerja_id', 11)->count() }},
-                                         4, 'Ideal', [],
-                                         'Melaksanakan pelayanan administrasi nilai, KRS mahasiswa, surat keterangan aktif, dan kelengkapan yudisium.'
-                                     )">
-                                    <div class="font-black text-[11px]" style="color: #78350f !important;">1. Bidang Akademik & Kemahasiswaan</div>
-                                    <div class="text-[10px] text-gray-600 mt-0.5">Ka Pokja & Staf Pelaksana</div>
-                                </div>
-
-                                {{-- Pokja 2: Keuangan & Kepegawaian --}}
-                                <div class="p-2 rounded-lg cursor-pointer hover:opacity-90 transition"
-                                     style="background-color: #fffbeb !important; border: 1.5px solid #fde68a !important;"
-                                     @click="openDetail(
-                                         'Pokja Keuangan dan Kepegawaian',
-                                         'Kelompok Kerja Pengelolaan Anggaran, Presensi & Karir ASN (Grade 9 & 6)',
-                                         {{ \App\Models\Pegawai::where('unit_kerja_id', 12)->count() }},
-                                         3, 'Ideal', [],
-                                         'Melaksanakan verifikasi presensi mobile, rekapitulasi logbook harian, usulan kenaikan pangkat, gaji berkala, dan berkas cuti pegawai.'
-                                     )">
-                                    <div class="font-black text-[11px]" style="color: #78350f !important;">2. Keuangan dan Kepegawaian</div>
-                                    <div class="text-[10px] text-gray-600 mt-0.5">Ka Pokja & Staf Kepegawaian</div>
-                                </div>
-
-                                {{-- Pokja 3: Umum Sarana Akademik --}}
-                                <div class="p-2 rounded-lg cursor-pointer hover:opacity-90 transition"
-                                     style="background-color: #fffbeb !important; border: 1.5px solid #fde68a !important;"
-                                     @click="openDetail(
-                                         'Pokja Umum Sarana Akademik',
-                                         'Kelompok Kerja Pengelolaan BMN, Perlengkapan & Sarana (Grade 9 & 6)',
-                                         {{ \App\Models\Pegawai::where('unit_kerja_id', 13)->count() }},
-                                         3, '🔴 Kurang 1', [],
-                                         'Melaksanakan inventarisasi BMN, pemeliharaan gedung kuliah, kebersihan lingkungan, dan sarana prasarana.'
-                                     )">
-                                    <div class="font-black text-[11px]" style="color: #78350f !important;">3. Kemahasiswaan, Alumni & Kerjasama / Sarana</div>
-                                    <div class="text-[10px] text-gray-600 mt-0.5">Ka Pokja & Staf Perlengkapan</div>
-                                </div>
                             </div>
                         </div>
 
