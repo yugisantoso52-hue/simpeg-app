@@ -31,9 +31,15 @@ class DeployWebhookController extends Controller
         if ($request->query('diagnose') == '1') {
             try {
                 $anjabs = \App\Models\AnalisisJabatan::with(['jabatan', 'unitKerja'])->get();
+                $tablesStatus = [
+                    'talent_assessments' => \Illuminate\Support\Facades\Schema::hasTable('talent_assessments'),
+                    'talent_mappings' => \Illuminate\Support\Facades\Schema::hasTable('talent_mappings'),
+                    'succession_plans' => \Illuminate\Support\Facades\Schema::hasTable('succession_plans'),
+                ];
 
                 return response()->json([
                     'status' => 'diagnose',
+                    'tables' => $tablesStatus,
                     'anjabs_count' => $anjabs->count(),
                     'total_bezetting' => $anjabs->sum('bezetting'),
                     'total_kebutuhan' => $anjabs->sum('formasi_pembulatan'),
