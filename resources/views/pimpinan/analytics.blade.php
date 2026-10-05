@@ -73,6 +73,10 @@
                     </div>
                 </x-sop-modal>
 
+                <a href="{{ route('pimpinan.executive-brief') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-2xs">
+                    <span>🎯</span> Bahan Paparan Pimpinan
+                </a>
+
                 <a href="{{ route('pimpinan.analytics.pdf', ['month' => $month, 'year' => $year]) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition shadow-2xs">
                     <span>📄</span> Cetak PDF
                 </a>

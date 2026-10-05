@@ -2,6 +2,7 @@
     <div x-data="{ 
             showPassword: false,
             openVerifyModal: false,
+            openExecutiveModal: false,
             verifyCode: ''
          }" 
          class="min-h-screen w-full flex flex-col lg:flex-row bg-slate-50 text-slate-800 antialiased selection:bg-[#007a3d] selection:text-white">
@@ -82,6 +83,12 @@
                 <!-- Tautan Cepat Layanan Publik -->
                 <div class="mt-6 flex flex-wrap items-center gap-3">
                     <button type="button"
+                            @click="openExecutiveModal = true"
+                            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition shadow-md cursor-pointer">
+                        <span>🎯</span>
+                        <span>Paparan Eksekutif &amp; Ringkasan SIKAP</span>
+                    </button>
+                    <button type="button"
                             @click="openVerifyModal = true"
                             class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/25 text-xs font-semibold text-white transition shadow-xs cursor-pointer">
                         <span>🔍</span>
@@ -128,6 +135,14 @@
                     <h1 class="text-sm sm:text-base font-black text-slate-900 tracking-tight mt-1.5">
                         Sistem Informasi Kepegawaian (SIKAP)
                     </h1>
+                    <div class="mt-2.5">
+                        <button type="button"
+                                @click="openExecutiveModal = true"
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 text-[11px] font-bold transition shadow-2xs">
+                            <span>🎯</span>
+                            <span>Paparan Eksekutif &amp; Ringkasan SIKAP</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -335,6 +350,105 @@
                                 @click="if(verifyCode.trim()){ window.location.href = '/verifikasi-dokumen/' + encodeURIComponent(verifyCode.trim()); }"
                                 class="px-4 py-2 text-xs font-bold text-white bg-[#007a3d] hover:bg-[#006030] rounded-xl shadow-xs transition cursor-pointer">
                             Periksa Dokumen →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- MODAL PAPARAN EKSEKUTIF & RINGKASAN SISTEM (LOGIN)      -->
+        <!-- ======================================================== -->
+        <div x-show="openExecutiveModal" 
+             class="fixed inset-0 z-50 overflow-y-auto" 
+             style="display: none;"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+            
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity bg-slate-900/60 backdrop-blur-xs" @click="openExecutiveModal = false"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-2xl rounded-2xl border border-slate-100 sm:align-middle relative z-10 space-y-4">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-[#007a3d] flex items-center justify-center font-bold text-xl">
+                                🎯
+                            </div>
+                            <div>
+                                <h3 class="text-base font-black text-slate-900 leading-tight">Paparan Eksekutif &amp; Transformasi Digital Kepegawaian</h3>
+                                <p class="text-xs text-slate-500">Sistem Informasi Kepegawaian (SIKAP) • Fakultas Keperawatan UNRI</p>
+                            </div>
+                        </div>
+                        <button type="button" @click="openExecutiveModal = false" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 leading-relaxed">
+                        <strong>Visi Digitalisasi Kepegawaian FKp UNRI:</strong> Mengintegrasikan seluruh siklus manajemen aparatur (Perencanaan Formasi, Presensi Geofencing, Logbook Kinerja, E-Cuti Paperless, hingga Matriks Manajemen Talenta 9-Kotak) sesuai mandat <strong>PermenPAN-RB No. 1/2020</strong> dan <strong>PermenPAN-RB No. 3/2020</strong>.
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                            <strong class="text-indigo-800 font-bold block flex items-center gap-1.5">
+                                <span>🏛️</span> 1. Peta Jabatan &amp; Formasi ABK
+                            </strong>
+                            <p class="text-slate-600 text-[11px] leading-relaxed">
+                                Kalkulasi kebutuhan riil aparatur berbasis beban kerja 1.250 jam/tahun untuk memetakan defisit/surplus formasi sebagai dasar usulan ke Rektorat.
+                            </p>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                            <strong class="text-amber-800 font-bold block flex items-center gap-1.5">
+                                <span>⏳</span> 2. Radar Pensiun (BUP 1-3 Th)
+                            </strong>
+                            <p class="text-slate-600 text-[11px] leading-relaxed">
+                                Deteksi dini dosen dan tendik yang memasuki batas usia pensiun untuk mencegah kekosongan jabatan strategis melalui kaderisasi.
+                            </p>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                            <strong class="text-emerald-800 font-bold block flex items-center gap-1.5">
+                                <span>📈</span> 3. Merit Sistem &amp; 9-Kotak Talenta
+                            </strong>
+                            <p class="text-slate-600 text-[11px] leading-relaxed">
+                                Pemetaan objektif sumbu kinerja &amp; potensi aparatur. Pegawai di Kotak 7, 8, 9 disiapkan menjadi <em>Talent Pool</em> suksesi pimpinan.
+                            </p>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                            <strong class="text-blue-800 font-bold block flex items-center gap-1.5">
+                                <span>⏱️</span> 4. Presensi GPS &amp; E-Logbook
+                            </strong>
+                            <p class="text-slate-600 text-[11px] leading-relaxed">
+                                Radius geofencing kampus, validasi live selfie anti-titip absen, dan kewajiban minimal 7.5 jam efektif/hari untuk akuntabilitas Tukin.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 flex items-center gap-2">
+                        <x-icon name="info" class="w-4 h-4 text-amber-700 shrink-0" />
+                        <span><strong>Hak Akses Pimpinan:</strong> Untuk mengakses data statistik interaktif, nama personil, grafik beban kerja, dan bagan organisasi lengkap, silakan masuk menggunakan akun <strong>Pimpinan (Dekan/Wadek)</strong> atau <strong>Administrator</strong>.</span>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                        <button type="button" 
+                                @click="openExecutiveModal = false"
+                                class="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+                            Tutup
+                        </button>
+                        <button type="button" 
+                                @click="openExecutiveModal = false; setTimeout(() => document.getElementById('login')?.focus(), 100);"
+                                class="px-4 py-2 text-xs font-bold text-white bg-[#007a3d] hover:bg-[#006030] rounded-xl shadow-xs transition">
+                            Login ke Dashboard &rarr;
                         </button>
                     </div>
                 </div>

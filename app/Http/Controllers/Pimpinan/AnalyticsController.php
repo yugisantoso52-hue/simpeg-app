@@ -83,4 +83,67 @@ class AnalyticsController extends Controller
 
         return $pdf->stream("Laporan_Eksekutif_SIKAP_FKP_{$month}_{$year}.pdf");
     }
+
+    /**
+     * Lembar Paparan Eksekutif & Bahan Presentasi Pimpinan (Executive Brief)
+     */
+    public function executiveBrief(Request $request): View
+    {
+        $now = Carbon::now('Asia/Jakarta');
+        $month = (int) $request->get('month', $now->month);
+        $year = (int) $request->get('year', $now->year);
+
+        $kpis = $this->analyticsService->getExecutiveKpis($month, $year);
+        $logbookWorkload = $this->analyticsService->getLogbookWorkloadByUnit($month, $year);
+        $retirementRadar = $this->analyticsService->getRetirementProjections();
+        $staffComposition = $this->analyticsService->getStaffComposition();
+
+        // Anjab & ABK Kebutuhan Formasi vs Bezetting
+        $allAnjabs = \App\Models\AnalisisJabatan::with(['jabatan', 'unitKerja'])->get();
+        $totalKebutuhanFormasi = $allAnjabs->sum(fn($a) => $a->formasi_pembulatan);
+        $totalBezetting = $allAnjabs->sum(fn($a) => $a->bezetting);
+        $defisitJabatan = $allAnjabs->filter(fn($a) => ($a->bezetting - $a->formasi_pembulatan) < 0)->values();
+        $surplusJabatan = $allAnjabs->filter(fn($a) => ($a->bezetting - $a->formasi_pembulatan) > 0)->values();
+        $idealJabatan = $allAnjabs->filter(fn($a) => ($a->bezetting - $a->formasi_pembulatan) == 0)->values();
+
+        // Data Talenta
+        $tahunTalenta = date('Y');
+        $talentMappings = \App\Models\TalentMapping::where('tahun', $tahunTalenta)->get();
+        if ($talentMappings->isEmpty()) {
+            $latestYear = \App\Models\TalentMapping::max('tahun') ?? $tahunTalenta;
+            $talentMappings = \App\Models\TalentMapping::where('tahun', $latestYear)->get();
+            $tahunTalenta = $latestYear;
+        }
+
+        $talentPoolCount = $talentMappings->whereIn('kuadran_box', [7, 8, 9])->count();
+        $talentMiddleCount = $talentMappings->whereIn('kuadran_box', [4, 5, 6])->count();
+        $talentLowCount = $talentMappings->whereIn('kuadran_box', [1, 2, 3])->count();
+        $talentTotal = $talentMappings->count();
+
+        $namaBulan = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        return view('pimpinan.executive_brief', compact(
+            'kpis',
+            'logbookWorkload',
+            'retirementRadar',
+            'staffComposition',
+            'month',
+            'year',
+            'namaBulan',
+            'totalKebutuhanFormasi',
+            'totalBezetting',
+            'defisitJabatan',
+            'surplusJabatan',
+            'idealJabatan',
+            'talentPoolCount',
+            'talentMiddleCount',
+            'talentLowCount',
+            'talentTotal',
+            'tahunTalenta'
+        ));
+    }
 }

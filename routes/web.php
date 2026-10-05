@@ -218,6 +218,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         /* Executive Analytics Dashboard Dekanat & Pimpinan */
         Route::get('/pimpinan/analytics', [\App\Http\Controllers\Pimpinan\AnalyticsController::class, 'index'])->name('pimpinan.analytics');
         Route::get('/pimpinan/analytics/pdf', [\App\Http\Controllers\Pimpinan\AnalyticsController::class, 'exportPdf'])->name('pimpinan.analytics.pdf');
+        Route::get('/pimpinan/executive-brief', [\App\Http\Controllers\Pimpinan\AnalyticsController::class, 'executiveBrief'])->name('pimpinan.executive-brief');
 
         /* Data Kepegawaian Berdasarkan Kategori (Dosen, Tendik, PHL) */
         Route::prefix('kepegawaian')->name('kepegawaian.')->group(function () {

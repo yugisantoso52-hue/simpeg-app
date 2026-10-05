@@ -763,6 +763,31 @@
                     </div>
                 </div>
 
+                {{-- 🎯 BANNER PAPARAN PIMPINAN (EXECUTIVE BRIEFING BANNER) --}}
+                @if(Auth::user()->canAccessExecutiveKepegawaianMenus() || Auth::user()->hasRole('admin') || Auth::user()->isPimpinan())
+                <div class="mb-6 rounded-2xl bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 p-5 text-white shadow-md border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 flex items-center justify-center text-2xl shrink-0">
+                            🎯
+                        </div>
+                        <div>
+                            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/20 uppercase tracking-wider mb-1">
+                                Siap Papar Dekanat
+                            </div>
+                            <h3 class="text-base font-black text-white">Lembar Paparan Eksekutif &amp; Ringkasan Strategis Pimpinan</h3>
+                            <p class="text-xs text-slate-300 mt-0.5">
+                                Akses ringkasan komparasi Peta Formasi ABK, Radar Pensiun 1-3 Tahun, dan Matriks Talenta 9-Kotak lengkap dengan catatan bicara (talking points).
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                        <a href="{{ route('pimpinan.executive-brief') }}" class="w-full sm:w-auto text-center px-4 py-2.5 rounded-xl font-bold text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-sm transition">
+                            Buka Lembar Paparan &rarr;
+                        </a>
+                    </div>
+                </div>
+                @endif
+
                 {{-- 🚨 PUSAT TINDAKAN & OPERASIONAL HARIAN (ACTION ITEMS) --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     {{-- 1. Pending Cuti --}}
