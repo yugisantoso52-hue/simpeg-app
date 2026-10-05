@@ -71,14 +71,15 @@
         </div>
 
         <!-- STRUKTUR KOP UTAMA: Logo UNRI (Kiri), Teks Kop (Tengah), Logo Kemendiktisaintek (Kanan) Proporsional Pas -->
-        <div class="w-full max-w-6xl mx-auto flex items-center justify-between gap-4 sm:gap-8 lg:gap-12 px-4 sm:px-8 lg:px-12">
+        <div class="w-full max-w-5xl mx-auto flex items-center justify-between gap-4 sm:gap-6 lg:gap-8 px-4 sm:px-6 lg:px-8">
             
             <!-- Sisi Kiri: Logo Universitas Riau -->
             <div class="shrink-0 flex items-center justify-center">
                 <a href="{{ route('dashboard') }}" class="block transition transform hover:scale-105 duration-200" title="Universitas Riau">
                     <img src="{{ asset('logo-unri.png') }}" 
                          alt="Logo Universitas Riau" 
-                         class="h-[56px] sm:h-[68px] md:h-[78px] w-auto object-contain drop-shadow-2xs">
+                         style="max-height: 74px; height: 74px; width: auto;"
+                         class="h-[52px] sm:h-[64px] md:h-[74px] max-h-[74px] w-auto object-contain drop-shadow-2xs">
                 </a>
             </div>
 
@@ -109,7 +110,8 @@
                 <a href="{{ route('dashboard') }}" class="block transition transform hover:scale-105 duration-200" title="Kementerian Pendidikan Tinggi, Sains, dan Teknologi">
                     <img src="{{ asset('logo-kemendiktisaintek.png') }}" 
                          alt="Logo Kementerian Pendidikan Tinggi, Sains, dan Teknologi" 
-                         class="h-[56px] sm:h-[68px] md:h-[78px] w-auto object-contain drop-shadow-2xs">
+                         style="max-height: 74px; height: 74px; width: auto;"
+                         class="h-[52px] sm:h-[64px] md:h-[74px] max-h-[74px] w-auto object-contain drop-shadow-2xs">
                 </a>
             </div>
 
