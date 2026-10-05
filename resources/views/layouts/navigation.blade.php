@@ -70,21 +70,21 @@
             </div>
         </div>
 
-        <!-- STRUKTUR KOP UTAMA: Logo UNRI (Kiri), Teks Kop (Tengah), Logo Kemendiktisaintek (Kanan) Proporsional Pas -->
-        <div class="w-full max-w-5xl mx-auto flex items-center justify-between gap-4 sm:gap-6 lg:gap-8 px-4 sm:px-6 lg:px-8">
+        <!-- STRUKTUR KOP UTAMA: Logo UNRI (Kiri), Teks Kop (Tengah), Logo Kemendiktisaintek (Kanan) Rapat Proporsional Pas -->
+        <div class="w-full max-w-4xl mx-auto flex items-center justify-center gap-3 sm:gap-5 md:gap-7 lg:gap-8 px-2 sm:px-4">
             
-            <!-- Sisi Kiri: Logo Universitas Riau -->
+            <!-- Sisi Kiri: Logo Universitas Riau (Tinggi pas dari tulisan paling atas hingga paling bawah) -->
             <div class="shrink-0 flex items-center justify-center">
                 <a href="{{ route('dashboard') }}" class="block transition transform hover:scale-105 duration-200" title="Universitas Riau">
                     <img src="{{ asset('logo-unri.png') }}" 
                          alt="Logo Universitas Riau" 
-                         style="max-height: 74px; height: 74px; width: auto;"
-                         class="h-[52px] sm:h-[64px] md:h-[74px] max-h-[74px] w-auto object-contain drop-shadow-2xs">
+                         style="max-height: 94px; height: 94px; width: auto;"
+                         class="h-[70px] sm:h-[82px] md:h-[94px] max-h-[94px] w-auto object-contain drop-shadow-2xs">
                 </a>
             </div>
 
             <!-- Bagian Tengah: Teks Kop Surat Resmi Institusi -->
-            <div class="flex-1 max-w-3xl text-center leading-tight px-2 sm:px-4 notranslate" translate="no">
+            <div class="flex-1 text-center leading-tight px-1 sm:px-2 notranslate" translate="no">
                 <h2 class="text-[10px] sm:text-[11.5px] md:text-[12.5px] font-semibold tracking-wider text-slate-600 uppercase">
                     KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI
                 </h2>
@@ -105,13 +105,13 @@
                 </p>
             </div>
 
-            <!-- Sisi Kanan: Logo Kementerian Pendidikan Tinggi, Sains, dan Teknologi -->
+            <!-- Sisi Kanan: Logo Kementerian Pendidikan Tinggi, Sains, dan Teknologi (Tinggi pas dari tulisan paling atas hingga paling bawah) -->
             <div class="shrink-0 flex items-center justify-center">
                 <a href="{{ route('dashboard') }}" class="block transition transform hover:scale-105 duration-200" title="Kementerian Pendidikan Tinggi, Sains, dan Teknologi">
                     <img src="{{ asset('logo-kemendiktisaintek.png') }}" 
                          alt="Logo Kementerian Pendidikan Tinggi, Sains, dan Teknologi" 
-                         style="max-height: 74px; height: 74px; width: auto;"
-                         class="h-[52px] sm:h-[64px] md:h-[74px] max-h-[74px] w-auto object-contain drop-shadow-2xs">
+                         style="max-height: 94px; height: 94px; width: auto;"
+                         class="h-[70px] sm:h-[82px] md:h-[94px] max-h-[94px] w-auto object-contain drop-shadow-2xs">
                 </a>
             </div>
 
