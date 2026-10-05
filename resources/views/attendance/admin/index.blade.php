@@ -16,6 +16,63 @@
                 <p class="text-sm text-gray-500 mt-0.5">Pemantauan keberadaan, verifikasi foto selfie, dan radius koordinat GPS.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
+                {{-- Tombol SOP Presensi Admin/Pimpinan --}}
+                <x-sop-modal title="SOP Pemantauan & Audit Presensi ASN" 
+                             buttonLabel="SOP Presensi" 
+                             badge="Standar Jam Kerja ASN" 
+                             color="blue">
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-blue-50 border border-blue-200">
+                            <h4 class="font-bold text-blue-950 text-xs mb-1 flex items-center gap-1.5">
+                                <x-icon name="clock" class="w-4 h-4 text-blue-700" />
+                                Ketentuan Jam Kerja Efektif ASN
+                            </h4>
+                            <p class="text-blue-900 text-[11px] leading-relaxed">
+                                Jam kerja resmi Fakultas Keperawatan UNRI: <strong>Senin - Kamis (07.30 - 16.00 WIB)</strong> dan <strong>Jumat (07.30 - 16.30 WIB)</strong> dengan akumulasi minimal <strong>37.5 jam efektif/minggu</strong>. Keterlambatan dan pulang cepat tanpa izin dinas mempengaruhi potongan tunjangan kinerja.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">1</span>
+                                Geofencing &amp; Verifikasi Selfie Biometrik
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-blue-200">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Radius Geofencing GPS</strong>
+                                    <span class="text-slate-600 text-[11px]">Check-in/out hanya sah dalam radius acuan titik koordinat kampus (Gedung Dekanat / FKp UNRI). Jarak di luar radius otomatis ditandai atau ditolak sistem.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Verifikasi Foto Selfie Langsung (Live Cam)</strong>
+                                    <span class="text-slate-600 text-[11px]">Foto wajib diambil langsung dengan kamera depan secara jernih di lingkungan kantor, bukan foto galeri atau objek mati.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px]">2</span>
+                                Audit Anomali &amp; Anti-Kecurangan (Anti-Fraud)
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-rose-200">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Deteksi Multi-Akun (Device Fingerprinting)</strong>
+                                    <span class="text-slate-600 text-[11px]">Sistem menandai badge merah bila 1 perangkat fisik ponsel dipakai absen bergantian oleh lebih dari 1 pegawai (indikasi titip absen).</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Deteksi Perpindahan Tak Wajar (Impossible Travel)</strong>
+                                    <span class="text-slate-600 text-[11px]">Menyorot lonjakan perpindahan lokasi geografis yang tidak logis dalam rentang waktu singkat.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-xs flex items-center gap-2">
+                            <x-icon name="file-text" class="w-4 h-4 text-slate-600 shrink-0" />
+                            <span><strong>Rekap &amp; Ekspor:</strong> Unduh berkas rekapitulasi bulanan Excel/PDF sebagai lampiran berkas resmi pembayaran remunerasi kepegawaian.</span>
+                        </div>
+                    </div>
+                </x-sop-modal>
+
                 <a href="{{ route('admin.presensi.export.excel', request()->query()) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 border border-transparent rounded-lg text-xs font-semibold text-white shadow-sm transition" style="background-color: #059669; color: #ffffff;">
                     <span>📊</span> Ekspor Excel
                 </a>

@@ -30,6 +30,49 @@
                     </button>
                 </form>
 
+                {{-- Tombol SOP Eksekutif Analitik --}}
+                <x-sop-modal title="SOP & Panduan Interpretasi Analitik Eksekutif" 
+                             buttonLabel="Panduan Indikator Dekanat" 
+                             badge="Pimpinan & Dekanat" 
+                             color="indigo">
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200">
+                            <h4 class="font-bold text-indigo-900 text-xs mb-1 flex items-center gap-1.5">
+                                <x-icon name="chart" class="w-4 h-4 text-indigo-700" />
+                                Tujuan Dashboard Analitik Pimpinan
+                            </h4>
+                            <p class="text-indigo-800 text-[11px] leading-relaxed">
+                                Halaman ini dirancang khusus untuk Dekan, Para Wakil Dekan, dan Kepala Bagian Umum guna memantau <strong>kesehatan organisasi</strong> secara *real-time* berbasis data agregat.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">1</span>
+                                Indikator Strategis &amp; Makna Pengambilan Kebijakan
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-indigo-200">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">A. Tingkat Kehadiran &amp; Disiplin</strong>
+                                    <span class="text-slate-600 text-[11px]">Memantau rasio kehadiran tepat waktu, keterlambatan, dan ketidakhadiran tanpa keterangan untuk intervensi pembinaan unit kerja.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">B. Produktivitas Jam Logbook</strong>
+                                    <span class="text-slate-600 text-[11px]">Memastikan beban kerja terdistribusi adil di setiap prodi/bagian serta mencegah *underload* atau *burnout* staf.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">C. Radar Pensiun &amp; Kebutuhan Suksesi</strong>
+                                    <span class="text-slate-600 text-[11px]">Mendeteksi dosen &amp; tendik yang akan memasuki Batas Usia Pensiun (BUP) dalam 1-3 tahun ke depan untuk mengantisipasi kekosongan formasi jabatan.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-slate-100 text-slate-600 text-[11px]">
+                            <strong>📄 Laporan Rapat Pimpinan:</strong> Klik tombol <em>Cetak PDF</em> untuk mencetak ringkasan grafis dan tabel analitik bulanan siap edar untuk rapat dekanat/fakultas.
+                        </div>
+                    </div>
+                </x-sop-modal>
+
                 <a href="{{ route('pimpinan.analytics.pdf', ['month' => $month, 'year' => $year]) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition shadow-2xs">
                     <span>📄</span> Cetak PDF
                 </a>

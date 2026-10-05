@@ -11,6 +11,67 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
+                {{-- Tombol SOP Verifikasi Logbook --}}
+                <x-sop-modal title="SOP & Panduan Verifikasi Logbook Kinerja" 
+                             buttonLabel="SOP Verifikasi" 
+                             badge="Standar Supervisi Kinerja" 
+                             color="indigo">
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200">
+                            <h4 class="font-bold text-indigo-950 text-xs mb-1 flex items-center gap-1.5">
+                                <x-icon name="check-circle" class="w-4 h-4 text-indigo-700" />
+                                Peran &amp; Tanggung Jawab Verifikator
+                            </h4>
+                            <p class="text-indigo-900 text-[11px] leading-relaxed">
+                                Atasan Langsung dan Administrator bertanggung jawab melakukan supervisi berkala terhadap keabsahan, relevansi, dan akurasi durasi aktivitas harian yang dilaporkan staf/pegawai sebagai dasar pembayaran Tukin dan evaluasi kinerja tahunan (SKP).
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">1</span>
+                                Parameter &amp; Validasi Aktivitas
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-indigo-200">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Relevansi Tugas Jabatan (Tusi)</strong>
+                                    <span class="text-slate-600 text-[11px]">Pastikan aktivitas yang diisi sesuai dengan rincian uraian tugas dalam SKP / Anjab pegawai bersangkutan.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Kewajaran Durasi Waktu</strong>
+                                    <span class="text-slate-600 text-[11px]">Durasi kerja efektif minimal <strong>450 menit (7.5 jam) per hari kerja</strong>. Pastikan tidak ada duplikasi jam atau pengisian fiktif.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Ketersediaan Bukti Fisik / Output</strong>
+                                    <span class="text-slate-600 text-[11px]">Periksa lampiran pendukung (file dokumen, foto kegiatan, atau link berkas) terutama untuk tugas yang berbobot besar.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">2</span>
+                                Alur Persetujuan &amp; Penolakan Revisi
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-emerald-200">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Persetujuan Massal (Batch Approve)</strong>
+                                    <span class="text-slate-600 text-[11px]">Gunakan fitur centang kotak pada daftar aktivitas, lalu klik tombol <em>"Setujui Terpilih"</em> untuk memproses logbook yang telah terverifikasi sekaligus.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Penolakan dengan Catatan Pembinaan</strong>
+                                    <span class="text-slate-600 text-[11px]">Bila aktivitas tidak sesuai, klik tolak dan berikan alasan perbaikan yang jelas agar pegawai dapat memperbaikinya.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
+                            <x-icon name="alert-circle" class="w-4 h-4 text-amber-700 shrink-0" />
+                            <span><strong>Batas Waktu:</strong> Rekap dan pengesahan logbook bulanan ditutup setiap tanggal 5 bulan berikutnya untuk proses rekapitulasi penilaian capaian kinerja.</span>
+                        </div>
+                    </div>
+                </x-sop-modal>
+
                 <a href="{{ route('admin.logbook.export.pdf', request()->all()) }}"
                    target="_blank"
                    class="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 transition">

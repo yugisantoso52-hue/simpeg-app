@@ -2,7 +2,59 @@
     <x-slot name="header">
         <x-enterprise.page-header
             title="Data Utama Pegawai"
-            subtitle="Kelola seluruh data operasional pegawai SIKAP Enterprise" />
+            subtitle="Kelola seluruh data operasional pegawai SIKAP Enterprise">
+            {{-- Tombol SOP Pengelolaan Data Pegawai --}}
+            <x-sop-modal title="SOP Tata Kelola Data Induk Kepegawaian" 
+                         buttonLabel="SOP Data Pegawai" 
+                         badge="Standar Manajemen ASN" 
+                         color="blue">
+                <div class="space-y-4">
+                    <div class="p-3.5 rounded-2xl bg-blue-50 border border-blue-200">
+                        <h4 class="font-bold text-blue-950 text-xs mb-1 flex items-center gap-1.5">
+                            <x-icon name="users" class="w-4 h-4 text-blue-700" />
+                            Prinsip Integritas &amp; Validitas Data Pokok
+                        </h4>
+                        <p class="text-blue-900 text-[11px] leading-relaxed">
+                            Data induk kepegawaian merupakan sumber tunggal kebenaran (<em>single source of truth</em>) untuk seluruh modul SIMPEG SIKAP (Presensi, Logbook, E-Cuti, Matriks Talenta, hingga Anjab-ABK). Pastikan setiap elemen data terverifikasi sesuai SK resmi yang sah.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">1</span>
+                            Prosedur Registrasi &amp; Pemutakhiran
+                        </h4>
+                        <div class="space-y-2 ps-2 border-l-2 border-blue-200">
+                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                <strong class="text-slate-800 block text-xs">Penambahan Pegawai Baru</strong>
+                                <span class="text-slate-600 text-[11px]">Gunakan tombol <em>"Tambah Pegawai"</em> untuk mendaftarkan aparatur baru dengan mengisi NIP (18 digit), NIK, Nama &amp; Gelar, Status Kepegawaian, Unit Kerja, dan Jabatan Awal.</span>
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                <strong class="text-slate-800 block text-xs">Impor Massal (Excel)</strong>
+                                <span class="text-slate-600 text-[11px]">Untuk peremajaan data jumlah besar, gunakan fitur <em>"Impor Excel"</em> dengan mengunduh template format baku agar struktur kolom dan format tanggal tidak terjadi galat.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">2</span>
+                            Pemeliharaan Riwayat &amp; Berkas Digital
+                        </h4>
+                        <div class="space-y-2 ps-2 border-l-2 border-indigo-200">
+                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                <strong class="text-slate-800 block text-xs">Kelengkapan Riwayat Karir</strong>
+                                <span class="text-slate-600 text-[11px]">Setiap mutasi, promosi, kenaikan pangkat reguler/pilihan, dan lulus pendidikan lanjutan wajib diinput ke sub-menu riwayat masing-masing dengan mengunggah scan SK asli (PDF).</span>
+                            </div>
+                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                <strong class="text-slate-800 block text-xs">Status Keaktifan Pegawai</strong>
+                                <span class="text-slate-600 text-[11px]">Perbarui status menjadi Tugas Belajar, CLTN, Pensiun, atau Pindah Instansi bila pegawai tidak lagi aktif secara operasional agar tidak membebani kalkulasi presensi harian.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </x-sop-modal>
+        </x-enterprise.page-header>
     </x-slot>
 
     <div class="py-6" x-data="{ openImportModal: false }">

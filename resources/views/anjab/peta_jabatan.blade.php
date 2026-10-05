@@ -14,6 +14,66 @@
                 </p>
             </div>
             <div class="flex items-center gap-2">
+                {{-- Tombol SOP Peta Jabatan & ABK --}}
+                <x-sop-modal title="SOP Analisis Jabatan & Beban Kerja (Anjab - ABK)" 
+                             buttonLabel="SOP Anjab & ABK" 
+                             badge="PermenPAN-RB No. 1/2020" 
+                             color="indigo">
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200">
+                            <h4 class="font-bold text-indigo-950 text-xs mb-1 flex items-center gap-1.5">
+                                <x-icon name="network" class="w-4 h-4 text-indigo-700" />
+                                Dasar Hukum &amp; Tujuan Penyusunan
+                            </h4>
+                            <p class="text-indigo-900 text-[11px] leading-relaxed">
+                                Berdasarkan <strong>PermenPAN-RB No. 1 Tahun 2020</strong>, peta jabatan dan ABK menyajikan gambaran komprehensif formasi jabatan struktural, fungsional dosen, dan pelaksana untuk menghitung kebutuhan riil aparatur berdasarkan beban kerja 1.250 jam/tahun.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">1</span>
+                                Cara Membaca Indikator Formasi Bagan
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-indigo-200">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Bezetting (Kondisi Riil)</strong>
+                                    <span class="text-slate-600 text-[11px]">Jumlah ASN (PNS &amp; PPPK) yang secara aktual menduduki jabatan tersebut saat ini.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Kebutuhan Formasi (Hasil ABK)</strong>
+                                    <span class="text-slate-600 text-[11px]">Jumlah ideal personil yang dihitung dari total volume kerja tahunan dibagi jam kerja efektif.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Status Keseimbangan Formasi</strong>
+                                    <span class="text-slate-600 text-[11px]">
+                                        <span class="text-emerald-700 font-semibold">🟢 Ideal:</span> Formasi terpenuhi pas.<br>
+                                        <span class="text-rose-700 font-semibold">🔴 Kurang (Defisit):</span> Kekurangan SDM, menjadi prioritas usulan formasi baru ke kementerian.<br>
+                                        <span class="text-amber-700 font-semibold">🟡 Lebih (Surplus):</span> Kelebihan personil, bahan evaluasi untuk redistribusi/mutasi internal.
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">2</span>
+                                17 Unsur Dokumen Anjab &amp; Alur Pemutakhiran
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-emerald-200">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Akses Dokumen Spesifikasi</strong>
+                                    <span class="text-slate-600 text-[11px]">Klik salah satu kotak jabatan pada bagan untuk langsung membuka rincian 17 unsur Anjab (kualifikasi, uraian tugas pokok, bahan/perangkat kerja, wewenang, dan risiko).</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Pengusulan Pembaruan</strong>
+                                    <span class="text-slate-600 text-[11px]">Setiap terjadi perubahan OTK (Organisasi dan Tata Kerja), Subbagian Tata Usaha / Kepegawaian memperbarui matriks tugas dan disahkan Dekan.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </x-sop-modal>
+
                 <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition">
                     <span>🖨️</span> Cetak Bagan
                 </button>

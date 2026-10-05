@@ -18,6 +18,66 @@
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
+                {{-- Tombol SOP Eksekutif Manajemen Talenta --}}
+                <x-sop-modal title="SOP & Panduan Manajemen Talenta ASN (9-Box Grid)" 
+                             buttonLabel="SOP & Regulasi Talenta" 
+                             badge="PermenPAN-RB 3/2020" 
+                             color="rose">
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-rose-50 border border-rose-200">
+                            <h4 class="font-bold text-rose-900 text-xs mb-1 flex items-center gap-1.5">
+                                <x-icon name="target" class="w-4 h-4 text-rose-700" />
+                                Filosofi Matriks 9-Kotak & Sistem Merit
+                            </h4>
+                            <p class="text-rose-800 text-[11px] leading-relaxed">
+                                Matriks 9-Kotak digunakan oleh Pimpinan dan Tim Manajemen Talenta untuk memetakan seluruh ASN ke dalam 9 kuadran berdasarkan persilangan <strong>Kinerja (Sumbu X)</strong> dan <strong>Potensi (Sumbu Y)</strong> sebagai dasar suksesi jabatan bebas dari unsur politis/subjektif.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px]">1</span>
+                                Tiga Klaster Utama Kuadran 9-Kotak
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-rose-200">
+                                <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+                                    <strong class="text-emerald-950 block text-xs">Kotak VII, VIII, IX (Kelompok Rencana Suksesi / Talent Pool)</strong>
+                                    <span class="text-emerald-800 text-[11px]">Pegawai berkategori siap promosi jabatan, rotasi strategis, atau tugas belajar lanjutan. Berhak masuk dalam <em>Succession Pool</em> pimpinan.</span>
+                                </div>
+                                <div class="bg-blue-50 p-2.5 rounded-xl border border-blue-200">
+                                    <strong class="text-blue-950 block text-xs">Kotak IV, V, VI (Kelompok Pemeliharaan / Mainstay)</strong>
+                                    <span class="text-blue-800 text-[11px]">Pegawai berkinerja stabil atau berpotensi berkembang. Diberikan program mentoring, penguatan teknis, atau rotasi pengayaan tugas (*job enrichment*).</span>
+                                </div>
+                                <div class="bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+                                    <strong class="text-amber-950 block text-xs">Kotak I, II, III (Kelompok Pembinaan Khusus)</strong>
+                                    <span class="text-amber-800 text-[11px]">Pegawai memerlukan konseling intensif, pembinaan disiplin kinerja (PP 94/2021), atau penyesuaian penempatan beban kerja non-kritis.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px]">2</span>
+                                Alur Kerja Tim Penilai &amp; Komite Talenta
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-slate-200">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">A. Sinkronisasi Skor Otomatis</strong>
+                                    <span class="text-slate-600 text-[11px]">Klik tombol <em>Hitung Ulang Skor</em> untuk menyinkronkan seluruh nilai SKP, Presensi, Logbook, dan Diklat 20 JP pegawai terbaru.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">B. Verifikasi &amp; Asesmen Kompetensi</strong>
+                                    <span class="text-slate-600 text-[11px]">Periksa hasil uji kompetensi pada menu <em>Data Asesmen BKN</em> untuk memperbarui skor potensi individu.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">C. Penetapan Rencana Suksesi oleh PPK (Dekan)</strong>
+                                    <span class="text-slate-600 text-[11px]">Melalui <em>Rekap Tabel Talenta</em>, pimpinan menetapkan status validasi kandidat suksesi jabatan struktural dan fungsional.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </x-sop-modal>
+
                 @if(Auth::user()->canManageTalentManagement())
                     <form action="{{ route('manajemen-talenta.calculate') }}" method="POST" onsubmit="return confirm('Mulai sinkronisasi dan kalkulasi ulang seluruh talenta pegawai untuk tahun {{ $tahun }}?');">
                         @csrf
