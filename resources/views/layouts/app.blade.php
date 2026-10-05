@@ -29,13 +29,13 @@
                 <!-- Page Heading -->
                 @if(isset($header))
                     <header class="bg-white shadow">
-                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        <div class="w-full max-w-[1920px] mx-auto py-4 sm:py-5 px-4 sm:px-6 lg:px-8 xl:px-10">
                             {{ $header }}
                         </div>
                     </header>
                 @elseif(View::hasSection('header'))
                     <header class="bg-white shadow">
-                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        <div class="w-full max-w-[1920px] mx-auto py-4 sm:py-5 px-4 sm:px-6 lg:px-8 xl:px-10">
                             @yield('header')
                         </div>
                     </header>
@@ -52,7 +52,7 @@
 
             <!-- Footer Hak Cipta & Pengembang -->
             <footer class="bg-white border-t border-slate-200 mt-12 py-5">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-slate-500">
+                <div class="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-slate-500">
                     <div class="flex items-center gap-2">
                         <span class="font-bold text-[#007a3d]">SIKAP</span>
                         <span class="text-slate-300">|</span>
