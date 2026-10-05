@@ -15,11 +15,76 @@
                     Informasi capaian Kinerja, Potensi, dan Rekomendasi Rencana Pengembangan Individu (Individual Development Plan) Anda
                 </p>
             </div>
-            <div>
+            <div class="flex items-center gap-2.5">
+                {{-- Tombol SOP Modul Talenta --}}
+                <x-sop-modal title="SOP & Panduan Penilaian Talenta ASN" 
+                             buttonLabel="SOP & Cara Naik Kuadran" 
+                             badge="PermenPAN-RB No. 3/2020" 
+                             color="emerald">
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200">
+                            <h4 class="font-bold text-emerald-900 text-xs mb-1 flex items-center gap-1.5">
+                                <x-icon name="target" class="w-4 h-4 text-emerald-700" />
+                                Apa itu Profil Talenta Mandiri?
+                            </h4>
+                            <p class="text-emerald-800 text-[11px] leading-relaxed">
+                                Halaman ini adalah <strong>hasil evaluasi otomatis</strong> yang memetakan ASN ke dalam <strong>Matriks 9-Kotak (9-Box Grid)</strong>. Nilai dihitung langsung oleh sistem dari dua sumbu: <strong>Sumbu Kinerja (X)</strong> dan <strong>Sumbu Potensi (Y)</strong>.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px]">1</span>
+                                Cara Meningkatkan Skor Kinerja (Sumbu X)
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-slate-200">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">A. Lengkapi Riwayat SKP (Bobot 80%)</strong>
+                                    <span class="text-slate-600 text-[11px]">Buka <em>Profil Saya &rarr; Riwayat SKP</em>. Masukkan SKP tahun berjalan dan tahun sebelumnya dengan predikat minimal <em>Baik</em> (skor 85) atau <em>Sangat Baik</em> (skor 100).</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">B. Kedisiplinan Kehadiran (Bobot 10%)</strong>
+                                    <span class="text-slate-600 text-[11px]">Lakukan presensi harian masuk dan pulang tepat waktu sesuai jam kerja di menu <em>Presensi</em>.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">C. Keaktifan Logbook Harian (Bobot 10%)</strong>
+                                    <span class="text-slate-600 text-[11px]">Rutin mencatat aktivitas kerja harian dan pastikan disetujui atasan di menu <em>Logbook</em>.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px]">2</span>
+                                Cara Meningkatkan Skor Potensi (Sumbu Y)
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-slate-200">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">A. Kualifikasi Pendidikan (Bobot 40% / 20%)</strong>
+                                    <span class="text-slate-600 text-[11px]">Pastikan jenjang pendidikan terakhir Anda telah diperbarui di menu <em>Profil Saya</em> (S1 = 75, S2 = 85, S3 = 100).</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">B. Penuhi Hak 20 JP Pelatihan / Tahun (Bobot 30% / 15%)</strong>
+                                    <span class="text-slate-600 text-[11px]">Sesuai PP 11/2017, unggah sertifikat pelatihan/seminar/workshop di <em>Profil Saya &rarr; Riwayat Diklat</em>. Jika total jam mencapai minimal 20 JP, skor Anda otomatis <strong>100.0</strong>.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">C. Rekam Jejak &amp; Asesmen BKN (Bobot 30% / 50%)</strong>
+                                    <span class="text-slate-600 text-[11px]">Dihitung dari pangkat, masa kerja, piagam tanda kehormatan Satyalancana, serta hasil uji kompetensi (Assessment Center BKN).</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px]">
+                            <strong>👑 Syarat Masuk Talent Pool Suksesi (Siap Promosi):</strong><br>
+                            Pegawai harus berada di <strong>Kotak VII, VIII, atau IX</strong> (Kategori Potensi Sedang/Tinggi dan Kinerja Tinggi).
+                        </div>
+                    </div>
+                </x-sop-modal>
+
                 <form method="GET" action="{{ route('manajemen-talenta.my-talent') }}">
                     <select name="tahun" onchange="this.form.submit()" class="text-xs rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 py-1.5 font-semibold">
                         @foreach(range(date('Y'), date('Y') - 4) as $y)
-                            <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>Tahun Evaluasi {{ $y }}</option>
+                            <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>Tahun {{ $y }}</option>
                         @endforeach
                     </select>
                 </form>
@@ -28,6 +93,25 @@
     </x-slot>
 
     <div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+
+        {{-- Banner Edukasi & Bantuan Cepat Pengisian --}}
+        <div class="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200/90 text-emerald-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                    <x-icon name="sparkles" class="w-5 h-5 stroke-[2]" />
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs text-emerald-950">Bagaimana Cara Mengisi atau Menaikkan Nilai Talenta Saya?</h4>
+                    <p class="text-[11px] text-emerald-800 mt-0.5">
+                        Nilai profil talenta dihitung otomatis dari <strong>Riwayat SKP</strong>, <strong>20 JP Sertifikat Pelatihan</strong> di Profil Saya, serta <strong>Presensi &amp; Logbook</strong> harian Anda.
+                    </p>
+                </div>
+            </div>
+            <a href="{{ route('pegawai.my-profile') }}" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shrink-0 shadow-2xs flex items-center gap-1.5">
+                <x-icon name="user" class="w-3.5 h-3.5 text-white" />
+                <span>Lengkapi Profil &amp; Riwayat &rarr;</span>
+            </a>
+        </div>
 
         {{-- Hero Banner Status Talenta --}}
         <div class="bg-gradient-to-r from-emerald-800 to-teal-900 text-white rounded-3xl p-6 md:p-8 shadow-sm">

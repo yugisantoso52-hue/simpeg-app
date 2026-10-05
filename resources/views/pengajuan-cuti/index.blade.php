@@ -10,10 +10,68 @@
                 </p>
             </div>
 
-            <a href="{{ route('pengajuan-cuti.create') }}"
-               class="inline-flex items-center rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-emerald-700 transition">
-                + Ajukan Cuti Baru
-            </a>
+            <div class="flex items-center gap-2">
+                {{-- Tombol SOP E-Cuti --}}
+                <x-sop-modal title="SOP Pengajuan & Persetujuan Cuti ASN" 
+                             buttonLabel="SOP & Syarat Cuti" 
+                             badge="Peraturan BKN No. 24/2017" 
+                             color="amber">
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200">
+                            <h4 class="font-bold text-amber-950 text-xs mb-1 flex items-center gap-1.5">
+                                <x-icon name="calendar-off" class="w-4 h-4 text-amber-700" />
+                                Ketentuan Pokok Hak Cuti Pegawai
+                            </h4>
+                            <p class="text-amber-900 text-[11px] leading-relaxed">
+                                Setiap PNS &amp; PPPK berhak atas cuti tahunan sebanyak <strong>12 hari kerja per tahun</strong> (setelah bekerja minimal 1 tahun terus-menerus). Permohonan diajukan secara elektronik minimal <strong>3 hari kerja sebelum pelaksanaan</strong> (kecuali Cuti Sakit mendadak).
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-amber-600 text-white flex items-center justify-center text-[10px]">1</span>
+                                Jenis Cuti &amp; Berkas Bukti Dukung
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-amber-200">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Cuti Sakit (&gt; 1 hari)</strong>
+                                    <span class="text-slate-600 text-[11px]">Wajib melampirkan Surat Keterangan Dokter dari Fasilitas Kesehatan / RS pemerintah.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Cuti Melahirkan</strong>
+                                    <span class="text-slate-600 text-[11px]">Berhak hingga 3 bulan (anak ke-1 s.d ke-3). Melampirkan surat rujukan/surat keterangan HPL dari dokter spesialis/bidan.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Cuti Karena Alasan Penting (CAP)</strong>
+                                    <span class="text-slate-600 text-[11px]">Untuk keperluan keluarga dekat sakit keras/meninggal, atau pernikahan yang sah. Wajib menyertakan bukti keterangan.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">2</span>
+                                Alur Persetujuan Bertingkat (Hirarki Jabatan)
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-emerald-200">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Tahap 1: Verifikasi Atasan Langsung</strong>
+                                    <span class="text-slate-600 text-[11px]">Atasan langsung (Ka Pokja/Kajur/Koorprodi/Kabag) memberikan pertimbangan teknis ketersediaan pengganti tugas.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Tahap 2: Pengesahan PPK / Dekan</strong>
+                                    <span class="text-slate-600 text-[11px]">Dekan / Wakil Dekan II menerbitkan Surat Keputusan Cuti resmi bertanda tangan elektronik QR Code.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </x-sop-modal>
+
+                <a href="{{ route('pengajuan-cuti.create') }}"
+                   class="inline-flex items-center rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-emerald-700 transition">
+                    + Ajukan Cuti Baru
+                </a>
+            </div>
         </div>
     </x-slot>
 

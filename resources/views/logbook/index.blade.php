@@ -11,6 +11,66 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
+                {{-- Tombol SOP Logbook --}}
+                <x-sop-modal title="SOP Pengisian & Verifikasi E-Logbook Kinerja" 
+                             buttonLabel="SOP & Panduan Logbook" 
+                             badge="Peraturan Rektor UNRI" 
+                             color="blue">
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-blue-50 border border-blue-200">
+                            <h4 class="font-bold text-blue-900 text-xs mb-1 flex items-center gap-1.5">
+                                <x-icon name="clipboard-check" class="w-4 h-4 text-blue-700" />
+                                Ketentuan Jam Kerja Efektif Harian
+                            </h4>
+                            <p class="text-blue-800 text-[11px] leading-relaxed">
+                                Sesuai PermenPAN-RB No. 6/2022 dan regulasi jam kerja ASN, setiap pegawai wajib mencatat aktivitas harian dengan target minimal <strong>7,5 jam (450 menit)</strong> per hari kerja reguler atau akumulasi <strong>37,5 jam per minggu</strong>.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">1</span>
+                                Alur untuk Pegawai (Pencatatan Aktivitas)
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-blue-200">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Langkah 1: Klik "+ Catat Aktivitas"</strong>
+                                    <span class="text-slate-600 text-[11px]">Pilih tanggal aktivitas, jam mulai dan jam selesai pelaksanaan tugas.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Langkah 2: Uraian Kegiatan &amp; Output Riil</strong>
+                                    <span class="text-slate-600 text-[11px]">Tuliskan uraian pekerjaan secara terukur (Contoh: <em>Memeriksa berkas usulan KGB 5 dosen</em>, output: <em>5 Dokumen</em>). Hindari kalimat umum seperti "Bekerja di kantor".</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Langkah 3: Unggah Bukti Dukung (Opsional/Disarankan)</strong>
+                                    <span class="text-slate-600 text-[11px]">Sertakan foto dokumentasi, tautan Google Drive, atau file PDF laporan pendukung.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">2</span>
+                                Alur untuk Pimpinan / Atasan Langsung (Verifikasi)
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-indigo-200">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Pemeriksaan Mingguan / Bulanan</strong>
+                                    <span class="text-slate-600 text-[11px]">Atasan langsung (Ka Pokja / Kajur / Koorprodi / Kabag / Wadek) memeriksa kesesuaian output dengan SKP jabatan.</span>
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Keputusan Verifikasi:</strong>
+                                    <span class="text-slate-600 text-[11px]">Atasan dapat memilih <strong>Setujui</strong> jika tugas terpenuhi, atau memberikan <strong>Catatan Revisi</strong> jika volume output kurang memadai.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-slate-100 text-slate-600 text-[11px]">
+                            <strong>📅 Batas Akhir Pelaporan:</strong> Rekap bulanan ditutup pada hari kerja terakhir setiap akhir bulan untuk keperluan pencairan tunjangan kinerja/remunerasi.
+                        </div>
+                    </div>
+                </x-sop-modal>
+
                 <a href="{{ route('logbook.export.pdf', ['bulan' => $month, 'tahun' => $year]) }}"
                    target="_blank"
                    class="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 transition">
