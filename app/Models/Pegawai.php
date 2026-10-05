@@ -243,6 +243,26 @@ class Pegawai extends Model
         return $this->hasMany(RiwayatPublikasi::class, 'pegawai_id')->orderBy('tahun_terbit', 'desc');
     }
 
+    public function talentAssessments(): HasMany
+    {
+        return $this->hasMany(TalentAssessment::class, 'pegawai_id')->orderBy('tanggal_asesmen', 'desc');
+    }
+
+    public function talentMappings(): HasMany
+    {
+        return $this->hasMany(TalentMapping::class, 'pegawai_id')->orderBy('tahun', 'desc');
+    }
+
+    public function latestTalentMapping(): HasOne
+    {
+        return $this->hasOne(TalentMapping::class, 'pegawai_id')->latestOfMany('tahun');
+    }
+
+    public function successionPlans(): HasMany
+    {
+        return $this->hasMany(SuccessionPlan::class, 'pegawai_id')->orderBy('tahun', 'desc');
+    }
+
     public function getSkpTahun(int $year): ?RiwayatSkp
     {
         return $this->riwayatSkp->firstWhere('tahun', $year);

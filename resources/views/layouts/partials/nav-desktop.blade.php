@@ -15,6 +15,9 @@
     <x-nav-link :href="route('pegawai.my-profile')" :active="request()->routeIs('pegawai.my-profile', 'pegawai.show')">
         👤 Profil Saya
     </x-nav-link>
+    <x-nav-link :href="route('manajemen-talenta.my-talent')" :active="request()->routeIs('manajemen-talenta.my-talent')">
+        🌟 Talenta Saya
+    </x-nav-link>
 @endif
 
 {{-- 3. Menu E-Cuti Pegawai (Terpadu Pengajuan & Persetujuan) --}}
@@ -320,6 +323,41 @@
                         ➕ Tambah Anjab Baru
                     </x-dropdown-link>
                 @endif
+            </x-slot>
+        </x-dropdown>
+    @endif
+
+    {{-- 5d. Dropdown Manajemen Talenta ASN (Khusus Dekan, Wadek, Kabag Umum, Ka Pokja & Admin) --}}
+    @if(Auth::user()->canAccessTalentManagement())
+        <x-dropdown align="left" width="w-64">
+            <x-slot name="trigger">
+                <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-700 hover:text-gray-900 hover:border-gray-300 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('manajemen-talenta.*') ? 'border-emerald-600 text-emerald-700 font-bold' : '' }}">
+                    <span>🎯 Manajemen Talenta</span>
+                    <svg class="ms-1.5 h-4 w-4 fill-current text-gray-400" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </x-slot>
+            <x-slot name="content">
+                <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                    Sistem Merit (PermenPAN 3/2020)
+                </div>
+                <x-dropdown-link :href="route('manajemen-talenta.index')" class="{{ request()->routeIs('manajemen-talenta.index') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
+                    📊 Matriks 9-Kotak ASN
+                </x-dropdown-link>
+                <x-dropdown-link :href="route('manajemen-talenta.rekap')" class="{{ request()->routeIs('manajemen-talenta.rekap') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
+                    📋 Rekap Data & Suksesi
+                </x-dropdown-link>
+                <x-dropdown-link :href="route('manajemen-talenta.suksesi.index')" class="{{ request()->routeIs('manajemen-talenta.suksesi.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
+                    👑 Rencana Suksesi Jabatan
+                </x-dropdown-link>
+                <div class="border-t border-gray-100 my-1"></div>
+                <div class="px-4 py-1.5 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                    Assessment Center BKN
+                </div>
+                <x-dropdown-link :href="route('manajemen-talenta.asesmen.index')" class="{{ request()->routeIs('manajemen-talenta.asesmen.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
+                    📝 Uji Kompetensi & Asesmen
+                </x-dropdown-link>
             </x-slot>
         </x-dropdown>
     @endif

@@ -16,6 +16,9 @@
         <x-responsive-nav-link :href="route('pegawai.my-profile')" :active="request()->routeIs('pegawai.my-profile', 'pegawai.show')">
             👤 Profil Saya
         </x-responsive-nav-link>
+        <x-responsive-nav-link :href="route('manajemen-talenta.my-talent')" :active="request()->routeIs('manajemen-talenta.my-talent')">
+            🌟 Talenta Saya
+        </x-responsive-nav-link>
     @endif
 
     {{-- E-Cuti --}}
@@ -199,6 +202,25 @@
                     ➕ Tambah Anjab Baru
                 </x-responsive-nav-link>
             @endif
+        @endif
+
+        {{-- Manajemen Talenta ASN (PermenPAN-RB No. 3/2020) --}}
+        @if(Auth::user()->canAccessTalentManagement())
+            <div class="px-4 pt-3 pb-1 text-xs font-bold text-emerald-700 uppercase tracking-wider">
+                🎯 Manajemen Talenta ASN
+            </div>
+            <x-responsive-nav-link :href="route('manajemen-talenta.index')" :active="request()->routeIs('manajemen-talenta.index')">
+                📊 Matriks 9-Kotak ASN
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('manajemen-talenta.rekap')" :active="request()->routeIs('manajemen-talenta.rekap')">
+                📋 Rekap Data & Suksesi
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('manajemen-talenta.suksesi.index')" :active="request()->routeIs('manajemen-talenta.suksesi.*')">
+                👑 Rencana Suksesi Jabatan
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('manajemen-talenta.asesmen.index')" :active="request()->routeIs('manajemen-talenta.asesmen.*')">
+                📝 Uji Kompetensi & Asesmen
+            </x-responsive-nav-link>
         @endif
     @endif
 

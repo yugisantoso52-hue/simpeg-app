@@ -251,6 +251,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Cek hak akses ke Dashboard Manajemen Talenta ASN (PermenPAN-RB No. 3/2020)
+     */
+    public function canAccessTalentManagement(): bool
+    {
+        return $this->canAccessExecutiveKepegawaianMenus();
+    }
+
+    /**
+     * Cek hak manajemen/kelola (Kalkulasi ulang batch, validasi status komite, input asesmen)
+     */
+    public function canManageTalentManagement(): bool
+    {
+        return $this->hasRole('admin') || $this->canManageAnjabAbk();
+    }
+
+    /**
      * Cek apakah user harus diarahkan ke Dashboard Manajerial (Eksekutif)
      */
     public function shouldShowManagerialDashboard(): bool

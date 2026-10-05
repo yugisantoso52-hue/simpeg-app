@@ -42,6 +42,11 @@ class Jabatan extends Model
         return $this->hasOne(AnalisisJabatan::class, 'jabatan_id');
     }
 
+    public function successionPlans()
+    {
+        return $this->hasMany(SuccessionPlan::class, 'jabatan_target_id');
+    }
+
     /**
      * Bobot hierarki jabatan untuk pengurutan struktur organisasi
      */

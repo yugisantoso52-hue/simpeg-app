@@ -33,6 +33,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Admin\AttendanceManageController;
 use App\Http\Controllers\LogbookController;
 use App\Http\Controllers\Admin\LogbookManageController;
+use App\Http\Controllers\TalentManagementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -94,6 +95,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::delete('/{id}', [LogbookController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/submit', [LogbookController::class, 'submit'])->name('submit');
     });
+
+    /* Transparansi Talenta Mandiri (Semua ASN) */
+    Route::get('/talenta-saya', [TalentManagementController::class, 'myTalent'])->name('manajemen-talenta.my-talent');
 
     // ======================================================================
     // ROUTE PEGAWAI BIASA (Akses Data Diri Sendiri)
@@ -277,6 +281,29 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::put('/anjab/{anjab}', [\App\Http\Controllers\AnjabController::class, 'update'])->name('anjab.update');
         Route::delete('/anjab/{anjab}', [\App\Http\Controllers\AnjabController::class, 'destroy'])->name('anjab.destroy');
         Route::get('/anjab/{anjab}/print', [\App\Http\Controllers\AnjabController::class, 'print'])->name('anjab.print');
+
+        /* ======================================================================
+         * MODUL MANAJEMEN TALENTA ASN (PermenPAN-RB No. 3/2020 & UU No. 20/2023)
+         * ====================================================================== */
+        Route::prefix('manajemen-talenta')->name('manajemen-talenta.')->group(function () {
+            Route::get('/', [TalentManagementController::class, 'index'])->name('index');
+            Route::get('/rekap', [TalentManagementController::class, 'rekap'])->name('rekap');
+            Route::post('/calculate', [TalentManagementController::class, 'calculate'])->name('calculate');
+            Route::get('/pegawai/{pegawai}', [TalentManagementController::class, 'show'])->name('show');
+            Route::post('/pegawai/{pegawai}/validasi', [TalentManagementController::class, 'validateStatus'])->name('validate');
+            
+            // Asesmen Kompetensi / Assessment Center BKN
+            Route::get('/asesmen', [TalentManagementController::class, 'asesmenIndex'])->name('asesmen.index');
+            Route::get('/asesmen/create', [TalentManagementController::class, 'asesmenCreate'])->name('asesmen.create');
+            Route::post('/asesmen', [TalentManagementController::class, 'storeAsesmen'])->name('asesmen.store');
+            Route::delete('/asesmen/{asesmen}', [TalentManagementController::class, 'destroyAsesmen'])->name('asesmen.destroy');
+
+            // Rencana Suksesi Jabatan & Job Matching Anjab
+            Route::get('/suksesi', [TalentManagementController::class, 'suksesiIndex'])->name('suksesi.index');
+            Route::get('/suksesi/jabatan/{jabatan}', [TalentManagementController::class, 'suksesiJabatan'])->name('suksesi.jabatan');
+            Route::post('/suksesi/nominasi', [TalentManagementController::class, 'storeSuksesiNominasi'])->name('suksesi.nominasi.store');
+            Route::delete('/suksesi/nominasi/{plan}', [TalentManagementController::class, 'destroySuksesiNominasi'])->name('suksesi.nominasi.destroy');
+        });
     });
 
     // ======================================================================
