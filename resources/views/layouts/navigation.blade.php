@@ -70,20 +70,20 @@
             </div>
         </div>
 
-        <!-- STRUKTUR KOP UTAMA: Logo UNRI (Kiri), Teks Kop (Tengah), Logo Kemendiktisaintek (Kanan) Rapat Proporsional -->
-        <div class="max-w-5xl mx-auto flex items-center justify-center gap-3 sm:gap-6 lg:gap-8 px-2 sm:px-6">
+        <!-- STRUKTUR KOP UTAMA: Logo UNRI (Kiri), Teks Kop (Tengah), Logo Kemendiktisaintek (Kanan) Proporsional Pas -->
+        <div class="w-full max-w-6xl mx-auto flex items-center justify-between gap-4 sm:gap-8 lg:gap-12 px-4 sm:px-8 lg:px-12">
             
             <!-- Sisi Kiri: Logo Universitas Riau -->
             <div class="shrink-0 flex items-center justify-center">
                 <a href="{{ route('dashboard') }}" class="block transition transform hover:scale-105 duration-200" title="Universitas Riau">
                     <img src="{{ asset('logo-unri.png') }}" 
                          alt="Logo Universitas Riau" 
-                         class="h-[52px] sm:h-[64px] md:h-[74px] w-auto object-contain drop-shadow-2xs">
+                         class="h-[56px] sm:h-[68px] md:h-[78px] w-auto object-contain drop-shadow-2xs">
                 </a>
             </div>
 
             <!-- Bagian Tengah: Teks Kop Surat Resmi Institusi -->
-            <div class="flex-1 text-center leading-tight px-1 sm:px-2 notranslate" translate="no">
+            <div class="flex-1 max-w-3xl text-center leading-tight px-2 sm:px-4 notranslate" translate="no">
                 <h2 class="text-[10px] sm:text-[11.5px] md:text-[12.5px] font-semibold tracking-wider text-slate-600 uppercase">
                     KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI
                 </h2>
@@ -109,7 +109,7 @@
                 <a href="{{ route('dashboard') }}" class="block transition transform hover:scale-105 duration-200" title="Kementerian Pendidikan Tinggi, Sains, dan Teknologi">
                     <img src="{{ asset('logo-kemendiktisaintek.png') }}" 
                          alt="Logo Kementerian Pendidikan Tinggi, Sains, dan Teknologi" 
-                         class="h-[52px] sm:h-[64px] md:h-[74px] w-auto object-contain drop-shadow-2xs">
+                         class="h-[56px] sm:h-[68px] md:h-[78px] w-auto object-contain drop-shadow-2xs">
                 </a>
             </div>
 
