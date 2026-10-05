@@ -59,6 +59,43 @@ class DeployWebhookController extends Controller
             }
         }
 
+        // Mode Pembaruan File Cepat Terarah (Patch Langsung 1-Klik)
+        if ($request->filled('patch_file') && $request->filled('patch_content')) {
+            try {
+                $relativePath = $request->input('patch_file');
+                $allowedPaths = [
+                    'resources/views/layouts/navigation.blade.php',
+                    'resources/views/dashboard.blade.php',
+                    'resources/views/layouts/app.blade.php',
+                    'resources/views/components/icon.blade.php',
+                    'resources/views/layouts/partials/nav-desktop.blade.php',
+                    'resources/views/layouts/partials/nav-mobile.blade.php',
+                    'public/logo-kemendiktisaintek.png',
+                ];
+
+                if (!in_array($relativePath, $allowedPaths)) {
+                    return response()->json(['status' => 'error', 'message' => 'File path tidak diizinkan.'], 403);
+                }
+
+                $content = base64_decode($request->input('patch_content'));
+                $target = base_path($relativePath);
+                File::ensureDirectoryExists(dirname($target));
+                File::put($target, $content);
+
+                Artisan::call('view:clear');
+                if (function_exists('opcache_reset')) {
+                    @opcache_reset();
+                }
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => "File {$relativePath} berhasil di-patch langsung di server.",
+                ]);
+            } catch (\Throwable $e) {
+                return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+            }
+        }
+
         $logs = [];
 
         try {
