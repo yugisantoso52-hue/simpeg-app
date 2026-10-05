@@ -1181,17 +1181,19 @@
                             </div>
 
                             {{-- Kolom Kanan (5 Kolom): Highlight Talent Pool Suksesi (Kotak 9 & 8) --}}
-                            <div class="lg:col-span-5 bg-gradient-to-br from-indigo-900 to-slate-900 rounded-2xl p-4 sm:p-5 text-white shadow-sm flex flex-col justify-between">
+                            <div class="lg:col-span-5 bg-slate-50/80 rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
                                 <div>
-                                    <div class="flex items-center justify-between border-b border-indigo-700/60 pb-3 mb-3">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-xl">🌟</span>
+                                    <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-3">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-base shrink-0 shadow-2xs">
+                                                🌟
+                                            </div>
                                             <div>
-                                                <h3 class="text-xs font-bold text-white uppercase tracking-wider">Top Talent Pool Suksesi</h3>
-                                                <p class="text-[11px] text-indigo-200">Kandidat Kotak IX & VIII Siap Promosi</p>
+                                                <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Top Talent Pool Suksesi</h3>
+                                                <p class="text-[11px] text-slate-500">Kandidat Kotak IX & VIII Siap Promosi</p>
                                             </div>
                                         </div>
-                                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/30 text-emerald-300 border border-emerald-400/30">
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
                                             {{ $countPromosi }} Calon
                                         </span>
                                     </div>
@@ -1199,25 +1201,25 @@
                                     @if($topTalentsPreview->count() > 0)
                                         <div class="space-y-2.5">
                                             @foreach($topTalentsPreview as $talent)
-                                                <a href="{{ route('manajemen-talenta.show', $talent->pegawai_id) }}" class="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition flex items-center justify-between group">
+                                                <a href="{{ route('manajemen-talenta.show', $talent->pegawai_id) }}" class="p-2.5 rounded-xl bg-white hover:bg-indigo-50/50 border border-slate-200 hover:border-indigo-300 transition flex items-center justify-between group shadow-2xs">
                                                     <div class="flex items-center gap-2.5 min-w-0">
-                                                        <div class="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                                                        <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
                                                             {{ substr($talent->pegawai?->nama ?? 'A', 0, 1) }}
                                                         </div>
                                                         <div class="min-w-0">
-                                                            <h4 class="text-xs font-bold text-white truncate group-hover:underline">
+                                                            <h4 class="text-xs font-bold text-slate-800 truncate group-hover:text-indigo-600">
                                                                 {{ $talent->pegawai?->nama_lengkap ?? $talent->pegawai?->nama ?? '-' }}
                                                             </h4>
-                                                            <p class="text-[10px] text-indigo-200 truncate">
+                                                            <p class="text-[10px] text-slate-500 truncate">
                                                                 {{ $talent->pegawai?->jabatan?->nama_jabatan ?? 'Pegawai' }}
                                                             </p>
                                                         </div>
                                                     </div>
                                                     <div class="text-right shrink-0 ml-2">
-                                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
                                                             K{{ $talent->kuadran_box }}
                                                         </span>
-                                                        <div class="text-[9px] text-slate-300 font-mono mt-0.5">
+                                                        <div class="text-[9px] text-slate-500 font-mono mt-0.5">
                                                             K:{{ number_format($talent->sumbu_kinerja_nilai, 0) }} P:{{ number_format($talent->sumbu_potensi_nilai, 0) }}
                                                         </div>
                                                     </div>
@@ -1225,18 +1227,27 @@
                                             @endforeach
                                         </div>
                                     @else
-                                        <div class="p-4 rounded-xl bg-white/5 border border-white/10 text-center text-xs text-indigo-200">
-                                            Belum ada kandidat di Kotak IX atau VIII pada periode evaluasi tahun {{ $talentSummary['tahun'] ?? date('Y') }}.
+                                        <div class="py-5 px-4 rounded-xl bg-white border border-dashed border-slate-300 text-center shadow-2xs">
+                                            <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-600 mx-auto flex items-center justify-center text-lg mb-2 border border-amber-200">
+                                                👑
+                                            </div>
+                                            <h4 class="text-xs font-bold text-slate-800">Belum Ada Kandidat di Kotak IX atau VIII</h4>
+                                            <p class="text-[11px] text-slate-500 mt-1 max-w-xs mx-auto leading-relaxed">
+                                                Pada periode tahun {{ $talentSummary['tahun'] ?? date('Y') }}, belum ada pegawai di kuadran siap promosi langsung.
+                                            </p>
+                                            <a href="{{ route('manajemen-talenta.asesmen.index') }}" class="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 transition">
+                                                <span>✍️</span> Catat Asesmen Kompetensi
+                                            </a>
                                         </div>
                                     @endif
                                 </div>
 
-                                <div class="pt-3 mt-3 border-t border-indigo-700/60 flex items-center justify-between">
-                                    <a href="{{ route('manajemen-talenta.suksesi.index') }}" class="text-xs font-bold text-emerald-300 hover:text-emerald-200 inline-flex items-center gap-1 group">
+                                <div class="pt-3 mt-3 border-t border-slate-200 flex items-center justify-between">
+                                    <a href="{{ route('manajemen-talenta.suksesi.index') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1 group">
                                         <span>Buka Job Matching Suksesi</span>
                                         <span class="group-hover:translate-x-1 transition-transform">→</span>
                                     </a>
-                                    <a href="{{ route('manajemen-talenta.index') }}" class="text-xs font-semibold text-slate-300 hover:text-white">
+                                    <a href="{{ route('manajemen-talenta.index') }}" class="text-xs font-semibold text-slate-500 hover:text-slate-800">
                                         Detail Matriks 9-Kotak
                                     </a>
                                 </div>
