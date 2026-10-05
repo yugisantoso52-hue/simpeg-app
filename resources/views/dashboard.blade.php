@@ -55,9 +55,11 @@
                                 <a href="{{ route('pegawai.edit', $p->id) }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs transition border border-white/30 hover:bg-white/30" style="background-color: rgba(255, 255, 255, 0.2) !important; color: #ffffff !important;" title="Perbarui Biodata & Berkas Pribadi">
                                     <span>✏️</span> Edit Biodata
                                 </a>
-                                <a href="{{ route('anjab.peta-jabatan') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs transition border border-white/30 hover:bg-white/30" style="background-color: rgba(255, 255, 255, 0.2) !important; color: #ffffff !important;" title="Lihat Struktur Organisasi & Peta Jabatan">
-                                    <span>🏛️</span> Peta Organisasi
-                                </a>
+                                @if(Auth::user()->canAccessAnjabAbk())
+                                    <a href="{{ route('anjab.peta-jabatan') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs transition border border-white/30 hover:bg-white/30" style="background-color: rgba(255, 255, 255, 0.2) !important; color: #ffffff !important;" title="Lihat Struktur Organisasi & Peta Jabatan">
+                                        <span>🏛️</span> Peta Organisasi
+                                    </a>
+                                @endif
                             @endif
                         </div>
                     </div>

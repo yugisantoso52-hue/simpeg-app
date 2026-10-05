@@ -212,11 +212,6 @@
             <x-icon name="file-text" class="w-4 h-4 text-teal-600" />
             <span>Katalog Dokumen Anjab</span>
         </x-responsive-nav-link>
-    @else
-        <x-responsive-nav-link :href="route('anjab.peta-jabatan')" :active="request()->routeIs('anjab.peta-jabatan*')" class="flex items-center gap-2">
-            <x-icon name="git-branch" class="w-4 h-4 text-indigo-600" />
-            <span>Peta Organisasi</span>
-        </x-responsive-nav-link>
     @endif
 
     {{-- Manajemen Talenta ASN --}}

@@ -325,13 +325,6 @@
             @endif
         </x-slot>
     </x-dropdown>
-@else
-    {{-- Tautan Ringkas Peta Jabatan untuk Pegawai Umum --}}
-    <a href="{{ route('anjab.peta-jabatan') }}" 
-       class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('anjab.peta-jabatan*') ? 'bg-indigo-50 text-indigo-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-        <x-icon name="git-branch" class="w-4 h-4 {{ request()->routeIs('anjab.peta-jabatan*') ? 'text-indigo-600' : 'text-slate-500' }}" />
-        <span>Peta Organisasi</span>
-    </a>
 @endif
 
 {{-- ============================================================== --}}
