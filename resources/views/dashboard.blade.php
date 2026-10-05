@@ -322,6 +322,84 @@
 
                 </div>
 
+                {{-- 🎯 STATUS PEMETAAN TALENTA ASN SAYA (PERMENPAN-RB NO. 3/2020) --}}
+                @if(isset($myTalentMapping) && $myTalentMapping)
+                    @php
+                        $boxNum = $myTalentMapping->kuadran_box;
+                        $isHigh = in_array($boxNum, [7, 8, 9]);
+                        $isMid  = in_array($boxNum, [4, 5, 6]);
+                        $themeBg = $isHigh ? 'bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100/50 border-emerald-200' : ($isMid ? 'bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-100/50 border-blue-200' : 'bg-gradient-to-r from-amber-50 via-orange-50 to-amber-100/50 border-amber-200');
+                        $badgeBg = $isHigh ? 'bg-emerald-600 text-white' : ($isMid ? 'bg-blue-600 text-white' : 'bg-amber-600 text-white');
+                    @endphp
+                    <div class="rounded-2xl border p-5 sm:p-6 shadow-sm {{ $themeBg }}">
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/60 pb-4 mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl {{ $isHigh ? 'bg-emerald-600 text-white' : ($isMid ? 'bg-blue-600 text-white' : 'bg-amber-600 text-white') }} flex items-center justify-center text-2xl shadow-sm shrink-0">
+                                    🎯
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="font-bold text-base text-slate-800">Status Pemetaan Talenta ASN Saya</h3>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $badgeBg }}">
+                                            Tahun {{ $myTalentMapping->tahun }}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-slate-600 mt-0.5">Berdasarkan Matriks Kuadran 9-Kotak PermenPAN-RB No. 3/2020 & UU No. 20/2023</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('manajemen-talenta.my-talent') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 transition shadow-sm">
+                                    <span>🔍</span> Buka Profil & Rekam Asesmen Lengkap →
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {{-- Kuadran Talenta --}}
+                            <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-slate-200/70 shadow-2xs">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Posisi Kuadran 9-Kotak</span>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-xl font-black text-slate-900">Kotak {{ $myTalentMapping->kuadran_box }}</span>
+                                    @if($myTalentMapping->is_suksesi_eligible)
+                                        <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                            👑 Talent Pool Suksesi
+                                        </span>
+                                    @endif
+                                </div>
+                                <p class="text-xs font-semibold text-slate-700 mt-1 line-clamp-1">{{ $myTalentMapping->box_name }}</p>
+                            </div>
+
+                            {{-- Sumbu Kinerja & Potensi --}}
+                            <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-slate-200/70 shadow-2xs">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Nilai Sumbu Evaluasi</span>
+                                <div class="grid grid-cols-2 gap-2 mt-1">
+                                    <div>
+                                        <div class="text-[10px] text-slate-500 font-semibold">Kinerja (X):</div>
+                                        <div class="text-base font-black text-blue-700">{{ number_format($myTalentMapping->sumbu_kinerja_nilai, 1) }} <span class="text-[10px] font-bold text-slate-500">({{ $myTalentMapping->sumbu_kinerja_kategori }})</span></div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[10px] text-slate-500 font-semibold">Potensi (Y):</div>
+                                        <div class="text-base font-black text-indigo-700">{{ number_format($myTalentMapping->sumbu_potensi_nilai, 1) }} <span class="text-[10px] font-bold text-slate-500">({{ $myTalentMapping->sumbu_potensi_kategori }})</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Rekomendasi Karier --}}
+                            <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-slate-200/70 shadow-2xs flex flex-col justify-between">
+                                <div>
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Rekomendasi Kebijakan Karier</span>
+                                    <p class="text-xs text-slate-700 mt-1 line-clamp-2" title="{{ $myTalentMapping->rekomendasi_kebijakan }}">
+                                        {{ $myTalentMapping->rekomendasi_kebijakan ?? 'Pengembangan kompetensi berkala sesuai kebutuhan jabatan.' }}
+                                    </p>
+                                </div>
+                                <div class="text-[10px] text-slate-500 mt-1">
+                                    Status: <span class="font-bold text-emerald-700">{{ $myTalentMapping->status_talenta }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 {{-- 🔔 PUSAT REMINDER KARIR PRIBADI SAYA 🔔 --}}
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                     <div class="flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
@@ -871,6 +949,302 @@
                         </div>
                     </a>
                 </div>
+
+                {{-- 🎯 MANAJEMEN TALENTA ASN & RENCANA SUKSESI JABATAN (PERMENPAN-RB NO. 3/2020) 🎯 --}}
+                @if(isset($talentSummary))
+                    @php
+                        $tBoxes = $talentSummary['boxes'] ?? [];
+                        $totalMapped = (int) ($talentSummary['total'] ?? 0);
+                        $countPromosi = (int) (($tBoxes[7]['count'] ?? 0) + ($tBoxes[8]['count'] ?? 0) + ($tBoxes[9]['count'] ?? 0));
+                        $countMid     = (int) (($tBoxes[4]['count'] ?? 0) + ($tBoxes[5]['count'] ?? 0) + ($tBoxes[6]['count'] ?? 0));
+                        $countLow     = (int) (($tBoxes[1]['count'] ?? 0) + ($tBoxes[2]['count'] ?? 0) + ($tBoxes[3]['count'] ?? 0));
+                        $pctPromosi   = $totalMapped > 0 ? round(($countPromosi / $totalMapped) * 100, 1) : 0;
+                        $pctMid       = $totalMapped > 0 ? round(($countMid / $totalMapped) * 100, 1) : 0;
+                        $pctLow       = $totalMapped > 0 ? round(($countLow / $totalMapped) * 100, 1) : 0;
+
+                        // Ambil representasi kandidat unggulan Kotak 9 & 8 untuk preview
+                        $topTalents = collect();
+                        if (isset($tBoxes[9]['items'])) {
+                            $topTalents = $topTalents->merge($tBoxes[9]['items']);
+                        }
+                        if (isset($tBoxes[8]['items'])) {
+                            $topTalents = $topTalents->merge($tBoxes[8]['items']);
+                        }
+                        $topTalentsPreview = $topTalents->take(4);
+                    @endphp
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+                        {{-- Header Eksekutif Talenta --}}
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-5 mb-6">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-700 to-indigo-600 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+                                    🎯
+                                </div>
+                                <div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">Manajemen Talenta ASN & Rencana Suksesi</h2>
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                                            PermenPAN-RB No. 3/2020
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                            Tahun {{ $talentSummary['tahun'] ?? date('Y') }}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                                        Pemetaan Sistem Merit berbasis Kuadran 9-Kotak (Sumbu Kinerja SKP × Sumbu Potensi/Kompetensi BKN).
+                                    </p>
+                                </div>
+                            </div>
+
+                            {{-- Tombol Navigasi Cepat --}}
+                            <div class="flex flex-wrap items-center gap-2 shrink-0">
+                                <a href="{{ route('manajemen-talenta.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition shadow-sm" title="Buka Tampilan Lengkap Matriks 9-Kotak">
+                                    <span>🎯</span> Matriks 9-Kotak
+                                </a>
+                                <a href="{{ route('manajemen-talenta.suksesi.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 transition" title="Kelola Pemetaan Calon Pemimpin & Job Matching">
+                                    <span>👑</span> Rencana Suksesi
+                                </a>
+                                <a href="{{ route('manajemen-talenta.rekap') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition" title="Tabel Rekap Data Talenta">
+                                    <span>📋</span> Rekap Data
+                                </a>
+                            </div>
+                        </div>
+
+                        {{-- 4 Kartu KPI Indikator Talenta ASN --}}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                            
+                            {{-- KPI 1: Talent Pool Siap Promosi (Kotak 7, 8, 9) --}}
+                            <a href="{{ route('manajemen-talenta.rekap', ['only_suksesi' => 1]) }}" class="group block p-4 rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-teal-50/50 hover:shadow-md transition">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-800">Talent Pool Siap Promosi</span>
+                                    <span class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-sm font-black shadow-xs">👑</span>
+                                </div>
+                                <div class="mt-2 flex items-baseline gap-2">
+                                    <span class="text-3xl font-black text-emerald-950">{{ $countPromosi }}</span>
+                                    <span class="text-xs font-bold text-emerald-700">ASN ({{ $pctPromosi }}%)</span>
+                                </div>
+                                <div class="w-full bg-emerald-200/70 rounded-full h-1.5 mt-2 overflow-hidden">
+                                    <div class="bg-emerald-600 h-1.5 rounded-full" style="width: {{ $pctPromosi }}%"></div>
+                                </div>
+                                <p class="text-[11px] text-emerald-700 mt-2 line-clamp-1 group-hover:underline">Kotak VII, VIII & IX (Prioritas Suksesi) →</p>
+                            </a>
+
+                            {{-- KPI 2: Kelompok Dipertahankan / Pengembangan (Kotak 4, 5, 6) --}}
+                            <a href="{{ route('manajemen-talenta.rekap') }}" class="group block p-4 rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50/80 to-indigo-50/50 hover:shadow-md transition">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-blue-800">Kelompok Pengembangan</span>
+                                    <span class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm font-black shadow-xs">📈</span>
+                                </div>
+                                <div class="mt-2 flex items-baseline gap-2">
+                                    <span class="text-3xl font-black text-blue-950">{{ $countMid }}</span>
+                                    <span class="text-xs font-bold text-blue-700">ASN ({{ $pctMid }}%)</span>
+                                </div>
+                                <div class="w-full bg-blue-200/70 rounded-full h-1.5 mt-2 overflow-hidden">
+                                    <div class="bg-blue-600 h-1.5 rounded-full" style="width: {{ $pctMid }}%"></div>
+                                </div>
+                                <p class="text-[11px] text-blue-700 mt-2 line-clamp-1 group-hover:underline">Kotak IV, V & VI (Fokus Diklat 20 JP) →</p>
+                            </a>
+
+                            {{-- KPI 3: Bimbingan & Konseling (Kotak 1, 2, 3) --}}
+                            <a href="{{ route('manajemen-talenta.rekap') }}" class="group block p-4 rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50/80 to-orange-50/50 hover:shadow-md transition">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-900">Bimbingan & Konseling</span>
+                                    <span class="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center text-sm font-black shadow-xs">⚠️</span>
+                                </div>
+                                <div class="mt-2 flex items-baseline gap-2">
+                                    <span class="text-3xl font-black text-amber-950">{{ $countLow }}</span>
+                                    <span class="text-xs font-bold text-amber-800">ASN ({{ $pctLow }}%)</span>
+                                </div>
+                                <div class="w-full bg-amber-200/70 rounded-full h-1.5 mt-2 overflow-hidden">
+                                    <div class="bg-amber-600 h-1.5 rounded-full" style="width: {{ $pctLow }}%"></div>
+                                </div>
+                                <p class="text-[11px] text-amber-800 mt-2 line-clamp-1 group-hover:underline">Kotak I, II & III (Penataan & Pembinaan) →</p>
+                            </a>
+
+                            {{-- KPI 4: Target Suksesi Jabatan Aktif --}}
+                            <a href="{{ route('manajemen-talenta.suksesi.index') }}" class="group block p-4 rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50/80 to-fuchsia-50/50 hover:shadow-md transition">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-purple-900">Rencana Suksesi Jabatan</span>
+                                    <span class="w-8 h-8 rounded-lg bg-purple-600 text-white flex items-center justify-center text-sm font-black shadow-xs">🏛️</span>
+                                </div>
+                                <div class="mt-2 flex items-baseline gap-2">
+                                    <span class="text-3xl font-black text-purple-950">{{ $totalSuccessionPlans ?? 0 }}</span>
+                                    <span class="text-xs font-bold text-purple-700">Jabatan Target</span>
+                                </div>
+                                <div class="text-[11px] text-slate-500 mt-2">
+                                    Total ASN Terpetakan: <strong class="text-slate-800">{{ $totalMapped }} ASN</strong>
+                                </div>
+                                <p class="text-[11px] text-purple-700 mt-1 line-clamp-1 group-hover:underline">Buka Pemetaan Suksesi Struktural →</p>
+                            </a>
+
+                        </div>
+
+                        {{-- Layout Dua Kolom: Mini Matriks 9-Kotak & Highlight Top Talent Pool --}}
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                            
+                            {{-- Kolom Kiri (7 Kolom): Mini Matriks Kuadran 9-Kotak Interaktif --}}
+                            <div class="lg:col-span-7 bg-slate-50/80 rounded-2xl border border-slate-200 p-4">
+                                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-200">
+                                    <div>
+                                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Mini Matriks Kuadran 9-Kotak ASN</h3>
+                                        <p class="text-[11px] text-slate-500">Klik pada kotak kuadran untuk melihat daftar nama pegawai</p>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
+                                        {{ $totalMapped }} Terpetakan
+                                    </span>
+                                </div>
+
+                                {{-- Grid 3x3 Mini Matriks --}}
+                                <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                                    
+                                    {{-- Baris 1: Potensi Tinggi (Y: Tinggi) --}}
+                                    {{-- Kotak 7 --}}
+                                    @php $cnt7 = $tBoxes[7]['count'] ?? 0; @endphp
+                                    <a href="{{ route('manajemen-talenta.rekap', ['kuadran' => 7]) }}" class="p-2.5 rounded-xl border {{ $cnt7 > 0 ? 'border-emerald-300 bg-emerald-100/70 hover:bg-emerald-200' : 'border-slate-200 bg-white hover:bg-slate-100' }} transition block group shadow-2xs">
+                                        <div class="text-[10px] font-bold text-slate-500 uppercase">Kotak VII</div>
+                                        <div class="text-xl font-black text-emerald-800 my-0.5">{{ $cnt7 }}</div>
+                                        <div class="text-[10px] font-semibold text-slate-700 line-clamp-1">K. Di Bawah | P. Tinggi</div>
+                                    </a>
+
+                                    {{-- Kotak 8 --}}
+                                    @php $cnt8 = $tBoxes[8]['count'] ?? 0; @endphp
+                                    <a href="{{ route('manajemen-talenta.rekap', ['kuadran' => 8]) }}" class="p-2.5 rounded-xl border {{ $cnt8 > 0 ? 'border-emerald-400 bg-emerald-200/80 hover:bg-emerald-300' : 'border-slate-200 bg-white hover:bg-slate-100' }} transition block group shadow-2xs">
+                                        <div class="text-[10px] font-bold text-emerald-800 uppercase">Kotak VIII</div>
+                                        <div class="text-xl font-black text-emerald-900 my-0.5">{{ $cnt8 }}</div>
+                                        <div class="text-[10px] font-semibold text-emerald-900 line-clamp-1">K. Sesuai | P. Tinggi</div>
+                                    </a>
+
+                                    {{-- Kotak 9 (Bintang Suksesi) --}}
+                                    @php $cnt9 = $tBoxes[9]['count'] ?? 0; @endphp
+                                    <a href="{{ route('manajemen-talenta.rekap', ['kuadran' => 9]) }}" class="p-2.5 rounded-xl border border-emerald-500 bg-emerald-600 hover:bg-emerald-700 text-white transition block group shadow-sm">
+                                        <div class="text-[10px] font-bold text-emerald-100 uppercase flex items-center justify-center gap-1"><span>👑</span> Kotak IX</div>
+                                        <div class="text-xl font-black text-white my-0.5">{{ $cnt9 }}</div>
+                                        <div class="text-[10px] font-bold text-emerald-50 line-clamp-1">K. Di Atas | P. Tinggi</div>
+                                    </a>
+
+                                    {{-- Baris 2: Potensi Sedang (Y: Sedang) --}}
+                                    {{-- Kotak 4 --}}
+                                    @php $cnt4 = $tBoxes[4]['count'] ?? 0; @endphp
+                                    <a href="{{ route('manajemen-talenta.rekap', ['kuadran' => 4]) }}" class="p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 transition block group shadow-2xs">
+                                        <div class="text-[10px] font-bold text-slate-500 uppercase">Kotak IV</div>
+                                        <div class="text-xl font-black text-slate-800 my-0.5">{{ $cnt4 }}</div>
+                                        <div class="text-[10px] font-semibold text-slate-600 line-clamp-1">K. Di Bawah | P. Sedang</div>
+                                    </a>
+
+                                    {{-- Kotak 5 --}}
+                                    @php $cnt5 = $tBoxes[5]['count'] ?? 0; @endphp
+                                    <a href="{{ route('manajemen-talenta.rekap', ['kuadran' => 5]) }}" class="p-2.5 rounded-xl border border-blue-200 bg-blue-50/70 hover:bg-blue-100 transition block group shadow-2xs">
+                                        <div class="text-[10px] font-bold text-blue-700 uppercase">Kotak V</div>
+                                        <div class="text-xl font-black text-blue-900 my-0.5">{{ $cnt5 }}</div>
+                                        <div class="text-[10px] font-semibold text-blue-800 line-clamp-1">K. Sesuai | P. Sedang</div>
+                                    </a>
+
+                                    {{-- Kotak 6 --}}
+                                    @php $cnt6 = $tBoxes[6]['count'] ?? 0; @endphp
+                                    <a href="{{ route('manajemen-talenta.rekap', ['kuadran' => 6]) }}" class="p-2.5 rounded-xl border border-teal-200 bg-teal-50/70 hover:bg-teal-100 transition block group shadow-2xs">
+                                        <div class="text-[10px] font-bold text-teal-700 uppercase">Kotak VI</div>
+                                        <div class="text-xl font-black text-teal-900 my-0.5">{{ $cnt6 }}</div>
+                                        <div class="text-[10px] font-semibold text-teal-800 line-clamp-1">K. Di Atas | P. Sedang</div>
+                                    </a>
+
+                                    {{-- Baris 3: Potensi Rendah (Y: Rendah) --}}
+                                    {{-- Kotak 1 --}}
+                                    @php $cnt1 = $tBoxes[1]['count'] ?? 0; @endphp
+                                    <a href="{{ route('manajemen-talenta.rekap', ['kuadran' => 1]) }}" class="p-2.5 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100 transition block group shadow-2xs">
+                                        <div class="text-[10px] font-bold text-rose-700 uppercase">Kotak I</div>
+                                        <div class="text-xl font-black text-rose-900 my-0.5">{{ $cnt1 }}</div>
+                                        <div class="text-[10px] font-semibold text-rose-800 line-clamp-1">K. Di Bawah | P. Rendah</div>
+                                    </a>
+
+                                    {{-- Kotak 2 --}}
+                                    @php $cnt2 = $tBoxes[2]['count'] ?? 0; @endphp
+                                    <a href="{{ route('manajemen-talenta.rekap', ['kuadran' => 2]) }}" class="p-2.5 rounded-xl border border-amber-200 bg-amber-50/70 hover:bg-amber-100 transition block group shadow-2xs">
+                                        <div class="text-[10px] font-bold text-amber-700 uppercase">Kotak II</div>
+                                        <div class="text-xl font-black text-amber-900 my-0.5">{{ $cnt2 }}</div>
+                                        <div class="text-[10px] font-semibold text-amber-800 line-clamp-1">K. Sesuai | P. Rendah</div>
+                                    </a>
+
+                                    {{-- Kotak 3 --}}
+                                    @php $cnt3 = $tBoxes[3]['count'] ?? 0; @endphp
+                                    <a href="{{ route('manajemen-talenta.rekap', ['kuadran' => 3]) }}" class="p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 transition block group shadow-2xs">
+                                        <div class="text-[10px] font-bold text-slate-500 uppercase">Kotak III</div>
+                                        <div class="text-xl font-black text-slate-800 my-0.5">{{ $cnt3 }}</div>
+                                        <div class="text-[10px] font-semibold text-slate-600 line-clamp-1">K. Di Atas | P. Rendah</div>
+                                    </a>
+
+                                </div>
+
+                                <div class="flex items-center justify-between text-[11px] text-slate-500 mt-3 pt-2 border-t border-slate-200">
+                                    <span>◄ Sumbu X: Kinerja (Rendah → Tinggi) ►</span>
+                                    <span>▲ Sumbu Y: Potensi (Tinggi di Atas)</span>
+                                </div>
+                            </div>
+
+                            {{-- Kolom Kanan (5 Kolom): Highlight Talent Pool Suksesi (Kotak 9 & 8) --}}
+                            <div class="lg:col-span-5 bg-gradient-to-br from-indigo-900 to-slate-900 rounded-2xl p-4 sm:p-5 text-white shadow-sm flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between border-b border-indigo-700/60 pb-3 mb-3">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xl">🌟</span>
+                                            <div>
+                                                <h3 class="text-xs font-bold text-white uppercase tracking-wider">Top Talent Pool Suksesi</h3>
+                                                <p class="text-[11px] text-indigo-200">Kandidat Kotak IX & VIII Siap Promosi</p>
+                                            </div>
+                                        </div>
+                                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/30 text-emerald-300 border border-emerald-400/30">
+                                            {{ $countPromosi }} Calon
+                                        </span>
+                                    </div>
+
+                                    @if($topTalentsPreview->count() > 0)
+                                        <div class="space-y-2.5">
+                                            @foreach($topTalentsPreview as $talent)
+                                                <a href="{{ route('manajemen-talenta.show', $talent->pegawai_id) }}" class="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition flex items-center justify-between group">
+                                                    <div class="flex items-center gap-2.5 min-w-0">
+                                                        <div class="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                                                            {{ substr($talent->pegawai?->nama ?? 'A', 0, 1) }}
+                                                        </div>
+                                                        <div class="min-w-0">
+                                                            <h4 class="text-xs font-bold text-white truncate group-hover:underline">
+                                                                {{ $talent->pegawai?->nama_lengkap ?? $talent->pegawai?->nama ?? '-' }}
+                                                            </h4>
+                                                            <p class="text-[10px] text-indigo-200 truncate">
+                                                                {{ $talent->pegawai?->jabatan?->nama_jabatan ?? 'Pegawai' }}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-right shrink-0 ml-2">
+                                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                                                            K{{ $talent->kuadran_box }}
+                                                        </span>
+                                                        <div class="text-[9px] text-slate-300 font-mono mt-0.5">
+                                                            K:{{ number_format($talent->sumbu_kinerja_nilai, 0) }} P:{{ number_format($talent->sumbu_potensi_nilai, 0) }}
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <div class="p-4 rounded-xl bg-white/5 border border-white/10 text-center text-xs text-indigo-200">
+                                            Belum ada kandidat di Kotak IX atau VIII pada periode evaluasi tahun {{ $talentSummary['tahun'] ?? date('Y') }}.
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <div class="pt-3 mt-3 border-t border-indigo-700/60 flex items-center justify-between">
+                                    <a href="{{ route('manajemen-talenta.suksesi.index') }}" class="text-xs font-bold text-emerald-300 hover:text-emerald-200 inline-flex items-center gap-1 group">
+                                        <span>Buka Job Matching Suksesi</span>
+                                        <span class="group-hover:translate-x-1 transition-transform">→</span>
+                                    </a>
+                                    <a href="{{ route('manajemen-talenta.index') }}" class="text-xs font-semibold text-slate-300 hover:text-white">
+                                        Detail Matriks 9-Kotak
+                                    </a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                @endif
 
                 {{-- ⚖️ ANALISIS JABATAN & KEBUTUHAN FORMASI PEGAWAI (ANJAB & ABK) ⚖️ --}}
                 @if(isset($abkSummary))

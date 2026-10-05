@@ -8,9 +8,12 @@ use App\Models\Logbook;
 use App\Models\Attendance;
 use App\Models\AnalisisJabatan;
 use App\Models\Jabatan;
+use App\Models\TalentMapping;
+use App\Models\SuccessionPlan;
 use App\Services\DashboardService;
 use App\Services\LogbookService;
 use App\Services\PegawaiCompletenessService;
+use App\Services\TalentScoringService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -64,6 +67,11 @@ class DashboardController extends Controller
                 $now = Carbon::now('Asia/Jakarta');
                 $data['myLogbookStats'] = $logbookService->getPegawaiStatistics($pegawaiId, $now->month, $now->year);
                 $data['myRecentLogbooks'] = Logbook::where('pegawai_id', $pegawaiId)->latest('tanggal')->latest('jam_mulai')->take(4)->get();
+
+                // Status Kuadran Talenta Mandiri (PermenPAN-RB No. 3/2020)
+                $data['myTalentMapping'] = TalentMapping::where('pegawai_id', $pegawaiId)
+                    ->orderByDesc('tahun')
+                    ->first();
             }
         }
 
@@ -141,6 +149,15 @@ class DashboardController extends Controller
             $data['todayPresentCount'] = Attendance::whereDate('attendance_date', $now->toDateString())->count();
             $data['adminLogbookStats'] = app(LogbookService::class)->getAdminStatistics($now->month, $now->year, null, $bawahanIds);
             $data['isAtasan'] = $isAtasan;
+
+            // 🎯 Ringkasan Eksekutif Manajemen Talenta ASN (PermenPAN-RB No. 3/2020)
+            $talentScoringService = app(TalentScoringService::class);
+            $currentYear = (int) $now->year;
+            if (!TalentMapping::where('tahun', $currentYear)->exists()) {
+                $talentScoringService->batchCalculate($currentYear);
+            }
+            $data['talentSummary'] = $talentScoringService->getNineBoxDistribution($currentYear);
+            $data['totalSuccessionPlans'] = SuccessionPlan::count();
         }
 
         return view('dashboard', $data);
