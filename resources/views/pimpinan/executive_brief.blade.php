@@ -4,15 +4,15 @@
             <div>
                 <div class="flex items-center gap-2">
                     <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                        Bahan Paparan Pimpinan
+                        Bahan Paparan Pimpinan Dekanat
                     </span>
                     <span class="text-xs text-slate-500 font-mono">T.A. {{ $year }} / Semester {{ date('n') >= 7 ? 'Ganjil' : 'Genap' }}</span>
                 </div>
                 <h1 class="text-2xl font-black text-slate-900 mt-1 flex items-center gap-2">
-                    <span>🎯</span> Lembar Paparan Eksekutif (Executive Brief)
+                    <span>🎯</span> Paparan Transformasi Digital Kepegawaian (SIKAP FKp UNRI)
                 </h1>
                 <p class="text-xs text-slate-600 mt-0.5">
-                    Ringkasan Strategis Manajemen SDM, Formasi ABK, Radar Pensiun, dan Kesiapan Sistem Merit FKp UNRI
+                    Pengenalan Konsep, Garis Besar Arsitektur, dan Penjelasan Fitur Terpadu Manajemen SDM Fakultas Keperawatan
                 </p>
             </div>
 
@@ -34,468 +34,496 @@
         </div>
     </x-slot>
 
-    {{-- Gaya Cetak (Print CSS) --}}
+    {{-- Gaya Khusus Cetak & Tampilan Presisi --}}
     <style>
         @media print {
             nav, header, .no-print, footer, #sidebar { display: none !important; }
-            body { background: white !important; color: black !important; font-size: 11pt !important; margin: 0 !important; }
+            body { background: white !important; color: #0f172a !important; font-size: 10pt !important; margin: 0 !important; }
             .print-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important; }
+            .print-card { border: 1px solid #cbd5e1 !important; break-inside: avoid; margin-bottom: 14px !important; box-shadow: none !important; }
             .page-break { page-break-before: always; }
-            .print-header { display: flex !important; }
-            .card-slide { border: 1px solid #cbd5e1 !important; break-inside: avoid; }
+            .print-hidden { display: none !important; }
         }
     </style>
 
-    <div class="py-6" x-data="{ activeTab: 'semua', showTalkingPoints: true }">
+    <div class="py-6" x-data="{ activeSection: 'all', showSpeakerNotes: true }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 print-container">
 
-            {{-- KOP INSTANSI RESMI (Tampil Khusus Saat Cetak / Header Rapat) --}}
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6 notranslate" translate="no">
-                <div class="flex items-center gap-4">
-                    <img src="{{ asset('logo-unri.png') }}" alt="Logo UNRI" class="h-16 w-auto object-contain shrink-0">
-                    <div>
-                        <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
-                            Kementerian Pendidikan Tinggi, Sains, dan Teknologi
-                        </p>
-                        <h2 class="text-base sm:text-lg font-black text-[#007a3d] uppercase tracking-tight">
-                            Universitas Riau — Fakultas Keperawatan
-                        </h2>
-                        <p class="text-xs font-semibold text-slate-700 mt-0.5">
-                            Sistem Informasi Kepegawaian &amp; Kinerja Aparatur (SIKAP) • Bahan Sidang/Paparan Pimpinan
-                        </p>
+            {{-- ========================================================================= --}}
+            {{-- KOP SURAT & IDENTITAS RESMI PRESENTASI                                   --}}
+            {{-- ========================================================================= --}}
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs print-card notranslate" translate="no">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-slate-200 pb-5">
+                    <div class="flex items-center gap-4 text-center md:text-left">
+                        <img src="{{ asset('logo-unri.png') }}" alt="Logo UNRI" class="h-16 w-auto object-contain shrink-0 mx-auto md:mx-0">
+                        <div>
+                            <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
+                                Kementerian Pendidikan Tinggi, Sains, dan Teknologi
+                            </p>
+                            <h2 class="text-base sm:text-lg font-black text-[#007a3d] uppercase tracking-tight">
+                                Universitas Riau — Fakultas Keperawatan
+                            </h2>
+                            <p class="text-xs font-semibold text-slate-700 mt-0.5">
+                                Sistem Informasi Kepegawaian &amp; Kinerja Aparatur (SIKAP) • Bahan Paparan Sidang Pimpinan
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="text-center md:text-right text-xs text-slate-500 shrink-0">
+                        <div><strong>Tanggal Paparan:</strong> {{ \Carbon\Carbon::now('Asia/Jakarta')->translatedFormat('d F Y') }}</div>
+                        <div><strong>Pemapar:</strong> Pengelola Kepegawaian &amp; Sistem TI FKp UNRI</div>
+                        <div class="mt-1">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                Dokumen Resmi Dekanat
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="text-left md:text-right text-xs text-slate-500 shrink-0">
-                    <div><strong>Tanggal Rilis:</strong> {{ \Carbon\Carbon::now('Asia/Jakarta')->translatedFormat('d F Y') }}</div>
-                    <div><strong>Disusun Oleh:</strong> Tim Pengelola Kepegawaian &amp; TI</div>
-                    <div class="mt-1">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">
-                            Status Data: Sinkronisasi Real-Time
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            {{-- 1. KILAS ANGKA STRATEGIS DEKANAT (KPI HIGHLIGHTS) --}}
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total SDM Aktif</div>
-                    <div class="text-2xl font-black text-slate-800 mt-1">{{ $kpis['total_aktif'] ?? 0 }}</div>
-                    <div class="text-[11px] text-blue-600 font-semibold mt-0.5">
-                        {{ $kpis['total_dosen'] ?? 0 }} Dosen • {{ $kpis['total_tendik'] ?? 0 }} Tendik
-                    </div>
-                </div>
-
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Kebutuhan Formasi</div>
-                    <div class="text-2xl font-black text-indigo-700 mt-1">{{ $totalKebutuhanFormasi }}</div>
-                    <div class="text-[11px] text-slate-500 font-medium mt-0.5">
-                        Kebutuhan Riil ABK (WKE)
-                    </div>
-                </div>
-
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Defisit Pegawai</div>
-                    <div class="text-2xl font-black text-rose-600 mt-1">{{ $defisitJabatan->count() }} <span class="text-xs font-normal">Posisi</span></div>
-                    <div class="text-[11px] text-rose-700 font-bold mt-0.5">
-                        Prioritas Formasi Baru
-                    </div>
-                </div>
-
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Radar Pensiun (3 Th)</div>
-                    <div class="text-2xl font-black text-amber-600 mt-1">
-                        {{ count($retirementRadar['projection_1_year'] ?? []) + count($retirementRadar['projection_2_years'] ?? []) + count($retirementRadar['projection_3_years'] ?? []) }}
-                    </div>
-                    <div class="text-[11px] text-amber-700 font-medium mt-0.5">
-                        SDM Memasuki BUP
-                    </div>
-                </div>
-
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Talent Pool (K7-K9)</div>
-                    <div class="text-2xl font-black text-emerald-600 mt-1">{{ $talentPoolCount }} <span class="text-xs font-normal">Pegawai</span></div>
-                    <div class="text-[11px] text-emerald-700 font-semibold mt-0.5">
-                        Kesiapan Suksesi Karir
-                    </div>
-                </div>
-
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Disiplin Kehadiran</div>
-                    <div class="text-2xl font-black text-slate-800 mt-1">{{ $kpis['presensi_rate'] ?? $kpis['on_time_rate'] ?? 0 }}%</div>
-                    <div class="text-[11px] text-slate-500 font-medium mt-0.5">
-                        Tingkat Tepat Waktu
-                    </div>
+                {{-- Ringkasan Eksekutif Judul --}}
+                <div class="pt-5 text-center md:text-left">
+                    <h3 class="text-lg sm:text-xl font-black text-slate-900 leading-tight">
+                        Transformasi Tata Kelola Kepegawaian: Dari Manual Menuju Digital Terpadu Berbasis Kedaulatan Data Fakultas
+                    </h3>
+                    <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                        Membangun sistem mandiri tingkat fakultas yang menjembatani kebutuhan operasional harian Dosen, Tenaga Kependidikan, dan Pimpinan Dekanat yang selama ini terfragmentasi serta melengkapi sistem kepegawaian nasional.
+                    </p>
                 </div>
             </div>
 
-            {{-- NAVIGASI TAB MODUS PRESENTASI (NO PRINT) --}}
+            {{-- NAVIGASI TAB MODUS PRESENTASI (HANYA TAMPIL DI LAYAR) --}}
             <div class="flex flex-wrap items-center justify-between gap-3 no-print bg-slate-100 p-2 rounded-2xl">
                 <div class="flex flex-wrap items-center gap-1.5">
-                    <button type="button" @click="activeTab = 'semua'" :class="activeTab === 'semua' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3.5 py-1.5 rounded-xl text-xs transition cursor-pointer">
-                        📑 Semua Pilar
+                    <button type="button" @click="activeSection = 'all'" :class="activeSection === 'all' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3.5 py-1.5 rounded-xl text-xs transition cursor-pointer">
+                        📑 Tampilkan Semua Paparan
                     </button>
-                    <button type="button" @click="activeTab = 'peta'" :class="activeTab === 'peta' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3.5 py-1.5 rounded-xl text-xs transition cursor-pointer">
-                        1. Peta Formasi &amp; ABK
+                    <button type="button" @click="activeSection = 'urgensi'" :class="activeSection === 'urgensi' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3.5 py-1.5 rounded-xl text-xs transition cursor-pointer">
+                        1. Latar Belakang &amp; Urgensi
                     </button>
-                    <button type="button" @click="activeTab = 'pensiun'" :class="activeTab === 'pensiun' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3.5 py-1.5 rounded-xl text-xs transition cursor-pointer">
-                        2. Radar Pensiun (BUP)
+                    <button type="button" @click="activeSection = 'arsitektur'" :class="activeSection === 'arsitektur' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3.5 py-1.5 rounded-xl text-xs transition cursor-pointer">
+                        2. Garis Besar Aplikasi SIKAP
                     </button>
-                    <button type="button" @click="activeTab = 'talenta'" :class="activeTab === 'talenta' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3.5 py-1.5 rounded-xl text-xs transition cursor-pointer">
-                        3. Sistem Merit 9-Kotak
+                    <button type="button" @click="activeSection = 'fitur'" :class="activeSection === 'fitur' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3.5 py-1.5 rounded-xl text-xs transition cursor-pointer">
+                        3. Rincian Fitur &amp; Menu
                     </button>
-                    <button type="button" @click="activeTab = 'kinerja'" :class="activeTab === 'kinerja' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3.5 py-1.5 rounded-xl text-xs transition cursor-pointer">
-                        4. Disiplin &amp; Logbook
+                    <button type="button" @click="activeSection = 'manfaat'" :class="activeSection === 'manfaat' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3.5 py-1.5 rounded-xl text-xs transition cursor-pointer">
+                        4. Nilai Tambah &amp; Manfaat
                     </button>
-                    <button type="button" @click="activeTab = 'layanan'" :class="activeTab === 'layanan' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3.5 py-1.5 rounded-xl text-xs transition cursor-pointer">
-                        5. E-Cuti &amp; Digitalisasi
+                    <button type="button" @click="activeSection = 'alur'" :class="activeSection === 'alur' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3.5 py-1.5 rounded-xl text-xs transition cursor-pointer">
+                        5. Panduan Alur Bicara (15 Menit)
                     </button>
                 </div>
 
                 <div class="flex items-center gap-2">
                     <label class="inline-flex items-center gap-2 text-xs text-slate-700 cursor-pointer font-medium select-none">
-                        <input type="checkbox" x-model="showTalkingPoints" class="rounded text-indigo-600 focus:ring-indigo-500">
-                        <span>Tampilkan Catatan Bicara (*Talking Points*)</span>
+                        <input type="checkbox" x-model="showSpeakerNotes" class="rounded text-emerald-600 focus:ring-emerald-500">
+                        <span>Tampilkan Catatan Bicara (*Speaker Talking Points*)</span>
                     </label>
                 </div>
             </div>
 
             {{-- ========================================================================= --}}
-            {{-- PILAR 1: PETA JABATAN & REKAPITULASI KEBUTUHAN FORMASI ABK               --}}
+            {{-- 1. LATAR BELAKANG & URGENSI: MENGAPA FAKULTAS BUTUH APLIKASI SIKAP?       --}}
             {{-- ========================================================================= --}}
-            <div x-show="activeTab === 'semua' || activeTab === 'peta'" class="card-slide bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div x-show="activeSection === 'all' || activeSection === 'urgensi'" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs print-card space-y-4">
+                <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
                     <div>
-                        <div class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Pilar 1 — Landasan Kebijakan SDM</div>
+                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Bagian I — Latar Belakang &amp; Analisis Kebutuhan</span>
                         <h3 class="text-lg font-black text-slate-900 flex items-center gap-2 mt-0.5">
-                            <span>🏛️</span> Peta Jabatan &amp; Analisis Beban Kerja (PermenPAN-RB No. 1/2020)
+                            <span>🔍</span> Mengapa Fakultas Keperawatan Butuh Sistem Sendiri (SIKAP)?
                         </h3>
                     </div>
-                    <a href="{{ route('anjab.peta-jabatan') }}" target="_blank" class="no-print text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1">
-                        Buka Bagan Interaktif &rarr;
-                    </a>
-                </div>
-
-                {{-- Catatan Bicara Pimpinan --}}
-                <div x-show="showTalkingPoints" class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-xs text-indigo-950 space-y-1.5">
-                    <div class="font-bold text-indigo-900 flex items-center gap-1.5">
-                        <x-icon name="volume-2" class="w-4 h-4 text-indigo-700" />
-                        Poin Pembicaraan untuk Pimpinan (Talking Points):
-                    </div>
-                    <p class="leading-relaxed">
-                        <em>"Bapak Dekan dan Pimpinan sekalian, sistem SIKAP telah mengkalkulasi beban kerja seluruh jabatan struktural dan fungsional di lingkungan FKp UNRI berdasarkan standar 1.250 jam kerja efektif per tahun. Dari perhitungan ini, kita memiliki data akurat mengenai jabatan mana saja yang mengalami defisit SDM. <strong>Data ini adalah bahan resmi yang sangat kuat untuk kita ajukan saat rapat usulan penambahan formasi CPNS dan PPPK ke Rektorat UNRI dan Kementerian.</strong>"</em>
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    {{-- Rekap Status Formasi --}}
-                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3">
-                        <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Ringkasan Formasi FKp UNRI</h4>
-                        <div class="space-y-2 text-xs">
-                            <div class="flex justify-between items-center py-1.5 border-b border-slate-200">
-                                <span class="text-slate-600">Total Kebutuhan Formasi (ABK):</span>
-                                <strong class="font-bold text-slate-900">{{ $totalKebutuhanFormasi }} Orang</strong>
-                            </div>
-                            <div class="flex justify-between items-center py-1.5 border-b border-slate-200">
-                                <span class="text-slate-600">Bezetting Pegawai Aktif Riil:</span>
-                                <strong class="font-bold text-slate-900">{{ $kpis['total_aktif'] ?? 0 }} Orang</strong>
-                            </div>
-                            <div class="flex justify-between items-center py-1.5 border-b border-slate-200">
-                                <span class="text-rose-700 font-medium">Jabatan Mengalami Kekurangan (Defisit):</span>
-                                <span class="px-2 py-0.5 rounded-full font-bold bg-rose-100 text-rose-800 text-[11px]">{{ $defisitJabatan->count() }} Jabatan</span>
-                            </div>
-                            <div class="flex justify-between items-center py-1.5">
-                                <span class="text-emerald-700 font-medium">Jabatan Terpenuhi Ideal:</span>
-                                <span class="px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 text-[11px]">{{ $idealJabatan->count() }} Jabatan</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Daftar Posisi Defisit Prioritas --}}
-                    <div class="lg:col-span-2 overflow-x-auto">
-                        <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2">
-                            Daftar Posisi Jabatan Defisit (Rekomendasi Usulan Formasi Baru)
-                        </h4>
-                        <table class="w-full text-xs text-left border border-slate-200 rounded-lg overflow-hidden">
-                            <thead class="bg-slate-100 text-slate-700 font-bold">
-                                <tr>
-                                    <th class="p-2.5">Nama Jabatan</th>
-                                    <th class="p-2.5">Unit Penempatan</th>
-                                    <th class="p-2.5 text-center">Bezetting</th>
-                                    <th class="p-2.5 text-center">Kebutuhan</th>
-                                    <th class="p-2.5 text-center">Selisih</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100">
-                                @forelse($defisitJabatan->take(6) as $dj)
-                                    <tr class="hover:bg-slate-50">
-                                        <td class="p-2.5 font-semibold text-slate-900">{{ $dj->jabatan->nama_jabatan ?? 'Jabatan' }}</td>
-                                        <td class="p-2.5 text-slate-600">{{ $dj->unitKerja->nama_unit ?? 'Fakultas Keperawatan' }}</td>
-                                        <td class="p-2.5 text-center font-bold text-slate-700">{{ $dj->bezetting }}</td>
-                                        <td class="p-2.5 text-center font-bold text-indigo-700">{{ $dj->formasi_pembulatan }}</td>
-                                        <td class="p-2.5 text-center font-bold text-rose-600 bg-rose-50/50">
-                                            {{ $dj->bezetting - $dj->formasi_pembulatan }}
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="p-3 text-center text-slate-400">Seluruh formasi jabatan saat ini dalam status ideal.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            {{-- ========================================================================= --}}
-            {{-- PILAR 2: RADAR BATAS USIA PENSIUN (BUP) & REGENERASI SDM                 --}}
-            {{-- ========================================================================= --}}
-            <div x-show="activeTab === 'semua' || activeTab === 'pensiun'" class="card-slide bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div>
-                        <div class="text-xs font-bold text-amber-600 uppercase tracking-wider">Pilar 2 — Mitigasi Risiko SDM</div>
-                        <h3 class="text-lg font-black text-slate-900 flex items-center gap-2 mt-0.5">
-                            <span>⏳</span> Radar Batas Usia Pensiun (BUP) &amp; Perencanaan Suksesi
-                        </h3>
-                    </div>
-                    <span class="text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-full">
-                        Proyeksi 1 s.d 3 Tahun
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                        Manual &rarr; Digital
                     </span>
                 </div>
 
-                {{-- Catatan Bicara Pimpinan --}}
-                <div x-show="showTalkingPoints" class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-950 space-y-1.5">
-                    <div class="font-bold text-amber-900 flex items-center gap-1.5">
-                        <x-icon name="volume-2" class="w-4 h-4 text-amber-700" />
-                        Poin Pembicaraan untuk Pimpinan (Talking Points):
+                {{-- Catatan Bicara Pemapar --}}
+                <div x-show="showSpeakerNotes" class="bg-rose-50 border border-rose-200 rounded-xl p-4 text-xs text-rose-950 space-y-1.5">
+                    <div class="font-bold text-rose-900 flex items-center gap-1.5">
+                        <x-icon name="volume-2" class="w-4 h-4 text-rose-700" />
+                        Poin Bicara ke Pimpinan (Talking Points):
                     </div>
                     <p class="leading-relaxed">
-                        <em>"Pimpinan yang terhormat, salah satu tantangan terbesar fakultas adalah kekosongan posisi strategis ketika pejabat atau dosen senior pensiun. Dengan sistem radar pensiun otomatis ini, pimpinan dapat melihat proyeksi pensiun hingga 3 tahun ke depan. <strong>Kita tidak lagi reaktif menunggu posisi kosong, melainkan dapat mempersiapkan kaderisasi dan pengusulan formasi pengganti jauh-jauh hari.</strong>"</em>
+                        <em>"Bapak Dekan dan Pimpinan yang kami hormati, selama bertahun-tahun pengelolaan data dosen dan tendik di fakultas kita masih mengandalkan berkas fisik kertas, map formulir, dan rekap Excel yang terpisah-pisah. Ketika pimpinan membutuhkan data mendesak—misalnya rekap kehadiran, ketersediaan formasi anjab, atau sisa cuti—staf TU harus membongkar lemari berkas secara manual.  
+                        Memang pemerintah memiliki aplikasi nasional (seperti SIASN BKN atau SISTER Kemendikbud), <strong>namun sistem nasional tersebut berfokus makro dan memiliki keterbatasan akses langsung bagi operasional harian Dekanat</strong>. Pimpinan fakultas tidak bisa memantau logbook harian, presensi GPS di gedung fakultas, maupun alur cuti secara cepat. <strong>SIKAP hadir sebagai solusi internal fakultas untuk mengisi ruang kosong tersebut.</strong>"</em>
                     </p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {{-- 1 Tahun ke Depan --}}
-                    <div class="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-rose-900 uppercase">Mendesak (&lt; 1 Tahun)</span>
-                            <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-200 text-rose-900">
-                                {{ count($retirementRadar['projection_1_year'] ?? []) }} Orang
-                            </span>
+                {{-- Tabel Komparasi: Kondisi Lama vs Solusi SIKAP --}}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                    {{-- Kondisi 1 --}}
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+                        <div class="flex items-center gap-2 text-rose-700 font-bold text-xs uppercase">
+                            <span>❌</span> Masalah Pengelolaan Manual
                         </div>
-                        <ul class="space-y-1.5 text-xs text-slate-700 divide-y divide-rose-100">
-                            @forelse(array_slice($retirementRadar['projection_1_year'] ?? [], 0, 4) as $ret)
-                                <li class="pt-1.5">
-                                    <strong class="text-slate-900 block">{{ $ret['nama'] }}</strong>
-                                    <span class="text-slate-500 text-[11px]">{{ $ret['jabatan'] }} • TMT Pensiun: {{ $ret['bup_date'] ?? '-' }}</span>
-                                </li>
-                            @empty
-                                <li class="text-slate-400 italic pt-1.5">Tidak ada pegawai pensiun dalam 1 tahun ke depan.</li>
-                            @endforelse
+                        <ul class="space-y-1.5 text-xs text-slate-700">
+                            <li>• Berkas permohonan cuti, KGB, dan SK fisik menumpuk di lemari TU dan rentan hilang/rusak.</li>
+                            <li>• Pelaporan aktivitas kerja pegawai tidak terdokumentasi harian (sulit evaluasi SKP).</li>
+                            <li>• Penghitungan analisis beban kerja (ABK) dikerjakan manual dan sulit disajikan secara visual.</li>
                         </ul>
                     </div>
 
-                    {{-- 2 Tahun ke Depan --}}
-                    <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/50 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-amber-900 uppercase">Waspada (1 - 2 Tahun)</span>
-                            <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-200 text-amber-900">
-                                {{ count($retirementRadar['projection_2_years'] ?? []) }} Orang
-                            </span>
+                    {{-- Kondisi 2 --}}
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+                        <div class="flex items-center gap-2 text-amber-700 font-bold text-xs uppercase">
+                            <span>⚠️</span> Keterbatasan Sistem Nasional
                         </div>
-                        <ul class="space-y-1.5 text-xs text-slate-700 divide-y divide-amber-100">
-                            @forelse(array_slice($retirementRadar['projection_2_years'] ?? [], 0, 4) as $ret)
-                                <li class="pt-1.5">
-                                    <strong class="text-slate-900 block">{{ $ret['nama'] }}</strong>
-                                    <span class="text-slate-500 text-[11px]">{{ $ret['jabatan'] }} • TMT Pensiun: {{ $ret['bup_date'] ?? '-' }}</span>
-                                </li>
-                            @empty
-                                <li class="text-slate-400 italic pt-1.5">Tidak ada pegawai pensiun pada rentang 2 tahun.</li>
-                            @endforelse
+                        <ul class="space-y-1.5 text-xs text-slate-700">
+                            <li>• Bersifat terpusat nasional (BKN / Kemendikbud) dengan hak akses terbatas untuk pimpinan fakultas.</li>
+                            <li>• Tidak mendukung presensi harian berbasis geofencing radius gedung spesifik FKp UNRI.</li>
+                            <li>• Tidak menyediakan hirarki persetujuan berjenjang internal (Koordinator &rarr; Dekan).</li>
                         </ul>
                     </div>
 
-                    {{-- 3 Tahun ke Depan --}}
-                    <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/50 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-blue-900 uppercase">Perencanaan (2 - 3 Tahun)</span>
-                            <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-200 text-blue-900">
-                                {{ count($retirementRadar['projection_3_years'] ?? []) }} Orang
-                            </span>
+                    {{-- Kondisi 3 --}}
+                    <div class="p-4 rounded-xl border border-emerald-300 bg-emerald-50/70 space-y-2">
+                        <div class="flex items-center gap-2 text-emerald-800 font-bold text-xs uppercase">
+                            <span>✅</span> Terobosan Aplikasi SIKAP
                         </div>
-                        <ul class="space-y-1.5 text-xs text-slate-700 divide-y divide-blue-100">
-                            @forelse(array_slice($retirementRadar['projection_3_years'] ?? [], 0, 4) as $ret)
-                                <li class="pt-1.5">
-                                    <strong class="text-slate-900 block">{{ $ret['nama'] }}</strong>
-                                    <span class="text-slate-500 text-[11px]">{{ $ret['jabatan'] }}</span>
-                                </li>
-                            @empty
-                                <li class="text-slate-400 italic pt-1.5">Tidak ada pegawai pensiun pada rentang 3 tahun.</li>
-                            @endforelse
+                        <ul class="space-y-1.5 text-xs text-emerald-950">
+                            <li>• <strong>Kedaulatan Data Fakultas:</strong> Data lengkap 83 SDM riil (Dosen, Tendik, PHL) ada di tangan Dekanat.</li>
+                            <li>• <strong>Layanan Mandiri di HP:</strong> Pegawai bisa absen selfie GPS, isi logbook, dan ajukan cuti paperless.</li>
+                            <li>• <strong>Dashboard Keputusan Dekanat:</strong> Data siap saji untuk rapat evaluasi dan bahan usulan formasi ke Rektorat.</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
             {{-- ========================================================================= --}}
-            {{-- PILAR 3: SISTEM MERIT & MATRIKS MANAJEMEN TALENTA 9-KOTAK                --}}
+            {{-- 2. GARIS BESAR & ARSITEKTUR APLIKASI SIKAP                                --}}
             {{-- ========================================================================= --}}
-            <div x-show="activeTab === 'semua' || activeTab === 'talenta'" class="card-slide bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div x-show="activeSection === 'all' || activeSection === 'arsitektur'" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs print-card space-y-4">
+                <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
                     <div>
-                        <div class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Pilar 3 — Meritokrasi &amp; Suksesi ASN</div>
+                        <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Bagian II — Konsep &amp; Arsitektur Sistem</span>
                         <h3 class="text-lg font-black text-slate-900 flex items-center gap-2 mt-0.5">
-                            <span>📈</span> Matriks Manajemen Talenta 9-Kotak (PermenPAN-RB No. 3/2020)
+                            <span>🏗️</span> Garis Besar Aplikasi SIKAP FKp UNRI
                         </h3>
                     </div>
-                    <a href="{{ route('manajemen-talenta.index') }}" target="_blank" class="no-print text-xs font-bold text-emerald-600 hover:underline flex items-center gap-1">
-                        Buka Matriks Talenta &rarr;
-                    </a>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                        3 Tingkat Peran Terintegrasi
+                    </span>
                 </div>
 
-                {{-- Catatan Bicara Pimpinan --}}
-                <div x-show="showTalkingPoints" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-xs text-emerald-950 space-y-1.5">
+                {{-- Catatan Bicara Pemapar --}}
+                <div x-show="showSpeakerNotes" class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-xs text-indigo-950 space-y-1.5">
+                    <div class="font-bold text-indigo-900 flex items-center gap-1.5">
+                        <x-icon name="volume-2" class="w-4 h-4 text-indigo-700" />
+                        Poin Bicara ke Pimpinan (Talking Points):
+                    </div>
+                    <p class="leading-relaxed">
+                        <em>"SIKAP dirancang bukan untuk mempersulit, melainkan memberi kemudahan bagi seluruh pemangku kepentingan di fakultas. Sistem ini menghubungkan 3 level pengguna dalam satu alur kerja mulus: <strong>Level 1 adalah Pegawai Mandiri</strong> yang dapat mengurus administrasi dari genggaman ponsel; <strong>Level 2 adalah Atasan Langsung</strong> yang memverifikasi tugas harian stafnya dalam 1 kali klik; dan <strong>Level 3 adalah Pimpinan Dekanat</strong> yang memegang dashboard eksekutif untuk melihat kesehatan organisasi secara utuh kapan saja."</em>
+                    </p>
+                </div>
+
+                {{-- 3 Pilar Arsitektur --}}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {{-- Pilar 1: Pegawai --}}
+                    <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/50 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">1</span>
+                            <h4 class="font-bold text-blue-900 text-xs uppercase">Pegawai Mandiri (Dosen &amp; Tendik)</h4>
+                        </div>
+                        <p class="text-slate-600 text-[11px] leading-relaxed">
+                            Layanan mandiri tanpa kertas (*Self-Service Portal*): Presensi GPS foto live, pengisian logbook 7.5 jam/hari, pengajuan cuti, dan pemutakhiran biodata riwayat karir pribadi.
+                        </p>
+                        <div class="text-[10px] text-blue-700 font-semibold bg-white p-2 rounded-lg border border-blue-100">
+                            📱 Aksesibel via Smartphone &amp; Komputer
+                        </div>
+                    </div>
+
+                    {{-- Pilar 2: Atasan --}}
+                    <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/50 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-xs">2</span>
+                            <h4 class="font-bold text-amber-900 text-xs uppercase">Atasan Langsung (Kajur/Kaprodi/Pokja)</h4>
+                        </div>
+                        <p class="text-slate-600 text-[11px] leading-relaxed">
+                            Meja supervisi pembinaan bawahan: Verifikasi logbook harian staf, pemberian catatan revisi, dan pertimbangan ketersediaan personil pengganti saat cuti diajukan.
+                        </p>
+                        <div class="text-[10px] text-amber-800 font-semibold bg-white p-2 rounded-lg border border-amber-100">
+                            ⚡ Persetujuan Cepat (One-Click Approval)
+                        </div>
+                    </div>
+
+                    {{-- Pilar 3: Dekanat --}}
+                    <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">3</span>
+                            <h4 class="font-bold text-emerald-900 text-xs uppercase">Pimpinan Dekanat (Dekan &amp; Wadek)</h4>
+                        </div>
+                        <p class="text-slate-600 text-[11px] leading-relaxed">
+                            Kokpit strategis pengambilan keputusan: Peta formasi ABK, radar pensiun 1-3 tahun, matriks talenta 9-kotak, dan analitik beban kerja seluruh program studi.
+                        </p>
+                        <div class="text-[10px] text-emerald-800 font-semibold bg-white p-2 rounded-lg border border-emerald-100">
+                            📊 Data Real-Time Siap Dibawa ke Rektorat
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Kepatuhan Regulasi Nasional --}}
+                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex flex-wrap items-center justify-between gap-3">
+                    <span class="font-bold text-slate-800">Kepatuhan Standar Regulasi Nasional ASN:</span>
+                    <div class="flex flex-wrap gap-2 text-[11px]">
+                        <span class="px-2 py-0.5 rounded bg-white border border-slate-200 font-medium">📜 PermenPAN-RB No. 1/2020 (Anjab-ABK)</span>
+                        <span class="px-2 py-0.5 rounded bg-white border border-slate-200 font-medium">📜 PermenPAN-RB No. 3/2020 (Manajemen Talenta)</span>
+                        <span class="px-2 py-0.5 rounded bg-white border border-slate-200 font-medium">📜 Peraturan BKN No. 24/2017 (Cuti ASN)</span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ========================================================================= --}}
+            {{-- 3. PAPARAN DAN PENJELASAN MENU / FITUR DALAM APLIKASI                     --}}
+            {{-- ========================================================================= --}}
+            <div x-show="activeSection === 'all' || activeSection === 'fitur'" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs print-card space-y-6">
+                <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Bagian III — Katalog Fitur &amp; Menu Aplikasi</span>
+                        <h3 class="text-lg font-black text-slate-900 flex items-center gap-2 mt-0.5">
+                            <span>📑</span> Penjelasan Menu &amp; Fitur Utama dalam SIKAP
+                        </h3>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        Modul Lengkap
+                    </span>
+                </div>
+
+                {{-- Catatan Bicara Pemapar --}}
+                <div x-show="showSpeakerNotes" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-xs text-emerald-950 space-y-1.5">
                     <div class="font-bold text-emerald-900 flex items-center gap-1.5">
                         <x-icon name="volume-2" class="w-4 h-4 text-emerald-700" />
-                        Poin Pembicaraan untuk Pimpinan (Talking Points):
+                        Poin Bicara ke Pimpinan (Talking Points):
                     </div>
                     <p class="leading-relaxed">
-                        <em>"Sesuai amanat reformasi birokrasi, sistem promosi dan mutasi di FKp UNRI kini mengadopsi standar Sistem Merit nasional. Penilaian dilakukan transparan melalui 2 sumbu objektif: Kinerja Aktual (SKP &amp; Logbook) dan Potensi Kualifikasi (Pendidikan, Pelatihan, Asesmen). <strong>Pegawai pada Kotak 7, 8, dan 9 secara otomatis menjadi Talent Pool yang siap diprioritaskan untuk penugasan strategis dan promosi kepemimpinan.</strong>"</em>
+                        <em>"Berikut kami paparkan menu-menu utama di dalam aplikasi yang siap digunakan: Pertama, pada **Layanan Mandiri Pegawai**, dosen dan staf tidak perlu lagi mengisi kertas formulir manual. Kedua, pada **Meja Verifikasi Atasan**, setiap koordinator dapat memantau kedisiplinan dan capaian harian anggotanya. Dan Ketiga, pada **Menu Pimpinan**, Dekan dan Wakil Dekan memiliki akses langsung ke Peta Jabatan, Analitik Kehadiran, serta Matriks Talenta untuk melihat peta kekuatan SDM fakultas."</em>
+                    </p>
+                </div>
+
+                {{-- GRID FITUR PER KELOMPOK MENU --}}
+                <div class="space-y-5">
+
+                    {{-- KELOMPOK 1: LAYANAN MANDIRI PEGAWAI --}}
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2 text-xs font-bold text-blue-900 uppercase tracking-wider">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                            <span>A. Modul Layanan Mandiri Pegawai (Front-Office)</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
+                                <strong class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                                    <span>📸</span> Presensi Mandiri GPS &amp; Selfie
+                                </strong>
+                                <p class="text-[11px] text-slate-600 leading-relaxed">
+                                    Check-in/out online terkunci radius GPS kampus FKp UNRI dan foto wajah langsung. Menggantikan mesin finger manual yang sering rusak atau antre.
+                                </p>
+                            </div>
+
+                            <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
+                                <strong class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                                    <span>⏱️</span> E-Logbook Kinerja Harian
+                                </strong>
+                                <p class="text-[11px] text-slate-600 leading-relaxed">
+                                    Pegawai mengisi rincian tugas harian sesuai SKP dengan target jam efektif 450 menit (7.5 jam/hari) disertai bukti dokumen/foto pendukung.
+                                </p>
+                            </div>
+
+                            <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
+                                <strong class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                                    <span>🏖️</span> E-Cuti Online Paperless
+                                </strong>
+                                <p class="text-[11px] text-slate-600 leading-relaxed">
+                                    Pengajuan cuti tahunan, sakit, melahirkan, dan alasan penting via HP dengan kalkulator sisa hak cuti otomatis (12 hari kerja/tahun).
+                                </p>
+                            </div>
+
+                            <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
+                                <strong class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                                    <span>👤</span> Profil &amp; Riwayat Karir Digital
+                                </strong>
+                                <p class="text-[11px] text-slate-600 leading-relaxed">
+                                    Biodata terpusat mencakup riwayat kenaikan pangkat, jabatan, pendidikan, STR/SIP, dan brankas unduh berkas SK asli ber-watermark.
+                                </p>
+                            </div>
+
+                            <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
+                                <strong class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                                    <span>⭐</span> Transparansi Talenta Mandiri
+                                </strong>
+                                <p class="text-[11px] text-slate-600 leading-relaxed">
+                                    Pegawai dapat melihat posisi kuadran talenta diri sendiri secara terbuka untuk mengetahui panduan pengembangan karir selanjutnya.
+                                </p>
+                            </div>
+
+                            <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-1.5">
+                                <strong class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                                    <span>📖</span> SOP Panduan Interaktif Tiap Menu
+                                </strong>
+                                <p class="text-[11px] text-slate-600 leading-relaxed">
+                                    Setiap halaman dilengkapi tombol SOP interaktif berisi dasar hukum dan panduan pengisian agar pegawai tidak bingung mengoperasikan.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- KELOMPOK 2: SUPERVISI & VERIFIKASI ATASAN --}}
+                    <div class="space-y-3 pt-2">
+                        <div class="flex items-center gap-2 text-xs font-bold text-amber-900 uppercase tracking-wider">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
+                            <span>B. Modul Supervisi Atasan Langsung (Middle-Office)</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/40 space-y-1.5">
+                                <strong class="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                                    <span>⚖️</span> Meja Verifikasi &amp; Rekap Logbook
+                                </strong>
+                                <p class="text-[11px] text-slate-700 leading-relaxed">
+                                    Atasan (Kajur, Kaprodi, Kasubbag) memverifikasi keabsahan uraian kerja staf binaannya dengan fitur persetujuan massal (*Batch Approve*) atau penolakan dengan catatan pembinaan.
+                                </p>
+                            </div>
+
+                            <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/40 space-y-1.5">
+                                <strong class="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                                    <span>✍️</span> Verifikasi Pertimbangan Cuti Berjenjang
+                                </strong>
+                                <p class="text-[11px] text-slate-700 leading-relaxed">
+                                    Memeriksa ketersediaan personil pengganti tugas di unit sebelum meneruskan persetujuan cuti ke Dekan / Wakil Dekan secara elektronik.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- KELOMPOK 3: PENGAMBILAN KEPUTUSAN DEKANAT --}}
+                    <div class="space-y-3 pt-2">
+                        <div class="flex items-center gap-2 text-xs font-bold text-emerald-900 uppercase tracking-wider">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                            <span>C. Modul Manajerial &amp; Pengambilan Keputusan Dekanat (Executive Governance)</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/50 space-y-1.5">
+                                <strong class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                                    <span>🏛️</span> Peta Jabatan Interaktif &amp; ABK
+                                </strong>
+                                <p class="text-[11px] text-slate-700 leading-relaxed">
+                                    Visualisasi bagan struktur organisasi lengkap dengan perbandingan <strong>Bezetting Riil</strong> vs <strong>Formasi Kebutuhan ABK</strong>. Langsung menyorot posisi jabatan yang <strong>Defisit (Kurang)</strong> sebagai dasar usulan ke Rektorat.
+                                </p>
+                            </div>
+
+                            <div class="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-1.5">
+                                <strong class="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                                    <span>📈</span> Matriks Manajemen Talenta 9-Kotak
+                                </strong>
+                                <p class="text-[11px] text-slate-700 leading-relaxed">
+                                    Pemetaan merit sistem ASN (PermenPAN-RB No. 3/2020) berbasis integrasi skor Kinerja dan skor Potensi. Otomatis membentuk <strong>Talent Pool (Kotak 7, 8, 9)</strong> untuk penyiapan suksesi pimpinan.
+                                </p>
+                            </div>
+
+                            <div class="p-3.5 rounded-xl border border-blue-200 bg-blue-50/50 space-y-1.5">
+                                <strong class="text-xs font-bold text-blue-950 flex items-center gap-1.5">
+                                    <span>📊</span> Dashboard Analitik Eksekutif
+                                </strong>
+                                <p class="text-[11px] text-slate-700 leading-relaxed">
+                                    Pemantauan rasio kehadiran harian/bulanan, radar pegawai yang akan pensiun (BUP 1-3 tahun), dan distribusi beban jam logbook per program studi.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {{-- ========================================================================= --}}
+            {{-- 4. MANFAAT & NILAI TAMBAH LANGSUNG BAGI FAKULTAS                          --}}
+            {{-- ========================================================================= --}}
+            <div x-show="activeSection === 'all' || activeSection === 'manfaat'" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs print-card space-y-4">
+                <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Bagian IV — Dampak Strategis</span>
+                        <h3 class="text-lg font-black text-slate-900 flex items-center gap-2 mt-0.5">
+                            <span>🚀</span> Manfaat &amp; Nilai Tambah Langsung bagi Fakultas Keperawatan
+                        </h3>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                        Efisiensi &amp; Akuntabilitas
+                    </span>
+                </div>
+
+                {{-- Catatan Bicara Pemapar --}}
+                <div x-show="showSpeakerNotes" class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-950 space-y-1.5">
+                    <div class="font-bold text-blue-900 flex items-center gap-1.5">
+                        <x-icon name="volume-2" class="w-4 h-4 text-blue-700" />
+                        Poin Bicara ke Pimpinan (Talking Points):
+                    </div>
+                    <p class="leading-relaxed">
+                        <em>"Sebagai penutup dari sisi nilai tambah, penerapan SIKAP memberikan 3 dampak nyata: **Pertama, Efisiensi Anggaran & Birokrasi Paperless**, kita menghemat ratusan rim kertas formulir cuti dan map biodata setiap tahunnya; **Kedua, Pengambilan Keputusan Berbasis Data Riil**, pimpinan tidak lagi menebak-nebak kebutuhan pegawai, melainkan memegang data akurat saat rapat formasi bersama Rektorat; dan **Ketiga, Peningkatan Nilai Akreditasi Institusi**, sistem ini menjadi bukti konkret tata kelola SDM modern dan transparan pada Kriteria Penilaian Akreditasi."</em>
                     </p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-emerald-50/80 border border-emerald-200 rounded-xl p-4">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-bold text-emerald-900 uppercase">Kuadran 7, 8, 9 (Talent Pool)</span>
-                            <span class="px-2 py-0.5 rounded-full font-bold bg-emerald-600 text-white text-xs">{{ $talentPoolCount }} ASN</span>
-                        </div>
-                        <p class="text-[11px] text-emerald-800 leading-relaxed">
-                            Kelompok suksesi berkinerja tinggi dan potensial unggul. Direkomendasikan untuk promosi jabatan, penghargaan, dan tugas strategis institusi.
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+                        <div class="text-2xl">🌱</div>
+                        <h4 class="font-bold text-slate-900 text-xs uppercase">1. Zero Paperwork &amp; Hemat Biaya</h4>
+                        <p class="text-slate-600 text-xs leading-relaxed">
+                            Menghilangkan biaya pencetakan formulir cuti, map arsip, dan binder kertas. Seluruh berkas tersimpan aman dalam format digital terproteksi QR Code.
                         </p>
                     </div>
 
-                    <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-4">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-bold text-blue-900 uppercase">Kuadran 4, 5, 6 (Menengah)</span>
-                            <span class="px-2 py-0.5 rounded-full font-bold bg-blue-600 text-white text-xs">{{ $talentMiddleCount }} ASN</span>
-                        </div>
-                        <p class="text-[11px] text-blue-800 leading-relaxed">
-                            Pegawai dengan kinerja stabil yang siap ditingkatkan kompetensinya melalui bimbingan teknis, sertifikasi, atau penyesuaian rotasi penugasan.
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+                        <div class="text-2xl">⚡</div>
+                        <h4 class="font-bold text-slate-900 text-xs uppercase">2. Kecepatan Pelayanan Staf</h4>
+                        <p class="text-slate-600 text-xs leading-relaxed">
+                            Proses pengajuan cuti dan permohonan kepegawaian yang biasanya memakan waktu berhari-hari kini tuntas dalam hitungan menit via ponsel.
                         </p>
                     </div>
 
-                    <div class="bg-slate-100 border border-slate-200 rounded-xl p-4">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-bold text-slate-800 uppercase">Kuadran 1, 2, 3 (Pembinaan)</span>
-                            <span class="px-2 py-0.5 rounded-full font-bold bg-slate-600 text-white text-xs">{{ $talentLowCount }} ASN</span>
-                        </div>
-                        <p class="text-[11px] text-slate-700 leading-relaxed">
-                            Pegawai yang memerlukan pembinaan intensif dari atasan langsung, peninjauan beban kerja, atau konseling motivasi peningkatan produktivitas.
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+                        <div class="text-2xl">🏆</div>
+                        <h4 class="font-bold text-slate-900 text-xs uppercase">3. Penguatan Nilai Akreditasi</h4>
+                        <p class="text-slate-600 text-xs leading-relaxed">
+                            Menjadi bukti otentik tata pamong perguruan tinggi yang akuntabel, transparan, dan meritokratis pada instrumen akreditasi LAM-PTKes / BAN-PT.
                         </p>
                     </div>
                 </div>
             </div>
 
             {{-- ========================================================================= --}}
-            {{-- PILAR 4 & 5: DISIPLIN KERJA, E-LOGBOOK & PAPERLESS E-CUTI                --}}
+            {{-- 5. PANDUAN JADWAL ALUR BICARA PRESENTASI (15 MENIT)                      --}}
             {{-- ========================================================================= --}}
-            <div x-show="activeTab === 'semua' || activeTab === 'kinerja' || activeTab === 'layanan'" class="card-slide grid grid-cols-1 md:grid-cols-2 gap-6">
-                {{-- PILAR 4: DISIPLIN & LOGBOOK --}}
-                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-                    <div class="border-b border-slate-100 pb-3">
-                        <div class="text-xs font-bold text-blue-600 uppercase tracking-wider">Pilar 4 — Akuntabilitas Anggaran</div>
-                        <h3 class="text-lg font-black text-slate-900 flex items-center gap-2 mt-0.5">
-                            <span>⏱️</span> Disiplin Presensi &amp; Logbook Harian
-                        </h3>
-                    </div>
-
-                    <div x-show="showTalkingPoints" class="bg-blue-50 border border-blue-200 rounded-xl p-3.5 text-xs text-blue-950 space-y-1">
-                        <strong class="text-blue-900 block font-bold">Talking Points:</strong>
-                        <p class="leading-relaxed">
-                            <em>"Presensi menggunakan validasi Geofencing radius kampus dan foto selfie biometrik dengan sistem anti-titip absen. Didukung E-Logbook yang memastikan seluruh staf memenuhi jam efektif 7,5 jam/hari (450 menit) sebagai akuntabilitas pembayaran Tukin."</em>
-                        </p>
-                    </div>
-
-                    <div class="space-y-2 text-xs">
-                        <div class="flex justify-between items-center p-2 rounded-lg bg-slate-50">
-                            <span class="text-slate-600">Ketepatan Waktu Presensi:</span>
-                            <strong class="text-slate-900">{{ $kpis['presensi_rate'] ?? $kpis['on_time_rate'] ?? 0 }}%</strong>
-                        </div>
-                        <div class="flex justify-between items-center p-2 rounded-lg bg-slate-50">
-                            <span class="text-slate-600">Total Logbook Diajukan Bulan Ini:</span>
-                            <strong class="text-slate-900">{{ $kpis['logbook_total'] ?? 0 }} Aktivitas</strong>
-                        </div>
-                        <div class="flex justify-between items-center p-2 rounded-lg bg-slate-50">
-                            <span class="text-slate-600">Tingkat Persetujuan Atasan:</span>
-                            <strong class="text-emerald-700">{{ $kpis['logbook_rate'] ?? 0 }}%</strong>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- PILAR 5: E-CUTI PAPERLESS --}}
-                <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-                    <div class="border-b border-slate-100 pb-3">
-                        <div class="text-xs font-bold text-amber-600 uppercase tracking-wider">Pilar 5 — Birokrasi Paperless</div>
-                        <h3 class="text-lg font-black text-slate-900 flex items-center gap-2 mt-0.5">
-                            <span>🏖️</span> E-Cuti Mandiri &amp; Arsip Digital SK
-                        </h3>
-                    </div>
-
-                    <div x-show="showTalkingPoints" class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-950 space-y-1">
-                        <strong class="text-amber-900 block font-bold">Talking Points:</strong>
-                        <p class="leading-relaxed">
-                            <em>"Pengajuan cuti kini 100% tanpa kertas. Pegawai mengajukan dari ponsel, atasan langsung memverifikasi, dan Dekan/Wadek mengesahkan dengan satu sentuhan. Seluruh berkas SK tersimpan abadi dalam brankas digital terproteksi QR Code."</em>
-                        </p>
-                    </div>
-
-                    <div class="space-y-2 text-xs">
-                        <div class="flex justify-between items-center p-2 rounded-lg bg-slate-50">
-                            <span class="text-slate-600">Alur Persetujuan:</span>
-                            <strong class="text-slate-900">2 Tahap (Atasan &rarr; Pimpinan)</strong>
-                        </div>
-                        <div class="flex justify-between items-center p-2 rounded-lg bg-slate-50">
-                            <span class="text-slate-600">Format Dokumen Output:</span>
-                            <strong class="text-slate-900">PDF Ber-Watermark &amp; QR Code</strong>
-                        </div>
-                        <div class="flex justify-between items-center p-2 rounded-lg bg-slate-50">
-                            <span class="text-slate-600">Efisiensi Arsip:</span>
-                            <strong class="text-emerald-700">Zero Paperwork &amp; Cloud Backup</strong>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- AGENDA SUSUNAN PRESENTASI 15 MENIT --}}
-            <div class="bg-slate-900 rounded-2xl p-6 text-white shadow-md space-y-4">
+            <div x-show="activeSection === 'all' || activeSection === 'alur'" class="bg-slate-900 rounded-2xl p-6 text-white shadow-md print-card space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                     <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
-                        <span>⏱️</span> Panduan Jadwal Alur Paparan Pimpinan (Rekomendasi 15 Menit)
+                        <span>⏱️</span> Panduan Alur Waktu Presentasi di Depan Dekanat (Durasi 15 Menit)
                     </h3>
-                    <span class="text-xs text-slate-400 font-mono">Presentasi Rapat Pimpinan</span>
+                    <span class="text-xs text-slate-400 font-mono">Cheatsheet Paparan Rapat</span>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
-                    <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1">
-                        <div class="text-emerald-400 font-bold">01. Menit 0 - 3 (Pembuka)</div>
-                        <p class="text-slate-300">Visi digitalisasi kepegawaian FKp UNRI dan kepatuhan terhadap regulasi Kementerian (PermenPAN-RB No. 1/2020 &amp; No. 3/2020).</p>
+                    <div class="p-3.5 rounded-xl bg-slate-800/90 border border-slate-700 space-y-1.5">
+                        <div class="text-emerald-400 font-bold text-xs">01. Menit 00 - 03 (Pengenalan &amp; Masalah)</div>
+                        <p class="text-slate-300 leading-relaxed">
+                            Buka dengan menyampaikan masalah manual selama ini dan keterbatasan sistem nasional. Tegaskan pentingnya kedaulatan data tingkat fakultas.
+                        </p>
                     </div>
 
-                    <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1">
-                        <div class="text-emerald-400 font-bold">02. Menit 3 - 7 (Peta Jabatan)</div>
-                        <p class="text-slate-300">Demokan live bagan Peta Jabatan. Sorot posisi yang defisit untuk dasar usulan formasi baru ke Rektorat.</p>
+                    <div class="p-3.5 rounded-xl bg-slate-800/90 border border-slate-700 space-y-1.5">
+                        <div class="text-emerald-400 font-bold text-xs">02. Menit 03 - 07 (Garis Besar SIKAP)</div>
+                        <p class="text-slate-300 leading-relaxed">
+                            Jelaskan konsep 3 peran (Pegawai mandiri di HP, Atasan yang memverifikasi, dan Dekanat yang memegang kokpit data agregat).
+                        </p>
                     </div>
 
-                    <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1">
-                        <div class="text-emerald-400 font-bold">03. Menit 7 - 11 (Radar Pensiun &amp; Talenta)</div>
-                        <p class="text-slate-300">Tunjukkan daftar pegawai pensiun 1-3 tahun dan kesiapan suksesi pejabat dari Talent Pool Kuadran 7, 8, 9.</p>
+                    <div class="p-3.5 rounded-xl bg-slate-800/90 border border-slate-700 space-y-1.5">
+                        <div class="text-emerald-400 font-bold text-xs">03. Menit 07 - 12 (Live Demo Fitur Kunci)</div>
+                        <p class="text-slate-300 leading-relaxed">
+                            Buka langsung di layar: <strong>Peta Jabatan ABK</strong> (tunjukkan posisi defisit), <strong>E-Cuti Paperless</strong>, dan <strong>Matriks Talenta</strong>.
+                        </p>
                     </div>
 
-                    <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1">
-                        <div class="text-emerald-400 font-bold">04. Menit 11 - 15 (Penutup &amp; Diskusi)</div>
-                        <p class="text-slate-300">Simulasikan kemudahan verifikasi presensi &amp; cuti via HP, serta sesi tanggapan/arahan dari Dekan.</p>
+                    <div class="p-3.5 rounded-xl bg-slate-800/90 border border-slate-700 space-y-1.5">
+                        <div class="text-emerald-400 font-bold text-xs">04. Menit 12 - 15 (Manfaat &amp; Diskusi)</div>
+                        <p class="text-slate-300 leading-relaxed">
+                            Rangkum manfaat efisiensi anggaran dan kesiapan akreditasi, lalu buka sesi tanggapan dan arahan dari Bapak Dekan.
+                        </p>
                     </div>
                 </div>
             </div>

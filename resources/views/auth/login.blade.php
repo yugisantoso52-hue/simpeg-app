@@ -392,51 +392,48 @@
                         </button>
                     </div>
 
-                    <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 leading-relaxed">
-                        <strong>Visi Digitalisasi Kepegawaian FKp UNRI:</strong> Mengintegrasikan seluruh siklus manajemen aparatur (Perencanaan Formasi, Presensi Geofencing, Logbook Kinerja, E-Cuti Paperless, hingga Matriks Manajemen Talenta 9-Kotak) sesuai mandat <strong>PermenPAN-RB No. 1/2020</strong> dan <strong>PermenPAN-RB No. 3/2020</strong>.
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                            <strong class="text-indigo-800 font-bold block flex items-center gap-1.5">
-                                <span>🏛️</span> 1. Peta Jabatan &amp; Formasi ABK
+                    <div class="space-y-3">
+                        <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 leading-relaxed">
+                            <strong class="text-[#007a3d] block font-bold mb-1 flex items-center gap-1.5">
+                                <span>🏛️</span> Mengapa Fakultas Butuh Aplikasi SIKAP?
                             </strong>
-                            <p class="text-slate-600 text-[11px] leading-relaxed">
-                                Kalkulasi kebutuhan riil aparatur berbasis beban kerja 1.250 jam/tahun untuk memetakan defisit/surplus formasi sebagai dasar usulan ke Rektorat.
-                            </p>
+                            Selama ini data kepegawaian dikelola manual (berkas fisik &amp; Excel terpisah), sementara sistem nasional (BKN / Kemendikbud) memiliki keterbatasan akses untuk kebutuhan operasional harian Dekanat. <strong>SIKAP hadir sebagai sistem mandiri fakultas</strong> guna memberikan kemudahan layanan mandiri bagi dosen/tendik serta menyajikan data terpadu *real-time* untuk pengambilan kebijakan Pimpinan.
                         </div>
 
-                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                            <strong class="text-amber-800 font-bold block flex items-center gap-1.5">
-                                <span>⏳</span> 2. Radar Pensiun (BUP 1-3 Th)
-                            </strong>
-                            <p class="text-slate-600 text-[11px] leading-relaxed">
-                                Deteksi dini dosen dan tendik yang memasuki batas usia pensiun untuk mencegah kekosongan jabatan strategis melalui kaderisasi.
-                            </p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
+                            <div class="p-2.5 rounded-xl bg-blue-50/70 border border-blue-200">
+                                <strong class="text-blue-900 block font-bold text-[11px] uppercase mb-1">1. Layanan Mandiri di HP</strong>
+                                <p class="text-slate-600 text-[10px] leading-relaxed">
+                                    Presensi GPS selfie, pelaporan E-Logbook 7.5 jam/hari, dan pengajuan cuti paperless langsung dari smartphone.
+                                </p>
+                            </div>
+
+                            <div class="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200">
+                                <strong class="text-amber-900 block font-bold text-[11px] uppercase mb-1">2. Supervisi Atasan</strong>
+                                <p class="text-slate-600 text-[10px] leading-relaxed">
+                                    Verifikasi tugas logbook staf harian, pemberian catatan pembinaan, dan pertimbangan cuti dalam 1 klik.
+                                </p>
+                            </div>
+
+                            <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
+                                <strong class="text-emerald-900 block font-bold text-[11px] uppercase mb-1">3. Kokpit Dekanat</strong>
+                                <p class="text-slate-600 text-[10px] leading-relaxed">
+                                    Peta Jabatan ABK (posisi defisit/surplus), radar pensiun 1-3 tahun, dan Matriks Talenta 9-Kotak untuk dasar usulan ke Rektorat.
+                                </p>
+                            </div>
                         </div>
 
-                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                            <strong class="text-emerald-800 font-bold block flex items-center gap-1.5">
-                                <span>📈</span> 3. Merit Sistem &amp; 9-Kotak Talenta
-                            </strong>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                            <strong class="text-slate-800 block font-bold text-[11px]">Kepatuhan Regulasi Nasional:</strong>
                             <p class="text-slate-600 text-[11px] leading-relaxed">
-                                Pemetaan objektif sumbu kinerja &amp; potensi aparatur. Pegawai di Kotak 7, 8, 9 disiapkan menjadi <em>Talent Pool</em> suksesi pimpinan.
-                            </p>
-                        </div>
-
-                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                            <strong class="text-blue-800 font-bold block flex items-center gap-1.5">
-                                <span>⏱️</span> 4. Presensi GPS &amp; E-Logbook
-                            </strong>
-                            <p class="text-slate-600 text-[11px] leading-relaxed">
-                                Radius geofencing kampus, validasi live selfie anti-titip absen, dan kewajiban minimal 7.5 jam efektif/hari untuk akuntabilitas Tukin.
+                                Dibangun mengacu pada <strong>PermenPAN-RB No. 1/2020</strong> (Anjab-ABK 1.250 jam/tahun), <strong>PermenPAN-RB No. 3/2020</strong> (Manajemen Talenta), dan <strong>Perka BKN No. 24/2017</strong> (Cuti ASN).
                             </p>
                         </div>
                     </div>
 
                     <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 flex items-center gap-2">
                         <x-icon name="info" class="w-4 h-4 text-amber-700 shrink-0" />
-                        <span><strong>Hak Akses Pimpinan:</strong> Untuk mengakses data statistik interaktif, nama personil, grafik beban kerja, dan bagan organisasi lengkap, silakan masuk menggunakan akun <strong>Pimpinan (Dekan/Wadek)</strong> atau <strong>Administrator</strong>.</span>
+                        <span><strong>Akses Lengkap:</strong> Silakan login menggunakan akun <strong>Pimpinan (Dekan/Wadek)</strong> atau <strong>Administrator</strong> untuk melihat statistik live, peta interaktif, dan seluruh fitur operasional.</span>
                     </div>
 
                     <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
