@@ -81,9 +81,9 @@
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total SDM Aktif</div>
-                    <div class="text-2xl font-black text-slate-800 mt-1">{{ $kpis['total_aktif'] }}</div>
+                    <div class="text-2xl font-black text-slate-800 mt-1">{{ $kpis['total_aktif'] ?? 0 }}</div>
                     <div class="text-[11px] text-blue-600 font-semibold mt-0.5">
-                        {{ $kpis['total_dosen'] }} Dosen • {{ $kpis['total_tendik'] }} Tendik
+                        {{ $kpis['total_dosen'] ?? 0 }} Dosen • {{ $kpis['total_tendik'] ?? 0 }} Tendik
                     </div>
                 </div>
 
@@ -123,7 +123,7 @@
 
                 <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Disiplin Kehadiran</div>
-                    <div class="text-2xl font-black text-slate-800 mt-1">{{ $kpis['on_time_rate'] }}%</div>
+                    <div class="text-2xl font-black text-slate-800 mt-1">{{ $kpis['presensi_rate'] ?? $kpis['on_time_rate'] ?? 0 }}%</div>
                     <div class="text-[11px] text-slate-500 font-medium mt-0.5">
                         Tingkat Tepat Waktu
                     </div>
@@ -199,7 +199,7 @@
                             </div>
                             <div class="flex justify-between items-center py-1.5 border-b border-slate-200">
                                 <span class="text-slate-600">Bezetting Pegawai Aktif Riil:</span>
-                                <strong class="font-bold text-slate-900">{{ $kpis['total_aktif'] }} Orang</strong>
+                                <strong class="font-bold text-slate-900">{{ $kpis['total_aktif'] ?? 0 }} Orang</strong>
                             </div>
                             <div class="flex justify-between items-center py-1.5 border-b border-slate-200">
                                 <span class="text-rose-700 font-medium">Jabatan Mengalami Kekurangan (Defisit):</span>
@@ -422,15 +422,15 @@
                     <div class="space-y-2 text-xs">
                         <div class="flex justify-between items-center p-2 rounded-lg bg-slate-50">
                             <span class="text-slate-600">Ketepatan Waktu Presensi:</span>
-                            <strong class="text-slate-900">{{ $kpis['on_time_rate'] }}%</strong>
+                            <strong class="text-slate-900">{{ $kpis['presensi_rate'] ?? $kpis['on_time_rate'] ?? 0 }}%</strong>
                         </div>
                         <div class="flex justify-between items-center p-2 rounded-lg bg-slate-50">
                             <span class="text-slate-600">Total Logbook Diajukan Bulan Ini:</span>
-                            <strong class="text-slate-900">{{ $kpis['logbook_total'] }} Aktivitas</strong>
+                            <strong class="text-slate-900">{{ $kpis['logbook_total'] ?? 0 }} Aktivitas</strong>
                         </div>
                         <div class="flex justify-between items-center p-2 rounded-lg bg-slate-50">
                             <span class="text-slate-600">Tingkat Persetujuan Atasan:</span>
-                            <strong class="text-emerald-700">{{ $kpis['logbook_rate'] }}%</strong>
+                            <strong class="text-emerald-700">{{ $kpis['logbook_rate'] ?? 0 }}%</strong>
                         </div>
                     </div>
                 </div>

@@ -60,6 +60,7 @@ class ExecutiveAnalyticsService
             'presensi_tepat'    => $tepatWaktu,
             'presensi_telat'    => $terlambat,
             'presensi_rate'     => $onTimeRate,
+            'on_time_rate'      => $onTimeRate,
             'pensiun_5_tahun'   => $totalPensiun5Th,
         ];
     }
