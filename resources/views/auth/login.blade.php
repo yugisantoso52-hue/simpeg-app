@@ -397,7 +397,7 @@
                             <strong class="text-[#007a3d] block font-bold mb-1 flex items-center gap-1.5">
                                 <span>🏛️</span> Mengapa Fakultas Butuh Aplikasi SIKAP?
                             </strong>
-                            Selama ini data kepegawaian dikelola manual (berkas fisik &amp; Excel terpisah), sementara sistem nasional (BKN / Kemendikbud) memiliki keterbatasan akses untuk kebutuhan operasional harian Dekanat. <strong>SIKAP hadir sebagai sistem mandiri fakultas</strong> guna memberikan kemudahan layanan mandiri bagi dosen/tendik serta menyajikan data terpadu *real-time* untuk pengambilan kebijakan Pimpinan.
+                            Selama ini data kepegawaian dikelola manual (berkas fisik &amp; Excel terpisah). Meskipun sudah ada sistem yang dibuat oleh Universitas, <strong>SIKAP hadir sebagai sistem mandiri fakultas sekaligus penopang darurat (Back-up) disaat sistem milik Universitas mengalami kendala teknis (seperti kendala sebelumnya)</strong>, sehingga layanan presensi dan tata kelola SDM di Fakultas Keperawatan tetap berjalan stabil tanpa terhenti.
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">

@@ -763,8 +763,8 @@
                     </div>
                 </div>
 
-                {{-- 🎯 BANNER PAPARAN PIMPINAN (EXECUTIVE BRIEFING BANNER) --}}
-                @if(Auth::user()->canAccessExecutiveKepegawaianMenus() || Auth::user()->hasRole('admin') || Auth::user()->isPimpinan())
+                {{-- 🎯 BANNER PAPARAN PIMPINAN (KHUSUS ADMIN) --}}
+                @if(Auth::user()->hasRole('admin'))
                 <div class="mb-6 rounded-2xl bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 p-5 text-white shadow-md border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 flex items-center justify-center text-2xl shrink-0">
@@ -776,7 +776,7 @@
                             </div>
                             <h3 class="text-base font-black text-white">Lembar Paparan Eksekutif &amp; Ringkasan Strategis Pimpinan</h3>
                             <p class="text-xs text-slate-300 mt-0.5">
-                                Akses ringkasan komparasi Peta Formasi ABK, Radar Pensiun 1-3 Tahun, dan Matriks Talenta 9-Kotak lengkap dengan catatan bicara (talking points).
+                                Bahan paparan transformasi digital kepegawaian SIKAP untuk presentasi kepada Ibu Dekan Prof. Wan Nishfa Dewi, S.Kp, MNg, PhD dan jajaran Pimpinan Dekanat.
                             </p>
                         </div>
                     </div>

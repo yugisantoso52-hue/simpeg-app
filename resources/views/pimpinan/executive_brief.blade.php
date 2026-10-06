@@ -46,7 +46,7 @@
         }
     </style>
 
-    <div class="py-6" x-data="{ activeSection: 'all', showSpeakerNotes: true }">
+    <div class="py-6" x-data="{ activeSection: 'all' }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 print-container">
 
             {{-- ========================================================================= --}}
@@ -71,7 +71,7 @@
 
                     <div class="text-center md:text-right text-xs text-slate-500 shrink-0">
                         <div><strong>Tanggal Paparan:</strong> {{ \Carbon\Carbon::now('Asia/Jakarta')->translatedFormat('d F Y') }}</div>
-                        <div><strong>Pemapar:</strong> Pengelola Kepegawaian &amp; Sistem TI FKp UNRI</div>
+                        <div><strong>Ditujukan Kepada:</strong> Ibu Dekan Prof. Wan Nishfa Dewi, S.Kp, MNg, PhD &amp; Pimpinan Dekanat</div>
                         <div class="mt-1">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                                 Dokumen Resmi Dekanat
@@ -86,7 +86,7 @@
                         Transformasi Tata Kelola Kepegawaian: Dari Manual Menuju Digital Terpadu Berbasis Kedaulatan Data Fakultas
                     </h3>
                     <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
-                        Membangun sistem mandiri tingkat fakultas yang menjembatani kebutuhan operasional harian Dosen, Tenaga Kependidikan, dan Pimpinan Dekanat yang selama ini terfragmentasi serta melengkapi sistem kepegawaian nasional.
+                        Membangun sistem mandiri tingkat fakultas yang menjembatani kebutuhan operasional harian Dosen, Tenaga Kependidikan, dan Pimpinan Dekanat serta bertindak sebagai penopang darurat (*backup*) saat sistem universitas terkendala.
                     </p>
                 </div>
             </div>
@@ -110,15 +110,8 @@
                         4. Nilai Tambah &amp; Manfaat
                     </button>
                     <button type="button" @click="activeSection = 'alur'" :class="activeSection === 'alur' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3.5 py-1.5 rounded-xl text-xs transition cursor-pointer">
-                        5. Panduan Alur Bicara (15 Menit)
+                        5. Panduan Alur Waktu (15 Menit)
                     </button>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <label class="inline-flex items-center gap-2 text-xs text-slate-700 cursor-pointer font-medium select-none">
-                        <input type="checkbox" x-model="showSpeakerNotes" class="rounded text-emerald-600 focus:ring-emerald-500">
-                        <span>Tampilkan Catatan Bicara (*Speaker Talking Points*)</span>
-                    </label>
                 </div>
             </div>
 
@@ -130,7 +123,7 @@
                     <div>
                         <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Bagian I — Latar Belakang &amp; Analisis Kebutuhan</span>
                         <h3 class="text-lg font-black text-slate-900 flex items-center gap-2 mt-0.5">
-                            <span>🔍</span> Mengapa Fakultas Keperawatan Butuh Sistem Sendiri (SIKAP)?
+                            <span>🔍</span> Mengapa Fakultas Keperawatan Butuh Sistem Mandiri (SIKAP)?
                         </h3>
                     </div>
                     <span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
@@ -138,52 +131,47 @@
                     </span>
                 </div>
 
-                {{-- Catatan Bicara Pemapar --}}
-                <div x-show="showSpeakerNotes" class="bg-rose-50 border border-rose-200 rounded-xl p-4 text-xs text-rose-950 space-y-1.5">
-                    <div class="font-bold text-rose-900 flex items-center gap-1.5">
-                        <x-icon name="volume-2" class="w-4 h-4 text-rose-700" />
-                        Poin Bicara ke Pimpinan (Talking Points):
-                    </div>
-                    <p class="leading-relaxed">
-                        <em>"Bapak Dekan dan Pimpinan yang kami hormati, selama bertahun-tahun pengelolaan data dosen dan tendik di fakultas kita masih mengandalkan berkas fisik kertas, map formulir, dan rekap Excel yang terpisah-pisah. Ketika pimpinan membutuhkan data mendesak—misalnya rekap kehadiran, ketersediaan formasi anjab, atau sisa cuti—staf TU harus membongkar lemari berkas secara manual.  
-                        Memang pemerintah memiliki aplikasi nasional (seperti SIASN BKN atau SISTER Kemendikbud), <strong>namun sistem nasional tersebut berfokus makro dan memiliki keterbatasan akses langsung bagi operasional harian Dekanat</strong>. Pimpinan fakultas tidak bisa memantau logbook harian, presensi GPS di gedung fakultas, maupun alur cuti secara cepat. <strong>SIKAP hadir sebagai solusi internal fakultas untuk mengisi ruang kosong tersebut.</strong>"</em>
-                    </p>
+                {{-- Narasi Konteks Eksekutif --}}
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800 leading-relaxed">
+                    Pengelolaan data kepegawaian selama bertahun-tahun mengandalkan berkas fisik kertas, map formulir, dan rekap spreadsheet terpisah sehingga menyulitkan pemantauan harian. Di sisi lain, sistem nasional (BKN / Kemendikbud) bersifat makro dengan hak akses terbatas bagi operasional fakultas. 
+                    Meskipun saat ini sudah ada sistem yang dibuat oleh Universitas, <strong>keberadaan aplikasi SIKAP di Fakultas Keperawatan sangat penting sebagai sistem operasional harian terpadu sekaligus penopang darurat (Back-up) disaat sistem milik Universitas mengalami kendala teknis atau gangguan server (seperti kendala yang pernah terjadi sebelumnya)</strong>. Dengan SIKAP, pelayanan presensi, pelaporan tugas, dan administrasi kepegawaian di Fakultas Keperawatan tetap berjalan stabil tanpa terhenti.
                 </div>
 
                 {{-- Tabel Komparasi: Kondisi Lama vs Solusi SIKAP --}}
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
                     {{-- Kondisi 1 --}}
                     <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
                         <div class="flex items-center gap-2 text-rose-700 font-bold text-xs uppercase">
                             <span>❌</span> Masalah Pengelolaan Manual
                         </div>
                         <ul class="space-y-1.5 text-xs text-slate-700">
-                            <li>• Berkas permohonan cuti, KGB, dan SK fisik menumpuk di lemari TU dan rentan hilang/rusak.</li>
-                            <li>• Pelaporan aktivitas kerja pegawai tidak terdokumentasi harian (sulit evaluasi SKP).</li>
-                            <li>• Penghitungan analisis beban kerja (ABK) dikerjakan manual dan sulit disajikan secara visual.</li>
+                            <li>• Berkas kertas permohonan cuti, KGB, dan SK fisik menumpuk di lemari TU serta rentan tercecer/rusak.</li>
+                            <li>• Sisa hak cuti rawan terjadi selisih hitung karena pencatatan manual di buku agenda fisik.</li>
+                            <li>• Pelaporan aktivitas kerja pegawai tidak terdokumentasi harian, menyulitkan evaluasi SKP yang objektif.</li>
+                            <li>• Penghitungan analisis beban kerja (ABK) dilakukan manual di spreadsheet tanpa visualisasi bagan interaktif.</li>
                         </ul>
                     </div>
 
                     {{-- Kondisi 2 --}}
                     <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
                         <div class="flex items-center gap-2 text-amber-700 font-bold text-xs uppercase">
-                            <span>⚠️</span> Keterbatasan Sistem Nasional
+                            <span>⚠️</span> Keterbatasan Sistem Nasional &amp; Universitas
                         </div>
                         <ul class="space-y-1.5 text-xs text-slate-700">
-                            <li>• Bersifat terpusat nasional (BKN / Kemendikbud) dengan hak akses terbatas untuk pimpinan fakultas.</li>
-                            <li>• Tidak mendukung presensi harian berbasis geofencing radius gedung spesifik FKp UNRI.</li>
-                            <li>• Tidak menyediakan hirarki persetujuan berjenjang internal (Koordinator &rarr; Dekan).</li>
+                            <li>• Sistem nasional (BKN / Kemendikbud) bersifat makro nasional dengan akses data terbatas bagi Dekanat.</li>
+                            <li>• Belum mendukung fleksibilitas pemantauan presensi GPS khusus titik gedung Fakultas Keperawatan.</li>
+                            <li>• <strong>Kebutuhan Sistem Back-up:</strong> Saat sistem milik Universitas mengalami kendala/maintenance (seperti yang pernah dialami sebelumnya), operasional presensi &amp; kinerja fakultas rawan lumpuh jika tidak memiliki sistem penopang mandiri.</li>
                         </ul>
                     </div>
 
                     {{-- Kondisi 3 --}}
                     <div class="p-4 rounded-xl border border-emerald-300 bg-emerald-50/70 space-y-2">
                         <div class="flex items-center gap-2 text-emerald-800 font-bold text-xs uppercase">
-                            <span>✅</span> Terobosan Aplikasi SIKAP
+                            <span>✅</span> Solusi Terpadu SIKAP FKp UNRI
                         </div>
                         <ul class="space-y-1.5 text-xs text-emerald-950">
-                            <li>• <strong>Kedaulatan Data Fakultas:</strong> Data lengkap 83 SDM riil (Dosen, Tendik, PHL) ada di tangan Dekanat.</li>
-                            <li>• <strong>Layanan Mandiri di HP:</strong> Pegawai bisa absen selfie GPS, isi logbook, dan ajukan cuti paperless.</li>
+                            <li>• <strong>Kedaulatan Data &amp; Siaga Back-up:</strong> Data 83 SDM riil (Dosen, Tendik, PHL) aman di tangan Dekanat, siap mem-backup disaat sistem universitas mengalami kendala seperti sebelumnya.</li>
+                            <li>• <strong>Layanan Mandiri di HP:</strong> Pegawai absen selfie GPS kampus, isi logbook 7.5 jam, dan ajukan cuti paperless.</li>
                             <li>• <strong>Dashboard Keputusan Dekanat:</strong> Data siap saji untuk rapat evaluasi dan bahan usulan formasi ke Rektorat.</li>
                         </ul>
                     </div>
@@ -206,16 +194,9 @@
                     </span>
                 </div>
 
-                {{-- Catatan Bicara Pemapar --}}
-                <div x-show="showSpeakerNotes" class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-xs text-indigo-950 space-y-1.5">
-                    <div class="font-bold text-indigo-900 flex items-center gap-1.5">
-                        <x-icon name="volume-2" class="w-4 h-4 text-indigo-700" />
-                        Poin Bicara ke Pimpinan (Talking Points):
-                    </div>
-                    <p class="leading-relaxed">
-                        <em>"SIKAP dirancang bukan untuk mempersulit, melainkan memberi kemudahan bagi seluruh pemangku kepentingan di fakultas. Sistem ini menghubungkan 3 level pengguna dalam satu alur kerja mulus: <strong>Level 1 adalah Pegawai Mandiri</strong> yang dapat mengurus administrasi dari genggaman ponsel; <strong>Level 2 adalah Atasan Langsung</strong> yang memverifikasi tugas harian stafnya dalam 1 kali klik; dan <strong>Level 3 adalah Pimpinan Dekanat</strong> yang memegang dashboard eksekutif untuk melihat kesehatan organisasi secara utuh kapan saja."</em>
-                    </p>
-                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    SIKAP menghubungkan seluruh pemangku kepentingan kepegawaian dalam satu ekosistem terpadu melalui tiga tingkatan peran:
+                </p>
 
                 {{-- 3 Pilar Arsitektur --}}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -251,7 +232,7 @@
                     <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-2">
                         <div class="flex items-center gap-2">
                             <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">3</span>
-                            <h4 class="font-bold text-emerald-900 text-xs uppercase">Pimpinan Dekanat (Dekan &amp; Wadek)</h4>
+                            <h4 class="font-bold text-emerald-900 text-xs uppercase">Pimpinan Dekanat (Ibu Dekan &amp; Para Wakil Dekan)</h4>
                         </div>
                         <p class="text-slate-600 text-[11px] leading-relaxed">
                             Kokpit strategis pengambilan keputusan: Peta formasi ABK, radar pensiun 1-3 tahun, matriks talenta 9-kotak, dan analitik beban kerja seluruh program studi.
@@ -287,17 +268,6 @@
                     <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                         Modul Lengkap
                     </span>
-                </div>
-
-                {{-- Catatan Bicara Pemapar --}}
-                <div x-show="showSpeakerNotes" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-xs text-emerald-950 space-y-1.5">
-                    <div class="font-bold text-emerald-900 flex items-center gap-1.5">
-                        <x-icon name="volume-2" class="w-4 h-4 text-emerald-700" />
-                        Poin Bicara ke Pimpinan (Talking Points):
-                    </div>
-                    <p class="leading-relaxed">
-                        <em>"Berikut kami paparkan menu-menu utama di dalam aplikasi yang siap digunakan: Pertama, pada **Layanan Mandiri Pegawai**, dosen dan staf tidak perlu lagi mengisi kertas formulir manual. Kedua, pada **Meja Verifikasi Atasan**, setiap koordinator dapat memantau kedisiplinan dan capaian harian anggotanya. Dan Ketiga, pada **Menu Pimpinan**, Dekan dan Wakil Dekan memiliki akses langsung ke Peta Jabatan, Analitik Kehadiran, serta Matriks Talenta untuk melihat peta kekuatan SDM fakultas."</em>
-                    </p>
                 </div>
 
                 {{-- GRID FITUR PER KELOMPOK MENU --}}
@@ -395,7 +365,7 @@
 
                     {{-- KELOMPOK 3: PENGAMBILAN KEPUTUSAN DEKANAT --}}
                     <div class="space-y-3 pt-2">
-                        <div class="flex items-center gap-2 text-xs font-bold text-emerald-900 uppercase tracking-wider">
+                        <div class="flex items-center gap-2 text-emerald-900 uppercase tracking-wider">
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
                             <span>C. Modul Manajerial &amp; Pengambilan Keputusan Dekanat (Executive Governance)</span>
                         </div>
@@ -448,17 +418,6 @@
                     </span>
                 </div>
 
-                {{-- Catatan Bicara Pemapar --}}
-                <div x-show="showSpeakerNotes" class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-950 space-y-1.5">
-                    <div class="font-bold text-blue-900 flex items-center gap-1.5">
-                        <x-icon name="volume-2" class="w-4 h-4 text-blue-700" />
-                        Poin Bicara ke Pimpinan (Talking Points):
-                    </div>
-                    <p class="leading-relaxed">
-                        <em>"Sebagai penutup dari sisi nilai tambah, penerapan SIKAP memberikan 3 dampak nyata: **Pertama, Efisiensi Anggaran & Birokrasi Paperless**, kita menghemat ratusan rim kertas formulir cuti dan map biodata setiap tahunnya; **Kedua, Pengambilan Keputusan Berbasis Data Riil**, pimpinan tidak lagi menebak-nebak kebutuhan pegawai, melainkan memegang data akurat saat rapat formasi bersama Rektorat; dan **Ketiga, Peningkatan Nilai Akreditasi Institusi**, sistem ini menjadi bukti konkret tata kelola SDM modern dan transparan pada Kriteria Penilaian Akreditasi."</em>
-                    </p>
-                </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
                         <div class="text-2xl">🌱</div>
@@ -487,21 +446,21 @@
             </div>
 
             {{-- ========================================================================= --}}
-            {{-- 5. PANDUAN JADWAL ALUR BICARA PRESENTASI (15 MENIT)                      --}}
+            {{-- 5. PANDUAN JADWAL ALUR WAKTU PRESENTASI (15 MENIT)                        --}}
             {{-- ========================================================================= --}}
             <div x-show="activeSection === 'all' || activeSection === 'alur'" class="bg-slate-900 rounded-2xl p-6 text-white shadow-md print-card space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                     <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
                         <span>⏱️</span> Panduan Alur Waktu Presentasi di Depan Dekanat (Durasi 15 Menit)
                     </h3>
-                    <span class="text-xs text-slate-400 font-mono">Cheatsheet Paparan Rapat</span>
+                    <span class="text-xs text-slate-400 font-mono">Struktur Paparan Rapat</span>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
                     <div class="p-3.5 rounded-xl bg-slate-800/90 border border-slate-700 space-y-1.5">
                         <div class="text-emerald-400 font-bold text-xs">01. Menit 00 - 03 (Pengenalan &amp; Masalah)</div>
                         <p class="text-slate-300 leading-relaxed">
-                            Buka dengan menyampaikan masalah manual selama ini dan keterbatasan sistem nasional. Tegaskan pentingnya kedaulatan data tingkat fakultas.
+                            Buka dengan menyampaikan masalah manual selama ini, perlunya sistem mandiri fakultas, dan peran SIKAP sebagai back-up handal disaat sistem universitas mengalami kendala teknis.
                         </p>
                     </div>
 
@@ -522,7 +481,7 @@
                     <div class="p-3.5 rounded-xl bg-slate-800/90 border border-slate-700 space-y-1.5">
                         <div class="text-emerald-400 font-bold text-xs">04. Menit 12 - 15 (Manfaat &amp; Diskusi)</div>
                         <p class="text-slate-300 leading-relaxed">
-                            Rangkum manfaat efisiensi anggaran dan kesiapan akreditasi, lalu buka sesi tanggapan dan arahan dari Bapak Dekan.
+                            Rangkum manfaat efisiensi anggaran dan kesiapan akreditasi, lalu buka sesi tanggapan dan arahan dari Ibu Dekan Prof. Wan Nishfa Dewi, S.Kp, MNg, PhD beserta jajaran Pimpinan Dekanat.
                         </p>
                     </div>
                 </div>
