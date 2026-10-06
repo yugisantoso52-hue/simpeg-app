@@ -35,11 +35,46 @@
         .page-break { page-break-before: always; }
     </style>
 </head>
-<body>
+    <!-- KOP INSTANSI RESMI UNRI -->
+    @php
+        $candidatePaths = [
+            public_path('images/logo-unri-bw.png'),
+            public_path('images/logo-unri-bw.jpg'),
+            public_path('logo-unri-bw.png'),
+            public_path('images/logo-unri.png'),
+            public_path('logo-unri.png'),
+        ];
+        $foundLogo = null;
+        foreach ($candidatePaths as $path) {
+            if (file_exists($path)) {
+                $foundLogo = $path;
+                break;
+            }
+        }
+    @endphp
+    <table style="width: 100%; border-collapse: collapse; border-bottom: 2px solid #000; margin-bottom: 10px; padding-bottom: 3px;">
+        <tr>
+            <td style="width: 24mm; vertical-align: middle; border: none;">
+                @if($foundLogo)
+                    @php
+                        $mimeType = str_ends_with(strtolower($foundLogo), '.jpg') || str_ends_with(strtolower($foundLogo), '.jpeg') ? 'image/jpeg' : 'image/png';
+                    @endphp
+                    <img src="data:{{ $mimeType }};base64,{{ base64_encode(file_get_contents($foundLogo)) }}" style="width: 22mm; height: 22mm; display: block;" alt="Logo UNRI">
+                @endif
+            </td>
+            <td style="text-align: center; vertical-align: middle; padding-left: 5px; padding-right: 24mm; font-family: 'Times New Roman', Times, serif; border: none;">
+                <div style="font-size: 12pt; text-transform: uppercase; line-height: 1.15;">KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI</div>
+                <div style="font-size: 11pt; font-weight: bold; text-transform: uppercase; line-height: 1.15; margin-top: 1px;">UNIVERSITAS RIAU — FAKULTAS KEPERAWATAN</div>
+                <div style="font-size: 8pt; line-height: 1.2; margin-top: 2px;">
+                    Kampus Bina Widya Gedung Health Studies Complex KM. 12,5 Simpang Baru 28293 &nbsp;|&nbsp; Laman : www.keperawatan.unri.ac.id &nbsp;|&nbsp; Email : keperawatan@unri.co.id
+                </div>
+            </td>
+        </tr>
+    </table>
 
     <div class="header">
-        <h2>DAFTAR URUT KEPANGKATAN (DUK) PEGAWAI</h2>
-        <h3>FAKULTAS KEPERAWATAN UNIVERSITAS RIAU — SIKAP ENTERPRISE</h3>
+        <h2 style="font-size: 11px;">DAFTAR URUT KEPANGKATAN (DUK) PEGAWAI</h2>
+        <h3 style="font-size: 8.5px;">FAKULTAS KEPERAWATAN UNIVERSITAS RIAU</h3>
     </div>
 
     {{-- ========================================================================= --}}

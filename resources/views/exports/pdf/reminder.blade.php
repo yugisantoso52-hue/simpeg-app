@@ -65,11 +65,44 @@
         }
     </style>
 </head>
-<body>
-    <div class="header">
-        <h2>Sistem Informasi Kepegawaian (SIKAP)</h2>
-        <h3>Fakultas Keperawatan - Universitas Riau</h3>
-    </div>
+    <!-- KOP INSTANSI RESMI UNRI -->
+    @php
+        $candidatePaths = [
+            public_path('images/logo-unri-bw.png'),
+            public_path('images/logo-unri-bw.jpg'),
+            public_path('logo-unri-bw.png'),
+            public_path('images/logo-unri.png'),
+            public_path('logo-unri.png'),
+        ];
+        $foundLogo = null;
+        foreach ($candidatePaths as $path) {
+            if (file_exists($path)) {
+                $foundLogo = $path;
+                break;
+            }
+        }
+    @endphp
+    <table style="width: 100%; border-collapse: collapse; border-bottom: 2.5px solid #000; margin-bottom: 12px; padding-bottom: 4px;">
+        <tr>
+            <td style="width: 28mm; vertical-align: middle;">
+                @if($foundLogo)
+                    @php
+                        $mimeType = str_ends_with(strtolower($foundLogo), '.jpg') || str_ends_with(strtolower($foundLogo), '.jpeg') ? 'image/jpeg' : 'image/png';
+                    @endphp
+                    <img src="data:{{ $mimeType }};base64,{{ base64_encode(file_get_contents($foundLogo)) }}" style="width: 25mm; height: 25mm; display: block;" alt="Logo UNRI">
+                @endif
+            </td>
+            <td style="text-align: center; vertical-align: middle; padding-left: 5px; padding-right: 28mm; font-family: 'Times New Roman', Times, serif;">
+                <div style="font-size: 13pt; text-transform: uppercase; line-height: 1.15;">KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI</div>
+                <div style="font-size: 12pt; font-weight: bold; text-transform: uppercase; line-height: 1.15; margin-top: 1px;">UNIVERSITAS RIAU</div>
+                <div style="font-size: 12pt; font-weight: bold; text-transform: uppercase; line-height: 1.15; margin-top: 1px;">FAKULTAS KEPERAWATAN</div>
+                <div style="font-size: 8.5pt; line-height: 1.25; margin-top: 3px;">
+                    Kampus Bina Widya Gedung Health Studies Complex KM. 12,5 Simpang Baru 28293<br>
+                    Laman : www.keperawatan.unri.ac.id &nbsp;&nbsp;|&nbsp;&nbsp; Email : keperawatan@unri.co.id
+                </div>
+            </td>
+        </tr>
+    </table>
 
     <div class="title">
         Daftar Pengingat & Jatuh Tempo Transaksi Kepegawaian<br>
