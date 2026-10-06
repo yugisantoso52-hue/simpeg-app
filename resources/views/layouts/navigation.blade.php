@@ -98,10 +98,10 @@
                     SISTEM INFORMASI KEPEGAWAIAN (SIKAP)
                 </h1>
                 <p class="text-[9px] sm:text-[10px] leading-tight text-slate-500 mt-1">
-                    Kampus Bina Widya Gedung Health Studies Complex Km.12,5 Simpang Baru 28293
+                    Kampus Bina Widya Gedung Health Studies Complex KM. 12,5 Simpang Baru 28293
                 </p>
                 <p class="text-[9px] sm:text-[10px] leading-tight text-slate-500">
-                    Laman: <a href="http://keperawatan.unri.ac.id" target="_blank" class="text-blue-600 hover:underline">http://keperawatan.unri.ac.id</a> | Email: <a href="mailto:keperawatan@unri.ac.id" class="text-blue-600 hover:underline">keperawatan@unri.ac.id</a>
+                    Laman : <a href="http://www.keperawatan.unri.ac.id" target="_blank" class="text-blue-600 hover:underline">www.keperawatan.unri.ac.id</a> &nbsp;|&nbsp; Email : <a href="mailto:keperawatan@unri.co.id" class="text-blue-600 hover:underline">keperawatan@unri.co.id</a>
                 </p>
             </div>
 

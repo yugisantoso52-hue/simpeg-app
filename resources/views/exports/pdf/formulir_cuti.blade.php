@@ -14,65 +14,67 @@
             color: #000;
             line-height: 1.25;
         }
-        .header-kop-table {
+        /* STYLING KOP SURAT RESMI SESUAI PERMENDIKTI SAINTEK NO. 42 TAHUN 2025 */
+        .kop-surat-table {
             width: 100%;
             border-collapse: collapse;
-            /* Garis tebal tunggal sesuai Permendikti 42/2025 */
-            border-bottom: 2px solid #000;
-            padding-bottom: 3px;
-            margin-bottom: 8px;
+            border-bottom: 2.5px solid #000000;
+            padding-bottom: 5px;
+            margin-bottom: 12px;
         }
-        .header-kop-table td {
+        .kop-surat-table td {
             vertical-align: middle;
             padding: 0;
             border: none;
         }
-        .header-kop-logo {
-            width: 76px;
+        .kop-logo-cell {
+            width: 28mm;
             text-align: left;
+            vertical-align: middle;
         }
-        .header-kop-logo img {
-            width: 70px;
-            height: 70px;
+        .kop-logo-cell img {
+            width: 25mm;
+            height: 25mm;
             display: block;
         }
-        .header-kop-text {
+        .kop-text-cell {
             text-align: center;
-            padding-right: 15px;
+            vertical-align: middle;
+            padding-left: 5px;
+            padding-right: 28mm;
         }
-        /* Baris 1: KEMENTERIAN - Times New Roman regular */
-        .header-kop-text .kop-kemdikti {
+        .kop-text-cell .kop-kemdikti {
             margin: 0;
-            font-size: 11pt;
+            font-size: 14pt;
             font-weight: normal;
             font-family: 'Times New Roman', Times, serif;
             text-transform: uppercase;
             line-height: 1.15;
+            letter-spacing: 0.2px;
         }
-        /* Baris 2: NAMA PTN - Times New Roman bold */
-        .header-kop-text .kop-ptn {
-            margin: 1px 0;
-            font-size: 10.5pt;
+        .kop-text-cell .kop-ptn {
+            margin: 1.5px 0 0 0;
+            font-size: 12.5pt;
             font-weight: bold;
             font-family: 'Times New Roman', Times, serif;
             text-transform: uppercase;
             line-height: 1.15;
+            letter-spacing: 0.3px;
         }
-        /* Baris 3: NAMA FAKULTAS - Times New Roman bold */
-        .header-kop-text .kop-fakultas {
-            margin: 1px 0;
-            font-size: 10.5pt;
+        .kop-text-cell .kop-fakultas {
+            margin: 1.5px 0 0 0;
+            font-size: 12.5pt;
             font-weight: bold;
             font-family: 'Times New Roman', Times, serif;
             text-transform: uppercase;
             line-height: 1.15;
+            letter-spacing: 0.3px;
         }
-        /* Baris 4: Alamat & Kontak */
-        .header-kop-text .kop-alamat {
-            margin: 2px 0 0 0;
-            font-size: 7.5pt;
+        .kop-text-cell .kop-alamat {
+            margin: 3.5px 0 0 0;
+            font-size: 9pt;
             font-family: 'Times New Roman', Times, serif;
-            line-height: 1.2;
+            line-height: 1.25;
         }
 
         .title {
@@ -123,9 +125,9 @@
     @php
         $candidatePaths = [
             public_path('images/logo-unri-bw.png'),
-            public_path('build/assets/logo-unri.png'),
+            public_path('images/logo-unri-bw.jpg'),
+            public_path('logo-unri-bw.png'),
             public_path('images/logo-unri.png'),
-            public_path('assets/logo-unri.png'),
             public_path('logo-unri.png'),
         ];
 
@@ -138,22 +140,25 @@
         }
     @endphp
 
-    <table class="header-kop-table">
+    <table class="kop-surat-table">
         <tr>
-            <td class="header-kop-logo">
+            <td class="kop-logo-cell">
                 @if($foundLogo)
-                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents($foundLogo)) }}" alt="Logo UNRI">
+                    @php
+                        $mimeType = str_ends_with(strtolower($foundLogo), '.jpg') || str_ends_with(strtolower($foundLogo), '.jpeg') ? 'image/jpeg' : 'image/png';
+                    @endphp
+                    <img src="data:{{ $mimeType }};base64,{{ base64_encode(file_get_contents($foundLogo)) }}" alt="Logo UNRI">
                 @else
                     <div style="font-size: 8pt; color: #666; text-align: center;">[LOGO UNRI]</div>
                 @endif
             </td>
-            <td class="header-kop-text">
+            <td class="kop-text-cell">
                 <div class="kop-kemdikti">KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI</div>
                 <div class="kop-ptn">UNIVERSITAS RIAU</div>
                 <div class="kop-fakultas">FAKULTAS KEPERAWATAN</div>
                 <div class="kop-alamat">
-                    Kampus Bina Widya Gedung Health Studies Complex Km. 12,5 Simpang Baru, Pekanbaru 28293<br>
-                    Laman keperawatan.unri.ac.id Pos-el keperawatan@unri.ac.id
+                    Kampus Bina Widya Gedung Health Studies Complex KM. 12,5 Simpang Baru 28293<br>
+                    Laman : www.keperawatan.unri.ac.id &nbsp;&nbsp;|&nbsp;&nbsp; Email : keperawatan@unri.co.id
                 </div>
             </td>
         </tr>
