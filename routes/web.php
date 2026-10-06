@@ -183,6 +183,12 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'show'])->name('pengajuan-cuti.show');
         Route::post('/pengajuan-cuti/{id}/cancel', [PengajuanCutiController::class, 'cancel'])->name('pengajuan-cuti.cancel');
         Route::get('/pengajuan-cuti/{id}/cetak-pdf', [PengajuanCutiController::class, 'cetakFormPdf'])->name('pengajuan-cuti.cetak-pdf');
+
+        /* Modul Pengajuan Karir (KGB & KP Mandiri Pegawai) */
+        Route::get('/pengajuan-karir', [\App\Http\Controllers\PengajuanKarirController::class, 'index'])->name('pengajuan-karir.index');
+        Route::get('/pengajuan-karir/create', [\App\Http\Controllers\PengajuanKarirController::class, 'create'])->name('pengajuan-karir.create');
+        Route::post('/pengajuan-karir', [\App\Http\Controllers\PengajuanKarirController::class, 'store'])->name('pengajuan-karir.store');
+        Route::get('/pengajuan-karir/{id}', [\App\Http\Controllers\PengajuanKarirController::class, 'show'])->name('pengajuan-karir.show');
     });
 
     // ======================================================================
@@ -247,8 +253,12 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/riwayat-skp', [RiwayatSkpController::class, 'index'])->name('riwayat-skp.index');
 
         Route::get('/reports/kgb/{id}/pdf', [ReportController::class, 'exportKgbPdf'])->name('reports.kgb.pdf');
+        Route::get('/reports/kp/{id}/pdf', [ReportController::class, 'exportUsulanKpPdf'])->name('reports.kp.pdf');
         Route::get('/reports/reminder/pdf', [ReportController::class, 'exportReminderPdf'])->name('reports.reminder.pdf');
         Route::get('/reports/reminder/excel', [ReportController::class, 'exportReminderExcel'])->name('reports.reminder.excel');
+
+        /* Verifikasi & Paraf Hirarkis Pengajuan Karir */
+        Route::post('/pengajuan-karir/{id}/verifikasi', [\App\Http\Controllers\PengajuanKarirController::class, 'verifikasi'])->name('pengajuan-karir.verifikasi');
 
         /* Pengaturan Titik Lokasi Acuan Presensi (Admin & Dekanat) */
         Route::prefix('admin/presensi')->name('admin.presensi.')->group(function () {

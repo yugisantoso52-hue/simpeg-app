@@ -73,11 +73,19 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <button 
-                                        onclick="openKgbModal('{{ $row->id }}', '{{ $row->nama_lengkap ?? $row->nama }}', '{{ $row->golongan_id }}')"
-                                        class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-blue-700 transition">
-                                        ⚡ Proses KGB Lengkap
-                                    </button>
+                                    <div class="flex flex-col gap-1.5 items-center justify-center">
+                                        <button 
+                                            onclick="openKgbModal('{{ $row->id }}', '{{ $row->nama_lengkap ?? $row->nama }}', '{{ $row->golongan_id }}')"
+                                            class="w-full rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-blue-700 transition">
+                                            ⚡ Proses KGB Lengkap
+                                        </button>
+                                        <a href="{{ route('reports.kgb.pdf', $row->id) }}" target="_blank"
+                                           class="w-full inline-flex items-center justify-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800 border border-amber-200 hover:bg-amber-100 transition shadow-2xs"
+                                           title="Cetak Surat Pemberitahuan Kenaikan Gaji Berkala (Lengkap Paraf Kabag Umum & WD II)">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                            <span>📄 Cetak KGB (PDF)</span>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         @empty

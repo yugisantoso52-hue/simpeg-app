@@ -27,6 +27,11 @@
         <x-icon name="user" class="w-4 h-4 {{ request()->routeIs('pegawai.my-profile', 'pegawai.show') ? 'text-blue-600' : 'text-slate-500' }}" />
         <span>Profil Saya</span>
     </a>
+    <a href="{{ route('pengajuan-karir.index') }}" 
+       class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('pengajuan-karir.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+        <x-icon name="award" class="w-4 h-4 {{ request()->routeIs('pengajuan-karir.*') ? 'text-emerald-600' : 'text-slate-500' }}" />
+        <span>Usul KGB & KP</span>
+    </a>
 @endif
 
 {{-- ============================================================== --}}
@@ -207,6 +212,10 @@
                     <x-dropdown-link :href="route('duk.index')" class="flex items-center gap-2 {{ request()->routeIs('duk.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                         <x-icon name="list-ordered" class="w-4 h-4 text-blue-600 shrink-0" />
                         <span>Daftar Urut Kepangkatan (DUK)</span>
+                    </x-dropdown-link>
+                    <x-dropdown-link :href="route('pengajuan-karir.index')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
+                        <x-icon name="clipboard-check" class="w-4 h-4 text-indigo-600 shrink-0" />
+                        <span>Verifikasi Usulan KGB & KP</span>
                     </x-dropdown-link>
                     <x-dropdown-link :href="route('kp.index')" class="flex items-center gap-2 {{ request()->routeIs('kp.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
                         <x-icon name="award" class="w-4 h-4 text-emerald-600 shrink-0" />

@@ -48,30 +48,76 @@ class ReportController extends Controller
     {
         $pegawai = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])->findOrFail($id);
 
-        $tmt = $pegawai->tanggal_masuk ?? $pegawai->tmt_sk_pertama;
+        $tmt = $pegawai->tmt_kgb_terakhir ?? ($pegawai->tanggal_masuk ?? $pegawai->tmt_sk_pertama);
         $diff = $tmt ? \Carbon\Carbon::parse($tmt)->diff(\Carbon\Carbon::now()) : null;
+
+        $mkgTahun = $pegawai->mkg_tahun > 0 ? $pegawai->mkg_tahun : ($diff ? $diff->y : 0);
+        $mkgBulan = $pegawai->mkg_bulan > 0 ? $pegawai->mkg_bulan : ($diff ? $diff->m : 0);
 
         $kgb = (object) [
             'id'                  => $pegawai->id,
             'pegawai'             => $pegawai,
-            'gaji_lama'           => 0,
-            'gaji_baru'           => 0,
-            'terbilang_gaji_baru' => 'nol',
-            'masa_kerja_tahun'    => $diff ? $diff->y : 0,
-            'masa_kerja_bulan'    => $diff ? $diff->m : 0,
+            'gaji_lama'           => 4256600,
+            'gaji_baru'           => 4390700,
+            'terbilang_gaji_baru' => 'Empat Juta Tiga Ratus Sembilan Puluh Ribu Tujuh Ratus',
+            'masa_kerja_tahun'    => $mkgTahun,
+            'masa_kerja_bulan'    => $mkgBulan,
             'tmt_kgb_baru'        => $pegawai->kgb_berikutnya ? $pegawai->kgb_berikutnya->format('Y-m-d') : date('Y-m-d'),
         ];
+
+        $pejabatDekan = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
+        $pejabatWd2   = Pegawai::where('nama', 'like', '%Safri%')->first();
+        $pejabatKabag = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
+        $isPppk       = str_contains(strtolower($pegawai->jenis_pegawai ?? ''), 'pppk');
 
         $watermarkService = app(\App\Services\DocumentWatermarkService::class);
         $verifyCode = $watermarkService->generateVerificationCode('SK Kenaikan Gaji Berkala', 'KGB/' . $pegawai->nip . '/' . date('Y'), $pegawai->nama_lengkap ?? $pegawai->nama);
         $verifyUrl = route('verify.document', ['code' => $verifyCode]);
 
-        $pdf = Pdf::loadView('exports.pdf.sk-kgb', compact('kgb', 'verifyUrl', 'verifyCode'))
+        $pdf = Pdf::loadView('exports.pdf.sk-kgb', compact('kgb', 'pegawai', 'verifyUrl', 'verifyCode', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'isPppk'))
             ->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);
 
         return $pdf->stream('SK_KGB_' . $pegawai->nip . '.pdf');
+    }
+
+    /**
+     * Export Surat Pengantar Usulan Kenaikan Pangkat ke Rektor (PDF)
+     */
+    public function exportUsulanKpPdf($id)
+    {
+        // $id bisa ID PengajuanKarir atau ID Pegawai
+        $pengajuan = \App\Models\PengajuanKarir::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan', 'golonganLama', 'golonganTujuan'])->find($id);
+
+        if (!$pengajuan) {
+            $pegawai = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])->findOrFail($id);
+            // Default mock objek pengajuan untuk pegawai langsung
+            $targetGolongan = \App\Models\Golongan::where('id', '>', $pegawai->golongan_id ?? 0)->first() ?? $pegawai->golongan;
+            $pengajuan = (object) [
+                'pegawai'          => $pegawai,
+                'periode_kp'       => 'Februari',
+                'tahun_periode'    => date('Y'),
+                'golonganLama'     => $pegawai->golongan,
+                'golonganTujuan'   => $targetGolongan,
+                'tmt_lama'         => $pegawai->tmt_pangkat_terakhir,
+                'paraf_kabag_at'   => now(),
+                'paraf_wd2_at'     => now(),
+                'ttd_dekan_at'     => now(),
+            ];
+        }
+
+        $pejabatDekan = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
+        $pejabatWd2   = Pegawai::where('nama', 'like', '%Safri%')->first();
+        $pejabatKabag = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
+
+        $watermarkService = app(\App\Services\DocumentWatermarkService::class);
+        $pdf = Pdf::loadView('exports.pdf.surat-usulan-kp', compact('pengajuan', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag'))
+            ->setPaper('a4', 'portrait');
+
+        $pdf = $watermarkService->applyWatermark($pdf);
+
+        return $pdf->stream('Usulan_KP_' . $pengajuan->pegawai->nip . '.pdf');
     }
 
     /**
