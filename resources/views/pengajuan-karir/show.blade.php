@@ -2,7 +2,7 @@
     <x-slot name="header">
         <x-enterprise.page-header
             title="Detail & Tracking Pengajuan {{ $pengajuan->jenis_pengajuan }}"
-            subtitle="Lembar Monitoring Paraf Koordinasi Administrasi dan Persetujuan Dekan"
+            subtitle="Lembar Monitoring Paraf Koordinasi Administrasi dan Persetujuan Wakil Dekan II"
         />
     </x-slot>
 
@@ -47,10 +47,10 @@
                 {{-- Status Verifikasi Berjenjang (Stepper Paraf) --}}
                 <div class="rounded-xl bg-slate-50 p-4 border border-slate-200">
                     <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-                        Status Alur Verifikasi & Paraf Koordinasi Tata Naskah:
+                        Status Alur Verifikasi & Penandatanganan Resmi:
                     </h4>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         {{-- 1. Ka Pokja Keu-Kepeg --}}
                         <div class="p-3 rounded-lg border {{ $pengajuan->paraf_kapokja_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
                             <div class="flex items-center justify-between mb-1">
@@ -79,30 +79,16 @@
                             @endif
                         </div>
 
-                        {{-- 3. Wadek II --}}
+                        {{-- 3. Wadek II (Pejabat Penandatangan Resmi) --}}
                         <div class="p-3 rounded-lg border {{ $pengajuan->paraf_wd2_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">3. Wakil Dekan II</span>
-                                <span class="text-xs font-bold">{{ $pengajuan->paraf_wd2_at ? '✓ Paraf' : 'Menunggu' }}</span>
+                                <span class="text-xs font-bold">3. Wakil Dekan II (Penandatangan)</span>
+                                <span class="text-xs font-bold">{{ $pengajuan->paraf_wd2_at ? '✓ Ditandatangani' : 'Menunggu' }}</span>
                             </div>
                             <div class="text-[11px] text-slate-600">Dr. Safri, M.Kep., Sp.Kep.M.B</div>
                             @if($pengajuan->paraf_wd2_at)
                                 <div class="text-[10px] text-emerald-700 font-mono mt-1">
                                     {{ $pengajuan->paraf_wd2_at->format('d/m/Y H:i') }}
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- 4. Dekan --}}
-                        <div class="p-3 rounded-lg border {{ $pengajuan->ttd_dekan_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">4. Dekan</span>
-                                <span class="text-xs font-bold">{{ $pengajuan->ttd_dekan_at ? '✓ Disetujui' : 'Menunggu' }}</span>
-                            </div>
-                            <div class="text-[11px] text-slate-600">Prof. Wan Nishfa Dewi, PhD</div>
-                            @if($pengajuan->ttd_dekan_at)
-                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
-                                    {{ $pengajuan->ttd_dekan_at->format('d/m/Y H:i') }}
                                 </div>
                             @endif
                         </div>
@@ -263,17 +249,10 @@
                                 </button>
                             @endif
 
-                            {{-- 3. Tombol Paraf WD II --}}
+                            {{-- 3. Tombol Tanda Tangan Wakil Dekan II --}}
                             @if(!$pengajuan->paraf_wd2_at && ($isAdmin || $isWd2))
-                                <button type="submit" name="tahap" value="paraf_wd2" class="px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-xs transition">
-                                    ✓ Bubuhkan Paraf Wakil Dekan II
-                                </button>
-                            @endif
-
-                            {{-- 4. Tombol TTD Dekan --}}
-                            @if(!$pengajuan->ttd_dekan_at && ($isAdmin || $isDekan))
-                                <button type="submit" name="tahap" value="ttd_dekan" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition">
-                                    🎖️ Setujui & Tanda Tangan Dekan
+                                <button type="submit" name="tahap" value="paraf_wd2" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition">
+                                    🎖️ Setujui & Tanda Tangan Wakil Dekan II
                                 </button>
                             @endif
 

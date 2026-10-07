@@ -182,53 +182,44 @@
     Demikian usulan ini kami sampaikan, atas bantuan, kerja sama dan perkenan Bapak Rektor kami ucapkan terima kasih.
 </p>
 
-{{-- AREA PENANDATANGANAN & PARAF HIRARKIS KABAG UMUM + WADEK II --}}
+{{-- AREA PENANDATANGANAN & PARAF DIGITAL KOORDINASI TATA NASKAH --}}
 <table class="ttd-paraf-table">
     <tr>
-        {{-- Sisi Kiri: Kotak Paraf Hirarki Sesuai Tata Naskah Dinas --}}
-        <td style="width: 50%; vertical-align: bottom;">
-            <div class="paraf-hierarki-box">
-                <div style="font-weight: bold; margin-bottom: 3px; color: #1e293b;">
-                    PARAF KOORDINASI HIRARKI TATA USAHA:
+        {{-- Sisi Kiri: Kotak Paraf Koordinasi Tata Naskah (Ka Pokja & Kabag Umum) --}}
+        <td style="width: 50%; vertical-align: bottom; padding-right: 15px;">
+            <div style="border: 1px solid #475569; padding: 5px 8px; border-radius: 4px; font-size: 7.5pt; background-color: #f8fafc; font-family: 'Times New Roman', Times, serif;">
+                <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 4px; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; font-size: 7.5pt;">
+                    PARAF DIGITAL KOORDINASI TATA NASKAH:
                 </div>
-                <table>
+                <table style="width: 100%; border-collapse: collapse; font-size: 7.5pt; line-height: 1.25;">
                     <tr>
-                        <td style="width: 32%;">1. Kabag Umum</td>
-                        <td style="width: 48%;">: {{ $pejabatKabag->nama ?? 'Bakhtiar' }}, S.Sos., M.Si</td>
-                        <td style="width: 20%; text-align: right;">
-                            @if($pengajuan->paraf_kabag_at)
-                                <span class="badge-paraf">[ Paraf ✓ ]</span>
-                            @else
-                                <span style="color: #64748b;">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</span>
-                            @endif
-                        </td>
+                        <td style="width: 45%; padding: 1.5px 0; vertical-align: top;">1. Ka Pokja Keu-Kepeg</td>
+                        <td style="width: 55%; padding: 1.5px 0; vertical-align: top;">: {{ $pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina' }}, SE</td>
                     </tr>
                     <tr>
-                        <td>2. Wadek II (Keu & Umum)</td>
-                        <td>: Dr. {{ $pejabatWd2->nama ?? 'Safri' }}, M.Kep., Sp.Kep.M.B</td>
-                        <td style="text-align: right;">
-                            @if($pengajuan->paraf_wd2_at)
-                                <span class="badge-paraf">[ Paraf ✓ ]</span>
-                            @else
-                                <span style="color: #64748b;">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</span>
-                            @endif
-                        </td>
+                        <td style="padding: 1.5px 0;">&nbsp;&nbsp;&nbsp;Status Pemeriksaan</td>
+                        <td style="padding: 1.5px 0; color: #047857; font-weight: bold;">: [ Diverifikasi & Sah ]</td>
+                    </tr>
+                    <tr style="border-top: 1px dashed #cbd5e1;">
+                        <td style="padding: 1.5px 0; vertical-align: top;">2. Kepala Bagian Umum</td>
+                        <td style="padding: 1.5px 0; vertical-align: top;">: {{ $pejabatKabag->nama ?? 'Bakhtiar' }}, S.Sos., M.Si</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 1.5px 0;">&nbsp;&nbsp;&nbsp;Status Pemeriksaan</td>
+                        <td style="padding: 1.5px 0; color: #047857; font-weight: bold;">: [ Diverifikasi & Sah ]</td>
                     </tr>
                 </table>
-                <div style="font-size: 7pt; color: #64748b; margin-top: 3px; font-style: italic;">
-                    * Sesuai Peraturan Tata Naskah Dinas Kemendiktisaintek No. 42 Tahun 2025.
-                </div>
             </div>
         </td>
 
-        {{-- Sisi Kanan: Tanda Tangan Dekan --}}
-        <td style="width: 50%; text-align: center; vertical-align: top;">
+        {{-- Sisi Kanan: Tanda Tangan Wakil Dekan Bidang Keuangan dan Umum --}}
+        <td style="width: 50%; text-align: left; vertical-align: top; padding-left: 10px;">
             <div style="font-size: 10.5pt; line-height: 1.25;">
-                Dekan Fakultas Keperawatan<br>
-                Universitas Riau,
-                <br><br><br><br><br>
-                <strong style="text-decoration: underline;">Prof. {{ $pejabatDekan->nama ?? 'Wan Nishfa Dewi' }}, S.Kp., MNg., PhD</strong><br>
-                <span>NIP. {{ $pejabatDekan->nip ?? '197508222001122001' }}</span>
+                Wakil Dekan Bidang Keuangan dan Umum<br>
+                Fakultas Keperawatan Universitas Riau<br>
+                <div style="height: 48px;"></div>
+                <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep., Sp.Kep.M.B') }}</strong><br>
+                <span>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</span>
             </div>
         </td>
     </tr>

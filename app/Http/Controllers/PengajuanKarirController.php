@@ -236,14 +236,14 @@ class PengajuanKarirController extends Controller
                 'catatan_verifikator' => $catatan ?? 'Telah diparaf dan diverifikasi kelengkapan berkas oleh Kepala Bagian Umum.',
             ]);
             $msg = 'Paraf Kepala Bagian Umum berhasil dibubuhkan.';
-        } elseif ($tahap === 'paraf_wd2') {
+        } elseif ($tahap === 'paraf_wd2' || $tahap === 'ttd_wd2') {
             $pengajuan->update([
-                'status'              => 'diverifikasi_wd2',
+                'status'              => 'disetujui_wd2',
                 'paraf_wd2_at'        => now(),
                 'paraf_wd2_by'        => $pejabatLogin?->id,
-                'catatan_verifikator' => $catatan ?? 'Telah diparaf dan disetujui oleh Wakil Dekan Bidang Keuangan dan Umum.',
+                'catatan_verifikator' => $catatan ?? 'Telah ditandatangani dan disetujui secara resmi oleh Wakil Dekan Bidang Keuangan dan Umum.',
             ]);
-            $msg = 'Paraf Wakil Dekan II berhasil dibubuhkan.';
+            $msg = 'Pengajuan resmi ditandatangani dan disetujui oleh Wakil Dekan Bidang Keuangan dan Umum.';
         } elseif ($tahap === 'ttd_dekan') {
             $pengajuan->update([
                 'status'              => 'disetujui_dekan',

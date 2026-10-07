@@ -38,7 +38,7 @@
                         </span>
                         <h2 class="text-xl md:text-2xl font-black mt-2 tracking-tight">Form Pengajuan Kenaikan Gaji Berkala & Pangkat</h2>
                         <p class="text-slate-300 text-xs md:text-sm mt-1 max-w-2xl leading-relaxed">
-                            Diajukan oleh setiap pegawai (Dosen & Tendik PNS/PPPK) yang telah memenuhi syarat masa kerja dan evaluasi kinerja tahunan, diproses melalui paraf <strong>Kepala Bagian Umum</strong> dan <strong>Wakil Dekan II</strong> sebelum ditetapkan oleh <strong>Dekan</strong>.
+                            Diajukan oleh setiap pegawai (Dosen & Tendik PNS/PPPK) yang telah memenuhi syarat masa kerja dan evaluasi kinerja tahunan, diproses melalui verifikasi administrasi <strong>Ka Pokja Keu-Kepeg</strong>, paraf <strong>Kepala Bagian Umum</strong>, dan penetapan resmi oleh <strong>Wakil Dekan Bidang Keuangan dan Umum</strong>.
                         </p>
                     </div>
 
@@ -154,7 +154,7 @@
                                                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-{{ $badge['color'] }}-100 text-{{ $badge['color'] }}-800 border border-{{ $badge['color'] }}-200">
                                                     {{ $badge['label'] }}
                                                 </span>
-                                                {{-- Tracking Mini Paraf 4 Tahap --}}
+                                                {{-- Tracking Mini Paraf 3 Tahap --}}
                                                 <div class="flex items-center gap-1.5 text-[10px] text-slate-500 pt-0.5">
                                                     <span class="{{ $item->paraf_kapokja_at ? 'text-sky-700 font-bold' : 'text-slate-400' }}">
                                                         Pokja: {{ $item->paraf_kapokja_at ? '✓' : '...' }}
@@ -164,12 +164,8 @@
                                                         Kabag: {{ $item->paraf_kabag_at ? '✓' : '...' }}
                                                     </span>
                                                     <span>•</span>
-                                                    <span class="{{ $item->paraf_wd2_at ? 'text-purple-700 font-bold' : 'text-slate-400' }}">
+                                                    <span class="{{ $item->paraf_wd2_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">
                                                         WD II: {{ $item->paraf_wd2_at ? '✓' : '...' }}
-                                                    </span>
-                                                    <span>•</span>
-                                                    <span class="{{ $item->ttd_dekan_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">
-                                                        Dekan: {{ $item->ttd_dekan_at ? '✓' : '...' }}
                                                     </span>
                                                 </div>
                                             </div>

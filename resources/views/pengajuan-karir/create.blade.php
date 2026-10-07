@@ -219,9 +219,9 @@
                         <div class="font-bold text-slate-800">Alur Verifikasi Administratif Surat Resmi:</div>
                         <ol class="list-decimal list-inside space-y-1 text-[11px]">
                             <li><strong>Pegawai</strong> submit formulir dan berkas pengajuan secara mandiri.</li>
-                            <li><strong>Kepala Bagian Umum</strong> memverifikasi kelengkapan berkas fisik & membubuhkan paraf administrasi.</li>
-                            <li><strong>Wakil Dekan Bidang Keuangan dan Umum (WD II)</strong> memverifikasi dan membubuhkan paraf pimpinan.</li>
-                            <li><strong>Dekan</strong> menandatangani Surat Keputusan / Surat Usulan resmi ke Rektor UNRI.</li>
+                            <li><strong>Ka Pokja Keu-Kepeg</strong> memverifikasi kelengkapan berkas fisik & administrasi kepegawaian.</li>
+                            <li><strong>Kepala Bagian Umum</strong> memverifikasi koordinasi tata naskah & membubuhkan paraf administrasi.</li>
+                            <li><strong>Wakil Dekan Bidang Keuangan dan Umum (WD II)</strong> menyetujui dan menandatangani surat resmi.</li>
                         </ol>
                     </div>
 

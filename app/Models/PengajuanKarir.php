@@ -110,10 +110,10 @@ class PengajuanKarir extends Model
     {
         return match ($this->status) {
             'diajukan' => ['label' => 'Diajukan', 'color' => 'blue', 'icon' => 'clock'],
-            'diverifikasi_kapokja' => ['label' => 'Paraf Ka Pokja ✓', 'color' => 'sky', 'icon' => 'check'],
-            'diverifikasi_kabag' => ['label' => 'Paraf Kabag Umum ✓', 'color' => 'indigo', 'icon' => 'check'],
-            'diverifikasi_wd2' => ['label' => 'Paraf WD II ✓', 'color' => 'purple', 'icon' => 'check-circle'],
-            'disetujui_dekan' => ['label' => 'Disetujui Dekan ✓', 'color' => 'emerald', 'icon' => 'award'],
+            'diverifikasi_kapokja' => ['label' => 'Paraf Ka Pokja', 'color' => 'sky', 'icon' => 'check'],
+            'diverifikasi_kabag' => ['label' => 'Paraf Kabag Umum', 'color' => 'indigo', 'icon' => 'check'],
+            'diverifikasi_wd2', 'disetujui_wd2' => ['label' => 'Disetujui WD II (Sah)', 'color' => 'emerald', 'icon' => 'check-circle'],
+            'disetujui_dekan' => ['label' => 'Disetujui Dekan', 'color' => 'emerald', 'icon' => 'award'],
             'ditolak' => ['label' => 'Ditolak / Perlu Revisi', 'color' => 'rose', 'icon' => 'x-circle'],
             'selesai' => ['label' => 'Selesai / Terbit SK', 'color' => 'teal', 'icon' => 'check-check'],
             default => ['label' => ucfirst($this->status), 'color' => 'gray', 'icon' => 'info'],

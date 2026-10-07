@@ -176,12 +176,13 @@ class ReportController extends Controller
             abort(403, 'Anda tidak memiliki hak akses untuk mencetak dokumen pegawai lain.');
         }
 
-        $pejabatDekan = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
-        $pejabatWd2   = Pegawai::where('nama', 'like', '%Safri%')->first();
-        $pejabatKabag = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
+        $pejabatDekan   = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
+        $pejabatWd2     = Pegawai::where('nama', 'like', '%Safri%')->first();
+        $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
+        $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
 
         $watermarkService = app(\App\Services\DocumentWatermarkService::class);
-        $pdf = Pdf::loadView('exports.pdf.surat-usulan-kp', compact('pengajuan', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag'))
+        $pdf = Pdf::loadView('exports.pdf.surat-usulan-kp', compact('pengajuan', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja'))
             ->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);
