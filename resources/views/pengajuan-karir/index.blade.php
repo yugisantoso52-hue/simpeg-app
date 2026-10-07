@@ -96,8 +96,13 @@
                         <h3 class="text-base font-bold text-slate-800">
                             {{ $isExecutive ? 'Daftar Pengajuan Karir Masuk & Verifikasi' : 'Riwayat Pengajuan Karir Saya' }}
                         </h3>
-                        <div class="flex items-center gap-2">
-                            <a href="{{ route('pengajuan-karir.index') }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold {{ !request('jenis') ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600' }}">Semua</a>
+                        <div class="flex flex-wrap items-center gap-2">
+                            @if($isExecutive)
+                                <a href="{{ route('pengajuan-karir.index') }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold {{ !request('scope') && !request('jenis') ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600' }}">Semua Usulan Masuk</a>
+                                <a href="{{ route('pengajuan-karir.index', ['scope' => 'saya']) }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold {{ request('scope') === 'saya' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600' }}">Usulan Saya Sendiri</a>
+                            @else
+                                <a href="{{ route('pengajuan-karir.index') }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold {{ !request('jenis') ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600' }}">Semua</a>
+                            @endif
                             <a href="{{ route('pengajuan-karir.index', ['jenis' => 'KGB']) }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold {{ request('jenis') === 'KGB' ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600' }}">KGB Saja</a>
                             <a href="{{ route('pengajuan-karir.index', ['jenis' => 'KP']) }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold {{ request('jenis') === 'KP' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600' }}">KP Saja</a>
                         </div>
@@ -123,7 +128,7 @@
                                     <tr class="hover:bg-slate-50/80 transition">
                                         <td class="py-3 px-3 font-mono text-slate-400">{{ $loop->iteration }}</td>
                                         <td class="py-3 px-3">
-                                            <div class="font-bold text-slate-900 text-sm">{{ $item->pegawai->nama_lengkap ?? $item->pegawai->nama }}</div>
+                                             <div class="font-bold text-slate-900 text-sm">{{ $item->pegawai->nama_lengkap ?? $item->pegawai->nama }}</div>
                                             <div class="text-[11px] text-slate-500 font-mono">NIP: {{ $item->pegawai->nip }}</div>
                                             <div class="text-[11px] text-slate-600">{{ $item->pegawai->jabatan->nama_jabatan ?? '-' }}</div>
                                         </td>
@@ -149,13 +154,17 @@
                                                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-{{ $badge['color'] }}-100 text-{{ $badge['color'] }}-800 border border-{{ $badge['color'] }}-200">
                                                     {{ $badge['label'] }}
                                                 </span>
-                                                {{-- Tracking Mini Paraf --}}
-                                                <div class="flex items-center gap-2 text-[10px] text-slate-500 pt-0.5">
-                                                    <span class="{{ $item->paraf_kabag_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">
+                                                {{-- Tracking Mini Paraf 4 Tahap --}}
+                                                <div class="flex items-center gap-1.5 text-[10px] text-slate-500 pt-0.5">
+                                                    <span class="{{ $item->paraf_kapokja_at ? 'text-sky-700 font-bold' : 'text-slate-400' }}">
+                                                        Pokja: {{ $item->paraf_kapokja_at ? '✓' : '...' }}
+                                                    </span>
+                                                    <span>•</span>
+                                                    <span class="{{ $item->paraf_kabag_at ? 'text-indigo-700 font-bold' : 'text-slate-400' }}">
                                                         Kabag: {{ $item->paraf_kabag_at ? '✓' : '...' }}
                                                     </span>
                                                     <span>•</span>
-                                                    <span class="{{ $item->paraf_wd2_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">
+                                                    <span class="{{ $item->paraf_wd2_at ? 'text-purple-700 font-bold' : 'text-slate-400' }}">
                                                         WD II: {{ $item->paraf_wd2_at ? '✓' : '...' }}
                                                     </span>
                                                     <span>•</span>

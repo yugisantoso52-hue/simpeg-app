@@ -47,14 +47,28 @@
                 {{-- Status Verifikasi Berjenjang (Stepper Paraf) --}}
                 <div class="rounded-xl bg-slate-50 p-4 border border-slate-200">
                     <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-                        Status Alur Verifikasi & Paraf Koordinasi:
+                        Status Alur Verifikasi & Paraf Koordinasi Tata Naskah:
                     </h4>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {{-- 1. Kabag Umum --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {{-- 1. Ka Pokja Keu-Kepeg --}}
+                        <div class="p-3 rounded-lg border {{ $pengajuan->paraf_kapokja_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-bold">1. Ka Pokja Keu-Kepeg</span>
+                                <span class="text-xs font-bold">{{ $pengajuan->paraf_kapokja_at ? '✓ Paraf' : 'Menunggu' }}</span>
+                            </div>
+                            <div class="text-[11px] text-slate-600">Dolli Vita Zenitha, SE</div>
+                            @if($pengajuan->paraf_kapokja_at)
+                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
+                                    {{ $pengajuan->paraf_kapokja_at->format('d/m/Y H:i') }}
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- 2. Kabag Umum --}}
                         <div class="p-3 rounded-lg border {{ $pengajuan->paraf_kabag_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">1. Kabag Umum</span>
+                                <span class="text-xs font-bold">2. Kabag Umum</span>
                                 <span class="text-xs font-bold">{{ $pengajuan->paraf_kabag_at ? '✓ Paraf' : 'Menunggu' }}</span>
                             </div>
                             <div class="text-[11px] text-slate-600">Bakhtiar, S.Sos., M.Si</div>
@@ -65,10 +79,10 @@
                             @endif
                         </div>
 
-                        {{-- 2. Wadek II --}}
+                        {{-- 3. Wadek II --}}
                         <div class="p-3 rounded-lg border {{ $pengajuan->paraf_wd2_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">2. Wakil Dekan II</span>
+                                <span class="text-xs font-bold">3. Wakil Dekan II</span>
                                 <span class="text-xs font-bold">{{ $pengajuan->paraf_wd2_at ? '✓ Paraf' : 'Menunggu' }}</span>
                             </div>
                             <div class="text-[11px] text-slate-600">Dr. Safri, M.Kep., Sp.Kep.M.B</div>
@@ -79,10 +93,10 @@
                             @endif
                         </div>
 
-                        {{-- 3. Dekan --}}
+                        {{-- 4. Dekan --}}
                         <div class="p-3 rounded-lg border {{ $pengajuan->ttd_dekan_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">3. Dekan</span>
+                                <span class="text-xs font-bold">4. Dekan</span>
                                 <span class="text-xs font-bold">{{ $pengajuan->ttd_dekan_at ? '✓ Disetujui' : 'Menunggu' }}</span>
                             </div>
                             <div class="text-[11px] text-slate-600">Prof. Wan Nishfa Dewi, PhD</div>
@@ -235,22 +249,29 @@
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2 pt-2">
-                            {{-- Tombol Paraf Kabag --}}
-                            @if(!$pengajuan->paraf_kabag_at)
+                            {{-- 1. Tombol Paraf Ka Pokja Keu-Kepeg --}}
+                            @if(!$pengajuan->paraf_kapokja_at && ($isAdmin || $isKaPokja))
+                                <button type="submit" name="tahap" value="paraf_kapokja" class="px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-xs transition">
+                                    ✓ Bubuhkan Paraf Ka Pokja Keu-Kepeg
+                                </button>
+                            @endif
+
+                            {{-- 2. Tombol Paraf Kabag Umum --}}
+                            @if(!$pengajuan->paraf_kabag_at && ($isAdmin || $isKabag))
                                 <button type="submit" name="tahap" value="paraf_kabag" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition">
                                     ✓ Bubuhkan Paraf Kabag Umum
                                 </button>
                             @endif
 
-                            {{-- Tombol Paraf WD II --}}
-                            @if($pengajuan->paraf_kabag_at && !$pengajuan->paraf_wd2_at)
+                            {{-- 3. Tombol Paraf WD II --}}
+                            @if(!$pengajuan->paraf_wd2_at && ($isAdmin || $isWd2))
                                 <button type="submit" name="tahap" value="paraf_wd2" class="px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-xs transition">
                                     ✓ Bubuhkan Paraf Wakil Dekan II
                                 </button>
                             @endif
 
-                            {{-- Tombol TTD Dekan --}}
-                            @if($pengajuan->paraf_wd2_at && !$pengajuan->ttd_dekan_at)
+                            {{-- 4. Tombol TTD Dekan --}}
+                            @if(!$pengajuan->ttd_dekan_at && ($isAdmin || $isDekan))
                                 <button type="submit" name="tahap" value="ttd_dekan" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition">
                                     🎖️ Setujui & Tanda Tangan Dekan
                                 </button>

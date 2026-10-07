@@ -18,12 +18,12 @@ class PengajuanKarirController extends Controller
     {
         $user = Auth::user();
         $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
-        $isPegawai = $user->hasRole('pegawai');
 
         $query = PengajuanKarir::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan', 'golonganLama', 'golonganTujuan']);
 
-        // Jika hanya pegawai biasa, tampilkan miliknya sendiri
-        if (!$isExecutive || $isPegawai) {
+        // Jika bukan pimpinan / executive kepegawaian, batasi hanya melihat berkas miliknya sendiri
+        // Jika executive ingin melihat berkas pribadinya, bisa gunakan filter ?scope=saya
+        if (!$isExecutive || $request->query('scope') === 'saya') {
             $pegawaiId = $user->pegawai_id ?? $user->pegawai?->id;
             $query->where('pegawai_id', $pegawaiId);
         }
@@ -179,6 +179,7 @@ class PengajuanKarirController extends Controller
             'pegawai.golongan', 
             'golonganLama', 
             'golonganTujuan',
+            'verifikatorKaPokja',
             'verifikatorKabag',
             'verifikatorWd2',
             'penandatanganDekan'
@@ -192,11 +193,19 @@ class PengajuanKarirController extends Controller
             abort(403, 'Anda tidak memiliki hak akses melihat berkas pengajuan ini.');
         }
 
-        return view('pengajuan-karir.show', compact('pengajuan', 'isExecutive'));
+        $jabatan = strtoupper(trim((string)($user->pegawai?->jabatan->nama_jabatan ?? '')));
+        $isAdmin = $user->hasRole('admin');
+        $isKaPokja = (str_contains($jabatan, 'KA POKJA') || str_contains($jabatan, 'KEPALA POKJA') || str_contains($jabatan, 'KETUA POKJA'))
+            && (str_contains($jabatan, 'KEU') || str_contains($jabatan, 'KEPEG'));
+        $isKabag = str_contains($jabatan, 'KEPALA BAGIAN UMUM') || str_contains($jabatan, 'KABAG UMUM') || str_contains($jabatan, 'KABAG TU');
+        $isWd2 = str_contains($jabatan, 'WADEK II') || str_contains($jabatan, 'WAKIL DEKAN II') || (str_contains($jabatan, 'WAKIL DEKAN') && str_contains($jabatan, 'KEUANGAN'));
+        $isDekan = str_contains($jabatan, 'DEKAN') && !str_contains($jabatan, 'WAKIL') && !str_contains($jabatan, 'WADEK');
+
+        return view('pengajuan-karir.show', compact('pengajuan', 'isExecutive', 'isAdmin', 'isKaPokja', 'isKabag', 'isWd2', 'isDekan'));
     }
 
     /**
-     * Proses Verifikasi & Paraf Bertingkat (Kabag -> WD II -> Dekan)
+     * Proses Verifikasi & Paraf Bertingkat (Ka Pokja -> Kabag -> WD II -> Dekan)
      */
     public function verifikasi(Request $request, $id)
     {
@@ -206,12 +215,20 @@ class PengajuanKarirController extends Controller
         }
 
         $pengajuan = PengajuanKarir::findOrFail($id);
-        $tahap = $request->input('tahap'); // paraf_kabag, paraf_wd2, ttd_dekan, tolak
+        $tahap = $request->input('tahap'); // paraf_kapokja, paraf_kabag, paraf_wd2, ttd_dekan, tolak
         $catatan = $request->input('catatan');
 
         $pejabatLogin = $user->pegawai ?? Pegawai::where('nama', 'like', '%' . $user->name . '%')->first();
 
-        if ($tahap === 'paraf_kabag') {
+        if ($tahap === 'paraf_kapokja') {
+            $pengajuan->update([
+                'status'              => 'diverifikasi_kapokja',
+                'paraf_kapokja_at'    => now(),
+                'paraf_kapokja_by'    => $pejabatLogin?->id,
+                'catatan_verifikator' => $catatan ?? 'Telah diperiksa berkas administrasi dan sah oleh Ka Pokja Keu-Kepeg.',
+            ]);
+            $msg = 'Paraf Ka Pokja Keuangan dan Kepegawaian berhasil dibubuhkan.';
+        } elseif ($tahap === 'paraf_kabag') {
             $pengajuan->update([
                 'status'              => 'diverifikasi_kabag',
                 'paraf_kabag_at'      => now(),

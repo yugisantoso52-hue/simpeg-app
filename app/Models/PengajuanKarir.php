@@ -38,6 +38,8 @@ class PengajuanKarir extends Model
         'status',
         'catatan_pegawai',
         'catatan_verifikator',
+        'paraf_kapokja_at',
+        'paraf_kapokja_by',
         'paraf_kabag_at',
         'paraf_kabag_by',
         'paraf_wd2_at',
@@ -47,13 +49,14 @@ class PengajuanKarir extends Model
     ];
 
     protected $casts = [
-        'tmt_lama'        => 'date',
-        'tmt_baru'        => 'date',
-        'paraf_kabag_at'  => 'datetime',
-        'paraf_wd2_at'    => 'datetime',
-        'ttd_dekan_at'    => 'datetime',
-        'gaji_pokok_lama' => 'decimal:2',
-        'gaji_pokok_baru' => 'decimal:2',
+        'tmt_lama'          => 'date',
+        'tmt_baru'          => 'date',
+        'paraf_kapokja_at'  => 'datetime',
+        'paraf_kabag_at'    => 'datetime',
+        'paraf_wd2_at'      => 'datetime',
+        'ttd_dekan_at'      => 'datetime',
+        'gaji_pokok_lama'   => 'decimal:2',
+        'gaji_pokok_baru'   => 'decimal:2',
     ];
 
     protected static function booted(): void
@@ -80,6 +83,11 @@ class PengajuanKarir extends Model
         return $this->belongsTo(Golongan::class, 'golongan_tujuan_id');
     }
 
+    public function verifikatorKaPokja(): BelongsTo
+    {
+        return $this->belongsTo(Pegawai::class, 'paraf_kapokja_by');
+    }
+
     public function verifikatorKabag(): BelongsTo
     {
         return $this->belongsTo(Pegawai::class, 'paraf_kabag_by');
@@ -102,6 +110,7 @@ class PengajuanKarir extends Model
     {
         return match ($this->status) {
             'diajukan' => ['label' => 'Diajukan', 'color' => 'blue', 'icon' => 'clock'],
+            'diverifikasi_kapokja' => ['label' => 'Paraf Ka Pokja ✓', 'color' => 'sky', 'icon' => 'check'],
             'diverifikasi_kabag' => ['label' => 'Paraf Kabag Umum ✓', 'color' => 'indigo', 'icon' => 'check'],
             'diverifikasi_wd2' => ['label' => 'Paraf WD II ✓', 'color' => 'purple', 'icon' => 'check-circle'],
             'disetujui_dekan' => ['label' => 'Disetujui Dekan ✓', 'color' => 'emerald', 'icon' => 'award'],

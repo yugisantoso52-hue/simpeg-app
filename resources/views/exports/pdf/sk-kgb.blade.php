@@ -6,61 +6,61 @@
 <style>
     @page {
         size: A4 portrait;
-        margin: 8mm 14mm 8mm 18mm !important;
+        margin: 10mm 16mm 10mm 22mm !important;
     }
     body {
         font-family: 'Times New Roman', Times, serif;
         font-size: 10pt;
-        line-height: 1.2;
+        line-height: 1.32;
         margin: 0;
         padding: 0;
     }
     .kop-surat-table {
-        margin-bottom: 6px !important;
-        padding-bottom: 3px !important;
+        margin-bottom: 9px !important;
+        padding-bottom: 4px !important;
     }
     .surat-header-table {
         width: 100%;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
         font-size: 10pt;
+        line-height: 1.28;
     }
     .surat-header-table td {
         vertical-align: top;
-        padding: 1px 0;
-        line-height: 1.2;
+        padding: 1.2px 0;
     }
     .p-isi {
         text-align: justify;
-        line-height: 1.25;
-        margin: 3px 0;
+        line-height: 1.32;
+        margin: 5px 0;
         font-size: 10pt;
     }
     .tabel-identitas {
         width: 100%;
-        margin: 2px auto 4px auto;
+        margin: 3.5px auto 6px auto;
         border-collapse: collapse;
         font-size: 10pt;
     }
     .tabel-identitas td {
-        padding: 1.2px 2px;
+        padding: 1.8px 2px;
         vertical-align: top;
-        line-height: 1.2;
+        line-height: 1.28;
     }
     .tabel-sk-dasar {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 1px;
+        margin-top: 1.5px;
         font-size: 9pt;
     }
     .tabel-sk-dasar td {
-        padding: 0.8px 2px;
+        padding: 1.2px 2px;
         vertical-align: top;
-        line-height: 1.2;
+        line-height: 1.22;
     }
     .tembusan-box {
         font-size: 8pt;
-        line-height: 1.15;
-        margin-top: 5px;
+        line-height: 1.22;
+        margin-top: 7px;
         clear: both;
     }
 </style>
@@ -138,7 +138,7 @@
     <tr>
         <td></td>
         <td></td>
-        <td style="font-size: 9pt; color: #1e293b;">
+        <td style="font-size: 9.5pt; color: #1e293b;">
             (Atas dasar SKP terakhir tentang gaji/pangkat yang ditetapkan)
             <table class="tabel-sk-dasar">
                 <tr>
@@ -176,7 +176,7 @@
     </tr>
 </table>
 
-<p class="p-isi" style="margin-top: 3px;">
+<p class="p-isi" style="margin-top: 5px;">
     Diberikan kenaikan gaji berkala hingga memperoleh :
 </p>
 
@@ -209,7 +209,7 @@
     </tr>
 </table>
 
-<p class="p-isi" style="margin-top: 4px; text-indent: 28px;">
+<p class="p-isi" style="margin-top: 6px; text-indent: 28px;">
     @if($isPppk)
         Diharapkan agar sesuai dengan Peraturan Presiden Nomor 11 Tahun 2024 kepada pegawai tersebut dapat dibayarkan penghasilan berdasarkan gaji pokok baru.
     @else
@@ -218,22 +218,22 @@
 </p>
 
 {{-- AREA TANDA TANGAN & PARAF DIGITAL PEMERIKSAAN DOKUMEN --}}
-<table style="width: 100%; margin-top: 8px; page-break-inside: avoid; border-collapse: collapse;">
+<table style="width: 100%; margin-top: 12px; page-break-inside: avoid; border-collapse: collapse;">
     <tr>
         {{-- Sisi Kiri: Paraf Digital Tata Naskah (Ka Pokja & Kabag Umum) --}}
         <td style="width: 48%; vertical-align: top; padding-right: 12px;">
-            <div style="border: 1px solid #475569; padding: 4px 6px; border-radius: 3px; font-size: 7pt; background-color: #f8fafc; font-family: 'Times New Roman', Times, serif;">
-                <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 3px; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px; font-size: 7pt;">
+            <div style="border: 1px solid #475569; padding: 5px 8px; border-radius: 4px; font-size: 7.5pt; background-color: #f8fafc; font-family: 'Times New Roman', Times, serif;">
+                <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 4px; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; font-size: 7.5pt;">
                     PARAF DIGITAL KOORDINASI TATA NASKAH:
                 </div>
-                <table style="width: 100%; border-collapse: collapse; font-size: 7pt;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 7.5pt; line-height: 1.25;">
                     <tr>
                         <td style="width: 45%; padding: 1px 0; vertical-align: top;">1. Ka Pokja Keu-Kepeg</td>
                         <td style="width: 55%; padding: 1px 0; vertical-align: top;">: {{ $pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina' }}, SE</td>
                     </tr>
                     <tr>
                         <td style="padding: 1px 0;">&nbsp;&nbsp;&nbsp;Status Pemeriksaan</td>
-                        <td style="padding: 1px 0; color: #047857; font-weight: bold;">: [ Diverifikasi & Sah ✓ ]</td>
+                        <td style="padding: 1px 0; color: #047857; font-weight: bold;">: [ Diverifikasi & Sah ]</td>
                     </tr>
                     <tr style="border-top: 1px dashed #cbd5e1;">
                         <td style="padding: 1px 0; vertical-align: top;">2. Kepala Bagian Umum</td>
@@ -241,7 +241,7 @@
                     </tr>
                     <tr>
                         <td style="padding: 1px 0;">&nbsp;&nbsp;&nbsp;Status Pemeriksaan</td>
-                        <td style="padding: 1px 0; color: #047857; font-weight: bold;">: [ Diverifikasi & Sah ✓ ]</td>
+                        <td style="padding: 1px 0; color: #047857; font-weight: bold;">: [ Diverifikasi & Sah ]</td>
                     </tr>
                 </table>
             </div>
@@ -249,11 +249,11 @@
 
         {{-- Sisi Kanan: Tanda Tangan Wakil Dekan II (Tanpa 'Ditetapkan di...') --}}
         <td style="width: 52%; text-align: left; vertical-align: top; padding-left: 8px;">
-            <div style="font-size: 9.5pt; line-height: 1.25;">
+            <div style="font-size: 10pt; line-height: 1.25;">
                 Wakil Dekan Bidang Keuangan dan Umum<br>
                 Fakultas Keperawatan Universitas Riau<br>
-                <div style="height: 38px;"></div>
-                <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Ns. Safri, M.Kep., Sp.Kep.M.B') }}</strong><br>
+                <div style="height: 48px;"></div>
+                <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep., Sp.Kep.M.B') }}</strong><br>
                 <span>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</span>
             </div>
         </td>
@@ -263,7 +263,7 @@
 {{-- TEMBUSAN SURAT --}}
 <div class="tembusan-box">
     <strong>Tembusan :</strong>
-    <table style="width: 100%; border-collapse: collapse; margin-top: 1px; font-size: 7.5pt; line-height: 1.15;">
+    <table style="width: 100%; border-collapse: collapse; margin-top: 1.5px; font-size: 8pt; line-height: 1.2;">
         <tr>
             <td style="width: 50%; vertical-align: top; padding: 0;">
                 1. Kemendiktisaintek & DIKTI di Jakarta<br>
@@ -281,7 +281,7 @@
 </div>
 
 {{-- OTENTIKASI DIGITAL SIKAP FKP UNRI (PALING BAWAH, BEBAS OVERFLOW, TANPA TANDA '?') --}}
-<div style="margin-top: 5px; border: 1px dashed #0284c7; padding: 3px 6px; border-radius: 3px; font-size: 6.5pt; line-height: 1.2; color: #0c4a6e; background-color: #f0f9ff; width: 100%; box-sizing: border-box; word-wrap: break-word; word-break: break-all;">
+<div style="margin-top: 6px; border: 1px dashed #0284c7; padding: 3px 6px; border-radius: 4px; font-size: 6.5pt; line-height: 1.2; color: #0c4a6e; background-color: #f0f9ff; width: 100%; box-sizing: border-box; word-wrap: break-word; word-break: break-all;">
     <strong style="color: #0369a1; display: block; margin-bottom: 1px; font-size: 7pt;">OTENTIKASI DIGITAL SIKAP FKP UNRI:</strong>
     Dokumen resmi ini telah diverifikasi validitas kepegawaiannya dan diterbitkan secara elektronik melalui Sistem Informasi Kepegawaian (SIKAP) Fakultas Keperawatan Universitas Riau.<br>
     @if(isset($verifyUrl))

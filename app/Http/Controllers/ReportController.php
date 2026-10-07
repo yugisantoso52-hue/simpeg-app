@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pegawai;
 use App\Exports\DukExport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -46,7 +47,19 @@ class ReportController extends Controller
      */
     public function exportKgbPdf($id)
     {
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
         $pegawai = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])->findOrFail($id);
+
+        $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
+        $isOwn = ($user->pegawai_id == $pegawai->id || $user->pegawai?->id == $pegawai->id);
+        if (!$isExecutive && !$isOwn) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mencetak dokumen pegawai lain.');
+        }
+
         $isPppk  = str_contains(strtoupper($pegawai->jenis_pegawai ?? ''), 'PPPK');
 
         // 1. Tanggal TMT Dasar dan Perhitungan Masa Kerja Golongan (MKG)
@@ -130,6 +143,11 @@ class ReportController extends Controller
      */
     public function exportUsulanKpPdf($id)
     {
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
         // $id bisa ID PengajuanKarir atau ID Pegawai
         $pengajuan = \App\Models\PengajuanKarir::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan', 'golonganLama', 'golonganTujuan'])->find($id);
 
@@ -139,6 +157,7 @@ class ReportController extends Controller
             $targetGolongan = \App\Models\Golongan::where('id', '>', $pegawai->golongan_id ?? 0)->first() ?? $pegawai->golongan;
             $pengajuan = (object) [
                 'pegawai'          => $pegawai,
+                'pegawai_id'       => $pegawai->id,
                 'periode_kp'       => 'Februari',
                 'tahun_periode'    => date('Y'),
                 'golonganLama'     => $pegawai->golongan,
@@ -148,6 +167,13 @@ class ReportController extends Controller
                 'paraf_wd2_at'     => now(),
                 'ttd_dekan_at'     => now(),
             ];
+        }
+
+        $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
+        $targetPegawaiId = $pengajuan->pegawai_id ?? ($pengajuan->pegawai->id ?? null);
+        $isOwn = $targetPegawaiId && ($user->pegawai_id == $targetPegawaiId || $user->pegawai?->id == $targetPegawaiId);
+        if (!$isExecutive && !$isOwn) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mencetak dokumen pegawai lain.');
         }
 
         $pejabatDekan = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
