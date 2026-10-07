@@ -108,36 +108,83 @@
 
                     {{-- Lampiran Berkas Persyaratan --}}
                     <div class="space-y-4">
-                        <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider border-b pb-2 flex items-center gap-1.5">
-                            <span>📎</span> Unggah Dokumen Kelengkapan Persyaratan (PDF / JPG Maks 4MB)
-                        </h4>
+                        <div class="border-b pb-2 flex items-center justify-between">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                                <span>📎</span> Unggah Dokumen Kelengkapan Persyaratan (PDF / JPG Maks 4MB)
+                            </h4>
+                            <span class="text-[11px] text-slate-500 font-medium">Diperlukan untuk verifikasi tata naskah & paraf pimpinan</span>
+                        </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    {{ $jenis === 'KP' ? '1. SK Pangkat Terakhir' : '1. SK / Pemberitahuan KGB Terakhir' }}
-                                </label>
-                                <input type="file" name="file_sk_terakhir" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    2. SKP Tahun Terakhir (N-1) Predikat Minimal "Baik"
-                                </label>
-                                <input type="file" name="file_skp_1" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
-                            </div>
-
-                            @if($jenis === 'KP')
+                        @if($jenis === 'KGB')
+                            {{-- PERSYARATAN ADMINISTRASI KGB --}}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                        3. SKP 2 Tahun Lalu (N-2)
+                                        1. SK Pangkat Terakhir <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="file" name="file_sk_pangkat_terakhir" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Salinan SK Pangkat terakhir / SK Pengangkatan</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                        2. SK / Pemberitahuan KGB Terakhir <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="file" name="file_sk_kgb_terakhir" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Surat pemberitahuan kenaikan gaji berkala sebelumnya</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                        3. Penilaian Kinerja (SKP) Tahun Terakhir (N-1) <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="file" name="file_skp_1" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Predikat kinerja minimal bernilai "Baik"</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                        4. Penilaian Kinerja (SKP) 2 Tahun Lalu (N-2) <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="file" name="file_skp_2" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Predikat kinerja minimal bernilai "Baik"</p>
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                        Dokumen Pendukung Lainnya (Opsional)
+                                    </label>
+                                    <input type="file" name="file_pendukung" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                                </div>
+                            </div>
+
+                        @else
+                            {{-- PERSYARATAN ADMINISTRASI KP --}}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                        1. SK Pangkat Terakhir <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="file" name="file_sk_pangkat_terakhir" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-100 file:text-indigo-800 hover:file:bg-indigo-200">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                        2. SKP Tahun Terakhir (N-1) Predikat Minimal "Baik" <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="file" name="file_skp_1" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                        3. SKP 2 Tahun Lalu (N-2) Predikat Minimal "Baik" <span class="text-red-500">*</span>
                                     </label>
                                     <input type="file" name="file_skp_2" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
                                 </div>
 
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                        4. Fotocopy KARPEG / Identitas ASN
+                                        4. Fotocopy KARPEG / Identitas ASN <span class="text-red-500">*</span>
                                     </label>
                                     <input type="file" name="file_karpeg" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
                                 </div>
@@ -145,20 +192,20 @@
                                 @if($pegawai->isDosen() || $pegawai->isPlp())
                                     <div class="md:col-span-2">
                                         <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                            5. Dokumen PAK (Penetapan Angka Kredit) / Konversi Predikat Kinerja
+                                            5. Dokumen PAK (Penetapan Angka Kredit) / Konversi Predikat Kinerja <span class="text-red-500">*</span>
                                         </label>
                                         <input type="file" name="file_pak" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
                                     </div>
                                 @endif
-                            @endif
 
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                    Dokumen Pendukung Lainnya (Opsional - Ijazah/Sertifikat/SK Tambahan)
-                                </label>
-                                <input type="file" name="file_pendukung" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                        Dokumen Pendukung Lainnya (Opsional - Ijazah/Sertifikat/SK Tambahan)
+                                    </label>
+                                    <input type="file" name="file_pendukung" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                                </div>
                             </div>
-                        </div>
+                        @endif
                     </div>
 
                     {{-- Catatan Pegawai --}}

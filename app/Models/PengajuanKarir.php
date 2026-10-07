@@ -28,6 +28,8 @@ class PengajuanKarir extends Model
         'mkg_tahun',
         'mkg_bulan',
         'file_sk_terakhir',
+        'file_sk_pangkat_terakhir',
+        'file_sk_kgb_terakhir',
         'file_skp_1',
         'file_skp_2',
         'file_karpeg',

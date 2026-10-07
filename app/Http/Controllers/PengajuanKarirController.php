@@ -97,18 +97,20 @@ class PengajuanKarirController extends Controller
         }
 
         $request->validate([
-            'jenis_pengajuan'    => 'required|in:KGB,KP',
-            'periode_kp'         => 'nullable|string',
-            'tahun_periode'      => 'nullable|integer',
-            'golongan_tujuan_id' => 'nullable|exists:golongan,id',
-            'tmt_baru'           => 'nullable|date',
-            'file_sk_terakhir'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'file_skp_1'         => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'file_skp_2'         => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'file_karpeg'        => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'file_pak'           => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'file_pendukung'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'catatan_pegawai'    => 'nullable|string|max:500',
+            'jenis_pengajuan'          => 'required|in:KGB,KP',
+            'periode_kp'               => 'nullable|string',
+            'tahun_periode'            => 'nullable|integer',
+            'golongan_tujuan_id'       => 'nullable|exists:golongan,id',
+            'tmt_baru'                 => 'nullable|date',
+            'file_sk_pangkat_terakhir' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'file_sk_kgb_terakhir'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'file_sk_terakhir'         => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'file_skp_1'               => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'file_skp_2'               => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'file_karpeg'              => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'file_pak'                 => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'file_pendukung'           => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'catatan_pegawai'          => 'nullable|string|max:500',
         ]);
 
         $data = [
@@ -125,21 +127,39 @@ class PengajuanKarirController extends Controller
             $data['golongan_tujuan_id'] = $request->golongan_tujuan_id;
             $data['tmt_lama']           = $pegawai->tmt_pangkat_terakhir;
         } else {
+            $mkgLama = (int) ($pegawai->mkg_tahun ?? 0);
+            $mkgBaru = $mkgLama + 2;
+
             $data['tmt_lama']           = $pegawai->tmt_kgb_terakhir;
             $data['tmt_baru']           = $request->tmt_baru ?? now()->toDateString();
-            $data['mkg_tahun']          = $pegawai->mkg_tahun ?? 0;
+            $data['mkg_tahun']          = $mkgBaru;
             $data['mkg_bulan']          = $pegawai->mkg_bulan ?? 0;
-            $data['gaji_pokok_lama']    = 4256600;
-            $data['gaji_pokok_baru']    = 4390700;
+            $data['gaji_pokok_lama']    = \App\Services\GajiService::hitungGajiPegawai($pegawai, $mkgLama);
+            $data['gaji_pokok_baru']    = \App\Services\GajiService::hitungGajiPegawai($pegawai, $mkgBaru);
         }
 
         // Upload berkas jika dilampirkan
-        $uploadFields = ['file_sk_terakhir', 'file_skp_1', 'file_skp_2', 'file_karpeg', 'file_pak', 'file_pendukung'];
+        $uploadFields = [
+            'file_sk_terakhir',
+            'file_sk_pangkat_terakhir',
+            'file_sk_kgb_terakhir',
+            'file_skp_1',
+            'file_skp_2',
+            'file_karpeg',
+            'file_pak',
+            'file_pendukung'
+        ];
+
         foreach ($uploadFields as $field) {
             if ($request->hasFile($field)) {
                 $path = $request->file($field)->store('pengajuan_karir/' . strtolower($request->jenis_pengajuan), 'public');
                 $data[$field] = $path;
             }
+        }
+
+        // Fallback file_sk_terakhir jika pengusul mengisi file_sk_pangkat_terakhir
+        if (empty($data['file_sk_terakhir']) && !empty($data['file_sk_pangkat_terakhir'])) {
+            $data['file_sk_terakhir'] = $data['file_sk_pangkat_terakhir'];
         }
 
         PengajuanKarir::create($data);

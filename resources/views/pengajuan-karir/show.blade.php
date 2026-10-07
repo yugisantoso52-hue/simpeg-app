@@ -120,6 +120,98 @@
                     @endif
                 </div>
 
+                {{-- DOKUMEN ADMINISTRASI PERSYARATAN --}}
+                <div class="mt-6 border-t pt-4">
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                        <span>📎</span> Berkas Administrasi Persyaratan (Pemeriksaan Ka Pokja & Kabag)
+                    </h4>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                        {{-- SK Pangkat Terakhir --}}
+                        <div class="p-3 rounded-xl border {{ ($pengajuan->file_sk_pangkat_terakhir || $pengajuan->file_sk_terakhir) ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
+                            <div class="font-semibold text-slate-700">1. SK Pangkat Terakhir</div>
+                            @if($pengajuan->file_sk_pangkat_terakhir || $pengajuan->file_sk_terakhir)
+                                <a href="{{ asset('storage/' . ($pengajuan->file_sk_pangkat_terakhir ?? $pengajuan->file_sk_terakhir)) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                    <span>📥</span> Buka Dokumen
+                                </a>
+                            @else
+                                <span class="text-[11px] text-rose-500 italic mt-2 block">Belum diunggah</span>
+                            @endif
+                        </div>
+
+                        {{-- SK KGB Terakhir (Khusus KGB) --}}
+                        @if($pengajuan->jenis_pengajuan === 'KGB')
+                            <div class="p-3 rounded-xl border {{ $pengajuan->file_sk_kgb_terakhir ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
+                                <div class="font-semibold text-slate-700">2. SK KGB Terakhir</div>
+                                @if($pengajuan->file_sk_kgb_terakhir)
+                                    <a href="{{ asset('storage/' . $pengajuan->file_sk_kgb_terakhir) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                        <span>📥</span> Buka Dokumen
+                                    </a>
+                                @else
+                                    <span class="text-[11px] text-rose-500 italic mt-2 block">Belum diunggah</span>
+                                @endif
+                            </div>
+                        @endif
+
+                        {{-- SKP N-1 --}}
+                        <div class="p-3 rounded-xl border {{ $pengajuan->file_skp_1 ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
+                            <div class="font-semibold text-slate-700">{{ $pengajuan->jenis_pengajuan === 'KGB' ? '3' : '2' }}. SKP Tahun (N-1)</div>
+                            @if($pengajuan->file_skp_1)
+                                <a href="{{ asset('storage/' . $pengajuan->file_skp_1) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                    <span>📥</span> Buka Dokumen
+                                </a>
+                            @else
+                                <span class="text-[11px] text-rose-500 italic mt-2 block">Belum diunggah</span>
+                            @endif
+                        </div>
+
+                        {{-- SKP N-2 --}}
+                        <div class="p-3 rounded-xl border {{ $pengajuan->file_skp_2 ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
+                            <div class="font-semibold text-slate-700">{{ $pengajuan->jenis_pengajuan === 'KGB' ? '4' : '3' }}. SKP 2 Tahun Lalu (N-2)</div>
+                            @if($pengajuan->file_skp_2)
+                                <a href="{{ asset('storage/' . $pengajuan->file_skp_2) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                    <span>📥</span> Buka Dokumen
+                                </a>
+                            @else
+                                <span class="text-[11px] text-rose-500 italic mt-2 block">Belum diunggah</span>
+                            @endif
+                        </div>
+
+                        {{-- KARPEG (Khusus KP) --}}
+                        @if($pengajuan->jenis_pengajuan === 'KP')
+                            <div class="p-3 rounded-xl border {{ $pengajuan->file_karpeg ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
+                                <div class="font-semibold text-slate-700">4. KARPEG / Identitas ASN</div>
+                                @if($pengajuan->file_karpeg)
+                                    <a href="{{ asset('storage/' . $pengajuan->file_karpeg) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                        <span>📥</span> Buka Dokumen
+                                    </a>
+                                @else
+                                    <span class="text-[11px] text-rose-500 italic mt-2 block">Belum diunggah</span>
+                                @endif
+                            </div>
+
+                            @if($pengajuan->file_pak)
+                                <div class="p-3 rounded-xl border bg-slate-50 border-slate-200">
+                                    <div class="font-semibold text-slate-700">5. Penetapan Angka Kredit (PAK)</div>
+                                    <a href="{{ asset('storage/' . $pengajuan->file_pak) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                        <span>📥</span> Buka Dokumen
+                                    </a>
+                                </div>
+                            @endif
+                        @endif
+
+                        {{-- Dokumen Pendukung --}}
+                        @if($pengajuan->file_pendukung)
+                            <div class="p-3 rounded-xl border bg-slate-50 border-slate-200">
+                                <div class="font-semibold text-slate-700">Dokumen Pendukung Lainnya</div>
+                                <a href="{{ asset('storage/' . $pengajuan->file_pendukung) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                    <span>📥</span> Buka Dokumen
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
                 {{-- Catatan Verifikator Bila Ada --}}
                 @if($pengajuan->catatan_verifikator)
                     <div class="mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900">

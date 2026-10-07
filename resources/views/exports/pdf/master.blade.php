@@ -251,22 +251,7 @@
     </div>
 
     <!-- TANDA TANGAN PEJABAT -->
-    @hasSection('ttd')
-        @yield('ttd')
-    @else
-        <div class="ttd-container">
-            <div class="ttd-box">
-                <p class="jabatan">
-                    Ditetapkan di Pekanbaru<br>
-                    Pada tanggal {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br><br>
-                    Wakil Dekan Bidang Keuangan dan Umum<br>Fakultas Keperawatan Universitas Riau
-                </p>
-                <p class="nama">Ns. Safri, M.Kep., Sp.Kep.M.B</p>
-                <p class="nip">NIP. 19850909 201404 1 001</p>
-            </div>
-            <div class="clear"></div>
-        </div>
-    @endif
+    @yield('ttd')
 
 </body>
 </html>
