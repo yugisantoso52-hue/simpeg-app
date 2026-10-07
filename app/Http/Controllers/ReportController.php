@@ -74,8 +74,17 @@ class ReportController extends Controller
         $verifyCode = $watermarkService->generateVerificationCode('SK Kenaikan Gaji Berkala', 'KGB/' . $pegawai->nip . '/' . date('Y'), $pegawai->nama_lengkap ?? $pegawai->nama);
         $verifyUrl = route('verify.document', ['code' => $verifyCode]);
 
-        $pdf = Pdf::loadView('exports.pdf.sk-kgb', compact('kgb', 'pegawai', 'verifyUrl', 'verifyCode', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'isPppk'))
-            ->setPaper('a4', 'portrait');
+        $tahunSurat     = date('Y');
+        $tanggalSurat   = \Carbon\Carbon::now()->translatedFormat('d F Y');
+        $dasarSkTanggal = $pegawai->tanggal_sk_kgb_terakhir ? \Carbon\Carbon::parse($pegawai->tanggal_sk_kgb_terakhir)->translatedFormat('d F Y') : '4 Juni 2024';
+        $dasarSkNomor   = $pegawai->nomor_sk_kgb_terakhir ?? '827/UN19.5.1.1.10/KP/2024';
+        $dasarSkTmt     = $pegawai->tmt_kgb_terakhir ? \Carbon\Carbon::parse($pegawai->tmt_kgb_terakhir)->translatedFormat('d F Y') : '1 Agustus 2024';
+        $dasarMkgTahun  = $mkgTahun >= 2 ? ($mkgTahun - 2) : 22;
+
+        $pdf = Pdf::loadView('exports.pdf.sk-kgb', compact(
+            'kgb', 'pegawai', 'verifyUrl', 'verifyCode', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'isPppk',
+            'tahunSurat', 'tanggalSurat', 'dasarSkTanggal', 'dasarSkNomor', 'dasarSkTmt', 'dasarMkgTahun'
+        ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);
 
