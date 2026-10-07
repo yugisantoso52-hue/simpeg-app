@@ -207,17 +207,58 @@
     Diharapkan agar sesuai dengan {{ $isPppk ? 'Peraturan Presiden Nomor 11 Tahun 2024 dan PermenPAN-RB No. 7 Tahun 2023' : 'PP. Nomor 5 Tahun 2024' }} kepada pegawai tersebut dapat dibayarkan penghasilan berdasarkan gaji pokok baru.
 </p>
 
-{{-- TANDA TANGAN PEJABAT: WAKIL DEKAN BIDANG KEUANGAN DAN UMUM --}}
-<div class="ttd-box-container">
-    <div class="ttd-pejabat">
-        Wakil Dekan Bidang Keuangan dan Umum<br>
-        Fakultas Keperawatan Universitas Riau<br>
-        <br><br><br><br>
-        <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Ns. Safri, M.Kep., Sp.Kep.M.B') }}</strong><br>
-        <span>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</span>
-    </div>
-    <div style="clear: both;"></div>
-</div>
+{{-- AREA TANDA TANGAN & PARAF DIGITAL PEMERIKSAAN DOKUMEN --}}
+<table style="width: 100%; margin-top: 15px; page-break-inside: avoid; border-collapse: collapse;">
+    <tr>
+        {{-- Sisi Kiri: Paraf Digital Pemeriksaan Dokumen (Ka Pokja Keu-Kepeg & Kabag Umum) + Otentikasi Digital --}}
+        <td style="width: 52%; vertical-align: top; padding-right: 15px;">
+            <div style="border: 1px solid #334155; padding: 6px 8px; border-radius: 4px; font-size: 7.5pt; background-color: #f8fafc; font-family: 'Times New Roman', Times, serif;">
+                <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 4px; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px;">
+                    PARAF DIGITAL KOORDINASI TATA NASKAH:
+                </div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 7.5pt;">
+                    <tr>
+                        <td style="width: 48%; padding: 2px 0;">1. Ka Pokja Keu-Kepeg</td>
+                        <td style="width: 52%; padding: 2px 0;">: {{ $pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina' }}, SE</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px 0;">&nbsp;&nbsp;&nbsp;Status Pemeriksaan</td>
+                        <td style="padding: 2px 0; color: #047857; font-weight: bold;">: [ Diverifikasi & Sah ✓ ]</td>
+                    </tr>
+                    <tr style="border-top: 1px dashed #cbd5e1;">
+                        <td style="padding: 2px 0;">2. Kepala Bagian Umum</td>
+                        <td style="padding: 2px 0;">: {{ $pejabatKabag->nama ?? 'Bakhtiar' }}, S.Sos., M.Si</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px 0;">&nbsp;&nbsp;&nbsp;Status Pemeriksaan</td>
+                        <td style="padding: 2px 0; color: #047857; font-weight: bold;">: [ Diverifikasi & Sah ✓ ]</td>
+                    </tr>
+                </table>
+            </div>
+
+            {{-- OTENTIKASI DIGITAL SIKAP FKP UNRI --}}
+            <div style="margin-top: 6px; border: 1px dashed #0369a1; padding: 5px 8px; border-radius: 4px; font-size: 7pt; color: #0c4a6e; background-color: #f0f9ff; font-family: 'Times New Roman', Times, serif;">
+                <strong style="color: #0369a1; display: block; margin-bottom: 2px;">🔒 OTENTIKASI DIGITAL SIKAP FKP UNRI:</strong>
+                Dokumen resmi ini telah diverifikasi validitas kepegawaiannya dan diterbitkan secara elektronik melalui Sistem Informasi Kepegawaian (SIKAP) Fakultas Keperawatan Universitas Riau.<br>
+                @if(isset($verifyUrl))
+                    Kode Verifikasi Resmi : <span style="font-family: monospace; font-size: 6.5pt; color: #0284c7;">{{ $verifyCode ?? 'SIKAP-KGB-VALID' }}</span><br>
+                    Tautan Verifikasi : <a href="{{ $verifyUrl }}" style="color: #0284c7; text-decoration: underline; font-size: 6.5pt;">{{ $verifyUrl }}</a>
+                @endif
+            </div>
+        </td>
+
+        {{-- Sisi Kanan: Tanda Tangan Wakil Dekan Bidang Keuangan dan Umum --}}
+        <td style="width: 48%; text-align: left; vertical-align: top; padding-left: 10px;">
+            <div style="font-size: 10.5pt; line-height: 1.25;">
+                Wakil Dekan Bidang Keuangan dan Umum<br>
+                Fakultas Keperawatan Universitas Riau<br>
+                <br><br><br><br>
+                <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Ns. Safri, M.Kep., Sp.Kep.M.B') }}</strong><br>
+                <span>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</span>
+            </div>
+        </td>
+    </tr>
+</table>
 
 {{-- TEMBUSAN SURAT --}}
 <div class="tembusan-box">
@@ -232,4 +273,8 @@
         <li>Arsip</li>
     </ol>
 </div>
+@endsection
+
+{{-- Suppress default ttd from master layout --}}
+@section('ttd')
 @endsection

@@ -47,42 +47,76 @@ class ReportController extends Controller
     public function exportKgbPdf($id)
     {
         $pegawai = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])->findOrFail($id);
+        $isPppk  = str_contains(strtoupper($pegawai->jenis_pegawai ?? ''), 'PPPK');
 
-        $tmt = $pegawai->tmt_kgb_terakhir ?? ($pegawai->tanggal_masuk ?? $pegawai->tmt_sk_pertama);
-        $diff = $tmt ? \Carbon\Carbon::parse($tmt)->diff(\Carbon\Carbon::now()) : null;
+        // 1. Tanggal TMT Dasar dan Perhitungan Masa Kerja Golongan (MKG)
+        $tmtDasar = $pegawai->tmt_kgb_terakhir ?? ($pegawai->tmt_pangkat_terakhir ?? ($pegawai->tanggal_masuk ?? $pegawai->tmt_sk_pertama));
+        
+        $mkgTahunLama = (int) ($pegawai->mkg_tahun ?? 0);
+        $mkgBulanLama = (int) ($pegawai->mkg_bulan ?? 0);
 
-        $mkgTahun = $pegawai->mkg_tahun > 0 ? $pegawai->mkg_tahun : ($diff ? $diff->y : 0);
-        $mkgBulan = $pegawai->mkg_bulan > 0 ? $pegawai->mkg_bulan : ($diff ? $diff->m : 0);
+        // Jika MKG tercatat 0 namun ada riwayat TMT
+        if ($mkgTahunLama === 0 && $tmtDasar) {
+            $diff = \Carbon\Carbon::parse($tmtDasar)->diff(\Carbon\Carbon::now());
+            // Untuk pegawai baru/tmt dasar awal
+            $mkgTahunLama = 0;
+            $mkgBulanLama = 0;
+        }
+
+        // Kenaikan Gaji Berkala menambah masa kerja golongan sebanyak 2 tahun
+        $mkgTahunBaru = $mkgTahunLama + 2;
+        $mkgBulanBaru = $mkgBulanLama;
+
+        // 2. Otomatisasi Nilai Gaji Pokok Berdasarkan PP 5/2024 (PNS) & Perpres 11/2024 (PPPK)
+        $namaGolongan = $pegawai->golongan->nama_golongan ?? ($isPppk ? 'IX' : 'III/c');
+        $gajiLama     = \App\Services\GajiService::hitungGajiPegawai($pegawai, $mkgTahunLama);
+        $gajiBaru     = \App\Services\GajiService::hitungGajiPegawai($pegawai, $mkgTahunBaru);
+
+        // Tanggal TMT KGB Baru (2 tahun dari TMT lama)
+        $tmtKgbBaru = $pegawai->kgb_berikutnya 
+            ? $pegawai->kgb_berikutnya->format('Y-m-d') 
+            : ($tmtDasar ? \Carbon\Carbon::parse($tmtDasar)->addYears(2)->format('Y-m-d') : date('Y-m-d'));
 
         $kgb = (object) [
             'id'                  => $pegawai->id,
             'pegawai'             => $pegawai,
-            'gaji_lama'           => 4256600,
-            'gaji_baru'           => 4390700,
-            'terbilang_gaji_baru' => 'Empat Juta Tiga Ratus Sembilan Puluh Ribu Tujuh Ratus',
-            'masa_kerja_tahun'    => $mkgTahun,
-            'masa_kerja_bulan'    => $mkgBulan,
-            'tmt_kgb_baru'        => $pegawai->kgb_berikutnya ? $pegawai->kgb_berikutnya->format('Y-m-d') : date('Y-m-d'),
+            'gaji_lama'           => $gajiLama,
+            'gaji_baru'           => $gajiBaru,
+            'masa_kerja_tahun'    => $mkgTahunBaru,
+            'masa_kerja_bulan'    => $mkgBulanBaru,
+            'tmt_kgb_baru'        => $tmtKgbBaru,
         ];
 
-        $pejabatDekan = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
-        $pejabatWd2   = Pegawai::where('nama', 'like', '%Safri%')->first();
-        $pejabatKabag = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
-        $isPppk       = str_contains(strtolower($pegawai->jenis_pegawai ?? ''), 'pppk');
+        // 3. Pejabat Penandatangan & Paraf Digital
+        $pejabatDekan   = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
+        $pejabatWd2     = Pegawai::where('nama', 'like', '%Safri%')->first();
+        $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
+        $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
 
-        $watermarkService = app(\App\Services\DocumentWatermarkService::class);
-        $verifyCode = $watermarkService->generateVerificationCode('SK Kenaikan Gaji Berkala', 'KGB/' . $pegawai->nip . '/' . date('Y'), $pegawai->nama_lengkap ?? $pegawai->nama);
-        $verifyUrl = route('verify.document', ['code' => $verifyCode]);
-
+        // 4. Data Dasar SK Terakhir (Poin a s.d. e)
         $tahunSurat     = date('Y');
         $tanggalSurat   = \Carbon\Carbon::now()->translatedFormat('d F Y');
-        $dasarSkTanggal = $pegawai->tanggal_sk_kgb_terakhir ? \Carbon\Carbon::parse($pegawai->tanggal_sk_kgb_terakhir)->translatedFormat('d F Y') : '4 Juni 2024';
-        $dasarSkNomor   = $pegawai->nomor_sk_kgb_terakhir ?? '827/UN19.5.1.1.10/KP/2024';
-        $dasarSkTmt     = $pegawai->tmt_kgb_terakhir ? \Carbon\Carbon::parse($pegawai->tmt_kgb_terakhir)->translatedFormat('d F Y') : '1 Agustus 2024';
-        $dasarMkgTahun  = $mkgTahun >= 2 ? ($mkgTahun - 2) : 22;
+        $dasarSkTanggal = $pegawai->tanggal_sk_kgb_terakhir 
+            ? \Carbon\Carbon::parse($pegawai->tanggal_sk_kgb_terakhir)->translatedFormat('d F Y') 
+            : ($pegawai->tanggal_sk_pangkat_terakhir ? \Carbon\Carbon::parse($pegawai->tanggal_sk_pangkat_terakhir)->translatedFormat('d F Y') : '4 Juni 2024');
+        
+        $dasarSkNomor   = $pegawai->nomor_sk_kgb_terakhir 
+            ?? ($pegawai->nomor_sk_pangkat_terakhir ?? '827/UN19.5.1.1.10/KP/2024');
+        
+        $dasarSkTmt     = $tmtDasar 
+            ? \Carbon\Carbon::parse($tmtDasar)->translatedFormat('d F Y') 
+            : '01 Oktober 2029';
+            
+        $dasarMkgTahun  = $mkgTahunLama;
+
+        // 5. Otentikasi Digital SIKAP FKP UNRI
+        $watermarkService = app(\App\Services\DocumentWatermarkService::class);
+        $verifyCode = $watermarkService->generateVerificationCode('SK Kenaikan Gaji Berkala', 'KGB/' . $pegawai->nip . '/' . date('Y'), $pegawai->nama_lengkap ?? $pegawai->nama);
+        $verifyUrl  = route('verify.document', ['code' => $verifyCode]);
 
         $pdf = Pdf::loadView('exports.pdf.sk-kgb', compact(
-            'kgb', 'pegawai', 'verifyUrl', 'verifyCode', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'isPppk',
+            'kgb', 'pegawai', 'verifyUrl', 'verifyCode', 
+            'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja', 'isPppk',
             'tahunSurat', 'tanggalSurat', 'dasarSkTanggal', 'dasarSkNomor', 'dasarSkTmt', 'dasarMkgTahun'
         ))->setPaper('a4', 'portrait');
 

@@ -247,3 +247,7 @@
     </ol>
 </div>
 @endsection
+
+{{-- Suppress default ttd from master layout --}}
+@section('ttd')
+@endsection
