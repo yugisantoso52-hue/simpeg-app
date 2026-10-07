@@ -1,3 +1,54 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ==============================================================
+   RESPONSIVE KOP SURAT & NAVIGATION ENGINE (SIKAP FKP UNRI)
+   Explicit cross-device layout rules for Android & PC Browsers
+   ============================================================== */
+
+/* 1. Android & Smartphone (< 768px) */
+@media (max-width: 767.98px) {
+    .kop-desktop {
+        display: none !important;
+    }
+    .kop-mobile {
+        display: block !important;
+    }
+    .nav-desktop-bar {
+        display: none !important;
+    }
+    .nav-mobile-bar {
+        display: flex !important;
+    }
+}
+
+/* 2. Tablet & PC Browser (>= 768px) */
+@media (min-width: 768px) {
+    .kop-desktop {
+        display: block !important;
+    }
+    .kop-mobile {
+        display: none !important;
+    }
+}
+
+/* 3. Setengah Layar PC & Tablet (< 1024px) */
+@media (max-width: 1023.98px) {
+    .nav-desktop-bar {
+        display: none !important;
+    }
+    .nav-mobile-bar {
+        display: flex !important;
+    }
+}
+
+/* 4. Layar Normal & Maksimal PC / Laptop (>= 1024px) */
+@media (min-width: 1024px) {
+    .nav-desktop-bar {
+        display: flex !important;
+    }
+    .nav-mobile-bar {
+        display: none !important;
+    }
+}
