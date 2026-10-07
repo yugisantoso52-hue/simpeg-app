@@ -186,7 +186,7 @@
                                                         📄 PDF
                                                     </a>
                                                 @else
-                                                    <a href="{{ route('reports.kgb.pdf', $item->pegawai_id) }}" target="_blank"
+                                                    <a href="{{ route('reports.kgb.pdf', $item->id) }}" target="_blank"
                                                        class="px-2 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition"
                                                        title="Cetak Surat KGB Resmi">
                                                         📄 PDF

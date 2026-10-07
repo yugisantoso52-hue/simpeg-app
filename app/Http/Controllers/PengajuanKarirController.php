@@ -229,20 +229,37 @@ class PengajuanKarirController extends Controller
             ]);
             $msg = 'Paraf Ka Pokja Keuangan dan Kepegawaian berhasil dibubuhkan.';
         } elseif ($tahap === 'paraf_kabag') {
-            $pengajuan->update([
+            $dataKabag = [
                 'status'              => 'diverifikasi_kabag',
                 'paraf_kabag_at'      => now(),
                 'paraf_kabag_by'      => $pejabatLogin?->id,
                 'catatan_verifikator' => $catatan ?? 'Telah diparaf dan diverifikasi kelengkapan berkas oleh Kepala Bagian Umum.',
-            ]);
+            ];
+            if (!$pengajuan->paraf_kapokja_at) {
+                $pokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
+                $dataKabag['paraf_kapokja_at'] = now()->subMinutes(10);
+                $dataKabag['paraf_kapokja_by'] = $pokja?->id;
+            }
+            $pengajuan->update($dataKabag);
             $msg = 'Paraf Kepala Bagian Umum berhasil dibubuhkan.';
         } elseif ($tahap === 'paraf_wd2' || $tahap === 'ttd_wd2') {
-            $pengajuan->update([
+            $dataWd2 = [
                 'status'              => 'disetujui_wd2',
                 'paraf_wd2_at'        => now(),
                 'paraf_wd2_by'        => $pejabatLogin?->id,
                 'catatan_verifikator' => $catatan ?? 'Telah ditandatangani dan disetujui secara resmi oleh Wakil Dekan Bidang Keuangan dan Umum.',
-            ]);
+            ];
+            if (!$pengajuan->paraf_kapokja_at) {
+                $pokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
+                $dataWd2['paraf_kapokja_at'] = now()->subMinutes(20);
+                $dataWd2['paraf_kapokja_by'] = $pokja?->id;
+            }
+            if (!$pengajuan->paraf_kabag_at) {
+                $kabag = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
+                $dataWd2['paraf_kabag_at'] = now()->subMinutes(10);
+                $dataWd2['paraf_kabag_by'] = $kabag?->id;
+            }
+            $pengajuan->update($dataWd2);
             $msg = 'Pengajuan resmi ditandatangani dan disetujui oleh Wakil Dekan Bidang Keuangan dan Umum.';
         } elseif ($tahap === 'ttd_dekan') {
             $pengajuan->update([

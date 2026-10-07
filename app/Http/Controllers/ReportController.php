@@ -52,7 +52,17 @@ class ReportController extends Controller
             abort(401);
         }
 
-        $pegawai = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])->findOrFail($id);
+        // 1. Resolusi Pegawai & PengajuanKarir
+        $pengajuan = \App\Models\PengajuanKarir::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])->find($id);
+        if ($pengajuan) {
+            $pegawai = $pengajuan->pegawai;
+        } else {
+            $pegawai = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])->findOrFail($id);
+            $pengajuan = \App\Models\PengajuanKarir::where('pegawai_id', $pegawai->id)
+                ->where('jenis_pengajuan', 'KGB')
+                ->latest()
+                ->first();
+        }
 
         $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
         $isOwn = ($user->pegawai_id == $pegawai->id || $user->pegawai?->id == $pegawai->id);
@@ -62,7 +72,7 @@ class ReportController extends Controller
 
         $isPppk  = str_contains(strtoupper($pegawai->jenis_pegawai ?? ''), 'PPPK');
 
-        // 1. Tanggal TMT Dasar dan Perhitungan Masa Kerja Golongan (MKG)
+        // 2. Tanggal TMT Dasar dan Perhitungan Masa Kerja Golongan (MKG)
         $tmtDasar = $pegawai->tmt_kgb_terakhir ?? ($pegawai->tmt_pangkat_terakhir ?? ($pegawai->tanggal_masuk ?? $pegawai->tmt_sk_pertama));
         
         $mkgTahunLama = (int) ($pegawai->mkg_tahun ?? 0);
@@ -80,7 +90,7 @@ class ReportController extends Controller
         $mkgTahunBaru = $mkgTahunLama + 2;
         $mkgBulanBaru = $mkgBulanLama;
 
-        // 2. Otomatisasi Nilai Gaji Pokok Berdasarkan PP 5/2024 (PNS) & Perpres 11/2024 (PPPK)
+        // 3. Otomatisasi Nilai Gaji Pokok Berdasarkan PP 5/2024 (PNS) & Perpres 11/2024 (PPPK)
         $namaGolongan = $pegawai->golongan->nama_golongan ?? ($isPppk ? 'IX' : 'III/c');
         $gajiLama     = \App\Services\GajiService::hitungGajiPegawai($pegawai, $mkgTahunLama);
         $gajiBaru     = \App\Services\GajiService::hitungGajiPegawai($pegawai, $mkgTahunBaru);
@@ -100,13 +110,13 @@ class ReportController extends Controller
             'tmt_kgb_baru'        => $tmtKgbBaru,
         ];
 
-        // 3. Pejabat Penandatangan & Paraf Digital
+        // 4. Pejabat Penandatangan & Paraf Digital
         $pejabatDekan   = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
         $pejabatWd2     = Pegawai::where('nama', 'like', '%Safri%')->first();
         $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
         $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
 
-        // 4. Data Dasar SK Terakhir (Poin a s.d. e)
+        // 5. Data Dasar SK Terakhir (Poin a s.d. e)
         $tahunSurat     = date('Y');
         $tanggalSurat   = \Carbon\Carbon::now()->translatedFormat('d F Y');
         $dasarSkTanggal = $pegawai->tanggal_sk_kgb_terakhir 
@@ -122,15 +132,27 @@ class ReportController extends Controller
             
         $dasarMkgTahun  = $mkgTahunLama;
 
-        // 5. Otentikasi Digital SIKAP FKP UNRI
+        // 6. Otentikasi Digital SIKAP FKP UNRI & Mini QR Paraf Digital
         $watermarkService = app(\App\Services\DocumentWatermarkService::class);
         $verifyCode = $watermarkService->generateVerificationCode('SK Kenaikan Gaji Berkala', 'KGB/' . $pegawai->nip . '/' . date('Y'), $pegawai->nama_lengkap ?? $pegawai->nama);
         $verifyUrl  = route('verify.document', ['code' => $verifyCode]);
 
+        $parafPokjaAt = $pengajuan?->paraf_kapokja_at 
+            ? $pengajuan->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB'
+            : ($pengajuan?->created_at ? $pengajuan->created_at->format('d/m/Y H:i') . ' WIB' : '07/10/2026 14:51 WIB');
+            
+        $parafKabagAt = $pengajuan?->paraf_kabag_at 
+            ? $pengajuan->paraf_kabag_at->format('d/m/Y H:i') . ' WIB'
+            : ($pengajuan?->created_at ? $pengajuan->created_at->addMinutes(10)->format('d/m/Y H:i') . ' WIB' : '07/10/2026 15:01 WIB');
+
+        $qrPokjaUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001'));
+        $qrKabagUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002'));
+
         $pdf = Pdf::loadView('exports.pdf.sk-kgb', compact(
             'kgb', 'pegawai', 'verifyUrl', 'verifyCode', 
             'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja', 'isPppk',
-            'tahunSurat', 'tanggalSurat', 'dasarSkTanggal', 'dasarSkNomor', 'dasarSkTmt', 'dasarMkgTahun'
+            'tahunSurat', 'tanggalSurat', 'dasarSkTanggal', 'dasarSkNomor', 'dasarSkTmt', 'dasarMkgTahun',
+            'pengajuan', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);
@@ -163,9 +185,9 @@ class ReportController extends Controller
                 'golonganLama'     => $pegawai->golongan,
                 'golonganTujuan'   => $targetGolongan,
                 'tmt_lama'         => $pegawai->tmt_pangkat_terakhir,
-                'paraf_kabag_at'   => now(),
+                'paraf_kapokja_at' => now()->subMinutes(20),
+                'paraf_kabag_at'   => now()->subMinutes(10),
                 'paraf_wd2_at'     => now(),
-                'ttd_dekan_at'     => now(),
             ];
         }
 
@@ -182,8 +204,24 @@ class ReportController extends Controller
         $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
 
         $watermarkService = app(\App\Services\DocumentWatermarkService::class);
-        $pdf = Pdf::loadView('exports.pdf.surat-usulan-kp', compact('pengajuan', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja'))
-            ->setPaper('a4', 'portrait');
+        $verifyCodeKp = $watermarkService->generateVerificationCode('Surat Usulan Kenaikan Pangkat', 'KP/' . $pengajuan->pegawai->nip . '/' . date('Y'), $pengajuan->pegawai->nama_lengkap ?? $pengajuan->pegawai->nama);
+        $verifyUrl  = route('verify.document', ['code' => $verifyCodeKp]);
+
+        $parafPokjaAt = $pengajuan?->paraf_kapokja_at 
+            ? $pengajuan->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB'
+            : ($pengajuan?->created_at ? $pengajuan->created_at->format('d/m/Y H:i') . ' WIB' : '07/10/2026 14:51 WIB');
+            
+        $parafKabagAt = $pengajuan?->paraf_kabag_at 
+            ? $pengajuan->paraf_kabag_at->format('d/m/Y H:i') . ' WIB'
+            : ($pengajuan?->created_at ? $pengajuan->created_at->addMinutes(10)->format('d/m/Y H:i') . ' WIB' : '07/10/2026 15:01 WIB');
+
+        $qrPokjaUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001'));
+        $qrKabagUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002'));
+
+        $pdf = Pdf::loadView('exports.pdf.surat-usulan-kp', compact(
+            'pengajuan', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja',
+            'verifyUrl', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri'
+        ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);
 

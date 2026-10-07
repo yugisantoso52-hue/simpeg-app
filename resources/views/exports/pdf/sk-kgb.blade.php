@@ -217,41 +217,56 @@
     @endif
 </p>
 
-{{-- AREA TANDA TANGAN & PARAF DIGITAL PEMERIKSAAN DOKUMEN --}}
-<table style="width: 100%; margin-top: 12px; page-break-inside: avoid; border-collapse: collapse;">
+{{-- AREA TANDA TANGAN & PARAF DIGITAL KOORDINASI TATA NASKAH --}}
+<table style="width: 100%; margin-top: 10px; page-break-inside: avoid; border-collapse: collapse;">
     <tr>
         {{-- Sisi Kiri: Paraf Digital Tata Naskah (Ka Pokja & Kabag Umum) --}}
-        <td style="width: 48%; vertical-align: top; padding-right: 12px;">
-            <div style="border: 1px solid #475569; padding: 5px 8px; border-radius: 4px; font-size: 7.5pt; background-color: #f8fafc; font-family: 'Times New Roman', Times, serif;">
-                <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 4px; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; font-size: 7.5pt;">
+        <td style="width: 53%; vertical-align: top; padding-right: 10px;">
+            <div style="border: 1px solid #1e293b; padding: 4px 6px; border-radius: 4px; background-color: #f8fafc; font-family: 'Times New Roman', Times, serif;">
+                <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 3px; color: #0f172a; border-bottom: 1px solid #94a3b8; padding-bottom: 2px; font-size: 7pt; letter-spacing: 0.2px;">
                     PARAF DIGITAL KOORDINASI TATA NASKAH:
                 </div>
-                <table style="width: 100%; border-collapse: collapse; font-size: 7.5pt; line-height: 1.25;">
-                    <tr>
-                        <td style="width: 45%; padding: 1px 0; vertical-align: top;">1. Ka Pokja Keu-Kepeg</td>
-                        <td style="width: 55%; padding: 1px 0; vertical-align: top;">: {{ $pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina' }}, SE</td>
+                <table style="width: 100%; border-collapse: collapse; font-size: 7pt; line-height: 1.15;">
+                    {{-- 1. Ka Pokja Keu-Kepeg --}}
+                    <tr style="border-bottom: 1px dashed #cbd5e1;">
+                        <td style="width: 32px; vertical-align: middle; padding: 2px 4px 2px 0; text-align: center;">
+                            @if(isset($qrPokjaUri))
+                                <img src="{{ $qrPokjaUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
+                            @endif
+                        </td>
+                        <td style="vertical-align: middle; padding: 2px 0;">
+                            <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">1. Ka Pokja Keu-Kepeg</div>
+                            <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina' }}, SE</div>
+                            <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
+                                [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafPokjaAt ?? '07/10/2026' }}
+                            </div>
+                        </td>
                     </tr>
+                    {{-- 2. Kepala Bagian Umum --}}
                     <tr>
-                        <td style="padding: 1px 0;">&nbsp;&nbsp;&nbsp;Status Pemeriksaan</td>
-                        <td style="padding: 1px 0; color: #047857; font-weight: bold;">: [ Diverifikasi & Sah ]</td>
-                    </tr>
-                    <tr style="border-top: 1px dashed #cbd5e1;">
-                        <td style="padding: 1px 0; vertical-align: top;">2. Kepala Bagian Umum</td>
-                        <td style="padding: 1px 0; vertical-align: top;">: {{ $pejabatKabag->nama ?? 'Bakhtiar' }}, S.Sos., M.Si</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 1px 0;">&nbsp;&nbsp;&nbsp;Status Pemeriksaan</td>
-                        <td style="padding: 1px 0; color: #047857; font-weight: bold;">: [ Diverifikasi & Sah ]</td>
+                        <td style="width: 32px; vertical-align: middle; padding: 3px 4px 2px 0; text-align: center;">
+                            @if(isset($qrKabagUri))
+                                <img src="{{ $qrKabagUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
+                            @endif
+                        </td>
+                        <td style="vertical-align: middle; padding: 3px 0;">
+                            <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">2. Kepala Bagian Umum</div>
+                            <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKabag->nama ?? 'Bakhtiar' }}, S.Sos., M.Si</div>
+                            <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
+                                [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafKabagAt ?? '07/10/2026' }}
+                            </div>
+                        </td>
                     </tr>
                 </table>
             </div>
         </td>
 
-        {{-- Sisi Kanan: Tanda Tangan Wakil Dekan II (Tanpa 'Ditetapkan di...') --}}
-        <td style="width: 52%; text-align: left; vertical-align: top; padding-left: 8px;">
-            <div style="font-size: 10pt; line-height: 1.25;">
+        {{-- Sisi Kanan: Tanda Tangan Manual Wakil Dekan II (Tanpa 'Ditetapkan di...') --}}
+        <td style="width: 47%; text-align: left; vertical-align: top; padding-left: 8px;">
+            <div style="font-size: 9.5pt; line-height: 1.25;">
                 Wakil Dekan Bidang Keuangan dan Umum<br>
                 Fakultas Keperawatan Universitas Riau<br>
+                {{-- Ruang tanda tangan manual fisik basah --}}
                 <div style="height: 48px;"></div>
                 <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep., Sp.Kep.M.B') }}</strong><br>
                 <span>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</span>
