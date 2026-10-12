@@ -74,11 +74,13 @@
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     <div class="flex flex-col gap-1.5 items-center justify-center">
+                                        @if(auth()->user()->hasRole('admin'))
                                         <button 
                                             onclick="openKgbModal('{{ $row->id }}', '{{ $row->nama_lengkap ?? $row->nama }}', '{{ $row->golongan_id }}')"
                                             class="w-full rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-blue-700 transition">
                                             ⚡ Proses KGB Lengkap
                                         </button>
+                                        @endif
                                         <a href="{{ route('reports.kgb.pdf', $row->id) }}" target="_blank"
                                            class="w-full inline-flex items-center justify-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800 border border-amber-200 hover:bg-amber-100 transition shadow-2xs"
                                            title="Cetak Surat Pemberitahuan Kenaikan Gaji Berkala (Lengkap Paraf Kabag Umum & WD II)">

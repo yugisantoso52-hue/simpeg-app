@@ -54,7 +54,7 @@
                 <x-icon name="calendar-check" class="w-4 h-4 text-blue-600 shrink-0" />
                 <span>Rekap Presensi {{ Auth::user()->hasRole('admin') ? 'Pegawai' : 'Bawahan' }}</span>
             </x-dropdown-link>
-            @if(Auth::user()->hasRole('admin'))
+            @if(Auth::user()->hasRole('admin') || Auth::user()->canAccessExecutiveKepegawaianMenus())
                 <x-dropdown-link :href="route('admin.presensi.locations')" class="flex items-center gap-2 {{ request()->routeIs('admin.presensi.locations') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                     <x-icon name="map-pin" class="w-4 h-4 text-emerald-600 shrink-0" />
                     <span>Titik Lokasi Pegawai (GPS)</span>
@@ -229,12 +229,10 @@
                         <x-icon name="award" class="w-4 h-4 text-indigo-600 shrink-0" />
                         <span>Satyalancana Karya Satya</span>
                     </x-dropdown-link>
-                    @if(Auth::user()->hasRole('admin'))
-                        <x-dropdown-link :href="route('mutasi-pegawai.index')" class="flex items-center gap-2 {{ request()->routeIs('mutasi-pegawai.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                            <x-icon name="git-branch" class="w-4 h-4 text-blue-600 shrink-0" />
-                            <span>Mutasi Pegawai</span>
-                        </x-dropdown-link>
-                    @endif
+                    <x-dropdown-link :href="route('mutasi-pegawai.index')" class="flex items-center gap-2 {{ request()->routeIs('mutasi-pegawai.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                        <x-icon name="git-branch" class="w-4 h-4 text-blue-600 shrink-0" />
+                        <span>Mutasi Pegawai</span>
+                    </x-dropdown-link>
                     <x-dropdown-link :href="route('tugas-belajar.index')" class="flex items-center gap-2 {{ request()->routeIs('tugas-belajar.*') ? 'bg-rose-50 text-rose-700 font-semibold' : '' }}">
                         <x-icon name="graduation-cap" class="w-4 h-4 text-rose-600 shrink-0" />
                         <span>Tugas Belajar & Studi</span>

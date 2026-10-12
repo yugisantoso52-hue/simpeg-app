@@ -25,6 +25,51 @@ class UpdatePegawaiRequest extends FormRequest
         }
     }
 
+    public function validated($key = null, $default = null)
+    {
+        $data = parent::validated($key, $default);
+
+        // Keamanan: Jika pengguna bukan Admin, cegah privilege escalation
+        // Pegawai biasa hanya boleh memperbarui identitas pribadi, kontak, domisili, keluarga & foto
+        $user = auth()->user();
+        if ($user && !$user->hasRole('admin')) {
+            unset(
+                $data['nip'],
+                $data['unit_kerja_id'],
+                $data['jabatan_id'],
+                $data['golongan_id'],
+                $data['atasan_id'],
+                $data['status_pegawai'],
+                $data['status_asn'],
+                $data['jenis_pegawai'],
+                $data['jenis_jabatan'],
+                $data['angka_kredit'],
+                $data['batas_usia_pensiun'],
+                $data['tanggal_pensiun'],
+                $data['no_sk_pensiun'],
+                $data['tmt_pensiun'],
+                $data['jenis_kontrak'],
+                $data['tanggal_kontrak_mulai'],
+                $data['tanggal_kontrak_selesai'],
+                $data['tmt_sk_pertama'],
+                $data['tmt_pangkat_terakhir'],
+                $data['tmt_kgb_terakhir'],
+                $data['nomor_sk_pertama'],
+                $data['tanggal_sk_pertama'],
+                $data['nomor_sk_pangkat_terakhir'],
+                $data['tanggal_sk_pangkat_terakhir'],
+                $data['nomor_pak'],
+                $data['tanggal_pak'],
+                $data['file_sk_pertama'],
+                $data['file_sk_pangkat_terakhir'],
+                $data['file_sk_kgb_terakhir'],
+                $data['file_pak']
+            );
+        }
+
+        return $data;
+    }
+
     public function rules(): array
     {
         // Mengambil ID dari parameter route binding (/pegawai/{id} atau /pegawai/{pegawai})

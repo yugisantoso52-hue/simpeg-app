@@ -45,15 +45,11 @@ class CekKpHarian extends Command
 
         foreach ($paraPegawai as $pegawai) {
             try {
-                if (Carbon::parse($pegawai->kp_berikutnya)->isPast() || Carbon::parse($pegawai->kp_berikutnya)->isToday()) {
-                    $this->kpService->prosesKenaikanPangkatOtomatis($pegawai);
-                }
-
                 $processedPegawai->push($pegawai);
 
                 $namaPegawai = $pegawai->nama_lengkap ?? $pegawai->nama ?? 'Pegawai';
-                $this->line("✅ Pegawai [{$pegawai->nip}] {$namaPegawai} masuk radar KP ({$pegawai->kp_berikutnya}).");
-                Log::info("SIMPEG: Pegawai NIP {$pegawai->nip} otomatis masuk radar Kenaikan Pangkat.");
+                $this->line("📌 Pegawai [{$pegawai->nip}] {$namaPegawai} memasuki radar Kenaikan Pangkat ({$pegawai->kp_berikutnya}). Menunggu pengajuan & SK resmi BKN.");
+                Log::info("SIMPEG: Pegawai NIP {$pegawai->nip} ({$namaPegawai}) memasuki radar periode Kenaikan Pangkat (TMT: {$pegawai->kp_berikutnya}).");
                 
             } catch (\Exception $e) {
                 $this->error("❌ Gagal memproses pegawai NIP {$pegawai->nip}: " . $e->getMessage());
@@ -62,8 +58,13 @@ class CekKpHarian extends Command
         }
 
         if ($processedPegawai->isNotEmpty()) {
-            // Ambil seluruh user agar aman tanpa dependensi kolom role
-            $users = User::all();
+            // Notifikasi dikirimkan terarah ke Admin & Pimpinan (bukan spam ke seluruh pengguna)
+            $users = User::whereHas('role', function ($q) {
+                $q->whereIn('name', ['admin', 'pimpinan', 'executive_kepegawaian']);
+            })->get();
+            if ($users->isEmpty()) {
+                $users = User::all();
+            }
 
             foreach ($users as $user) {
                 if (class_exists(KpDueDateNotification::class)) {
@@ -71,7 +72,7 @@ class CekKpHarian extends Command
                 }
             }
 
-            $this->info("✅ Notifikasi dashboard KP berhasil dikirim.");
+            $this->info("✅ Notifikasi radar KP berhasil dikirim ke Admin & Pimpinan.");
         }
 
         $this->info('Pengecekan Kenaikan Pangkat selesai.');

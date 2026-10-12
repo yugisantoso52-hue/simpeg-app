@@ -73,8 +73,11 @@ class CekPensiunHarian extends Command
      */
     private function hitungBup($pegawai)
     {
-        $jabatan = strtolower($pegawai->jabatan ?? '');
-        $jenisJabatan = strtolower($pegawai->jenis_jabatan ?? '');
+        $namaJabatan = is_object($pegawai->jabatan) 
+            ? ($pegawai->jabatan->nama_jabatan ?? '') 
+            : (string)($pegawai->jabatan ?? '');
+        $jabatan = strtolower($namaJabatan);
+        $jenisJabatan = strtolower((string)($pegawai->jenis_jabatan ?? ''));
 
         // BUP 70 Tahun
         if (str_contains($jabatan, 'profesor') || str_contains($jabatan, 'guru besar') || 

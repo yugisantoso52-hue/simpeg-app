@@ -119,10 +119,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/pegawai/{pegawai}/edit', [PegawaiController::class, 'edit'])->name('pegawai.edit');
         Route::put('/pegawai/{pegawai}', [PegawaiController::class, 'update'])->name('pegawai.update');
 
-        // CRUD Riwayat Mandiri Pegawai (Pangkat, Jabatan, Mutasi, STR/SIP, Tubel, SKP, Penghargaan, Organisasi, Publikasi, Pendidikan, Diklat)
+        // CRUD Riwayat Mandiri Pegawai (Pangkat, Jabatan, STR/SIP, Tubel, SKP, Penghargaan, Organisasi, Publikasi, Pendidikan, Diklat)
         Route::resource('riwayat-pangkat', RiwayatPangkatController::class)->except(['index', 'show']);
         Route::resource('riwayat-jabatan', RiwayatJabatanController::class)->except(['index', 'show']);
-        Route::resource('mutasi-pegawai', MutasiPegawaiController::class)->parameters(['mutasi-pegawai' => 'mutasi_pegawai'])->except(['index', 'show']);
         Route::get('/pegawai-mutasi/{id}', [MutasiPegawaiController::class, 'getPegawai'])->name('pegawai-mutasi');
         Route::resource('riwayat-pendidikan', RiwayatPendidikanController::class)->except(['index', 'show']);
         Route::resource('riwayat-diklat', RiwayatDiklatController::class)->except(['index', 'show']);
@@ -144,8 +143,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::resource('golongan', GolonganController::class)->parameters(['golongan' => 'golongan']);
         Route::resource('jenis-jabatan', JenisJabatanController::class)->parameters(['jenis-jabatan' => 'jenis_jabatan']);
 
-        // Mutasi (Index & Management Khusus Admin)
-        Route::get('/mutasi-pegawai', [MutasiPegawaiController::class, 'index'])->name('mutasi-pegawai.index');
+        // Mutasi Pegawai (Create, Store, Edit, Update, Destroy Khusus Admin)
+        Route::resource('mutasi-pegawai', MutasiPegawaiController::class)->parameters(['mutasi-pegawai' => 'mutasi_pegawai'])->except(['index', 'show']);
 
         // KGB & KP (Proses Transaksi Khusus Admin)
         Route::post('/kgb/proses/{id}', [KgbController::class, 'proses'])->name('kgb.proses');
@@ -245,6 +244,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/kenaikan-pangkat', [KpController::class, 'index'])->name('kp.index');
         Route::get('/satyalancana', [SatyalancanaController::class, 'index'])->name('satyalancana.index');
         Route::get('/tugas-belajar', [TugasBelajarController::class, 'index'])->name('tugas-belajar.index');
+        Route::get('/mutasi-pegawai', [MutasiPegawaiController::class, 'index'])->name('mutasi-pegawai.index');
 
         /* Read-Only Riwayat List */
         Route::get('/riwayat-pendidikan', [RiwayatPendidikanController::class, 'index'])->name('riwayat-pendidikan.index');

@@ -210,12 +210,14 @@
                                 </td>
                                 <td class="px-3 py-3 text-center">
                                     <div class="flex flex-col gap-1.5 items-center justify-center">
+                                        @if(auth()->user()->hasRole('admin'))
                                         <button 
                                             type="button"
                                             onclick='openKpModal(@json($row->id), @json($row->nama_lengkap ?? $row->nama), @json($syarat))'
                                             class="w-full rounded-lg bg-green-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-green-700 active:scale-95 transition">
                                             Proses Naik Pangkat
                                         </button>
+                                        @endif
                                         <a href="{{ route('reports.kp.pdf', $row->id) }}" target="_blank"
                                            class="w-full inline-flex items-center justify-center gap-1 rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition shadow-2xs"
                                            title="Cetak Surat Pengantar Usulan Kenaikan Pangkat ke Rektor (Lengkap Paraf Kabag Umum & WD II)">

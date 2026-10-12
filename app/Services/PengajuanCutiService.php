@@ -154,6 +154,10 @@ class PengajuanCutiService
             $cuti = $this->repository->findOrFail($id);
             $approver = \App\Models\User::find($approverUserId);
 
+            if (!$approver) {
+                throw ValidationException::withMessages(['error' => 'Data pengguna verifikator tidak ditemukan.']);
+            }
+
             $updateData = [];
             $isKeputusanFinal = false;
 
@@ -164,9 +168,30 @@ class PengajuanCutiService
             $isAtasanLgs = ($cuti->atasan_langsung_id && (int)$cuti->atasan_langsung_id === $approverUserId)
                 || ($approver->pegawai && $cuti->pegawai && $hierarchyService->isAtasanLangsungCuti($approver->pegawai, $cuti->pegawai));
 
+            $isAdmin = $approver->hasRole('admin');
+
+            // Proteksi Otorisasi Hierarki: Cegah Approval Bypass
+            if (!$isAdmin && !$isAtasanLgs && !$isPybmc) {
+                throw ValidationException::withMessages([
+                    'error' => 'Anda tidak memiliki hak wewenang hierarkis untuk memproses atau menyetujui permohonan cuti pegawai ini.',
+                ]);
+            }
+
             // Jika pertimbangan atasan belum ada dan bukan admin yang menyertakan nomor surat,
             // maka aksi ini adalah TAHAP 1: PERTIMBANGAN ATASAN LANGSUNG
-            $isTahap1 = empty($cuti->pertimbangan_atasan) && (!$approver->hasRole('admin') || empty($data['nomor_surat']));
+            $isTahap1 = empty($cuti->pertimbangan_atasan) && (!$isAdmin || empty($data['nomor_surat']));
+
+            if ($isTahap1 && !$isAdmin && !$isAtasanLgs && !$isPybmc) {
+                throw ValidationException::withMessages([
+                    'error' => 'Pertimbangan tahap 1 hanya dapat diberikan oleh Atasan Langsung dari pemohon cuti.',
+                ]);
+            }
+
+            if (!$isTahap1 && !$isAdmin && !$isPybmc) {
+                throw ValidationException::withMessages([
+                    'error' => 'Keputusan akhir cuti (tahap 2) hanya dapat ditetapkan oleh Pejabat Yang Berwenang Memberikan Cuti (PYBMC / Dekanat).',
+                ]);
+            }
 
             if ($isTahap1) {
                 // Pertimbangan Atasan Langsung (Tahap 1 PerBKN 7/2022)

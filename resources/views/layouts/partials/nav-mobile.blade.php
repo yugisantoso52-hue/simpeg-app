@@ -72,7 +72,7 @@
                     <x-icon name="calendar-check" class="w-3.5 h-3.5 text-blue-600" />
                     <span>Rekap Presensi {{ Auth::user()->hasRole('admin') ? 'Pegawai' : 'Bawahan' }}</span>
                 </x-responsive-nav-link>
-                @if(Auth::user()->hasRole('admin'))
+                @if(Auth::user()->hasRole('admin') || Auth::user()->canAccessExecutiveKepegawaianMenus())
                     <x-responsive-nav-link :href="route('admin.presensi.locations')" :active="request()->routeIs('admin.presensi.locations')" class="flex items-center gap-2 text-xs rounded-lg">
                         <x-icon name="map-pin" class="w-3.5 h-3.5 text-emerald-600" />
                         <span>Titik Acuan Lokasi Pegawai</span>
@@ -221,12 +221,10 @@
                     <x-icon name="award" class="w-3.5 h-3.5 text-indigo-600" />
                     <span>Satyalancana Karya Satya</span>
                 </x-responsive-nav-link>
-                @if(Auth::user()->hasRole('admin'))
-                    <x-responsive-nav-link :href="route('mutasi-pegawai.index')" :active="request()->routeIs('mutasi-pegawai.*')" class="flex items-center gap-2 text-xs rounded-lg">
-                        <x-icon name="git-branch" class="w-3.5 h-3.5 text-blue-600" />
-                        <span>Mutasi Pegawai</span>
-                    </x-responsive-nav-link>
-                @endif
+                <x-responsive-nav-link :href="route('mutasi-pegawai.index')" :active="request()->routeIs('mutasi-pegawai.*')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="git-branch" class="w-3.5 h-3.5 text-blue-600" />
+                    <span>Mutasi Pegawai</span>
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('tugas-belajar.index')" :active="request()->routeIs('tugas-belajar.*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="graduation-cap" class="w-3.5 h-3.5 text-rose-600" />
                     <span>Tugas Belajar & Studi</span>

@@ -74,9 +74,28 @@ class KpService
                 ? (is_string($pegawai->kp_berikutnya) ? $pegawai->kp_berikutnya : $pegawai->kp_berikutnya->format('Y-m-d'))
                 : ($pegawai->tmt_pangkat_terakhir ? Carbon::parse($pegawai->tmt_pangkat_terakhir)->addYears(4)->format('Y-m-d') : date('Y-m-d'));
 
-            $golonganSaatIniId = $pegawai->golongan_id;
-            $golonganBerikutnyaId = $golonganSaatIniId ? Golongan::where('id', '>', $golonganSaatIniId)->min('id') : null;
-            $targetGolonganId = $golonganBerikutnyaId ?? $golonganSaatIniId;
+            $golonganSaatIni = $pegawai->golongan;
+            if (!$golonganSaatIni) {
+                return false;
+            }
+
+            // Hierarki resmi urutan kepangkatan ASN BKN
+            $hierarkiGolongan = [
+                'I/a', 'I/b', 'I/c', 'I/d',
+                'II/a', 'II/b', 'II/c', 'II/d',
+                'III/a', 'III/b', 'III/c', 'III/d',
+                'IV/a', 'IV/b', 'IV/c', 'IV/d', 'IV/e'
+            ];
+
+            $namaGolongan = $golonganSaatIni->nama_golongan;
+            $index = array_search($namaGolongan, $hierarkiGolongan);
+
+            $targetGolonganId = null;
+            if ($index !== false && isset($hierarkiGolongan[$index + 1])) {
+                $nextNamaGolongan = $hierarkiGolongan[$index + 1];
+                $nextGolongan = Golongan::where('nama_golongan', $nextNamaGolongan)->first();
+                $targetGolonganId = $nextGolongan?->id;
+            }
 
             if ($targetGolonganId) {
                 return $this->prosesKp($pegawai, [
