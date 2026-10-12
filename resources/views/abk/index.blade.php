@@ -9,7 +9,10 @@
                     Kalkulasi Kebutuhan Formasi Pegawai Berdasarkan Standar Waktu Kerja Efektif (WKE: 1.250 Jam / 75.000 Menit/Tahun)
                 </p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
+                <a href="{{ route('abk.simulasi-formasi') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-purple-600 rounded-lg shadow hover:bg-purple-700 transition">
+                    <span>🎯</span> Simulasi Formasi CASN & Pensiun
+                </a>
                 <a href="{{ route('anjab.peta-jabatan') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg shadow hover:bg-indigo-700 transition">
                     <span>📊</span> Peta Jabatan
                 </a>

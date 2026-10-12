@@ -305,11 +305,15 @@
                     <x-icon name="git-branch" class="w-3.5 h-3.5 text-indigo-600" />
                     <span>Peta Jabatan Digital</span>
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('abk.index')" :active="request()->routeIs('abk.*')" class="flex items-center gap-2 text-xs rounded-lg">
+                <x-responsive-nav-link :href="route('abk.index')" :active="request()->routeIs('abk.index', 'abk.edit')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="chart" class="w-3.5 h-3.5 text-blue-600" />
                     <span>Analisis Beban Kerja (ABK)</span>
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('anjab.index')" :active="request()->routeIs('anjab.index', 'anjab.show', 'anjab.edit')" class="flex items-center gap-2 text-xs rounded-lg">
+                <x-responsive-nav-link :href="route('abk.simulasi-formasi')" :active="request()->routeIs('abk.simulasi-formasi')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="target" class="w-3.5 h-3.5 text-purple-600" />
+                    <span>Simulasi Formasi CASN & Pensiun</span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('anjab.index')" :active="request()->routeIs('anjab.index', 'anjab.show', 'anjab.edit', 'anjab.evaluasi*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="file-text" class="w-3.5 h-3.5 text-teal-600" />
                     <span>Katalog Dokumen Anjab</span>
                 </x-responsive-nav-link>
@@ -343,6 +347,14 @@
                 <x-responsive-nav-link :href="route('manajemen-talenta.suksesi.index')" :active="request()->routeIs('manajemen-talenta.suksesi.*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="crown" class="w-3.5 h-3.5 text-amber-600" />
                     <span>Rencana Suksesi Jabatan</span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('manajemen-talenta.idp')" :active="request()->routeIs('manajemen-talenta.idp*', 'manajemen-talenta.pegawai.idp*')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="book-open" class="w-3.5 h-3.5 text-teal-600" />
+                    <span>Pengembangan 20 JP (IDP)</span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('manajemen-talenta.sidang-komite.index')" :active="request()->routeIs('manajemen-talenta.sidang-komite*')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="scale" class="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Sidang Komite Talenta</span>
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('manajemen-talenta.asesmen.index')" :active="request()->routeIs('manajemen-talenta.asesmen.*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="award" class="w-3.5 h-3.5 text-indigo-600" />

@@ -15,12 +15,15 @@
                     Penetapan dan Pemetaan Calon Pengganti Jabatan Struktural &amp; Fungsional Strategis Berbasis Match Index Standar Anjab
                 </p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
+                <a href="{{ route('manajemen-talenta.sidang-komite.index', ['tahun' => $tahun]) }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm transition">
+                    <span>⚖️</span> Sidang Komite Talenta
+                </a>
                 <a href="{{ route('manajemen-talenta.index', ['tahun' => $tahun]) }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition">
                     <span>📊</span> Matriks 9-Kotak
                 </a>
-                <a href="{{ route('anjab.peta-jabatan') }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm transition">
-                    <span>🏛️</span> Peta Jabatan Digital
+                <a href="{{ route('anjab.peta-jabatan') }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition">
+                    <span>🏛️</span> Peta Jabatan
                 </a>
             </div>
         </div>

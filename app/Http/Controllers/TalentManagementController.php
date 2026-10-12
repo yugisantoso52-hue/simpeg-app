@@ -479,4 +479,286 @@ class TalentManagementController extends Controller
 
         return back()->with('success', 'Nominasi kandidat suksesi berhasil dihapus.');
     }
+
+    /**
+     * Simulasi Job Fit & Head-to-Head Comparison Kandidat Suksesi
+     */
+    public function komparasiKandidat(Jabatan $jabatan, Request $request, SuccessionMatchingService $matchingService)
+    {
+        $user = Auth::user();
+        if (!$user->canAccessTalentManagement()) {
+            abort(403, 'Akses terbatas untuk pimpinan dan tim manajemen kepegawaian.');
+        }
+
+        $tahun = (int) ($request->input('tahun', date('Y')));
+        $candidateIds = $request->input('candidate_ids', []);
+
+        // Pastikan kalkulasi talent mapping tahun ini tersedia
+        if (!TalentMapping::where('tahun', $tahun)->exists()) {
+            $this->scoringService->batchCalculate($tahun);
+        }
+
+        $allPool = $matchingService->findCandidatePool($jabatan, $tahun);
+
+        if (!empty($candidateIds)) {
+            $candidateIdsArray = is_array($candidateIds) ? $candidateIds : explode(',', (string) $candidateIds);
+            $selectedCandidates = $allPool->filter(fn($c) => in_array($c->pegawai->id, $candidateIdsArray))->values();
+            if ($selectedCandidates->isEmpty()) {
+                $selectedCandidates = $allPool->take(3);
+            }
+        } else {
+            $selectedCandidates = $allPool->take(3);
+        }
+
+        // Muat data relasi tambahan untuk perbandingan komparatif
+        foreach ($selectedCandidates as $cand) {
+            $cand->pegawai->load([
+                'riwayatSkp' => fn($q) => $q->orderBy('tahun', 'desc')->take(2),
+                'riwayatDiklat' => fn($q) => $q->orderBy('tanggal_selesai', 'desc'),
+                'talentAssessments' => fn($q) => $q->orderBy('tanggal_asesmen', 'desc')->take(1),
+                'riwayatJabatan' => fn($q) => $q->orderBy('tmt_jabatan', 'desc')->take(3),
+            ]);
+            $cand->total_jp = $cand->pegawai->riwayatDiklat->sum('jumlah_jam');
+            $cand->latest_assessment = $cand->pegawai->talentAssessments->first();
+        }
+
+        $anjab = $jabatan->analisisJabatan;
+
+        return view('talent.suksesi.komparasi', compact('jabatan', 'selectedCandidates', 'allPool', 'anjab', 'tahun'));
+    }
+
+    /**
+     * Dashboard Rencana Pengembangan Kompetensi Individu (IDP - Hak 20 JP Pegawai ASN)
+     */
+    public function idpIndex(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user->canAccessTalentManagement()) {
+            abort(403, 'Akses terbatas untuk pimpinan dan tim manajemen kepegawaian.');
+        }
+
+        $tahun = (int) ($request->input('tahun', date('Y')));
+        $unitKerjaId = $request->input('unit_kerja_id');
+        $statusJp = $request->input('status_jp'); // 'memenuhi', 'kurang'
+        $search = $request->input('search');
+
+        $query = Pegawai::with(['jabatan', 'unitKerja', 'golongan', 'riwayatDiklat', 'talentMappings' => function ($q) use ($tahun) {
+            $q->where('tahun', $tahun);
+        }])->where('status_pegawai', 'Aktif');
+
+        if ($unitKerjaId) {
+            $query->where('unit_kerja_id', $unitKerjaId);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%");
+            });
+        }
+
+        $allPegawais = $query->orderBy('nama')->get();
+
+        // Hitung pemenuhan JP untuk masing-masing pegawai
+        $pegawaiList = $allPegawais->map(function ($peg) {
+            $totalJp = (float) $peg->riwayatDiklat->sum('jumlah_jam');
+            $targetJp = 20;
+            $sisaJp = max(0, $targetJp - $totalJp);
+            $persen = min(100, round(($totalJp / $targetJp) * 100));
+            $isMemenuhi = $totalJp >= $targetJp;
+
+            $mapping = $peg->talentMappings->first();
+            $kuadranBox = $mapping?->kuadran_box ?? 5;
+
+            // Rekomendasi program pelatihan berdasarkan kuadran 9-kotak
+            $rekomendasi = match (true) {
+                $kuadranBox >= 8 => 'Pelatihan Kepemimpinan Nasional/Administrator (PKN/PKA) & Strategic Thinking',
+                $kuadranBox === 7 => 'Executive Coaching, Manajemen Perubahan & Kepemimpinan Pengawas (PKP)',
+                $kuadranBox >= 5 => 'Pelatihan Kompetensi Teknis Fungsional Keperawatan & Sertifikasi Keahlian',
+                default => 'Pelatihan Dasar Teknis, Bimbingan Sikap Kerja, & Peningkatan Kinerja Tugas Pokok',
+            };
+
+            return [
+                'pegawai' => $peg,
+                'total_jp' => $totalJp,
+                'sisa_jp' => $sisaJp,
+                'persen' => $persen,
+                'is_memenuhi' => $isMemenuhi,
+                'kuadran_box' => $kuadranBox,
+                'box_name' => $mapping?->box_name ?? 'Kotak 5',
+                'rekomendasi' => $rekomendasi,
+            ];
+        });
+
+        if ($statusJp === 'memenuhi') {
+            $pegawaiList = $pegawaiList->filter(fn($p) => $p['is_memenuhi'])->values();
+        } elseif ($statusJp === 'kurang') {
+            $pegawaiList = $pegawaiList->filter(fn($p) => !$p['is_memenuhi'])->values();
+        }
+
+        // Agregasi Statistik
+        $totalPegawai = $allPegawais->count();
+        $totalMemenuhi = $allPegawais->filter(fn($p) => $p->riwayatDiklat->sum('jumlah_jam') >= 20)->count();
+        $totalKurang = $totalPegawai - $totalMemenuhi;
+        $totalJpSemua = $allPegawais->sum(fn($p) => $p->riwayatDiklat->sum('jumlah_jam'));
+        $rataRataJp = $totalPegawai > 0 ? round($totalJpSemua / $totalPegawai, 1) : 0;
+
+        $unitKerjas = UnitKerja::orderBy('nama_unit')->get();
+
+        return view('talent.idp.index', compact(
+            'pegawaiList',
+            'tahun',
+            'unitKerjaId',
+            'statusJp',
+            'search',
+            'unitKerjas',
+            'totalPegawai',
+            'totalMemenuhi',
+            'totalKurang',
+            'rataRataJp'
+        ));
+    }
+
+    /**
+     * Detail Rencana Pengembangan Kompetensi Individu Pegawai (IDP Roadmap)
+     */
+    public function idpDetail(Pegawai $pegawai, Request $request)
+    {
+        $user = Auth::user();
+        if (!$user->canAccessTalentManagement()) {
+            abort(403, 'Akses terbatas untuk pimpinan dan tim manajemen kepegawaian.');
+        }
+
+        $tahun = (int) ($request->input('tahun', date('Y')));
+        $pegawai->load(['jabatan', 'unitKerja', 'golongan', 'riwayatDiklat' => fn($q) => $q->orderBy('tanggal_selesai', 'desc'), 'talentAssessments']);
+
+        $mapping = TalentMapping::where('pegawai_id', $pegawai->id)->where('tahun', $tahun)->first();
+        if (!$mapping) {
+            $mapping = $this->scoringService->calculatePegawaiTalent($pegawai, $tahun);
+        }
+
+        $totalJp = (float) $pegawai->riwayatDiklat->sum('jumlah_jam');
+        $targetJp = 20;
+        $sisaJp = max(0, $targetJp - $totalJp);
+        $persen = min(100, round(($totalJp / $targetJp) * 100));
+
+        return view('talent.idp.show', compact('pegawai', 'mapping', 'tahun', 'totalJp', 'targetJp', 'sisaJp', 'persen'));
+    }
+
+    /**
+     * Dashboard Sidang Komite Talenta & Penetapan Talent Pool Resmi
+     */
+    public function sidangKomiteIndex(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user->canAccessTalentManagement()) {
+            abort(403, 'Akses terbatas untuk pimpinan dan tim manajemen kepegawaian.');
+        }
+
+        $tahun = (int) ($request->input('tahun', date('Y')));
+        $statusValidasi = $request->input('status_validasi');
+
+        // Pastikan snapshot mapping tersedia
+        if (!TalentMapping::where('tahun', $tahun)->exists()) {
+            $this->scoringService->batchCalculate($tahun);
+        }
+
+        $query = TalentMapping::with(['pegawai.jabatan', 'pegawai.unitKerja', 'pegawai.golongan'])
+            ->where('tahun', $tahun)
+            ->whereIn('kuadran_box', [9, 8, 7]); // Anggota Talent Pool Potensial
+
+        if ($statusValidasi) {
+            $query->where('status_validasi', $statusValidasi);
+        }
+
+        $talentPoolCandidates = $query->orderBy('kuadran_box', 'desc')
+            ->orderBy('sumbu_kinerja_nilai', 'desc')
+            ->get();
+
+        $successionPlans = SuccessionPlan::with(['jabatanTarget.unitKerja', 'pegawai.golongan'])
+            ->where('tahun', $tahun)
+            ->orderBy('peringkat_prioritas')
+            ->get();
+
+        // Rekap status
+        $totalKandidat = TalentMapping::where('tahun', $tahun)->whereIn('kuadran_box', [9, 8, 7])->count();
+        $totalDitetapkan = TalentMapping::where('tahun', $tahun)->whereIn('kuadran_box', [9, 8, 7])->where('status_validasi', 'Ditetapkan PPK')->count();
+        $totalDitinjau = TalentMapping::where('tahun', $tahun)->whereIn('kuadran_box', [9, 8, 7])->where('status_validasi', 'Ditinjau Komite')->count();
+        $totalDraft = TalentMapping::where('tahun', $tahun)->whereIn('kuadran_box', [9, 8, 7])->where('status_validasi', 'Draft')->count();
+
+        return view('talent.sidang_komite', compact(
+            'talentPoolCandidates',
+            'successionPlans',
+            'tahun',
+            'statusValidasi',
+            'totalKandidat',
+            'totalDitetapkan',
+            'totalDitinjau',
+            'totalDraft'
+        ));
+    }
+
+    /**
+     * Simpan Keputusan Sidang Komite Talenta
+     */
+    public function tetapkanSidangKomite(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user->canManageTalentManagement()) {
+            abort(403, 'Akses ditolak. Hanya Dewan Komite Talenta yang dapat menetapkan keputusan.');
+        }
+
+        $validated = $request->validate([
+            'mapping_ids'      => 'required|array|min:1',
+            'mapping_ids.*'    => 'exists:talent_mappings,id',
+            'status_validasi'  => 'required|in:Draft,Ditinjau Komite,Ditetapkan PPK',
+            'catatan_komite'   => 'nullable|string|max:1000',
+        ]);
+
+        TalentMapping::whereIn('id', $validated['mapping_ids'])->update([
+            'status_validasi' => $validated['status_validasi'],
+            'catatan_komite'  => $validated['catatan_komite'] ?? 'Disetujui dalam Sidang Komite Talenta Fakultas Keperawatan UNRI.',
+            'validated_by'    => $user->id,
+            'validated_at'    => now(),
+        ]);
+
+        return back()->with('success', count($validated['mapping_ids']) . " kandidat talent pool berhasil diperbarui statusnya menjadi '{$validated['status_validasi']}'.");
+    }
+
+    /**
+     * Cetak Berita Acara Rapat Komite Talenta & Penetapan Talent Pool Resmi
+     */
+    public function cetakBeritaAcara(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user->canAccessTalentManagement()) {
+            abort(403, 'Akses terbatas untuk pimpinan dan tim manajemen kepegawaian.');
+        }
+
+        $tahun = (int) ($request->input('tahun', date('Y')));
+
+        $talentPool = TalentMapping::with(['pegawai.jabatan', 'pegawai.unitKerja', 'pegawai.golongan'])
+            ->where('tahun', $tahun)
+            ->whereIn('kuadran_box', [9, 8, 7])
+            ->where('status_validasi', 'Ditetapkan PPK')
+            ->orderBy('kuadran_box', 'desc')
+            ->orderBy('sumbu_kinerja_nilai', 'desc')
+            ->get();
+
+        if ($talentPool->isEmpty()) {
+            $talentPool = TalentMapping::with(['pegawai.jabatan', 'pegawai.unitKerja', 'pegawai.golongan'])
+                ->where('tahun', $tahun)
+                ->whereIn('kuadran_box', [9, 8, 7])
+                ->orderBy('kuadran_box', 'desc')
+                ->get();
+        }
+
+        $successionPlans = SuccessionPlan::with(['jabatanTarget.unitKerja', 'pegawai.golongan', 'pegawai.jabatan'])
+            ->where('tahun', $tahun)
+            ->orderBy('peringkat_prioritas')
+            ->get();
+
+        return view('talent.berita_acara_print', compact('talentPool', 'successionPlans', 'tahun'));
+    }
 }
+

@@ -155,4 +155,100 @@ class AnjabController extends Controller
         $anjab->load(['jabatan', 'unitKerja', 'uraianTugas']);
         return view('anjab.print', compact('anjab'));
     }
+
+    /**
+     * Verifikasi & Validasi Digital Dokumen Anjab oleh Pimpinan / Admin
+     */
+    public function verifikasi(Request $request, AnalisisJabatan $anjab)
+    {
+        $user = auth()->user();
+        if (!$user->canAccessExecutiveKepegawaianMenus()) {
+            abort(403, 'Akses terbatas untuk pimpinan dan pengelola kepegawaian.');
+        }
+
+        $action = $request->input('action', 'setujui');
+        $namaJabatan = $anjab->jabatan->nama_jabatan ?? 'Jabatan';
+
+        if ($action === 'setujui') {
+            $anjab->update(['status' => 'disetujui']);
+            $msg = "Dokumen Analisis Jabatan {$namaJabatan} berhasil diverifikasi & disahkan secara digital oleh Dekanat FKP UNRI.";
+        } else {
+            $anjab->update(['status' => 'draft']);
+            $msg = "Status Dokumen Anjab {$namaJabatan} berhasil dikembalikan ke status Draft.";
+        }
+
+        return back()->with('success', $msg);
+    }
+
+    /**
+     * Halaman Evaluasi Jabatan FES (Factor Evaluation System) PermenPAN-RB No. 34/2011 & 39/2013
+     */
+    public function evaluasiJabatan(AnalisisJabatan $anjab)
+    {
+        $anjab->load(['jabatan', 'unitKerja', 'uraianTugas']);
+        return view('anjab.evaluasi_jabatan', compact('anjab'));
+    }
+
+    /**
+     * Simpan Hasil Evaluasi Jabatan & Perbarui Kelas Jabatan
+     */
+    public function updateEvaluasiJabatan(Request $request, AnalisisJabatan $anjab)
+    {
+        $validated = $request->validate([
+            'faktor_1' => 'required|integer',
+            'faktor_2' => 'required|integer',
+            'faktor_3' => 'required|integer',
+            'faktor_4' => 'required|integer',
+            'faktor_5' => 'required|integer',
+            'faktor_6' => 'required|integer',
+            'faktor_7' => 'required|integer',
+            'faktor_8' => 'required|integer',
+            'faktor_9' => 'required|integer',
+            'catatan_evaluasi' => 'nullable|string|max:1000',
+        ]);
+
+        $totalNilai = $validated['faktor_1'] + $validated['faktor_2'] + $validated['faktor_3']
+                    + $validated['faktor_4'] + $validated['faktor_5'] + $validated['faktor_6']
+                    + $validated['faktor_7'] + $validated['faktor_8'] + $validated['faktor_9'];
+
+        $kelasJabatan = self::konversiNilaiKeKelas($totalNilai);
+
+        $anjab->update([
+            'kelas_jabatan' => $kelasJabatan,
+        ]);
+
+        if ($anjab->jabatan_id) {
+            Jabatan::where('id', $anjab->jabatan_id)->update([
+                'kelas_jabatan' => $kelasJabatan
+            ]);
+        }
+
+        return redirect()->route('anjab.show', $anjab)
+            ->with('success', "Evaluasi jabatan berhasil disimpan! Total Nilai Jabatan: {$totalNilai} -> Ditetapkan Kelas Jabatan: Grade {$kelasJabatan}.");
+    }
+
+    /**
+     * Konversi Total Nilai FES ke Kelas Jabatan 1 s/d 17 (Standar BKN & PermenPAN-RB)
+     */
+    public static function konversiNilaiKeKelas(int $nilai): int
+    {
+        if ($nilai <= 240) return 1;
+        if ($nilai <= 300) return 2;
+        if ($nilai <= 370) return 3;
+        if ($nilai <= 450) return 4;
+        if ($nilai <= 650) return 5;
+        if ($nilai <= 850) return 6;
+        if ($nilai <= 1100) return 7;
+        if ($nilai <= 1350) return 8;
+        if ($nilai <= 1600) return 9;
+        if ($nilai <= 1850) return 10;
+        if ($nilai <= 2100) return 11;
+        if ($nilai <= 2350) return 12;
+        if ($nilai <= 2750) return 13;
+        if ($nilai <= 3150) return 14;
+        if ($nilai <= 3600) return 15;
+        if ($nilai <= 4050) return 16;
+        return 17;
+    }
 }
+

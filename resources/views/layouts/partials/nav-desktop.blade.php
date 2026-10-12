@@ -311,16 +311,20 @@
                 <x-icon name="git-branch" class="w-4 h-4 text-indigo-600 shrink-0" />
                 <span>Peta Jabatan Digital</span>
             </x-dropdown-link>
-            <x-dropdown-link :href="route('abk.index')" class="flex items-center gap-2 {{ request()->routeIs('abk.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+            <x-dropdown-link :href="route('abk.index')" class="flex items-center gap-2 {{ request()->routeIs('abk.index', 'abk.edit') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                 <x-icon name="chart" class="w-4 h-4 text-blue-600 shrink-0" />
                 <span>Analisis Beban Kerja (ABK)</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('abk.simulasi-formasi')" class="flex items-center gap-2 {{ request()->routeIs('abk.simulasi-formasi') ? 'bg-purple-50 text-purple-700 font-semibold' : '' }}">
+                <x-icon name="target" class="w-4 h-4 text-purple-600 shrink-0" />
+                <span>Simulasi Formasi CASN & Pensiun</span>
             </x-dropdown-link>
 
             <div class="border-t border-slate-100 my-1"></div>
             <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
                 Dokumen Anjab (PermenPAN 1/2020)
             </div>
-            <x-dropdown-link :href="route('anjab.index')" class="flex items-center gap-2 {{ request()->routeIs('anjab.index', 'anjab.show', 'anjab.edit') ? 'bg-teal-50 text-teal-700 font-semibold' : '' }}">
+            <x-dropdown-link :href="route('anjab.index')" class="flex items-center gap-2 {{ request()->routeIs('anjab.index', 'anjab.show', 'anjab.edit', 'anjab.evaluasi*') ? 'bg-teal-50 text-teal-700 font-semibold' : '' }}">
                 <x-icon name="file-text" class="w-4 h-4 text-teal-600 shrink-0" />
                 <span>Katalog Dokumen Anjab</span>
             </x-dropdown-link>
@@ -361,6 +365,14 @@
             <x-dropdown-link :href="route('manajemen-talenta.suksesi.index')" class="flex items-center gap-2 {{ request()->routeIs('manajemen-talenta.suksesi.*') ? 'bg-rose-50 text-rose-700 font-semibold' : '' }}">
                 <x-icon name="crown" class="w-4 h-4 text-amber-600 shrink-0" />
                 <span>Rencana Suksesi Jabatan</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('manajemen-talenta.idp')" class="flex items-center gap-2 {{ request()->routeIs('manajemen-talenta.idp*', 'manajemen-talenta.pegawai.idp*') ? 'bg-teal-50 text-teal-700 font-semibold' : '' }}">
+                <x-icon name="book-open" class="w-4 h-4 text-teal-600 shrink-0" />
+                <span>Pengembangan 20 JP (IDP)</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('manajemen-talenta.sidang-komite.index')" class="flex items-center gap-2 {{ request()->routeIs('manajemen-talenta.sidang-komite*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
+                <x-icon name="scale" class="w-4 h-4 text-indigo-600 shrink-0" />
+                <span>Sidang Komite Talenta</span>
             </x-dropdown-link>
 
             <div class="border-t border-slate-100 my-1"></div>

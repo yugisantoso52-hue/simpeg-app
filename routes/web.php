@@ -277,6 +277,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
 
         // Analisis Beban Kerja (ABK) & Formasi
         Route::get('/abk', [\App\Http\Controllers\AbkController::class, 'index'])->name('abk.index');
+        Route::get('/abk/simulasi-formasi', [\App\Http\Controllers\AbkController::class, 'simulasiFormasi'])->name('abk.simulasi-formasi');
         Route::get('/abk/{anjab}/edit', [\App\Http\Controllers\AbkController::class, 'edit'])->name('abk.edit');
         Route::post('/abk/{anjab}/tugas', [\App\Http\Controllers\AbkController::class, 'storeTugas'])->name('abk.tugas.store');
         Route::put('/abk/tugas/{tugas}', [\App\Http\Controllers\AbkController::class, 'updateTugas'])->name('abk.tugas.update');
@@ -292,6 +293,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::put('/anjab/{anjab}', [\App\Http\Controllers\AnjabController::class, 'update'])->name('anjab.update');
         Route::delete('/anjab/{anjab}', [\App\Http\Controllers\AnjabController::class, 'destroy'])->name('anjab.destroy');
         Route::get('/anjab/{anjab}/print', [\App\Http\Controllers\AnjabController::class, 'print'])->name('anjab.print');
+        Route::post('/anjab/{anjab}/verifikasi', [\App\Http\Controllers\AnjabController::class, 'verifikasi'])->name('anjab.verifikasi');
+        Route::get('/anjab/{anjab}/evaluasi-jabatan', [\App\Http\Controllers\AnjabController::class, 'evaluasiJabatan'])->name('anjab.evaluasi-jabatan');
+        Route::post('/anjab/{anjab}/evaluasi-jabatan', [\App\Http\Controllers\AnjabController::class, 'updateEvaluasiJabatan'])->name('anjab.evaluasi-jabatan.update');
 
         /* ======================================================================
          * MODUL MANAJEMEN TALENTA ASN (PermenPAN-RB No. 3/2020 & UU No. 20/2023)
@@ -312,8 +316,18 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
             // Rencana Suksesi Jabatan & Job Matching Anjab
             Route::get('/suksesi', [TalentManagementController::class, 'suksesiIndex'])->name('suksesi.index');
             Route::get('/suksesi/jabatan/{jabatan}', [TalentManagementController::class, 'suksesiJabatan'])->name('suksesi.jabatan');
+            Route::get('/suksesi/jabatan/{jabatan}/komparasi', [TalentManagementController::class, 'komparasiKandidat'])->name('suksesi.komparasi');
             Route::post('/suksesi/nominasi', [TalentManagementController::class, 'storeSuksesiNominasi'])->name('suksesi.nominasi.store');
             Route::delete('/suksesi/nominasi/{plan}', [TalentManagementController::class, 'destroySuksesiNominasi'])->name('suksesi.nominasi.destroy');
+
+            // Rencana Pengembangan Kompetensi Individu (IDP - Hak 20 JP Pegawai ASN)
+            Route::get('/idp', [TalentManagementController::class, 'idpIndex'])->name('idp');
+            Route::get('/pegawai/{pegawai}/idp', [TalentManagementController::class, 'idpDetail'])->name('pegawai.idp');
+
+            // Sidang Komite Talenta & Berita Acara Penetapan Resmi
+            Route::get('/sidang-komite', [TalentManagementController::class, 'sidangKomiteIndex'])->name('sidang-komite.index');
+            Route::post('/sidang-komite/tetapkan', [TalentManagementController::class, 'tetapkanSidangKomite'])->name('sidang-komite.tetapkan');
+            Route::get('/sidang-komite/cetak', [TalentManagementController::class, 'cetakBeritaAcara'])->name('sidang-komite.cetak');
         });
     });
 

@@ -16,14 +16,17 @@
                     Status: <span class="uppercase text-xs font-bold px-2 py-0.5 rounded-full {{ $anjab->status === 'disetujui' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-700' }}">{{ $anjab->status }}</span>
                 </p>
             </div>
-            <div class="flex items-center gap-2">
-                <a href="{{ route('abk.edit', $anjab) }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 transition">
-                    <span>🧮</span> Kelola Butir Tugas ABK
+            <div class="flex items-center gap-2 flex-wrap">
+                <a href="{{ route('anjab.evaluasi-jabatan', $anjab) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg shadow-sm hover:bg-amber-100 transition">
+                    <span>⚖️</span> Evaluasi Jabatan (FES)
                 </a>
-                <a href="{{ route('anjab.print', $anjab) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg shadow hover:bg-emerald-700 transition">
-                    <span>🖨️</span> Cetak Format MenPAN-RB
+                <a href="{{ route('abk.edit', $anjab) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 transition">
+                    <span>🧮</span> Butir Tugas ABK
                 </a>
-                <a href="{{ route('anjab.edit', $anjab) }}" class="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                <a href="{{ route('anjab.print', $anjab) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 rounded-lg shadow hover:bg-emerald-700 transition">
+                    <span>🖨️</span> Cetak MenPAN-RB
+                </a>
+                <a href="{{ route('anjab.edit', $anjab) }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
                     <span>✏️</span> Edit
                 </a>
             </div>
@@ -43,6 +46,60 @@
                     <button onclick="this.parentElement.remove()" class="text-green-600 hover:text-green-800">✕</button>
                 </div>
             @endif
+
+            {{-- Banner Validasi & Verifikasi Digital Dekanat (Fitur 1) --}}
+            <div class="rounded-2xl border p-5 shadow-sm transition {{ $anjab->isVerified() ? 'bg-gradient-to-r from-emerald-50 via-teal-50 to-white border-emerald-300' : 'bg-gradient-to-r from-amber-50 via-orange-50 to-white border-amber-200' }}">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-start gap-3.5">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 {{ $anjab->isVerified() ? 'bg-emerald-600 text-white shadow-emerald-200 shadow-md' : 'bg-amber-500 text-white shadow-amber-200 shadow-md' }}">
+                            @if($anjab->isVerified())
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                            @else
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            @endif
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-black {{ $anjab->isVerified() ? 'text-emerald-950' : 'text-amber-950' }}">
+                                    {{ $anjab->isVerified() ? 'DOKUMEN TELAH DIVERIFIKASI & DISAHKAN DEKANAT FKP UNRI' : 'DOKUMEN DALAM STATUS DRAF PENYUSUNAN' }}
+                                </h3>
+                                <span class="px-2 py-0.5 text-[10px] font-black rounded-full uppercase tracking-wider {{ $anjab->isVerified() ? 'bg-emerald-200 text-emerald-800' : 'bg-amber-200 text-amber-900' }}">
+                                    {{ $anjab->status }}
+                                </span>
+                            </div>
+                            <p class="text-xs {{ $anjab->isVerified() ? 'text-emerald-700' : 'text-amber-700' }} mt-0.5">
+                                @if($anjab->isVerified())
+                                    Token Keabsahan: <code class="font-mono font-bold bg-emerald-100 text-emerald-900 px-1.5 py-0.5 rounded">{{ $anjab->verification_token }}</code> &bull; Terdaftar di Sistem Informasi Kepegawaian FKP UNRI.
+                                @else
+                                    Dokumen ini belum disahkan oleh Pimpinan/Dekanat. Silakan periksa kelengkapan 17 butir informasi jabatan sebelum validasi.
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+
+                    @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+                        <div class="flex items-center gap-2 shrink-0">
+                            @if(!$anjab->isVerified())
+                                <form action="{{ route('anjab.verifikasi', $anjab) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin memverifikasi dan mengesahkan dokumen Anjab ini secara digital?')">
+                                    @csrf
+                                    <input type="hidden" name="action" value="setujui">
+                                    <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 shadow-sm transition">
+                                        <span>✍️</span> Sahkan Dokumen Digital
+                                    </button>
+                                </form>
+                            @else
+                                <form action="{{ route('anjab.verifikasi', $anjab) }}" method="POST" onsubmit="return confirm('Kembalikan status dokumen ke Draft?')">
+                                    @csrf
+                                    <input type="hidden" name="action" value="draft">
+                                    <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 rounded-xl hover:bg-amber-200 transition">
+                                        <span>↺</span> Kembalikan ke Draft
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </div>
 
             {{-- Kartu Ringkasan Formasi & Beban Kerja --}}
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">

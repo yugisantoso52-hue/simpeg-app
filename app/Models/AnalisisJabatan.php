@@ -280,6 +280,23 @@ class AnalisisJabatan extends Model
     }
 
     /**
+     * Kode Hash Token Verifikasi Digital Dokumen Anjab
+     */
+    public function getVerificationTokenAttribute(): string
+    {
+        $seed = $this->id . '|' . ($this->kode_anjab ?? 'ANJAB') . '|' . ($this->updated_at ? $this->updated_at->timestamp : '2026');
+        return 'VERIF-ANJAB-' . strtoupper(substr(hash('sha256', $seed), 0, 10));
+    }
+
+    /**
+     * Cek apakah dokumen sudah disetujui/disahkan
+     */
+    public function isVerified(): bool
+    {
+        return $this->status === 'disetujui';
+    }
+
+    /**
      * Bobot hierarki model instance untuk keperluan sorting koleksi
      */
     public function getHierarchyOrderAttribute(): int
@@ -290,3 +307,4 @@ class AnalisisJabatan extends Model
         );
     }
 }
+

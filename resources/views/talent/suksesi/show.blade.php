@@ -14,7 +14,10 @@
                     Target Jabatan: <b class="text-gray-900">{{ $jabatan->nama_jabatan }}</b> &bull; {{ $jabatan->unitKerja->nama_unit ?? '-' }} (Kelas {{ $jabatan->kelas_jabatan ?? '-' }})
                 </p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
+                <a href="{{ route('manajemen-talenta.suksesi.komparasi', ['jabatan' => $jabatan->id, 'tahun' => $tahun]) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm transition">
+                    <span>⚔️</span> Bandingkan Kandidat (Head-to-Head)
+                </a>
                 @if($anjab)
                     <a href="{{ route('anjab.show', $anjab->id) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition">
                         <span>📑</span> Dokumen Anjab

@@ -233,13 +233,21 @@
         </tr>
     </table>
 
-    {{-- Kolom Tanda Tangan --}}
+    {{-- Kolom Tanda Tangan & Verifikasi Digital --}}
     <table class="signature-table">
         <tr>
             <td>
                 Mengetahui / Mengesahkan:<br>
                 <strong>Dekan Fakultas Keperawatan,</strong>
-                <br><br><br><br>
+                @if($anjab->isVerified())
+                    <div style="margin: 8px auto; padding: 6px; border: 1px solid #10b981; background: #ecfdf5; border-radius: 4px; font-size: 8pt; width: 80%;">
+                        <strong style="color: #065f46;">TERVERIFIKASI & DISAHKAN DIGITAL</strong><br>
+                        <span style="font-family: monospace; font-size: 7.5pt; color: #047857;">{{ $anjab->verification_token }}</span><br>
+                        <span style="font-size: 7pt; color: #6b7280;">SIMPEG SIKAP &bull; Universitas Riau</span>
+                    </div>
+                @else
+                    <br><br><br><br>
+                @endif
                 <u>Prof. Dr. Ir. H. Pimpinan, M.Kes</u><br>
                 NIP. 196801011993031001
             </td>
