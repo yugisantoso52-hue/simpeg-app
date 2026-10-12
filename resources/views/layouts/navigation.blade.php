@@ -158,8 +158,9 @@
     <!-- 2. MENU NAVIGASI UTAMA                                         -->
     <!-- Desktop (>= 1024px): 1 Baris Penuh, overflow-visible, TANPA SCROLLBAR -->
     <!-- Tablet / Setengah Layar PC (< 1024px): Sub-bar Ringkas + Drawer Menu -->
+    <!-- Smartphone (< 768px): Disembunyikan penuh agar tidak menyisakan ruang kosong di header -->
     <!-- ============================================================== -->
-    <div class="w-full max-w-[1920px] mx-auto px-2 sm:px-4 lg:px-6 xl:px-8 notranslate" translate="no">
+    <div class="nav-bar-wrapper hidden md:block w-full max-w-[1920px] mx-auto px-2 sm:px-4 lg:px-6 xl:px-8 notranslate" translate="no">
         <div class="flex items-center justify-center min-h-[44px]">
 
             <!-- Desktop Navigation Links (Layar Lebar >= 1024px / lg, overflow-visible, dropdown terbuka lancar) -->

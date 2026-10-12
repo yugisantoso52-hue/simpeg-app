@@ -19,8 +19,11 @@
         display: none !important;
     }
     /* Di layar HP (< 768px), tombol hamburger sudah ada di Kop Mobile atas,
-       sehingga nav-mobile-bar tidak perlu tampil ganda. */
+       sehingga seluruh bar navigasi desktop/mobile disembunyikan agar tidak menyisakan ruang kosong. */
     .nav-mobile-bar {
+        display: none !important;
+    }
+    .nav-bar-wrapper {
         display: none !important;
     }
     .kop-divider {
@@ -37,6 +40,9 @@
         display: none !important;
     }
     .kop-divider {
+        display: block !important;
+    }
+    .nav-bar-wrapper {
         display: block !important;
     }
 }
