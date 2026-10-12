@@ -15,18 +15,15 @@
                 </a>
             </div>
 
-            <!-- Bagian Tengah: Teks Kop Instansi Rata Tengah (Center Aligned seperti Desktop) -->
+            <!-- Bagian Tengah: Teks Kop Instansi Rata Tengah (Sesuai Asli Tanpa Tambahan, Tata Letak di Tengah) -->
             <a href="{{ route('dashboard') }}" class="flex-1 text-center min-w-0 px-1 block leading-tight notranslate" translate="no" title="SIKAP Fakultas Keperawatan UNRI">
-                <div class="text-[7.5px] sm:text-[8.5px] font-semibold text-slate-500 uppercase tracking-wider truncate">
-                    KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI
+                <div class="text-[9.5px] font-semibold text-slate-500 uppercase tracking-wider truncate">
+                    Universitas Riau
                 </div>
-                <div class="text-[9.5px] sm:text-[10.5px] font-bold text-slate-800 uppercase tracking-wide truncate">
-                    UNIVERSITAS RIAU
+                <div class="text-[12px] font-black text-[#007a3d] uppercase tracking-wide truncate">
+                    Fakultas Keperawatan
                 </div>
-                <div class="text-[11.5px] sm:text-[13px] font-black text-[#007a3d] uppercase tracking-wide truncate">
-                    FAKULTAS KEPERAWATAN
-                </div>
-                <div class="text-[8.5px] sm:text-[9.5px] font-bold text-slate-700 tracking-wider flex items-center justify-center gap-1 truncate">
+                <div class="text-[9.5px] font-bold text-slate-700 tracking-wider flex items-center justify-center gap-1 truncate">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shrink-0"></span>
                     <span>SIKAP</span>
                     <span class="text-slate-400 font-normal">| Kepegawaian</span>
