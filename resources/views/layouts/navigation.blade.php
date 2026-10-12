@@ -27,10 +27,10 @@
             </a>
 
             <!-- Sisi Kanan: Logo Kemendiktisaintek + Tombol Menu Hamburger -->
-            <div class="flex items-center gap-1.5 shrink-0">
+            <div class="flex items-center gap-2 shrink-0">
                 <img src="{{ asset('logo-kemendiktisaintek.png') }}" 
                      alt="Kemendiktisaintek" 
-                     class="h-8 w-auto object-contain hidden xs:block drop-shadow-2xs">
+                     class="h-9 w-auto object-contain drop-shadow-2xs">
                 
                 <button @click="open = ! open" 
                         class="inline-flex items-center justify-center p-2 rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 focus:outline-none transition active:scale-95 shadow-2xs cursor-pointer" 
@@ -144,8 +144,8 @@
         </div>
     </div>
 
-    <!-- Garis Pemisah Khas Kop Surat Resmi Instansi (Garis Ganda Formal) -->
-    <div class="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
+    <!-- Garis Pemisah Khas Kop Surat Resmi Instansi (Garis Ganda Formal - Khusus Desktop & Tablet) -->
+    <div class="kop-divider w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
         <div class="border-b-2 border-slate-900"></div>
         <div class="border-b border-slate-400 mt-[1.5px] mb-1"></div>
     </div>

@@ -18,8 +18,13 @@
     .nav-desktop-bar {
         display: none !important;
     }
+    /* Di layar HP (< 768px), tombol hamburger sudah ada di Kop Mobile atas,
+       sehingga nav-mobile-bar tidak perlu tampil ganda. */
     .nav-mobile-bar {
-        display: flex !important;
+        display: none !important;
+    }
+    .kop-divider {
+        display: none !important;
     }
 }
 
@@ -31,10 +36,13 @@
     .kop-mobile {
         display: none !important;
     }
+    .kop-divider {
+        display: block !important;
+    }
 }
 
-/* 3. Setengah Layar PC & Tablet (< 1024px) */
-@media (max-width: 1023.98px) {
+/* 3. Setengah Layar PC & Tablet (768px - 1023.98px) */
+@media (min-width: 768px) and (max-width: 1023.98px) {
     .nav-desktop-bar {
         display: none !important;
     }
