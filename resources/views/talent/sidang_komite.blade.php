@@ -15,11 +15,50 @@
                 </p>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                <a href="{{ route('manajemen-talenta.sidang-komite.cetak', ['tahun' => $tahun]) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 shadow-sm transition">
-                    <span>🖨️</span> Cetak Berita Acara Sidang (PDF)
+                {{-- Tombol SOP Sidang Komite Talenta --}}
+                <x-sop-modal title="SOP Sidang Pleno Komite Talenta & Berita Acara Penetapan" 
+                             buttonLabel="SOP Sidang Komite" 
+                             badge="Dewan Komite ASN" 
+                             color="indigo">
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200">
+                            <h4 class="font-bold text-indigo-950 text-xs mb-1 flex items-center gap-1.5">
+                                <x-icon name="scale" class="w-4 h-4 text-indigo-700" />
+                                Wewenang &amp; Tugas Dewan Komite Talenta
+                            </h4>
+                            <p class="text-indigo-900 text-[11px] leading-relaxed">
+                                Komite Manajemen Talenta ASN bertindak sebagai dewan pertimbangan karir institusi yang berwenang menelaah, memvalidasi objektivitas kuadran talenta, dan menetapkan anggota <em>Talent Pool</em> serta nominasi suksesi jabatan tingkat fakultas.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">1</span>
+                                Mekanisme Sidang Pleno Komite
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-indigo-200 text-[11px] text-slate-600">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">1. Pra-Sidang (Penyusunan Draf)</strong>
+                                    Sekretariat (Ka Pokja Kepegawaian) menyajikan draf hasil scoring kuadran 9-kotak dan rekap data asesmen BKN.
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">2. Sidang Pembahasan (Deliberasi)</strong>
+                                    Dekan bersama para Wakil Dekan meninjau integritas, catatan disiplin (PP 94/2021), dan rekam jejak kepemimpinan calon suksesor.
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">3. Penetapan &amp; Penandatanganan Berita Acara</strong>
+                                    Status diubah menjadi <strong>Ditetapkan PPK</strong> dan Berita Acara resmi ditandatangani secara pleno sebagai dokumen legal suksesi.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </x-sop-modal>
+
+                <a href="{{ route('manajemen-talenta.sidang-komite.cetak', ['tahun' => $tahun]) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 rounded-xl shadow-2xs hover:bg-emerald-700 transition">
+                    <span>🖨️</span> Cetak Berita Acara (PDF)
                 </a>
-                <a href="{{ route('manajemen-talenta.suksesi.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition">
-                    <span>👑</span> Rencana Suksesi Jabatan
+                <a href="{{ route('manajemen-talenta.suksesi.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 shadow-2xs transition">
+                    <span>👑</span> Rencana Suksesi
                 </a>
             </div>
         </div>

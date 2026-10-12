@@ -15,11 +15,59 @@
                 </p>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 shadow-sm transition">
-                    <span>🖨️</span> Cetak Rekapitulasi IDP
+                {{-- Tombol SOP IDP & Hak 20 JP --}}
+                <x-sop-modal title="SOP Pemenuhan Hak 20 JP & Individual Development Plan (IDP)" 
+                             buttonLabel="SOP 20 JP & IDP" 
+                             badge="UU No. 20/2023 Pasal 49" 
+                             color="emerald">
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200">
+                            <h4 class="font-bold text-emerald-950 text-xs mb-1 flex items-center gap-1.5">
+                                <x-icon name="book-open" class="w-4 h-4 text-emerald-700" />
+                                Hak Mandatori 20 JP Pegawai ASN
+                            </h4>
+                            <p class="text-emerald-900 text-[11px] leading-relaxed">
+                                Berdasarkan <strong>Pasal 49 UU No. 20 Tahun 2023</strong> dan <strong>PP No. 17 Tahun 2020</strong>, setiap ASN berhak dan wajib memperoleh pengembangan kompetensi minimal <strong>20 Jam Pelajaran (JP)</strong> per tahun yang difasilitasi oleh instansi.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">1</span>
+                                Bentuk &amp; Jalur Pengembangan Kompetensi
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-emerald-200 text-[11px] text-slate-600">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Jalur Klasikal (Tatap Muka Langsung)</strong>
+                                    Pelatihan kepemimpinan (PKA, PKP), seminar/konferensi ilmiah internasional, bimbingan teknis, workshop praktik laboratorium.
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Jalur Non-Klasikal (Modern Digital)</strong>
+                                    E-learning MOOC LAN RI (ASN Unggul), coaching &amp; mentoring dengan atasan, magang kerja klinis di rumah sakit mitra, pertukaran dosen.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px]">2</span>
+                                Alur Penyusunan IDP Individu
+                            </h4>
+                            <div class="space-y-1.5 ps-2 border-l-2 border-teal-200 text-[11px] text-slate-600">
+                                <div>1. Pegawai dan atasan langsung menganalisis gap kompetensi dari hasil asesmen BKN.</div>
+                                <div>2. Menyusun roadmap pelatihan 1 tahun kalender (minimal 20 JP).</div>
+                                <div>3. Mengunggah sertifikat selesai pelatihan ke modul <em>Riwayat Diklat</em>.</div>
+                                <div>4. Sistem otomatis memvalidasi pemenuhan target tahun berjalan.</div>
+                            </div>
+                        </div>
+                    </div>
+                </x-sop-modal>
+
+                <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-teal-600 rounded-xl shadow-2xs hover:bg-teal-700 transition">
+                    <span>🖨️</span> Cetak Rekap IDP
                 </button>
-                <a href="{{ route('riwayat-diklat.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition">
-                    <span>📜</span> Katalog Diklat Pegawai
+                <a href="{{ route('riwayat-diklat.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 shadow-2xs transition">
+                    <span>📜</span> Katalog Diklat
                 </a>
             </div>
         </div>

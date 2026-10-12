@@ -16,13 +16,61 @@
                 </p>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                <a href="{{ route('manajemen-talenta.sidang-komite.index', ['tahun' => $tahun]) }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm transition">
-                    <span>⚖️</span> Sidang Komite Talenta
+                {{-- Tombol SOP Rencana Suksesi & Job Matching --}}
+                <x-sop-modal title="SOP Rencana Suksesi & Pemetaan Suksesor Jabatan" 
+                             buttonLabel="SOP Suksesi" 
+                             badge="PermenPAN 3/2020 Bab V" 
+                             color="indigo">
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200">
+                            <h4 class="font-bold text-indigo-950 text-xs mb-1 flex items-center gap-1.5">
+                                <x-icon name="crown" class="w-4 h-4 text-indigo-700" />
+                                Rencana Suksesi Jabatan Berbasis Merit
+                            </h4>
+                            <p class="text-indigo-900 text-[11px] leading-relaxed">
+                                Rencana Suksesi bertujuan menjamin kesinambungan kepemimpinan dan stabilitas manajemen fakultas dengan menyiapkan ASN bertalenta tinggi untuk menduduki jabatan target strategis tanpa kekosongan jabatan yang berlarut-larut.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">1</span>
+                                Kriteria Calon Suksesor (Talent Pool)
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-indigo-200 text-[11px] text-slate-600">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Prioritas 1 (Kotak IX &amp; VIII)</strong>
+                                    Pegawai dengan predikat Kinerja Tinggi &amp; Potensi Tinggi/Sedang. Memenuhi syarat <em>Ready Now</em> (Siap Sekarang).
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">Prioritas 2 (Kotak VII)</strong>
+                                    Pegawai berpotensi tinggi dengan kinerja sedang. Memenuhi syarat <em>Ready with Development</em> (Siap 1–2 Tahun).
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">2</span>
+                                Formula Job Match Index &amp; Fit Gap
+                            </h4>
+                            <div class="space-y-1.5 ps-2 border-l-2 border-emerald-200 text-[11px] text-slate-600">
+                                <div>&bull; <strong>Bobot Talenta (35%):</strong> Skor kuadran 9-kotak dan rekam jejak.</div>
+                                <div>&bull; <strong>Bobot Pendidikan (25%):</strong> Kesesuaian rumpun ilmu keperawatan/kesehatan.</div>
+                                <div>&bull; <strong>Bobot Kepangkatan (20%):</strong> Pangkat/golongan minimum jabatan target.</div>
+                                <div>&bull; <strong>Bobot Diklat &amp; Pengalaman (20%):</strong> Pelatihan kepemimpinan dan teknis.</div>
+                            </div>
+                        </div>
+                    </div>
+                </x-sop-modal>
+
+                <a href="{{ route('manajemen-talenta.sidang-komite.index', ['tahun' => $tahun]) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-xl shadow-2xs hover:bg-indigo-700 transition">
+                    <span>⚖️</span> Sidang Komite
                 </a>
-                <a href="{{ route('manajemen-talenta.index', ['tahun' => $tahun]) }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition">
-                    <span>📊</span> Matriks 9-Kotak
+                <a href="{{ route('manajemen-talenta.index', ['tahun' => $tahun]) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 shadow-2xs transition">
+                    <span>📊</span> 9-Kotak
                 </a>
-                <a href="{{ route('anjab.peta-jabatan') }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition">
+                <a href="{{ route('anjab.peta-jabatan') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 shadow-2xs transition">
                     <span>🏛️</span> Peta Jabatan
                 </a>
             </div>

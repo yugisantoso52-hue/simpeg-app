@@ -9,15 +9,54 @@
                     Katalog dan Instrumen 17 Butir Informasi Jabatan sesuai PermenPAN-RB No. 1 Tahun 2020 & Peraturan BKN No. 12 Tahun 2011
                 </p>
             </div>
-            <div class="flex items-center gap-2">
-                <a href="{{ route('anjab.peta-jabatan') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg shadow hover:bg-indigo-700 transition">
+            <div class="flex items-center gap-2 flex-wrap">
+                {{-- Tombol SOP Dokumen Anjab --}}
+                <x-sop-modal title="SOP Penyusunan & Verifikasi Analisis Jabatan (Anjab)" 
+                             buttonLabel="SOP Anjab" 
+                             badge="PermenPAN-RB No. 1/2020" 
+                             color="indigo">
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200">
+                            <h4 class="font-bold text-indigo-950 text-xs mb-1 flex items-center gap-1.5">
+                                <x-icon name="scale" class="w-4 h-4 text-indigo-700" />
+                                Landasan Hukum &amp; Prinsip Penyusunan
+                            </h4>
+                            <p class="text-indigo-900 text-[11px] leading-relaxed">
+                                Sesuai <strong>PermenPAN-RB No. 1 Tahun 2020</strong> dan <strong>Perka BKN No. 12 Tahun 2011</strong>, setiap jabatan struktural, fungsional dosen, dan pelaksana wajib memiliki dokumen uraian jabatan baku memuat 17 unsur informasi jabatan.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">1</span>
+                                Alur Penyusunan &amp; Pemutakhiran
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-indigo-200 text-[11px] text-slate-600">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">1. Identifikasi &amp; Inventarisasi Tugas</strong>
+                                    Tim Kepegawaian bersama Unit Kerja memetakan ikhtisar, uraian butir tugas, bahan kerja, wewenang, dan tanggung jawab.
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">2. Evaluasi Jabatan (Job Grading FES)</strong>
+                                    Penilaian 9 faktor penimbang (FES) PermenPAN 34/2011 untuk menetapkan kelas jabatan (Grade 1 s.d. 17).
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">3. Verifikasi &amp; Pengesahan Dekanat</strong>
+                                    Dekan/Wakil Dekan memvalidasi status secara digital menghasilkan token keabsahan dan barcode verifikasi resmi.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </x-sop-modal>
+
+                <a href="{{ route('anjab.peta-jabatan') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-xl shadow-2xs hover:bg-indigo-700 transition">
                     <span>📊</span> Peta Jabatan
                 </a>
-                <a href="{{ route('abk.index') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 transition">
+                <a href="{{ route('abk.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 rounded-xl shadow-2xs hover:bg-blue-700 transition">
                     <span>🧮</span> Rekap ABK & Formasi
                 </a>
-                <a href="{{ route('anjab.create') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg shadow hover:bg-emerald-700 transition">
-                    <span>➕</span> Tambah Anjab Baru
+                <a href="{{ route('anjab.create') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 rounded-xl shadow-2xs hover:bg-emerald-700 transition">
+                    <span>➕</span> Tambah Anjab
                 </a>
             </div>
         </div>

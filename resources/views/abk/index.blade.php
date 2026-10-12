@@ -10,14 +10,53 @@
                 </p>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                <a href="{{ route('abk.simulasi-formasi') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-purple-600 rounded-lg shadow hover:bg-purple-700 transition">
-                    <span>🎯</span> Simulasi Formasi CASN & Pensiun
+                {{-- Tombol SOP ABK & Formasi --}}
+                <x-sop-modal title="SOP Analisis Beban Kerja (ABK) & Standar WKE" 
+                             buttonLabel="SOP ABK" 
+                             badge="Standar WKE 1.250 Jam" 
+                             color="blue">
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-blue-50 border border-blue-200">
+                            <h4 class="font-bold text-blue-950 text-xs mb-1 flex items-center gap-1.5">
+                                <x-icon name="chart" class="w-4 h-4 text-blue-700" />
+                                Standar Waktu Kerja Efektif (WKE)
+                            </h4>
+                            <p class="text-blue-900 text-[11px] leading-relaxed">
+                                Standar WKE BKN/MenPAN-RB: <strong>1 hari = 300 menit (5 jam efektif)</strong>, <strong>1 tahun = 250 hari kerja (75.000 menit / 1.250 jam efektif)</strong>. Rumus Kebutuhan Pegawai = <code class="bg-blue-100 px-1 py-0.5 rounded font-mono font-bold">Total Waktu Beban (Menit) / 75.000</code>.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">1</span>
+                                Langkah Penghitungan Butir Beban Kerja
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-blue-200 text-[11px] text-slate-600">
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">1. Penetapan Norma Waktu &amp; Volume</strong>
+                                    Tentukan norma waktu penyelesaian per satuan hasil (dalam menit) dan estimasi volume kegiatan riil dalam 1 tahun kalender.
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">2. Perhitungan Jam Beban</strong>
+                                    Sistem secara otomatis mengalikan norma waktu dengan volume untuk menghasilkan waktu beban menit per butir tugas.
+                                </div>
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <strong class="text-slate-800 block text-xs">3. Pembulatan Formasi BKN</strong>
+                                    Hasil kebutuhan dikonversi menjadi formasi bulat (minimal 1 personil), dikurangi bezetting untuk melihat surplus/defisit.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </x-sop-modal>
+
+                <a href="{{ route('abk.simulasi-formasi') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-purple-600 rounded-xl shadow-2xs hover:bg-purple-700 transition">
+                    <span>🎯</span> Simulasi CASN &amp; Pensiun
                 </a>
-                <a href="{{ route('anjab.peta-jabatan') }}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg shadow hover:bg-indigo-700 transition">
+                <a href="{{ route('anjab.peta-jabatan') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-xl shadow-2xs hover:bg-indigo-700 transition">
                     <span>📊</span> Peta Jabatan
                 </a>
-                <a href="{{ route('abk.print.rekap', request()->query()) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg shadow hover:bg-emerald-700 transition">
-                    <span>🖨️</span> Cetak Rekap Formasi
+                <a href="{{ route('abk.print.rekap', request()->query()) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 rounded-xl shadow-2xs hover:bg-emerald-700 transition">
+                    <span>🖨️</span> Cetak Rekap
                 </a>
             </div>
         </div>

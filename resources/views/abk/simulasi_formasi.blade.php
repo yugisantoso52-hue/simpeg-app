@@ -15,10 +15,58 @@
                 </p>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-purple-600 rounded-lg shadow hover:bg-purple-700 transition">
+                {{-- Tombol SOP E-Formasi & Radar Pensiun --}}
+                <x-sop-modal title="SOP Simulasi & Pengusulan E-Formasi CASN / PPPK" 
+                             buttonLabel="SOP E-Formasi" 
+                             badge="PermenPAN & BUP" 
+                             color="amber">
+                    <div class="space-y-4">
+                        <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200">
+                            <h4 class="font-bold text-amber-950 text-xs mb-1 flex items-center gap-1.5">
+                                <x-icon name="target" class="w-4 h-4 text-amber-700" />
+                                Ketentuan Usulan E-Formasi MenPAN-RB
+                            </h4>
+                            <p class="text-amber-900 text-[11px] leading-relaxed">
+                                Pengusulan formasi CASN (CPNS &amp; PPPK) didasarkan pada selisih kebutuhan riil ABK ditambah antisipasi lowongan jabatan akibat Batas Usia Pensiun (BUP) dalam 1–5 tahun mendatang.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-amber-600 text-white flex items-center justify-center text-[10px]">1</span>
+                                Ketentuan Batas Usia Pensiun (BUP)
+                            </h4>
+                            <div class="space-y-1.5 ps-2 border-l-2 border-amber-200 text-[11px] text-slate-600">
+                                <div>&bull; <strong>Dosen (Asisten Ahli, Lektor, Lektor Kepala):</strong> BUP 65 Tahun.</div>
+                                <div>&bull; <strong>Dosen (Guru Besar / Profesor):</strong> BUP 70 Tahun.</div>
+                                <div>&bull; <strong>Pejabat Administrator / Madya:</strong> BUP 60 Tahun.</div>
+                                <div>&bull; <strong>Tenaga Kependidikan Pelaksana / Terampil:</strong> BUP 58 Tahun.</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center text-[10px]">2</span>
+                                Alokasi Jenis Formasi (CPNS vs PPPK)
+                            </h4>
+                            <div class="space-y-2 ps-2 border-l-2 border-purple-200 text-[11px] text-slate-600">
+                                <div class="bg-slate-50 p-2 rounded-xl">
+                                    <strong class="text-slate-800 block text-xs">CPNS (Pegawai Negeri Sipil)</strong>
+                                    Diprioritaskan untuk regenerasi dosen tetap akademik, pranata laboratorium pendidikan, dan jabatan fungsional keahlian utama.
+                                </div>
+                                <div class="bg-slate-50 p-2 rounded-xl">
+                                    <strong class="text-slate-800 block text-xs">PPPK (Pegawai Pemerintah dengan Perjanjian Kerja)</strong>
+                                    Dialokasikan untuk tenaga profesional pelayanan klinis keperawatan, tenaga teknis operasional, dan staf administrasi pendukung.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </x-sop-modal>
+
+                <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-purple-600 rounded-xl shadow-2xs hover:bg-purple-700 transition">
                     <span>🖨️</span> Cetak Lembar Simulasi
                 </button>
-                <a href="{{ route('anjab.peta-jabatan') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition">
+                <a href="{{ route('anjab.peta-jabatan') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 shadow-2xs transition">
                     <span>📊</span> Peta Jabatan
                 </a>
             </div>
