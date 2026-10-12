@@ -4,38 +4,45 @@
     <!-- ============================================================== -->
 
     <!-- A. HEADER KHUSUS HP ANDROID & SMARTPHONE (< 768px) -->
-    <div class="kop-mobile px-3 py-2 border-b border-slate-100 bg-white">
-        <div class="flex items-center justify-between gap-2">
-            <!-- Sisi Kiri: Logo UNRI + Identitas Lembaga Proporsional Rapi -->
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 min-w-0 flex-1" title="SIKAP Fakultas Keperawatan UNRI">
-                <img src="{{ asset('logo-unri.png') }}" 
-                     alt="Logo Universitas Riau" 
-                     class="h-10 w-auto object-contain shrink-0 drop-shadow-2xs">
-                <div class="leading-tight min-w-0">
-                    <div class="text-[9.5px] font-semibold text-slate-500 uppercase tracking-wider truncate">
-                        Universitas Riau
-                    </div>
-                    <div class="text-[12px] font-black text-[#007a3d] uppercase tracking-wide truncate">
-                        Fakultas Keperawatan
-                    </div>
-                    <div class="text-[9.5px] font-bold text-slate-700 tracking-wider flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
-                        <span>SIKAP</span>
-                        <span class="text-slate-400 font-normal">| Kepegawaian</span>
-                    </div>
+    <div class="kop-mobile px-2 sm:px-3 py-2 border-b border-slate-100 bg-white">
+        <div class="flex items-center justify-between gap-1.5 sm:gap-2">
+            <!-- Sisi Kiri: Logo Universitas Riau -->
+            <div class="shrink-0 flex items-center">
+                <a href="{{ route('dashboard') }}" class="block transition active:scale-95" title="Universitas Riau">
+                    <img src="{{ asset('logo-unri.png') }}" 
+                         alt="Logo Universitas Riau" 
+                         class="h-10 sm:h-11 w-auto object-contain drop-shadow-2xs">
+                </a>
+            </div>
+
+            <!-- Bagian Tengah: Teks Kop Instansi Rata Tengah (Center Aligned seperti Desktop) -->
+            <a href="{{ route('dashboard') }}" class="flex-1 text-center min-w-0 px-1 block leading-tight notranslate" translate="no" title="SIKAP Fakultas Keperawatan UNRI">
+                <div class="text-[7.5px] sm:text-[8.5px] font-semibold text-slate-500 uppercase tracking-wider truncate">
+                    KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI
+                </div>
+                <div class="text-[9.5px] sm:text-[10.5px] font-bold text-slate-800 uppercase tracking-wide truncate">
+                    UNIVERSITAS RIAU
+                </div>
+                <div class="text-[11.5px] sm:text-[13px] font-black text-[#007a3d] uppercase tracking-wide truncate">
+                    FAKULTAS KEPERAWATAN
+                </div>
+                <div class="text-[8.5px] sm:text-[9.5px] font-bold text-slate-700 tracking-wider flex items-center justify-center gap-1 truncate">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shrink-0"></span>
+                    <span>SIKAP</span>
+                    <span class="text-slate-400 font-normal">| Kepegawaian</span>
                 </div>
             </a>
 
             <!-- Sisi Kanan: Logo Kemendiktisaintek + Tombol Menu Hamburger -->
-            <div class="flex items-center gap-2 shrink-0">
+            <div class="shrink-0 flex items-center gap-1.5 sm:gap-2">
                 <img src="{{ asset('logo-kemendiktisaintek.png') }}" 
                      alt="Kemendiktisaintek" 
-                     class="h-9 w-auto object-contain drop-shadow-2xs">
+                     class="h-8 sm:h-9 w-auto object-contain drop-shadow-2xs">
                 
                 <button @click="open = ! open" 
-                        class="inline-flex items-center justify-center p-2 rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 focus:outline-none transition active:scale-95 shadow-2xs cursor-pointer" 
+                        class="inline-flex items-center justify-center p-1.5 sm:p-2 rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 focus:outline-none transition active:scale-95 shadow-2xs cursor-pointer" 
                         aria-label="Buka Menu Navigasi">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                    <svg class="h-5 w-5 sm:h-6 sm:w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
