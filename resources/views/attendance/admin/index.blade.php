@@ -113,41 +113,41 @@
             @endif
 
             <!-- KPI Cards Statistik Hari Ini -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
-                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">TOTAL PEGAWAI</div>
-                    <div class="text-2xl font-black text-gray-900 mt-1">{{ $statistics['total_pegawai'] ?? $statistics['total_users'] }}</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">Terdaftar dalam sistem</div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
+                <div class="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
+                    <div class="text-[9.5px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Total Pegawai</div>
+                    <div class="text-lg sm:text-2xl font-black text-slate-900 mt-1 sm:mt-1.5">{{ $statistics['total_pegawai'] ?? $statistics['total_users'] }}</div>
+                    <div class="text-[9px] sm:text-[10px] text-slate-400 mt-0.5 truncate">Terdaftar dalam sistem</div>
                 </div>
 
-                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">HADIR HARI INI</div>
-                    <div class="text-2xl font-black text-emerald-600 mt-1">{{ $statistics['total_present'] }}</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">{{ \Carbon\Carbon::today()->translatedFormat('d F Y') }}</div>
+                <div class="bg-emerald-50/60 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-emerald-200 shadow-xs flex flex-col justify-between">
+                    <div class="text-[9.5px] sm:text-[11px] font-bold text-emerald-800 uppercase tracking-wider truncate">Hadir Hari Ini</div>
+                    <div class="text-lg sm:text-2xl font-black text-emerald-800 mt-1 sm:mt-1.5">{{ $statistics['total_present'] }}</div>
+                    <div class="text-[9px] sm:text-[10px] text-emerald-600 mt-0.5 truncate">{{ \Carbon\Carbon::today()->translatedFormat('d M Y') }}</div>
                 </div>
 
-                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div class="text-[11px] font-bold text-blue-600 uppercase tracking-wider">WFO (KANTOR)</div>
-                    <div class="text-2xl font-black text-blue-600 mt-1">{{ $statistics['total_wfo'] }}</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">Pegawai presensi kantor</div>
+                <div class="bg-blue-50/60 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-blue-200 shadow-xs flex flex-col justify-between">
+                    <div class="text-[9.5px] sm:text-[11px] font-bold text-blue-800 uppercase tracking-wider truncate">WFO (Kantor)</div>
+                    <div class="text-lg sm:text-2xl font-black text-blue-800 mt-1 sm:mt-1.5">{{ $statistics['total_wfo'] }}</div>
+                    <div class="text-[9px] sm:text-[10px] text-blue-600 mt-0.5 truncate">Presensi di kantor</div>
                 </div>
 
-                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div class="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">WFH (RUMAH)</div>
-                    <div class="text-2xl font-black text-indigo-600 mt-1">{{ $statistics['total_wfh'] }}</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">Pegawai presensi WFH</div>
+                <div class="bg-indigo-50/60 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-indigo-200 shadow-xs flex flex-col justify-between">
+                    <div class="text-[9.5px] sm:text-[11px] font-bold text-indigo-800 uppercase tracking-wider truncate">WFH (Rumah)</div>
+                    <div class="text-lg sm:text-2xl font-black text-indigo-800 mt-1 sm:mt-1.5">{{ $statistics['total_wfh'] }}</div>
+                    <div class="text-[9px] sm:text-[10px] text-indigo-600 mt-0.5 truncate">Presensi WFH</div>
                 </div>
 
-                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div class="text-[11px] font-bold text-amber-600 uppercase tracking-wider">TERLAMBAT</div>
-                    <div class="text-2xl font-black text-amber-600 mt-1">{{ $statistics['total_late'] }}</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">Waktu check-in &gt; 07.30 WIB</div>
+                <div class="bg-amber-50/60 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-amber-200 shadow-xs flex flex-col justify-between">
+                    <div class="text-[9.5px] sm:text-[11px] font-bold text-amber-800 uppercase tracking-wider truncate">Terlambat</div>
+                    <div class="text-lg sm:text-2xl font-black text-amber-800 mt-1 sm:mt-1.5">{{ $statistics['total_late'] }}</div>
+                    <div class="text-[9px] sm:text-[10px] text-amber-600 mt-0.5 truncate">&gt; 07.30 WIB</div>
                 </div>
 
-                <div class="bg-white p-4 rounded-xl border {{ ($statistics['total_suspicious'] ?? 0) > 0 ? 'border-rose-300 bg-rose-50/40' : 'border-gray-200' }} shadow-sm">
-                    <div class="text-[11px] font-bold {{ ($statistics['total_suspicious'] ?? 0) > 0 ? 'text-rose-600' : 'text-gray-500' }} uppercase tracking-wider">ANOMALI / TITIP</div>
-                    <div class="text-2xl font-black {{ ($statistics['total_suspicious'] ?? 0) > 0 ? 'text-rose-600' : 'text-gray-900' }} mt-1">{{ $statistics['total_suspicious'] ?? 0 }}</div>
-                    <div class="text-[10px] text-gray-400 mt-0.5">Indikasi pelanggaran</div>
+                <div class="p-3 sm:p-4 rounded-xl sm:rounded-2xl border {{ ($statistics['total_suspicious'] ?? 0) > 0 ? 'border-rose-300 bg-rose-50/80' : 'border-slate-200 bg-white' }} shadow-xs flex flex-col justify-between">
+                    <div class="text-[9.5px] sm:text-[11px] font-bold {{ ($statistics['total_suspicious'] ?? 0) > 0 ? 'text-rose-700' : 'text-slate-500' }} uppercase tracking-wider truncate">Anomali / Titip</div>
+                    <div class="text-lg sm:text-2xl font-black {{ ($statistics['total_suspicious'] ?? 0) > 0 ? 'text-rose-700' : 'text-slate-900' }} mt-1 sm:mt-1.5">{{ $statistics['total_suspicious'] ?? 0 }}</div>
+                    <div class="text-[9px] sm:text-[10px] {{ ($statistics['total_suspicious'] ?? 0) > 0 ? 'text-rose-600' : 'text-slate-400' }} mt-0.5 truncate">Indikasi anomali</div>
                 </div>
             </div>
 

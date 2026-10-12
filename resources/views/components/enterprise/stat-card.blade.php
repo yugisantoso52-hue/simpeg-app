@@ -64,27 +64,27 @@ $activeClass = $active ? 'ring-4 ring-offset-2 ' . $theme['ring'] . ' shadow-2xl
 
 <div class="{{ $theme['card'] }} {{ $activeClass }} rounded-xl shadow-lg overflow-hidden transition-all duration-200 relative">
 
-    <div class="flex items-center justify-between p-4 xl:p-5 min-h-[110px]">
+    <div class="flex items-center justify-between p-3 sm:p-4 xl:p-5 min-h-[82px] sm:min-h-[100px] xl:min-h-[110px]">
 
-        <div class="pr-2">
+        <div class="pr-1.5 min-w-0">
 
-            <p class="text-xs xl:text-sm text-white/90 font-semibold uppercase tracking-wide notranslate" translate="no">
+            <p class="text-[10px] sm:text-xs xl:text-sm text-white/90 font-semibold uppercase tracking-wider notranslate truncate" translate="no">
                 {{ $title }}
             </p>
 
-            <h2 class="mt-1 xl:mt-2 text-2xl xl:text-3xl font-extrabold text-white">
+            <h2 class="mt-0.5 sm:mt-1 xl:mt-2 text-xl sm:text-2xl xl:text-3xl font-black text-white tracking-tight">
                 {{ number_format($value) }}
             </h2>
 
             @if($active)
-                <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-white/20 text-white tracking-wider">
+                <span class="inline-flex items-center gap-1 mt-1 px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase bg-white/20 text-white tracking-wider">
                     <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Terpilih
                 </span>
             @endif
 
         </div>
 
-        <div class="{{ $theme['icon'] }} w-12 h-12 xl:w-14 xl:h-14 rounded-xl flex-shrink-0 flex items-center justify-center shadow-inner">
+        <div class="{{ $theme['icon'] }} w-9 h-9 sm:w-11 sm:h-11 xl:w-14 xl:h-14 rounded-lg sm:rounded-xl flex-shrink-0 flex items-center justify-center shadow-inner">
 
             @switch($icon)
 

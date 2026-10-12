@@ -120,30 +120,30 @@
                 </div>
             @else
                 {{-- STATISTIK UNTUK ADMIN & PIMPINAN --}}
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
-                        <div class="text-xs font-semibold text-gray-500 uppercase">Total Pengajuan</div>
-                        <div class="mt-1 text-2xl font-bold text-gray-900">{{ $statistics['total'] ?? 0 }}</div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
+                    <div class="col-span-2 sm:col-span-1 bg-white rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-slate-200">
+                        <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Total Pengajuan</div>
+                        <div class="mt-1 text-lg sm:text-2xl font-black text-slate-900">{{ $statistics['total'] ?? 0 }}</div>
                     </div>
 
-                    <div class="bg-white rounded-xl shadow-sm p-4 border border-amber-200 bg-amber-50/50">
-                        <div class="text-xs font-semibold text-amber-700 uppercase">Menunggu Persetujuan</div>
-                        <div class="mt-1 text-2xl font-bold text-amber-600">{{ $statistics['menunggu'] ?? 0 }}</div>
+                    <div class="bg-amber-50/70 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-amber-200">
+                        <div class="text-[10px] sm:text-xs font-bold text-amber-800 uppercase tracking-wider truncate">Menunggu</div>
+                        <div class="mt-1 text-lg sm:text-2xl font-black text-amber-900">{{ $statistics['menunggu'] ?? 0 }}</div>
                     </div>
 
-                    <div class="bg-white rounded-xl shadow-sm p-4 border border-emerald-200 bg-emerald-50/50">
-                        <div class="text-xs font-semibold text-emerald-700 uppercase">Disetujui</div>
-                        <div class="mt-1 text-2xl font-bold text-emerald-600">{{ $statistics['disetujui'] ?? 0 }}</div>
+                    <div class="bg-emerald-50/70 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-emerald-200">
+                        <div class="text-[10px] sm:text-xs font-bold text-emerald-800 uppercase tracking-wider truncate">Disetujui</div>
+                        <div class="mt-1 text-lg sm:text-2xl font-black text-emerald-900">{{ $statistics['disetujui'] ?? 0 }}</div>
                     </div>
 
-                    <div class="bg-white rounded-xl shadow-sm p-4 border border-rose-200 bg-rose-50/50">
-                        <div class="text-xs font-semibold text-rose-700 uppercase">Ditolak</div>
-                        <div class="mt-1 text-2xl font-bold text-rose-600">{{ $statistics['ditolak'] ?? 0 }}</div>
+                    <div class="bg-rose-50/70 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-rose-200">
+                        <div class="text-[10px] sm:text-xs font-bold text-rose-800 uppercase tracking-wider truncate">Ditolak</div>
+                        <div class="mt-1 text-lg sm:text-2xl font-black text-rose-900">{{ $statistics['ditolak'] ?? 0 }}</div>
                     </div>
 
-                    <div class="bg-white rounded-xl shadow-sm p-4 border border-blue-200 bg-blue-50/50">
-                        <div class="text-xs font-semibold text-blue-700 uppercase">Cuti Hari Ini</div>
-                        <div class="mt-1 text-2xl font-bold text-blue-600">{{ $statistics['hari_ini'] ?? 0 }}</div>
+                    <div class="bg-blue-50/70 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-blue-200">
+                        <div class="text-[10px] sm:text-xs font-bold text-blue-800 uppercase tracking-wider truncate">Cuti Hari Ini</div>
+                        <div class="mt-1 text-lg sm:text-2xl font-black text-blue-900">{{ $statistics['hari_ini'] ?? 0 }}</div>
                     </div>
                 </div>
             @endif

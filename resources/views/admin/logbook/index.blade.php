@@ -1,16 +1,17 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
-                <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                    <span>⚖️</span> Verifikasi & Rekap Logbook Kinerja
+                <h2 class="text-xl sm:text-2xl font-black text-slate-800 flex items-center gap-2">
+                    <span class="p-1.5 bg-blue-100/70 text-blue-700 rounded-xl text-base sm:text-lg">⚖️</span>
+                    <span>Verifikasi & Rekap Logbook Kinerja</span>
                 </h2>
-                <p class="text-sm text-gray-500 mt-1">
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">
                     Monitoring, Evaluasi, & Pengesahan Aktivitas Harian Pegawai FKP UNRI
                 </p>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
                 {{-- Tombol SOP Verifikasi Logbook --}}
                 <x-sop-modal title="SOP & Panduan Verifikasi Logbook Kinerja" 
                              buttonLabel="SOP Verifikasi" 
@@ -74,82 +75,108 @@
 
                 <a href="{{ route('admin.logbook.export.pdf', request()->all()) }}"
                    target="_blank"
-                   class="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Cetak Rekap PDF
+                   class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 px-3 sm:px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-rose-700 transition active:scale-95">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span>Cetak PDF</span>
                 </a>
 
                 <a href="{{ route('admin.logbook.export.excel', request()->all()) }}"
-                   class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                    Export Excel
+                   class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 sm:px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition active:scale-95">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    <span>Export Excel</span>
                 </a>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-6" x-data="{ selectedIds: [], selectAll: false }">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-4 sm:py-6" x-data="{ selectedIds: [], selectAll: false }">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
 
             {{-- NOTIFIKASI FLASH --}}
             @if(session('success'))
-                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-800 flex items-center justify-between shadow-sm">
-                    <div class="flex items-center gap-3">
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 sm:px-5 py-3 sm:py-4 text-emerald-800 flex items-center justify-between shadow-xs">
+                    <div class="flex items-center gap-2 sm:gap-3">
                         <span class="p-1 rounded-full bg-emerald-100 text-emerald-600">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         </span>
-                        <span class="text-sm font-medium">{{ session('success') }}</span>
+                        <span class="text-xs sm:text-sm font-medium">{{ session('success') }}</span>
                     </div>
                     <button type="button" class="text-emerald-700 font-bold hover:text-emerald-900" onclick="this.parentElement.remove()">×</button>
                 </div>
             @endif
 
             @if(session('error'))
-                <div class="rounded-xl border border-rose-200 bg-rose-50 px-5 py-4 text-rose-800 flex items-center justify-between shadow-sm">
-                    <span class="text-sm font-medium">{{ session('error') }}</span>
+                <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 sm:px-5 py-3 sm:py-4 text-rose-800 flex items-center justify-between shadow-xs">
+                    <span class="text-xs sm:text-sm font-medium">{{ session('error') }}</span>
                     <button type="button" class="text-rose-700 font-bold hover:text-rose-900" onclick="this.parentElement.remove()">×</button>
                 </div>
             @endif
 
             @if(isset($isRestrictedToBawahan) && $isRestrictedToBawahan)
-                <div class="rounded-xl border border-blue-200 bg-blue-50/80 px-5 py-3 text-blue-900 flex items-center gap-3 text-sm shadow-sm">
-                    <span class="text-xl">👥</span>
+                <div class="rounded-xl border border-blue-200 bg-blue-50/80 px-4 sm:px-5 py-3 text-blue-900 flex items-center gap-3 text-xs sm:text-sm shadow-xs">
+                    <span class="text-lg sm:text-xl">👥</span>
                     <div>
                         <span class="font-bold">Meja Verifikasi Atasan Langsung:</span> Menampilkan daftar logbook kinerja harian dari seluruh staf / pegawai yang berada di bawah bimbingan dan tanggung jawab langsung Anda.
                     </div>
                 </div>
             @endif
 
-            {{-- STATISTIK VERIFIKASI ADMIN --}}
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-200">
-                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Entri</div>
-                    <div class="text-2xl font-black text-gray-900 mt-1">{{ $statistics['total'] }}</div>
-                    <div class="text-[11px] text-gray-500 mt-0.5">{{ $statistics['total_jam'] }} Jam Kinerja</div>
+            {{-- STATISTIK VERIFIKASI ADMIN (PROFESIONAL, RESPONSIF HP & DESKTOP) --}}
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
+                {{-- Total Entri --}}
+                <div class="col-span-2 sm:col-span-1 bg-white rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-slate-200 hover:border-slate-300 transition flex items-center sm:flex-col sm:items-start justify-between sm:justify-start gap-2">
+                    <div class="flex items-center gap-2 sm:block">
+                        <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 sm:hidden">
+                            📊
+                        </div>
+                        <div>
+                            <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Total Entri</div>
+                            <div class="text-lg sm:text-2xl font-black text-slate-900 mt-0.5">{{ $statistics['total'] }}</div>
+                        </div>
+                    </div>
+                    <div class="text-[10px] sm:text-[11px] font-semibold text-slate-500 bg-slate-100 sm:bg-transparent px-2 py-0.5 sm:p-0 rounded-md">
+                        {{ $statistics['total_jam'] }} Jam Kinerja
+                    </div>
                 </div>
 
-                <div class="bg-amber-50 rounded-2xl shadow-sm p-4 border border-amber-200">
-                    <div class="text-xs font-bold text-amber-700 uppercase tracking-wider">Menunggu Verifikasi</div>
-                    <div class="text-2xl font-black text-amber-700 mt-1">{{ $statistics['menunggu'] }}</div>
-                    <div class="text-[11px] text-amber-600 mt-0.5">Perlu Disahkan</div>
+                {{-- Menunggu Verifikasi --}}
+                <div class="bg-amber-50/80 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-amber-200/90 hover:border-amber-300 transition flex flex-col justify-between">
+                    <div class="flex items-center justify-between gap-1">
+                        <span class="text-[10px] sm:text-xs font-bold text-amber-800 uppercase tracking-wider">Menunggu</span>
+                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                    </div>
+                    <div class="text-lg sm:text-2xl font-black text-amber-900 mt-1 sm:mt-1.5">{{ $statistics['menunggu'] }}</div>
+                    <div class="text-[9.5px] sm:text-[11px] font-semibold text-amber-700 mt-0.5 sm:mt-1 truncate">Perlu Disahkan</div>
                 </div>
 
-                <div class="bg-emerald-50 rounded-2xl shadow-sm p-4 border border-emerald-200">
-                    <div class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Telah Disetujui</div>
-                    <div class="text-2xl font-black text-emerald-700 mt-1">{{ $statistics['disetujui'] }}</div>
-                    <div class="text-[11px] text-emerald-600 mt-0.5">Kinerja Valid</div>
+                {{-- Telah Disetujui --}}
+                <div class="bg-emerald-50/80 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-emerald-200/90 hover:border-emerald-300 transition flex flex-col justify-between">
+                    <div class="flex items-center justify-between gap-1">
+                        <span class="text-[10px] sm:text-xs font-bold text-emerald-800 uppercase tracking-wider">Disetujui</span>
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    </div>
+                    <div class="text-lg sm:text-2xl font-black text-emerald-900 mt-1 sm:mt-1.5">{{ $statistics['disetujui'] }}</div>
+                    <div class="text-[9.5px] sm:text-[11px] font-semibold text-emerald-700 mt-0.5 sm:mt-1 truncate">Kinerja Valid</div>
                 </div>
 
-                <div class="bg-orange-50 rounded-2xl shadow-sm p-4 border border-orange-200">
-                    <div class="text-xs font-bold text-orange-700 uppercase tracking-wider">Perlu Revisi</div>
-                    <div class="text-2xl font-black text-orange-700 mt-1">{{ $statistics['perlu_revisi'] }}</div>
-                    <div class="text-[11px] text-orange-600 mt-0.5">Dikembalikan</div>
+                {{-- Perlu Revisi --}}
+                <div class="bg-orange-50/80 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-orange-200/90 hover:border-orange-300 transition flex flex-col justify-between">
+                    <div class="flex items-center justify-between gap-1">
+                        <span class="text-[10px] sm:text-xs font-bold text-orange-800 uppercase tracking-wider">Revisi</span>
+                        <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+                    </div>
+                    <div class="text-lg sm:text-2xl font-black text-orange-900 mt-1 sm:mt-1.5">{{ $statistics['perlu_revisi'] }}</div>
+                    <div class="text-[9.5px] sm:text-[11px] font-semibold text-orange-700 mt-0.5 sm:mt-1 truncate">Dikembalikan</div>
                 </div>
 
-                <div class="bg-rose-50 rounded-2xl shadow-sm p-4 border border-rose-200">
-                    <div class="text-xs font-bold text-rose-700 uppercase tracking-wider">Ditolak</div>
-                    <div class="text-2xl font-black text-rose-700 mt-1">{{ $statistics['ditolak'] }}</div>
-                    <div class="text-[11px] text-rose-600 mt-0.5">Tidak Memenuhi</div>
+                {{-- Ditolak --}}
+                <div class="bg-rose-50/80 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-rose-200/90 hover:border-rose-300 transition flex flex-col justify-between">
+                    <div class="flex items-center justify-between gap-1">
+                        <span class="text-[10px] sm:text-xs font-bold text-rose-800 uppercase tracking-wider">Ditolak</span>
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                    </div>
+                    <div class="text-lg sm:text-2xl font-black text-rose-900 mt-1 sm:mt-1.5">{{ $statistics['ditolak'] }}</div>
+                    <div class="text-[9.5px] sm:text-[11px] font-semibold text-rose-700 mt-0.5 sm:mt-1 truncate">Tidak Memenuhi</div>
                 </div>
             </div>
 
