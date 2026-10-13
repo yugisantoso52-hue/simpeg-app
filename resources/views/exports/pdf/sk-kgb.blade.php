@@ -300,8 +300,8 @@
     <strong style="color: #0369a1; display: block; margin-bottom: 1px; font-size: 7pt;">OTENTIKASI DIGITAL SIKAP FKP UNRI:</strong>
     Dokumen resmi ini telah diverifikasi validitas kepegawaiannya dan diterbitkan secara elektronik melalui Sistem Informasi Kepegawaian (SIKAP) Fakultas Keperawatan Universitas Riau.<br>
     @if(isset($verifyUrl))
-        Kode Verifikasi: <span style="font-family: monospace; font-size: 6pt; color: #0284c7;">{{ $verifyCode ?? 'SIKAP-KGB-VALID' }}</span> | 
-        Tautan Verifikasi: <a href="{{ $verifyUrl }}" style="color: #0284c7; text-decoration: underline; font-size: 6pt;">{{ $verifyUrl }}</a>
+        Kode Verifikasi: <span style="font-family: monospace; font-size: 6pt; color: #0284c7;">{{ $verifyCode ?? 'SIKAP-KGB-VALID' }}</span><br>
+        Tautan Verifikasi: <a href="{{ $verifyUrl }}" style="color: #0284c7; text-decoration: underline; font-size: 5.8pt; font-family: monospace;">{!! wordwrap($verifyUrl, 65, '<br>', true) !!}</a>
     @endif
 </div>
 @endsection

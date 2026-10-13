@@ -112,12 +112,39 @@
                             @php
                                 $skpTerbaru = $row->riwayatSkp->take(2);
                                 $skpCount = $skpTerbaru->count();
+                                $skpItems = [];
+                                foreach ($skpTerbaru as $skp) {
+                                    $skpItems[] = [
+                                        'tahun' => $skp->tahun,
+                                        'predikat' => $skp->predikat_kinerja,
+                                        'evaluasi_url' => $skp->file_evaluasi_skp ? route('document.preview', ['path' => $skp->file_evaluasi_skp]) : null,
+                                        'rencana_url' => $skp->file_rencana_skp ? route('document.preview', ['path' => $skp->file_rencana_skp]) : null,
+                                    ];
+                                }
                                 $skpStatusText = $skpCount >= 2 
                                     ? ($skpTerbaru->pluck('predikat_kinerja')->join(', ')) 
                                     : ($skpCount == 1 ? $skpTerbaru->first()->predikat_kinerja . ' (1 Thn)' : 'Belum Terdata');
+
                                 $pangkatTerakhir = $row->riwayatPangkat->first();
                                 $jabatanTerakhir = $row->riwayatJabatan->first();
                                 $piagamList = $row->riwayatPenghargaan->where('jenis_penghargaan', 'Satyalancana');
+                                $latestPiagam = $piagamList->first();
+
+                                $skCpnsUrl = $row->file_sk_pertama ? route('document.preview', ['path' => $row->file_sk_pertama]) : null;
+                                $skPangkatUrl = ($pangkatTerakhir && $pangkatTerakhir->file_sk) 
+                                    ? route('document.preview', ['path' => $pangkatTerakhir->file_sk]) 
+                                    : ($row->file_sk_pangkat_terakhir ? route('document.preview', ['path' => $row->file_sk_pangkat_terakhir]) : null);
+                                $skJabatanUrl = ($jabatanTerakhir && $jabatanTerakhir->file_sk) 
+                                    ? route('document.preview', ['path' => $jabatanTerakhir->file_sk]) 
+                                    : null;
+                                $piagamUrl = ($latestPiagam && $latestPiagam->file_sk) 
+                                    ? route('document.preview', ['path' => $latestPiagam->file_sk]) 
+                                    : null;
+
+                                $usulanAktif = $row->usulan_aktif;
+                                $usulanId = $usulanAktif?->id;
+                                $usulanStatusRaw = $usulanAktif ? $usulanAktif->status : 'belum_diajukan';
+                                $usulanStatusLabel = $usulanAktif ? ucwords(str_replace('_', ' ', $usulanAktif->status)) : 'Belum Diajukan';
                                 
                                 $payloadPegawai = [
                                     'id' => $row->id,
@@ -132,9 +159,20 @@
                                     'jabatan_terakhir' => ($jabatanTerakhir->jabatan->nama_jabatan ?? ($row->jabatan->nama_jabatan ?? '-')) . ' / SK: ' . ($jabatanTerakhir->nomor_sk ?? '-'),
                                     'skp_status' => $skpStatusText,
                                     'skp_count' => $skpCount,
+                                    'skp_items' => $skpItems,
                                     'hukdis_status' => 'Tidak Pernah dijatuhi Hukuman Disiplin Tingkat Sedang/Berat (Memenuhi Syarat)',
                                     'piagam_sebelumnya' => $piagamList->count() > 0 ? $piagamList->pluck('nama_penghargaan')->join(', ') : 'Belum ada / Usulan Pertama',
-                                    'usulan_status' => $row->usulan_aktif ? ucfirst($row->usulan_aktif->status) : 'Belum Diajukan',
+                                    'file_sk_cpns_url' => $skCpnsUrl,
+                                    'file_sk_pangkat_url' => $skPangkatUrl,
+                                    'file_sk_jabatan_url' => $skJabatanUrl,
+                                    'file_piagam_url' => $piagamUrl,
+                                    'usulan_id' => $usulanId,
+                                    'usulan_status' => $usulanStatusLabel,
+                                    'usulan_status_raw' => $usulanStatusRaw,
+                                    'verifikasi_admin_at' => $usulanAktif?->verifikasi_admin_at ? $usulanAktif->verifikasi_admin_at->format('d/m/Y H:i') : null,
+                                    'paraf_kapokja_at' => $usulanAktif?->paraf_kapokja_at ? $usulanAktif->paraf_kapokja_at->format('d/m/Y H:i') : null,
+                                    'paraf_kabag_at' => $usulanAktif?->paraf_kabag_at ? $usulanAktif->paraf_kabag_at->format('d/m/Y H:i') : null,
+                                    'ttd_wd2_at' => $usulanAktif?->ttd_wd2_at ? $usulanAktif->ttd_wd2_at->format('d/m/Y H:i') : null,
                                 ];
                             @endphp
                             <tr class="hover:bg-slate-50 transition">
@@ -236,6 +274,68 @@
                             </thead>
                             <tbody class="divide-y divide-slate-100">
                                 @forelse($daftarUsulan as $usulan)
+                                    @php
+                                        $pPegawai = $usulan->pegawai;
+                                        $uSkpTerbaru = $pPegawai->riwayatSkp->take(2);
+                                        $uSkpCount = $uSkpTerbaru->count();
+                                        $uSkpItems = [];
+                                        foreach ($uSkpTerbaru as $skp) {
+                                            $uSkpItems[] = [
+                                                'tahun' => $skp->tahun,
+                                                'predikat' => $skp->predikat_kinerja,
+                                                'evaluasi_url' => $skp->file_evaluasi_skp ? route('document.preview', ['path' => $skp->file_evaluasi_skp]) : null,
+                                                'rencana_url' => $skp->file_rencana_skp ? route('document.preview', ['path' => $skp->file_rencana_skp]) : null,
+                                            ];
+                                        }
+                                        $uSkpStatusText = $uSkpCount >= 2 
+                                            ? ($uSkpTerbaru->pluck('predikat_kinerja')->join(', ')) 
+                                            : ($uSkpCount == 1 ? $uSkpTerbaru->first()->predikat_kinerja . ' (1 Thn)' : 'Belum Terdata');
+
+                                        $uPangkatTerakhir = $pPegawai->riwayatPangkat->first();
+                                        $uJabatanTerakhir = $pPegawai->riwayatJabatan->first();
+                                        $uPiagamList = $pPegawai->riwayatPenghargaan->where('jenis_penghargaan', 'Satyalancana');
+                                        $uLatestPiagam = $uPiagamList->first();
+
+                                        $uSkCpnsUrl = $pPegawai->file_sk_pertama ? route('document.preview', ['path' => $pPegawai->file_sk_pertama]) : null;
+                                        $uSkPangkatUrl = ($uPangkatTerakhir && $uPangkatTerakhir->file_sk) 
+                                            ? route('document.preview', ['path' => $uPangkatTerakhir->file_sk]) 
+                                            : ($pPegawai->file_sk_pangkat_terakhir ? route('document.preview', ['path' => $pPegawai->file_sk_pangkat_terakhir]) : null);
+                                        $uSkJabatanUrl = ($uJabatanTerakhir && $uJabatanTerakhir->file_sk) 
+                                            ? route('document.preview', ['path' => $uJabatanTerakhir->file_sk]) 
+                                            : null;
+                                        $uPiagamUrl = ($uLatestPiagam && $uLatestPiagam->file_sk) 
+                                            ? route('document.preview', ['path' => $uLatestPiagam->file_sk]) 
+                                            : null;
+
+                                        $payloadUsulan = [
+                                            'id' => $pPegawai->id,
+                                            'nama' => $pPegawai->nama_lengkap ?? $pPegawai->nama,
+                                            'nip' => $pPegawai->nip,
+                                            'kategori' => $usulan->kategori,
+                                            'unit' => $pPegawai->unitKerja->nama_unit ?? '-',
+                                            'golongan' => ($pPegawai->golongan->nama_golongan ?? '-') . ' (' . ($pPegawai->golongan->kode_golongan ?? '-') . ')',
+                                            'tmt_cpns' => $pPegawai->tmt_sk_pertama ? \Carbon\Carbon::parse($pPegawai->tmt_sk_pertama)->format('d-m-Y') : ($pPegawai->tanggal_masuk ? \Carbon\Carbon::parse($pPegawai->tanggal_masuk)->format('d-m-Y') : '-'),
+                                            'no_sk_cpns' => $pPegawai->nomor_sk_pertama ?? '19597/A4/KP/2011',
+                                            'pangkat_terakhir' => ($uPangkatTerakhir->golongan->nama_pangkat ?? ($pPegawai->golongan->nama_pangkat ?? '-')) . ' / SK: ' . ($uPangkatTerakhir->nomor_sk ?? ($pPegawai->nomor_sk_pangkat_terakhir ?? '-')),
+                                            'jabatan_terakhir' => ($uJabatanTerakhir->jabatan->nama_jabatan ?? ($pPegawai->jabatan->nama_jabatan ?? '-')) . ' / SK: ' . ($uJabatanTerakhir->nomor_sk ?? '-'),
+                                            'skp_status' => $uSkpStatusText,
+                                            'skp_count' => $uSkpCount,
+                                            'skp_items' => $uSkpItems,
+                                            'hukdis_status' => 'Tidak Pernah dijatuhi Hukuman Disiplin Tingkat Sedang/Berat (Memenuhi Syarat)',
+                                            'piagam_sebelumnya' => $uPiagamList->count() > 0 ? $uPiagamList->pluck('nama_penghargaan')->join(', ') : 'Belum ada / Usulan Pertama',
+                                            'file_sk_cpns_url' => $uSkCpnsUrl,
+                                            'file_sk_pangkat_url' => $uSkPangkatUrl,
+                                            'file_sk_jabatan_url' => $uSkJabatanUrl,
+                                            'file_piagam_url' => $uPiagamUrl,
+                                            'usulan_id' => $usulan->id,
+                                            'usulan_status' => ucwords(str_replace('_', ' ', $usulan->status)),
+                                            'usulan_status_raw' => $usulan->status,
+                                            'verifikasi_admin_at' => $usulan->verifikasi_admin_at ? $usulan->verifikasi_admin_at->format('d/m/Y H:i') : null,
+                                            'paraf_kapokja_at' => $usulan->paraf_kapokja_at ? $usulan->paraf_kapokja_at->format('d/m/Y H:i') : null,
+                                            'paraf_kabag_at' => $usulan->paraf_kabag_at ? $usulan->paraf_kabag_at->format('d/m/Y H:i') : null,
+                                            'ttd_wd2_at' => $usulan->ttd_wd2_at ? $usulan->ttd_wd2_at->format('d/m/Y H:i') : null,
+                                        ];
+                                    @endphp
                                     <tr class="hover:bg-slate-50">
                                         <td class="px-4 py-3">
                                             <div class="font-mono text-xs font-bold text-slate-800">{{ $usulan->nomor_surat_usulan }}</div>
@@ -306,10 +406,19 @@
 
                                         <td class="px-4 py-3 text-center">
                                             <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                                                {{-- TOMBOL CEK BERKAS PERSYARATAN --}}
+                                                <button type="button"
+                                                        @click="$dispatch('open-modal-berkas', {{ json_encode($payloadUsulan) }})"
+                                                        class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 transition shadow-2xs"
+                                                        title="Periksa 7 Berkas Persyaratan & Verifikasi Langsung">
+                                                    <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                    Cek Berkas
+                                                </button>
+
                                                 {{-- CETAK DRH DENGAN TTE & PARAF --}}
                                                 <a href="{{ route('satyalancana.cetak-drh', $usulan->pegawai_id) }}"
-                                                   target="_blank"
-                                                   class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100 shadow-2xs">
+                                                    target="_blank"
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100 shadow-2xs">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                                                     DRH PDF
                                                 </a>
@@ -504,114 +613,348 @@
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" @click="modalBerkasOpen = false"></div>
 
             <div class="flex min-h-full items-center justify-center p-4">
-                <div class="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden transform transition-all"
+                <div class="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden transform transition-all"
                      x-show="currentPegawai">
                     
                     {{-- Modal Header --}}
-                    <div class="bg-gradient-to-r from-slate-900 to-indigo-900 px-6 py-4 text-white flex justify-between items-center">
+                    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 px-6 py-4 text-white flex justify-between items-center shadow-sm">
                         <div>
-                            <div class="text-[11px] font-semibold text-emerald-400">Verifikasi Kelayakan Berkas Tanda Kehormatan</div>
-                            <h3 class="text-base font-bold" x-text="currentPegawai?.nama"></h3>
-                            <div class="text-xs text-slate-300">NIP: <span x-text="currentPegawai?.nip"></span> &bull; Satyalancana <span class="font-bold text-amber-300" x-text="currentPegawai?.kategori"></span></div>
+                            <div class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Pemeriksaan & Verifikasi Kelayakan Berkas Tanda Kehormatan
+                            </div>
+                            <h3 class="text-base font-bold mt-0.5" x-text="currentPegawai?.nama"></h3>
+                            <div class="text-xs text-slate-300 flex items-center gap-2 mt-0.5 flex-wrap">
+                                <span>NIP: <strong class="text-white" x-text="currentPegawai?.nip"></strong></span>
+                                <span>&bull;</span>
+                                <span>Unit: <span x-text="currentPegawai?.unit"></span></span>
+                                <span>&bull;</span>
+                                <span>Kategori: <strong class="text-amber-300 font-bold" x-text="'Satyalancana ' + currentPegawai?.kategori"></strong></span>
+                            </div>
                         </div>
-                        <button type="button" @click="modalBerkasOpen = false" class="text-white/80 hover:text-white font-bold text-xl leading-none">&times;</button>
+                        <button type="button" @click="modalBerkasOpen = false" class="text-white/70 hover:text-white font-bold text-2xl leading-none px-2 py-1 rounded hover:bg-white/10 transition">&times;</button>
                     </div>
 
                     {{-- Checklist 7 Dokumen Persyaratan --}}
-                    <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                        <div class="text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                            Pemeriksaan data riwayat kepegawaian yang diambil langsung dari database SIKAP FKP UNRI sebelum dilakukan tindakan Verifikasi Admin, Paraf Berjenjang, dan TTE Pimpinan:
+                    <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+                        <div class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-start gap-2.5">
+                            <svg class="w-4 h-4 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div class="leading-relaxed">
+                                Pemeriksaan 7 berkas persyaratan resmi tanda kehormatan Satyalancana Karya Satya yang disinkronkan langsung dengan basis data kepegawaian SIKAP FKP UNRI. Pejabat dan Admin dapat melihat pratinjau dokumen dan langsung membubuhkan verifikasi/paraf di bawah ini:
+                            </div>
                         </div>
 
-                        <div class="space-y-2.5">
+                        <div class="space-y-3">
                             {{-- Syarat 1: DRH 12 Poin --}}
-                            <div class="flex items-start gap-3 p-3 rounded-xl border border-emerald-200 bg-emerald-50/50">
-                                <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0">1</span>
-                                <div class="flex-1 text-xs">
-                                    <div class="font-bold text-slate-800">Daftar Riwayat Hidup (DRH) Resmi Format 12 Poin</div>
-                                    <div class="text-slate-500">Tersedia otomatis di sistem dengan standar Setmilpres & BKN ber-QR Code.</div>
-                                    <a :href="'{{ url('satyalancana') }}/' + currentPegawai?.id + '/cetak-drh'" target="_blank" class="inline-flex items-center gap-1 text-[11px] text-indigo-600 font-semibold hover:underline mt-1">
-                                        Lihat Pratinjau DRH 12 Poin &rarr;
-                                    </a>
+                            <div class="flex items-start justify-between gap-3 p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50/70 transition">
+                                <div class="flex items-start gap-3 flex-1">
+                                    <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">1</span>
+                                    <div class="text-xs space-y-1">
+                                        <div class="font-bold text-slate-900">Daftar Riwayat Hidup (DRH) Resmi Format 12 Poin</div>
+                                        <div class="text-slate-600 leading-normal">
+                                            Diterbitkan otomatis oleh sistem SIKAP format standar Setmilpres & BKN ber-QR Code serta legalisasi paraf/TTE digital berjenjang.
+                                        </div>
+                                        <div class="pt-1">
+                                            <a :href="'{{ url('satyalancana') }}/' + currentPegawai?.id + '/cetak-drh'" 
+                                               target="_blank" 
+                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-2xs">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                Lihat / Unduh Dokumen DRH (PDF)
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0">Lengkap</span>
+                                <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shrink-0">
+                                    Lengkap
+                                </span>
                             </div>
 
                             {{-- Syarat 2: SK CPNS --}}
-                            <div class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 bg-white">
-                                <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">2</span>
-                                <div class="flex-1 text-xs">
-                                    <div class="font-bold text-slate-800">SK Pengangkatan CPNS / Pertama (TMT)</div>
-                                    <div class="text-slate-600">
-                                        Nomor: <span class="font-mono font-medium" x-text="currentPegawai?.no_sk_cpns"></span><br>
-                                        TMT Pengangkatan: <span class="font-bold" x-text="currentPegawai?.tmt_cpns"></span>
+                            <div class="flex items-start justify-between gap-3 p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition">
+                                <div class="flex items-start gap-3 flex-1">
+                                    <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">2</span>
+                                    <div class="text-xs space-y-1">
+                                        <div class="font-bold text-slate-900">SK Pengangkatan CPNS / Pertama (TMT)</div>
+                                        <div class="text-slate-600">
+                                            Nomor SK: <span class="font-mono font-medium text-slate-800" x-text="currentPegawai?.no_sk_cpns"></span> &bull; 
+                                            TMT: <strong class="text-slate-800" x-text="currentPegawai?.tmt_cpns"></strong>
+                                        </div>
+                                        <div class="pt-1">
+                                            <template x-if="currentPegawai?.file_sk_cpns_url">
+                                                <a :href="currentPegawai?.file_sk_cpns_url" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition shadow-2xs">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                    Lihat / Unduh SK CPNS (PDF)
+                                                </a>
+                                            </template>
+                                            <template x-if="!currentPegawai?.file_sk_cpns_url">
+                                                <span class="text-[11px] text-slate-500 italic flex items-center gap-1">
+                                                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                    Data TMT CPNS terverifikasi di database kepegawaian (belum ada berkas scan fisik di sistem)
+                                                </span>
+                                            </template>
+                                        </div>
                                     </div>
                                 </div>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0">Tersedia</span>
+                                <span class="px-2.5 py-1 rounded-md text-[10px] font-bold shrink-0"
+                                      :class="currentPegawai?.file_sk_cpns_url ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-blue-100 text-blue-800 border border-blue-200'"
+                                      x-text="currentPegawai?.file_sk_cpns_url ? 'File Tersedia' : 'Tersedia'">
+                                </span>
                             </div>
 
                             {{-- Syarat 3: SK Pangkat Terakhir --}}
-                            <div class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 bg-white">
-                                <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">3</span>
-                                <div class="flex-1 text-xs">
-                                    <div class="font-bold text-slate-800">SK Pangkat / Golongan Terakhir</div>
-                                    <div class="text-slate-600" x-text="currentPegawai?.pangkat_terakhir"></div>
+                            <div class="flex items-start justify-between gap-3 p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition">
+                                <div class="flex items-start gap-3 flex-1">
+                                    <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">3</span>
+                                    <div class="text-xs space-y-1">
+                                        <div class="font-bold text-slate-900">SK Pangkat / Golongan Ruang Terakhir</div>
+                                        <div class="text-slate-600" x-text="currentPegawai?.pangkat_terakhir"></div>
+                                        <div class="pt-1">
+                                            <template x-if="currentPegawai?.file_sk_pangkat_url">
+                                                <a :href="currentPegawai?.file_sk_pangkat_url" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition shadow-2xs">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                    Lihat / Unduh SK Pangkat (PDF)
+                                                </a>
+                                            </template>
+                                            <template x-if="!currentPegawai?.file_sk_pangkat_url">
+                                                <span class="text-[11px] text-slate-500 italic flex items-center gap-1">
+                                                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                    Data pangkat & nomor SK terverifikasi di riwayat kepangkatan
+                                                </span>
+                                            </template>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0">Tersedia</span>
+                                <span class="px-2.5 py-1 rounded-md text-[10px] font-bold shrink-0"
+                                      :class="currentPegawai?.file_sk_pangkat_url ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-blue-100 text-blue-800 border border-blue-200'"
+                                      x-text="currentPegawai?.file_sk_pangkat_url ? 'File Tersedia' : 'Tersedia'">
+                                </span>
                             </div>
 
                             {{-- Syarat 4: SK Jabatan Terakhir --}}
-                            <div class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 bg-white">
-                                <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">4</span>
-                                <div class="flex-1 text-xs">
-                                    <div class="font-bold text-slate-800">SK Jabatan Terakhir</div>
-                                    <div class="text-slate-600" x-text="currentPegawai?.jabatan_terakhir"></div>
+                            <div class="flex items-start justify-between gap-3 p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition">
+                                <div class="flex items-start gap-3 flex-1">
+                                    <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">4</span>
+                                    <div class="text-xs space-y-1">
+                                        <div class="font-bold text-slate-900">SK Jabatan Terakhir</div>
+                                        <div class="text-slate-600" x-text="currentPegawai?.jabatan_terakhir"></div>
+                                        <div class="pt-1">
+                                            <template x-if="currentPegawai?.file_sk_jabatan_url">
+                                                <a :href="currentPegawai?.file_sk_jabatan_url" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition shadow-2xs">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                    Lihat / Unduh SK Jabatan (PDF)
+                                                </a>
+                                            </template>
+                                            <template x-if="!currentPegawai?.file_sk_jabatan_url">
+                                                <span class="text-[11px] text-slate-500 italic flex items-center gap-1">
+                                                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                    Data SK Jabatan terverifikasi di riwayat jabatan
+                                                </span>
+                                            </template>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0">Tersedia</span>
+                                <span class="px-2.5 py-1 rounded-md text-[10px] font-bold shrink-0"
+                                      :class="currentPegawai?.file_sk_jabatan_url ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-blue-100 text-blue-800 border border-blue-200'"
+                                      x-text="currentPegawai?.file_sk_jabatan_url ? 'File Tersedia' : 'Tersedia'">
+                                </span>
                             </div>
 
                             {{-- Syarat 5: Penilaian SKP 2 Tahun Terakhir --}}
-                            <div class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 bg-white">
-                                <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">5</span>
-                                <div class="flex-1 text-xs">
-                                    <div class="font-bold text-slate-800">Penilaian Kinerja Pegawai (SKP 2 Tahun Terakhir)</div>
-                                    <div class="text-slate-600">
-                                        Predikat: <span class="font-bold text-blue-700" x-text="currentPegawai?.skp_status"></span>
-                                        (Syarat minimal predikat "Baik" dan tidak berkinerja buruk)
+                            <div class="flex items-start justify-between gap-3 p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition">
+                                <div class="flex items-start gap-3 flex-1">
+                                    <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">5</span>
+                                    <div class="text-xs space-y-1">
+                                        <div class="font-bold text-slate-900">Penilaian Kinerja Pegawai (SKP 2 Tahun Terakhir)</div>
+                                        <div class="text-slate-600">
+                                            Predikat Kinerja: <strong class="text-blue-700" x-text="currentPegawai?.skp_status"></strong>
+                                            <span class="text-slate-400 block text-[11px]">(Regulasi: Penilaian kinerja sekurang-kurangnya bernilai Baik dalam 2 tahun terakhir tanpa catatan kinerja buruk)</span>
+                                        </div>
+                                        
+                                        {{-- Berkas SKP per Tahun jika tersedia --}}
+                                        <div class="pt-1 flex items-center gap-2 flex-wrap" x-show="currentPegawai?.skp_items && currentPegawai.skp_items.length > 0">
+                                            <template x-for="skp in currentPegawai?.skp_items" :key="skp.tahun">
+                                                <div class="flex items-center gap-1.5">
+                                                    <template x-if="skp.evaluasi_url">
+                                                        <a :href="skp.evaluasi_url" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 shadow-2xs">
+                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                            <span x-text="'SKP ' + skp.tahun + ' (' + skp.predikat + ')'"></span>
+                                                        </a>
+                                                    </template>
+                                                    <template x-if="!skp.evaluasi_url">
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-slate-600 bg-slate-100 rounded border border-slate-200">
+                                                            <span x-text="'Tahun ' + skp.tahun + ': ' + skp.predikat"></span>
+                                                        </span>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
                                     </div>
                                 </div>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold"
-                                      :class="currentPegawai?.skp_count >= 2 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'"
-                                      x-text="currentPegawai?.skp_count >= 2 ? 'Memenuhi Syarat' : 'Tercatat ' + currentPegawai?.skp_count + ' Thn'"></span>
+                                <span class="px-2.5 py-1 rounded-md text-[10px] font-bold border shrink-0"
+                                      :class="currentPegawai?.skp_count >= 2 ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'"
+                                      x-text="currentPegawai?.skp_count >= 2 ? 'Lengkap (2 Thn)' : 'Tercatat ' + currentPegawai?.skp_count + ' Thn'">
+                                </span>
                             </div>
 
-                            {{-- Syarat 6: Surat Pernyataan Tidak Pernah Hukdis --}}
-                            <div class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 bg-white">
-                                <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">6</span>
-                                <div class="flex-1 text-xs">
-                                    <div class="font-bold text-slate-800">Surat Pernyataan Tidak Pernah Dijatuhi Hukuman Disiplin & CLTN</div>
-                                    <div class="text-slate-600" x-text="currentPegawai?.hukdis_status"></div>
+                            {{-- Syarat 6: Surat Pernyataan Tidak Pernah Hukdis & CLTN --}}
+                            <div class="flex items-start justify-between gap-3 p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition">
+                                <div class="flex items-start gap-3 flex-1">
+                                    <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">6</span>
+                                    <div class="text-xs space-y-1">
+                                        <div class="font-bold text-slate-900">Surat Pernyataan Tidak Pernah Dijatuhi Hukuman Disiplin & CLTN</div>
+                                        <div class="text-slate-600" x-text="currentPegawai?.hukdis_status"></div>
+                                        <div class="text-[11px] text-slate-500 italic pt-0.5">
+                                            Status integritas kedisiplinan diaudit langsung secara real-time dari modul Hukuman Disiplin & Cuti SIKAP FKP UNRI.
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0">Nihil Hukdis</span>
+                                <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shrink-0">
+                                    Nihil Hukdis
+                                </span>
                             </div>
 
                             {{-- Syarat 7: Piagam Satyalancana Sebelumnya --}}
-                            <div class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 bg-white">
-                                <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">7</span>
-                                <div class="flex-1 text-xs">
-                                    <div class="font-bold text-slate-800">Piagam Penghargaan Satyalancana Karya Satya Sebelumnya</div>
-                                    <div class="text-slate-600" x-text="currentPegawai?.piagam_sebelumnya"></div>
+                            <div class="flex items-start justify-between gap-3 p-3.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition">
+                                <div class="flex items-start gap-3 flex-1">
+                                    <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">7</span>
+                                    <div class="text-xs space-y-1">
+                                        <div class="font-bold text-slate-900">Piagam Penghargaan Satyalancana Karya Satya Sebelumnya</div>
+                                        <div class="text-slate-600" x-text="currentPegawai?.piagam_sebelumnya"></div>
+                                        <div class="pt-1">
+                                            <template x-if="currentPegawai?.file_piagam_url">
+                                                <a :href="currentPegawai?.file_piagam_url" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition shadow-2xs">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                    Lihat / Unduh Piagam Sebelumnya (PDF)
+                                                </a>
+                                            </template>
+                                            <template x-if="!currentPegawai?.file_piagam_url && currentPegawai?.kategori === '10 Tahun'">
+                                                <span class="text-[11px] text-slate-500 italic">
+                                                    Pengusulan perdana (10 Tahun) tidak dipersyaratkan melampirkan piagam sebelumnya.
+                                                </span>
+                                            </template>
+                                            <template x-if="!currentPegawai?.file_piagam_url && currentPegawai?.kategori !== '10 Tahun'">
+                                                <span class="text-[11px] text-slate-500 italic">
+                                                    Data piagam periode terdahulu terverifikasi pada riwayat penghargaan SIMPEG.
+                                                </span>
+                                            </template>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 shrink-0">Terverifikasi</span>
+                                <span class="px-2.5 py-1 rounded-md text-[10px] font-bold border shrink-0"
+                                      :class="currentPegawai?.kategori === '10 Tahun' ? 'bg-slate-100 text-slate-700 border-slate-300' : 'bg-emerald-100 text-emerald-800 border-emerald-300'"
+                                      x-text="currentPegawai?.kategori === '10 Tahun' ? 'Usulan Pertama' : 'Terverifikasi'">
+                                </span>
                             </div>
                         </div>
 
-                        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                            <span class="text-[11px] text-slate-500">Status Usulan: <strong class="text-slate-800" x-text="currentPegawai?.usulan_status"></strong></span>
-                            <button type="button" @click="modalBerkasOpen = false" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg">
-                                Tutup Pemeriksaan
-                            </button>
+                        {{-- ================================================================= --}}
+                        {{-- ACTION SECTION: TINDAKAN PEMERIKSAAN, VERIFIKASI & PARAF LANGSUNG --}}
+                        {{-- ================================================================= --}}
+                        <div class="mt-4 p-4 rounded-xl border border-slate-200 bg-slate-50/80 space-y-3">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <div class="text-xs">
+                                    <span class="text-slate-500">Status Usulan Berkas:</span>
+                                    <strong class="text-slate-900 ml-1 px-2.5 py-0.5 rounded-md text-xs inline-block"
+                                            :class="{
+                                                'bg-slate-200 text-slate-700': currentPegawai?.usulan_status_raw === 'belum_diajukan',
+                                                'bg-amber-100 text-amber-800 border border-amber-300': currentPegawai?.usulan_status_raw === 'diajukan',
+                                                'bg-teal-100 text-teal-800 border border-teal-300': currentPegawai?.usulan_status_raw === 'diverifikasi_admin',
+                                                'bg-blue-100 text-blue-800 border border-blue-300': currentPegawai?.usulan_status_raw === 'diparaf_kapokja',
+                                                'bg-purple-100 text-purple-800 border border-purple-300': currentPegawai?.usulan_status_raw === 'diparaf_kabag',
+                                                'bg-emerald-100 text-emerald-800 border border-emerald-300': currentPegawai?.usulan_status_raw === 'disetujui_wd2' || currentPegawai?.usulan_status_raw === 'selesai',
+                                                'bg-red-100 text-red-800 border border-red-300': currentPegawai?.usulan_status_raw === 'ditolak'
+                                            }"
+                                            x-text="currentPegawai?.usulan_status">
+                                    </strong>
+                                </div>
+
+                                {{-- Tracking Waktu Paraf & TTE --}}
+                                <div class="text-[11px] text-slate-500 flex items-center gap-2" x-show="currentPegawai?.usulan_id">
+                                    <span x-show="currentPegawai?.verifikasi_admin_at" class="text-emerald-700 font-medium">✓ Admin</span>
+                                    <span x-show="currentPegawai?.paraf_kapokja_at" class="text-teal-700 font-medium">✓ Pokja</span>
+                                    <span x-show="currentPegawai?.paraf_kabag_at" class="text-blue-700 font-medium">✓ Kabag</span>
+                                    <span x-show="currentPegawai?.ttd_wd2_at" class="text-purple-700 font-bold">✓ WD2 (Sah)</span>
+                                </div>
+                            </div>
+
+                            {{-- Tombol Aksi Langsung Berdasarkan Tahap & Peran Pengguna --}}
+                            <div class="pt-2 border-t border-slate-200 flex items-center justify-between flex-wrap gap-2">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    {{-- 1. AKSI BELUM DIAJUKAN -> AJUKAN SEKARANG --}}
+                                    <template x-if="!currentPegawai?.usulan_id && {{ ($isAdmin || $isExecutive) ? 'true' : 'false' }}">
+                                        <form method="POST" :action="'{{ url('satyalancana') }}/' + currentPegawai?.id + '/ajukan'" onsubmit="return confirm('Ajukan usulan resmi tanda kehormatan Satyalancana untuk pegawai ini?')">
+                                            @csrf
+                                            <input type="hidden" name="kategori" :value="currentPegawai?.kategori">
+                                            <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                Ajukan Usulan Resmi Sekarang
+                                            </button>
+                                        </form>
+                                    </template>
+
+                                    {{-- 2. AKSI DIAJUKAN -> VERIFIKASI ADMIN --}}
+                                    <template x-if="currentPegawai?.usulan_id && currentPegawai?.usulan_status_raw === 'diajukan' && {{ ($isAdmin || $isExecutive) ? 'true' : 'false' }}">
+                                        <form method="POST" :action="'{{ url('satyalancana/verifikasi') }}/' + currentPegawai?.usulan_id" onsubmit="return confirm('Verifikasi kelayakan berkas persyaratan Satyalancana an. ' + currentPegawai?.nama + '?')">
+                                            @csrf
+                                            <input type="hidden" name="tahap" value="verifikasi_admin">
+                                            <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-sm transition">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                Verifikasi Kelayakan Berkas (Admin)
+                                            </button>
+                                        </form>
+                                    </template>
+
+                                    {{-- 3. AKSI DIVERIFIKASI_ADMIN -> PARAF 1 KA POKJA KEU-KEPEG --}}
+                                    <template x-if="currentPegawai?.usulan_id && currentPegawai?.usulan_status_raw === 'diverifikasi_admin' && {{ ($isKaPokja || $isAdmin) ? 'true' : 'false' }}">
+                                        <form method="POST" :action="'{{ url('satyalancana/verifikasi') }}/' + currentPegawai?.usulan_id" onsubmit="return confirm('Bubuhkan Paraf 1 (Ka Pokja Keuangan & Kepegawaian)?')">
+                                            @csrf
+                                            <input type="hidden" name="tahap" value="paraf_kapokja">
+                                            <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-teal-600 hover:bg-teal-700 rounded-lg shadow-sm transition">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                                Bubuhkan Paraf 1 (Ka Pokja Keu-Kepeg)
+                                            </button>
+                                        </form>
+                                    </template>
+
+                                    {{-- 4. AKSI DIPARAF_KAPOKJA -> PARAF 2 KEPALA BAGIAN UMUM --}}
+                                    <template x-if="currentPegawai?.usulan_id && currentPegawai?.usulan_status_raw === 'diparaf_kapokja' && {{ ($isKabag || $isAdmin) ? 'true' : 'false' }}">
+                                        <form method="POST" :action="'{{ url('satyalancana/verifikasi') }}/' + currentPegawai?.usulan_id" onsubmit="return confirm('Bubuhkan Paraf 2 (Kepala Bagian Umum)?')">
+                                            @csrf
+                                            <input type="hidden" name="tahap" value="paraf_kabag">
+                                            <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                                Bubuhkan Paraf 2 (Kabag Umum)
+                                            </button>
+                                        </form>
+                                    </template>
+
+                                    {{-- 5. AKSI DIPARAF_KABAG -> PENGESAHAN TTE WAKIL DEKAN II --}}
+                                    <template x-if="currentPegawai?.usulan_id && currentPegawai?.usulan_status_raw === 'diparaf_kabag' && {{ ($isWd2 || $isAdmin) ? 'true' : 'false' }}">
+                                        <form method="POST" :action="'{{ url('satyalancana/verifikasi') }}/' + currentPegawai?.usulan_id" onsubmit="return confirm('Sahkan resmi berkas tanda kehormatan dengan Tanda Tangan Elektronik (TTE) Wakil Dekan II?')">
+                                            @csrf
+                                            <input type="hidden" name="tahap" value="ttd_wd2">
+                                            <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-sm transition">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                Sahkan & TTE WD II
+                                            </button>
+                                        </form>
+                                    </template>
+
+                                    {{-- 6. STATUS SUDAH DISETUJUI RESMI OLEH WD2 --}}
+                                    <template x-if="currentPegawai?.usulan_id && (currentPegawai?.usulan_status_raw === 'disetujui_wd2' || currentPegawai?.usulan_status_raw === 'selesai')">
+                                        <span class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-300">
+                                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            Berkas Telah Disahkan Resmi oleh Pimpinan (WD II) & Siap Dikirim Kolektif
+                                        </span>
+                                    </template>
+                                </div>
+
+                                <button type="button" @click="modalBerkasOpen = false" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-200 hover:bg-slate-300 rounded-lg transition">
+                                    Tutup Pemeriksaan
+                                </button>
+                            </div>
                         </div>
+
                     </div>
                 </div>
             </div>

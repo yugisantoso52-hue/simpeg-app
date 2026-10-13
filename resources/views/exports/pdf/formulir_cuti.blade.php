@@ -382,11 +382,11 @@
     </table>
 
     @if(isset($verifyUrl))
-    <div style="margin-top: 8px; border: 1px dashed #64748b; padding: 5px 8px; font-size: 7.5pt; color: #475569; background-color: #f8fafc; line-height: 1.35;">
+    <div style="margin-top: 8px; border: 1px dashed #64748b; padding: 5px 8px; font-size: 7.5pt; color: #475569; background-color: #f8fafc; line-height: 1.35; border-radius: 4px; box-sizing: border-box; width: 100%;">
         <div style="font-weight: bold; color: #1e293b; margin-bottom: 2px;">Otentikasi Digital SIKAP FKP UNRI:</div>
         <div>Formulir permohonan cuti ini divalidasi dan tercatat secara elektronik. Tautan verifikasi keabsahan resmi:</div>
-        <div style="margin-top: 2px;">
-            <a href="{{ $verifyUrl }}" style="color: #2563eb; font-family: monospace; font-size: 6.5pt; text-decoration: underline;">{{ chunk_split($verifyUrl, 85, "\n") }}</a>
+        <div style="margin-top: 3px; font-family: monospace; font-size: 5.8pt; line-height: 1.25; word-wrap: break-word;">
+            <a href="{{ $verifyUrl }}" style="color: #2563eb; text-decoration: underline;">{!! wordwrap($verifyUrl, 65, '<br>', true) !!}</a>
         </div>
     </div>
     @endif
