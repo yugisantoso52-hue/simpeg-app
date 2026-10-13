@@ -47,6 +47,13 @@ Schedule::command(\App\Console\Commands\CekKontrakHarian::class)
     ->onOneServer()
     ->runInBackground();
 
+// 5b. Early Warning Masa Berlaku STR & SIP Dosen/Ners - Jam 02:50 WIB
+Schedule::command(\App\Console\Commands\CekStrSipKadaluarsa::class)
+    ->dailyAt('02:50')
+    ->timezone('Asia/Jakarta')
+    ->onOneServer()
+    ->runInBackground();
+
 // 6. Auto Backup Database & Storage - Setiap Hari Jam 00:00 WIB
 Schedule::command(\App\Console\Commands\BackupDatabaseCommand::class)
     ->dailyAt('00:00')

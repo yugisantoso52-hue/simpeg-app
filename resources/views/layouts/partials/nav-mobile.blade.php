@@ -167,6 +167,12 @@
         </x-responsive-nav-link>
     @endif
 
+    {{-- 6b. LAYANAN E-SURAT MANDIRI --}}
+    <x-responsive-nav-link :href="route('layanan-surat.index')" :active="request()->routeIs('layanan-surat.*')" class="flex items-center gap-2.5 rounded-xl font-bold">
+        <x-icon name="file-text" class="w-4 h-4 text-blue-600" />
+        <span>E-Surat Keterangan</span>
+    </x-responsive-nav-link>
+
     {{-- 7. LAYANAN KEPEGAWAIAN (ACCORDION) --}}
     @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
         <div class="rounded-xl border border-slate-200/80 bg-white overflow-hidden transition">

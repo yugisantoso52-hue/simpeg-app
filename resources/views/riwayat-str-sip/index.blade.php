@@ -32,6 +32,27 @@
                 </div>
             @endif
 
+            {{-- EARLY WARNING BANNER JIKA ADA STR/SIP YANG MENDEKATI JATUH TEMPO --}}
+            @if(($statistics['segera_berakhir'] ?? 0) > 0 || ($statistics['kedaluwarsa'] ?? 0) > 0)
+                <div class="rounded-xl border border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 bg-amber-100 rounded-lg text-amber-700 text-xl font-bold flex-shrink-0">
+                            ⚠️
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-amber-900">Peringatan Dini Legalitas Klinis (Early Warning STR & SIP)</h4>
+                            <p class="text-xs text-amber-700 mt-0.5">
+                                Terdeteksi <strong>{{ $statistics['segera_berakhir'] ?? 0 }} dokumen</strong> segera berakhir (&le; 6 bulan) dan <strong>{{ $statistics['kedaluwarsa'] ?? 0 }} dokumen</strong> telah kedaluwarsa. Mohon segera lakukan verifikasi perpanjangan melalui KTKI / Kemenkes SATUSEHAT.
+                            </p>
+                        </div>
+                    </div>
+                    <a href="{{ route('riwayat-str-sip.index', ['status' => 'segera_berakhir']) }}"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold shadow-sm transition whitespace-nowrap">
+                        Lihat Berkas Kritis →
+                    </a>
+                </div>
+            @endif
+
             {{-- KARTU STATISTIK --}}
             <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">

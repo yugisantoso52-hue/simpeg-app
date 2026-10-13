@@ -99,6 +99,13 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     /* Transparansi Talenta Mandiri (Semua ASN) */
     Route::get('/talenta-saya', [TalentManagementController::class, 'myTalent'])->name('manajemen-talenta.my-talent');
 
+    /* Layanan E-Surat Keterangan Mandiri Ber-QR Code */
+    Route::prefix('layanan-surat')->name('layanan-surat.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\LayananSuratController::class, 'index'])->name('index');
+        Route::post('/surat-aktif', [\App\Http\Controllers\LayananSuratController::class, 'storeSuratAktif'])->name('surat-aktif.store');
+        Route::get('/surat-aktif/{id}/cetak', [\App\Http\Controllers\LayananSuratController::class, 'cetakSuratAktif'])->name('surat-aktif.cetak');
+    });
+
     // ======================================================================
     // ROUTE PEGAWAI BIASA (Akses Data Diri Sendiri)
     // ======================================================================
@@ -243,6 +250,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/kgb', [KgbController::class, 'index'])->name('kgb.index');
         Route::get('/kenaikan-pangkat', [KpController::class, 'index'])->name('kp.index');
         Route::get('/satyalancana', [SatyalancanaController::class, 'index'])->name('satyalancana.index');
+        Route::post('/satyalancana/{pegawai}/ajukan', [SatyalancanaController::class, 'ajukan'])->name('satyalancana.ajukan');
+        Route::get('/satyalancana/{pegawai}/cetak-drh', [SatyalancanaController::class, 'cetakDrh'])->name('satyalancana.cetak-drh');
         Route::get('/tugas-belajar', [TugasBelajarController::class, 'index'])->name('tugas-belajar.index');
         Route::get('/mutasi-pegawai', [MutasiPegawaiController::class, 'index'])->name('mutasi-pegawai.index');
 

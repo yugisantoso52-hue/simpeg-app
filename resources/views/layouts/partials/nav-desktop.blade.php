@@ -170,6 +170,15 @@
 @endif
 
 {{-- ============================================================== --}}
+{{-- 5b. LAYANAN E-SURAT MANDIRI (Semua Pegawai & Pimpinan)         --}}
+{{-- ============================================================== --}}
+<a href="{{ route('layanan-surat.index') }}" 
+   class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('layanan-surat.*') ? 'bg-blue-50 text-blue-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+    <x-icon name="file-text" class="w-4 h-4 {{ request()->routeIs('layanan-surat.*') ? 'text-blue-600' : 'text-slate-500' }}" />
+    <span>E-Surat</span>
+</a>
+
+{{-- ============================================================== --}}
 {{-- 6. DATA KEPEGAWAIAN & RIWAYAT (Dropdown Multi-Kolom Terpadu)   --}}
 {{-- ============================================================== --}}
 @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
