@@ -362,10 +362,17 @@ class ReportController extends Controller
             }
         }
 
-        if ($request->expectsJson() || $request->is('api/*') || !$request->headers->has('referer')) {
-            abort(404, 'Dokumen tidak ditemukan.');
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Berkas fisik pindaian (scan) belum diunggah atau tidak ditemukan di penyimpanan server.'
+            ], 404);
         }
-        return redirect()->back()->with('error', 'Berkas fisik belum diunggah atau tidak ditemukan di server. Silakan edit dan unggah ulang berkas.');
+
+        return response()->view('errors.document_not_found', [
+            'path' => $path,
+            'message' => 'Berkas fisik pindaian (scan) belum diunggah ke server penyimpanan. Namun demikian, data administratif (Nomor SK, Tanggal, dan TMT) tetap sah tercatat pada database SIKAP FKP UNRI.'
+        ], 404);
     }
 
     /**

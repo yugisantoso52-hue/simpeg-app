@@ -108,17 +108,38 @@
                             </tr>
                         </x-slot>
 
+                        @php
+                            $cekFileFisikValid = function(?string $path): bool {
+                                if (empty($path) || $path === '-') return false;
+                                $cleanPath = ltrim(str_replace('\\', '/', $path), '/');
+                                if (\Illuminate\Support\Facades\Storage::disk('local')->exists($cleanPath)) {
+                                    try { if (\Illuminate\Support\Facades\Storage::disk('local')->size($cleanPath) > 200) return true; } catch (\Throwable $e) {}
+                                }
+                                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($cleanPath)) {
+                                    try { if (\Illuminate\Support\Facades\Storage::disk('public')->size($cleanPath) > 200) return true; } catch (\Throwable $e) {}
+                                }
+                                $p1 = storage_path('app/private/' . $cleanPath);
+                                if (file_exists($p1) && @filesize($p1) > 200) return true;
+                                $p2 = storage_path('app/public/' . $cleanPath);
+                                if (file_exists($p2) && @filesize($p2) > 200) return true;
+                                return false;
+                            };
+                        @endphp
+
                         @forelse($layakSatyalancana as $row)
                             @php
                                 $skpTerbaru = $row->riwayatSkp->take(2);
                                 $skpCount = $skpTerbaru->count();
                                 $skpItems = [];
                                 foreach ($skpTerbaru as $skp) {
+                                    $evalValid = $cekFileFisikValid($skp->file_evaluasi_skp);
+                                    $rencValid = $cekFileFisikValid($skp->file_rencana_skp);
                                     $skpItems[] = [
                                         'tahun' => $skp->tahun,
                                         'predikat' => $skp->predikat_kinerja,
-                                        'evaluasi_url' => $skp->file_evaluasi_skp ? route('document.preview', ['path' => $skp->file_evaluasi_skp]) : null,
-                                        'rencana_url' => $skp->file_rencana_skp ? route('document.preview', ['path' => $skp->file_rencana_skp]) : null,
+                                        'has_file' => $evalValid || $rencValid,
+                                        'evaluasi_url' => $evalValid ? route('document.preview', ['path' => $skp->file_evaluasi_skp]) : null,
+                                        'rencana_url' => $rencValid ? route('document.preview', ['path' => $skp->file_rencana_skp]) : null,
                                     ];
                                 }
                                 $skpStatusText = $skpCount >= 2 
@@ -130,16 +151,17 @@
                                 $piagamList = $row->riwayatPenghargaan->where('jenis_penghargaan', 'Satyalancana');
                                 $latestPiagam = $piagamList->first();
 
-                                $skCpnsUrl = $row->file_sk_pertama ? route('document.preview', ['path' => $row->file_sk_pertama]) : null;
-                                $skPangkatUrl = ($pangkatTerakhir && $pangkatTerakhir->file_sk) 
-                                    ? route('document.preview', ['path' => $pangkatTerakhir->file_sk]) 
-                                    : ($row->file_sk_pangkat_terakhir ? route('document.preview', ['path' => $row->file_sk_pangkat_terakhir]) : null);
-                                $skJabatanUrl = ($jabatanTerakhir && $jabatanTerakhir->file_sk) 
-                                    ? route('document.preview', ['path' => $jabatanTerakhir->file_sk]) 
-                                    : null;
-                                $piagamUrl = ($latestPiagam && $latestPiagam->file_sk) 
-                                    ? route('document.preview', ['path' => $latestPiagam->file_sk]) 
-                                    : null;
+                                $skCpnsPath = $row->file_sk_pertama;
+                                $skCpnsUrl = $cekFileFisikValid($skCpnsPath) ? route('document.preview', ['path' => $skCpnsPath]) : null;
+
+                                $pangkatRaw = $pangkatTerakhir?->file_sk ?: $row->file_sk_pangkat_terakhir;
+                                $skPangkatUrl = $cekFileFisikValid($pangkatRaw) ? route('document.preview', ['path' => $pangkatRaw]) : null;
+
+                                $jabatanRaw = $jabatanTerakhir?->file_sk;
+                                $skJabatanUrl = $cekFileFisikValid($jabatanRaw) ? route('document.preview', ['path' => $jabatanRaw]) : null;
+
+                                $piagamRaw = $latestPiagam?->file_sk;
+                                $piagamUrl = $cekFileFisikValid($piagamRaw) ? route('document.preview', ['path' => $piagamRaw]) : null;
 
                                 $usulanAktif = $row->usulan_aktif;
                                 $usulanId = $usulanAktif?->id;
@@ -166,6 +188,12 @@
                                     'file_sk_pangkat_url' => $skPangkatUrl,
                                     'file_sk_jabatan_url' => $skJabatanUrl,
                                     'file_piagam_url' => $piagamUrl,
+                                    'url_upload_cpns' => route('pegawai.edit', $row->id),
+                                    'url_upload_pangkat' => route('riwayat-pangkat.index'),
+                                    'url_upload_jabatan' => route('riwayat-jabatan.index'),
+                                    'url_upload_skp' => route('riwayat-skp.index'),
+                                    'url_upload_piagam' => route('riwayat-penghargaan.index'),
+                                    'url_tambah_piagam' => route('riwayat-penghargaan.create', ['pegawai_id' => $row->id]),
                                     'usulan_id' => $usulanId,
                                     'usulan_status' => $usulanStatusLabel,
                                     'usulan_status_raw' => $usulanStatusRaw,
@@ -280,11 +308,14 @@
                                         $uSkpCount = $uSkpTerbaru->count();
                                         $uSkpItems = [];
                                         foreach ($uSkpTerbaru as $skp) {
+                                            $uEvalValid = $cekFileFisikValid($skp->file_evaluasi_skp);
+                                            $uRencValid = $cekFileFisikValid($skp->file_rencana_skp);
                                             $uSkpItems[] = [
                                                 'tahun' => $skp->tahun,
                                                 'predikat' => $skp->predikat_kinerja,
-                                                'evaluasi_url' => $skp->file_evaluasi_skp ? route('document.preview', ['path' => $skp->file_evaluasi_skp]) : null,
-                                                'rencana_url' => $skp->file_rencana_skp ? route('document.preview', ['path' => $skp->file_rencana_skp]) : null,
+                                                'has_file' => $uEvalValid || $uRencValid,
+                                                'evaluasi_url' => $uEvalValid ? route('document.preview', ['path' => $skp->file_evaluasi_skp]) : null,
+                                                'rencana_url' => $uRencValid ? route('document.preview', ['path' => $skp->file_rencana_skp]) : null,
                                             ];
                                         }
                                         $uSkpStatusText = $uSkpCount >= 2 
@@ -296,16 +327,17 @@
                                         $uPiagamList = $pPegawai->riwayatPenghargaan->where('jenis_penghargaan', 'Satyalancana');
                                         $uLatestPiagam = $uPiagamList->first();
 
-                                        $uSkCpnsUrl = $pPegawai->file_sk_pertama ? route('document.preview', ['path' => $pPegawai->file_sk_pertama]) : null;
-                                        $uSkPangkatUrl = ($uPangkatTerakhir && $uPangkatTerakhir->file_sk) 
-                                            ? route('document.preview', ['path' => $uPangkatTerakhir->file_sk]) 
-                                            : ($pPegawai->file_sk_pangkat_terakhir ? route('document.preview', ['path' => $pPegawai->file_sk_pangkat_terakhir]) : null);
-                                        $uSkJabatanUrl = ($uJabatanTerakhir && $uJabatanTerakhir->file_sk) 
-                                            ? route('document.preview', ['path' => $uJabatanTerakhir->file_sk]) 
-                                            : null;
-                                        $uPiagamUrl = ($uLatestPiagam && $uLatestPiagam->file_sk) 
-                                            ? route('document.preview', ['path' => $uLatestPiagam->file_sk]) 
-                                            : null;
+                                        $uSkCpnsPath = $pPegawai->file_sk_pertama;
+                                        $uSkCpnsUrl = $cekFileFisikValid($uSkCpnsPath) ? route('document.preview', ['path' => $uSkCpnsPath]) : null;
+
+                                        $uPangkatRaw = $uPangkatTerakhir?->file_sk ?: $pPegawai->file_sk_pangkat_terakhir;
+                                        $uSkPangkatUrl = $cekFileFisikValid($uPangkatRaw) ? route('document.preview', ['path' => $uPangkatRaw]) : null;
+
+                                        $uJabatanRaw = $uJabatanTerakhir?->file_sk;
+                                        $uSkJabatanUrl = $cekFileFisikValid($uJabatanRaw) ? route('document.preview', ['path' => $uJabatanRaw]) : null;
+
+                                        $uPiagamRaw = $uLatestPiagam?->file_sk;
+                                        $uPiagamUrl = $cekFileFisikValid($uPiagamRaw) ? route('document.preview', ['path' => $uPiagamRaw]) : null;
 
                                         $payloadUsulan = [
                                             'id' => $pPegawai->id,
@@ -327,13 +359,18 @@
                                             'file_sk_pangkat_url' => $uSkPangkatUrl,
                                             'file_sk_jabatan_url' => $uSkJabatanUrl,
                                             'file_piagam_url' => $uPiagamUrl,
+                                            'url_upload_cpns' => route('pegawai.edit', $pPegawai->id),
+                                            'url_upload_pangkat' => route('riwayat-pangkat.index'),
+                                            'url_upload_jabatan' => route('riwayat-jabatan.index'),
+                                            'url_upload_skp' => route('riwayat-skp.index'),
+                                            'url_upload_piagam' => route('riwayat-penghargaan.index'),
+                                            'url_tambah_piagam' => route('riwayat-penghargaan.create', ['pegawai_id' => $pPegawai->id]),
                                             'usulan_id' => $usulan->id,
                                             'usulan_status' => ucwords(str_replace('_', ' ', $usulan->status)),
                                             'usulan_status_raw' => $usulan->status,
                                             'verifikasi_admin_at' => $usulan->verifikasi_admin_at ? $usulan->verifikasi_admin_at->format('d/m/Y H:i') : null,
                                             'paraf_kapokja_at' => $usulan->paraf_kapokja_at ? $usulan->paraf_kapokja_at->format('d/m/Y H:i') : null,
                                             'paraf_kabag_at' => $usulan->paraf_kabag_at ? $usulan->paraf_kabag_at->format('d/m/Y H:i') : null,
-                                            'ttd_wd2_at' => $usulan->ttd_wd2_at ? $usulan->ttd_wd2_at->format('d/m/Y H:i') : null,
                                         ];
                                     @endphp
                                     <tr class="hover:bg-slate-50">
@@ -679,7 +716,7 @@
                                             Nomor SK: <span class="font-mono font-medium text-slate-800" x-text="currentPegawai?.no_sk_cpns"></span> &bull; 
                                             TMT: <strong class="text-slate-800" x-text="currentPegawai?.tmt_cpns"></strong>
                                         </div>
-                                        <div class="pt-1">
+                                        <div class="pt-1 flex items-center gap-2 flex-wrap">
                                             <template x-if="currentPegawai?.file_sk_cpns_url">
                                                 <a :href="currentPegawai?.file_sk_cpns_url" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition shadow-2xs">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -687,17 +724,22 @@
                                                 </a>
                                             </template>
                                             <template x-if="!currentPegawai?.file_sk_cpns_url">
-                                                <span class="text-[11px] text-slate-500 italic flex items-center gap-1">
-                                                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                                    Data TMT CPNS terverifikasi di database kepegawaian (belum ada berkas scan fisik di sistem)
-                                                </span>
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <span class="text-[11px] text-slate-500 italic flex items-center gap-1">
+                                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                        Data TMT terverifikasi di SIMPEG (berkas scan fisik belum diunggah)
+                                                    </span>
+                                                    <a :href="currentPegawai?.url_upload_cpns" target="_blank" class="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-800 font-semibold underline">
+                                                        Unggah SK CPNS di Data Pegawai &rarr;
+                                                    </a>
+                                                </div>
                                             </template>
                                         </div>
                                     </div>
                                 </div>
                                 <span class="px-2.5 py-1 rounded-md text-[10px] font-bold shrink-0"
                                       :class="currentPegawai?.file_sk_cpns_url ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-blue-100 text-blue-800 border border-blue-200'"
-                                      x-text="currentPegawai?.file_sk_cpns_url ? 'File Tersedia' : 'Tersedia'">
+                                      x-text="currentPegawai?.file_sk_cpns_url ? 'File Tersedia' : 'Tersedia (Data SIMPEG)'">
                                 </span>
                             </div>
 
@@ -708,7 +750,7 @@
                                     <div class="text-xs space-y-1">
                                         <div class="font-bold text-slate-900">SK Pangkat / Golongan Ruang Terakhir</div>
                                         <div class="text-slate-600" x-text="currentPegawai?.pangkat_terakhir"></div>
-                                        <div class="pt-1">
+                                        <div class="pt-1 flex items-center gap-2 flex-wrap">
                                             <template x-if="currentPegawai?.file_sk_pangkat_url">
                                                 <a :href="currentPegawai?.file_sk_pangkat_url" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition shadow-2xs">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -716,17 +758,22 @@
                                                 </a>
                                             </template>
                                             <template x-if="!currentPegawai?.file_sk_pangkat_url">
-                                                <span class="text-[11px] text-slate-500 italic flex items-center gap-1">
-                                                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                                    Data pangkat & nomor SK terverifikasi di riwayat kepangkatan
-                                                </span>
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <span class="text-[11px] text-slate-500 italic flex items-center gap-1">
+                                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                        Data pangkat terverifikasi di riwayat kepangkatan (berkas scan fisik belum diunggah)
+                                                    </span>
+                                                    <a :href="currentPegawai?.url_upload_pangkat" target="_blank" class="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-800 font-semibold underline">
+                                                        Kelola / Unggah di Riwayat Pangkat &rarr;
+                                                    </a>
+                                                </div>
                                             </template>
                                         </div>
                                     </div>
                                 </div>
                                 <span class="px-2.5 py-1 rounded-md text-[10px] font-bold shrink-0"
                                       :class="currentPegawai?.file_sk_pangkat_url ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-blue-100 text-blue-800 border border-blue-200'"
-                                      x-text="currentPegawai?.file_sk_pangkat_url ? 'File Tersedia' : 'Tersedia'">
+                                      x-text="currentPegawai?.file_sk_pangkat_url ? 'File Tersedia' : 'Tersedia (Data SIMPEG)'">
                                 </span>
                             </div>
 
@@ -737,7 +784,7 @@
                                     <div class="text-xs space-y-1">
                                         <div class="font-bold text-slate-900">SK Jabatan Terakhir</div>
                                         <div class="text-slate-600" x-text="currentPegawai?.jabatan_terakhir"></div>
-                                        <div class="pt-1">
+                                        <div class="pt-1 flex items-center gap-2 flex-wrap">
                                             <template x-if="currentPegawai?.file_sk_jabatan_url">
                                                 <a :href="currentPegawai?.file_sk_jabatan_url" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition shadow-2xs">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -745,17 +792,22 @@
                                                 </a>
                                             </template>
                                             <template x-if="!currentPegawai?.file_sk_jabatan_url">
-                                                <span class="text-[11px] text-slate-500 italic flex items-center gap-1">
-                                                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                                    Data SK Jabatan terverifikasi di riwayat jabatan
-                                                </span>
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <span class="text-[11px] text-slate-500 italic flex items-center gap-1">
+                                                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                        Data SK Jabatan terverifikasi di riwayat jabatan (berkas scan fisik belum diunggah)
+                                                    </span>
+                                                    <a :href="currentPegawai?.url_upload_jabatan" target="_blank" class="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-800 font-semibold underline">
+                                                        Kelola / Unggah di Riwayat Jabatan &rarr;
+                                                    </a>
+                                                </div>
                                             </template>
                                         </div>
                                     </div>
                                 </div>
                                 <span class="px-2.5 py-1 rounded-md text-[10px] font-bold shrink-0"
                                       :class="currentPegawai?.file_sk_jabatan_url ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-blue-100 text-blue-800 border border-blue-200'"
-                                      x-text="currentPegawai?.file_sk_jabatan_url ? 'File Tersedia' : 'Tersedia'">
+                                      x-text="currentPegawai?.file_sk_jabatan_url ? 'File Tersedia' : 'Tersedia (Data SIMPEG)'">
                                 </span>
                             </div>
 
@@ -771,20 +823,35 @@
                                         </div>
                                         
                                         {{-- Berkas SKP per Tahun jika tersedia --}}
-                                        <div class="pt-1 flex items-center gap-2 flex-wrap" x-show="currentPegawai?.skp_items && currentPegawai.skp_items.length > 0">
-                                            <template x-for="skp in currentPegawai?.skp_items" :key="skp.tahun">
-                                                <div class="flex items-center gap-1.5">
-                                                    <template x-if="skp.evaluasi_url">
-                                                        <a :href="skp.evaluasi_url" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 shadow-2xs">
-                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                                            <span x-text="'SKP ' + skp.tahun + ' (' + skp.predikat + ')'"></span>
-                                                        </a>
+                                        <div class="pt-1 flex items-center gap-2 flex-wrap">
+                                            <template x-if="currentPegawai?.skp_items && currentPegawai.skp_items.length > 0">
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <template x-for="skp in currentPegawai?.skp_items" :key="skp.tahun">
+                                                        <div class="flex items-center gap-1.5">
+                                                            <template x-if="skp.evaluasi_url">
+                                                                <a :href="skp.evaluasi_url" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 shadow-2xs">
+                                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                                    <span x-text="'SKP ' + skp.tahun + ' (' + skp.predikat + ')'"></span>
+                                                                </a>
+                                                            </template>
+                                                            <template x-if="!skp.evaluasi_url">
+                                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-slate-600 bg-slate-100 rounded border border-slate-200">
+                                                                    <span x-text="'Tahun ' + skp.tahun + ': ' + skp.predikat"></span>
+                                                                </span>
+                                                            </template>
+                                                        </div>
                                                     </template>
-                                                    <template x-if="!skp.evaluasi_url">
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-slate-600 bg-slate-100 rounded border border-slate-200">
-                                                            <span x-text="'Tahun ' + skp.tahun + ': ' + skp.predikat"></span>
-                                                        </span>
-                                                    </template>
+                                                    <a :href="currentPegawai?.url_upload_skp" target="_blank" class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold underline">
+                                                        Kelola SKP &rarr;
+                                                    </a>
+                                                </div>
+                                            </template>
+                                            <template x-if="!currentPegawai?.skp_items || currentPegawai.skp_items.length === 0">
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <span class="text-[11px] text-slate-500 italic">Data SKP belum tercatat di sistem</span>
+                                                    <a :href="currentPegawai?.url_upload_skp" target="_blank" class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold underline">
+                                                        Input SKP di Modul Kinerja &rarr;
+                                                    </a>
                                                 </div>
                                             </template>
                                         </div>
@@ -820,29 +887,41 @@
                                     <div class="text-xs space-y-1">
                                         <div class="font-bold text-slate-900">Piagam Penghargaan Satyalancana Karya Satya Sebelumnya</div>
                                         <div class="text-slate-600" x-text="currentPegawai?.piagam_sebelumnya"></div>
-                                        <div class="pt-1">
+                                        <div class="pt-1 flex items-center gap-2 flex-wrap">
+                                            {{-- Jika ada file piagam yang valid --}}
                                             <template x-if="currentPegawai?.file_piagam_url">
                                                 <a :href="currentPegawai?.file_piagam_url" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition shadow-2xs">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                                     Lihat / Unduh Piagam Sebelumnya (PDF)
                                                 </a>
                                             </template>
+                                            {{-- Jika pengusulan perdana (10 Tahun) --}}
                                             <template x-if="!currentPegawai?.file_piagam_url && currentPegawai?.kategori === '10 Tahun'">
                                                 <span class="text-[11px] text-slate-500 italic">
                                                     Pengusulan perdana (10 Tahun) tidak dipersyaratkan melampirkan piagam sebelumnya.
                                                 </span>
                                             </template>
+                                            {{-- Jika pengusulan 20/30 Tahun dan berkas belum diunggah --}}
                                             <template x-if="!currentPegawai?.file_piagam_url && currentPegawai?.kategori !== '10 Tahun'">
-                                                <span class="text-[11px] text-slate-500 italic">
-                                                    Data piagam periode terdahulu terverifikasi pada riwayat penghargaan SIMPEG.
-                                                </span>
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <span class="text-[11px] text-slate-500 italic">
+                                                        Berkas scan piagam terdahulu belum diunggah.
+                                                    </span>
+                                                    <a :href="currentPegawai?.url_tambah_piagam" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100 transition shadow-2xs">
+                                                        <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                        + Unggah Piagam di Riwayat Penghargaan
+                                                    </a>
+                                                    <a :href="currentPegawai?.url_upload_piagam" target="_blank" class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold underline">
+                                                        Menu Riwayat Penghargaan &rarr;
+                                                    </a>
+                                                </div>
                                             </template>
                                         </div>
                                     </div>
                                 </div>
                                 <span class="px-2.5 py-1 rounded-md text-[10px] font-bold border shrink-0"
-                                      :class="currentPegawai?.kategori === '10 Tahun' ? 'bg-slate-100 text-slate-700 border-slate-300' : 'bg-emerald-100 text-emerald-800 border-emerald-300'"
-                                      x-text="currentPegawai?.kategori === '10 Tahun' ? 'Usulan Pertama' : 'Terverifikasi'">
+                                      :class="currentPegawai?.kategori === '10 Tahun' ? 'bg-slate-100 text-slate-700 border-slate-300' : (currentPegawai?.file_piagam_url ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300')"
+                                      x-text="currentPegawai?.kategori === '10 Tahun' ? 'Usulan Pertama' : (currentPegawai?.file_piagam_url ? 'File Tersedia' : 'Perlu Upload')">
                                 </span>
                             </div>
                         </div>
