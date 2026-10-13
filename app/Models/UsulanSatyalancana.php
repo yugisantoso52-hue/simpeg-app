@@ -18,8 +18,9 @@ class UsulanSatyalancana extends Model
         'pegawai_id',
         'kategori',
         'tahun_usulan',
+        'periode_usulan',
         'nomor_surat_usulan',
-        'status',
+        'status', // draft, diajukan, diverifikasi_admin, diparaf_kabag, diparaf_kapokja, disetujui_wd2, selesai, ditolak
         'catatan',
         'file_drh',
         'file_sk_cpns',
@@ -27,14 +28,27 @@ class UsulanSatyalancana extends Model
         'file_sk_jabatan_terakhir',
         'file_skp_2_tahun',
         'file_surat_pernyataan_tidak_hukdis',
+        'file_surat_pengantar',
         'diajukan_oleh',
         'diverifikasi_oleh',
         'diverifikasi_at',
+        'verifikasi_admin_at',
+        'verifikasi_admin_by',
+        'paraf_kabag_at',
+        'paraf_kabag_by',
+        'paraf_kapokja_at',
+        'paraf_kapokja_by',
+        'ttd_wd2_at',
+        'ttd_wd2_by',
     ];
 
     protected $casts = [
-        'tahun_usulan'     => 'integer',
-        'diverifikasi_at'  => 'datetime',
+        'tahun_usulan'        => 'integer',
+        'diverifikasi_at'     => 'datetime',
+        'verifikasi_admin_at' => 'datetime',
+        'paraf_kabag_at'      => 'datetime',
+        'paraf_kapokja_at'    => 'datetime',
+        'ttd_wd2_at'          => 'datetime',
     ];
 
     public function pegawai(): BelongsTo
@@ -47,8 +61,23 @@ class UsulanSatyalancana extends Model
         return $this->belongsTo(User::class, 'diajukan_oleh');
     }
 
-    public function diverifikasiOleh(): BelongsTo
+    public function verifikasiAdminBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'diverifikasi_oleh');
+        return $this->belongsTo(User::class, 'verifikasi_admin_by');
+    }
+
+    public function parafKabagBy(): BelongsTo
+    {
+        return $this->belongsTo(Pegawai::class, 'paraf_kabag_by');
+    }
+
+    public function parafKaPokjaBy(): BelongsTo
+    {
+        return $this->belongsTo(Pegawai::class, 'paraf_kapokja_by');
+    }
+
+    public function ttdWd2By(): BelongsTo
+    {
+        return $this->belongsTo(Pegawai::class, 'ttd_wd2_by');
     }
 }

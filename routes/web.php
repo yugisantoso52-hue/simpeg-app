@@ -251,7 +251,10 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/kenaikan-pangkat', [KpController::class, 'index'])->name('kp.index');
         Route::get('/satyalancana', [SatyalancanaController::class, 'index'])->name('satyalancana.index');
         Route::post('/satyalancana/{pegawai}/ajukan', [SatyalancanaController::class, 'ajukan'])->name('satyalancana.ajukan');
+        Route::post('/satyalancana/{id}/verifikasi', [SatyalancanaController::class, 'verifikasi'])->name('satyalancana.verifikasi');
         Route::get('/satyalancana/{pegawai}/cetak-drh', [SatyalancanaController::class, 'cetakDrh'])->name('satyalancana.cetak-drh');
+        Route::get('/satyalancana/cetak-surat-pengantar', [SatyalancanaController::class, 'cetakSuratPengantar'])->name('satyalancana.cetak-surat-pengantar');
+        Route::get('/satyalancana/download-syarat', [SatyalancanaController::class, 'downloadSyarat'])->name('satyalancana.download-syarat');
         Route::get('/tugas-belajar', [TugasBelajarController::class, 'index'])->name('tugas-belajar.index');
         Route::get('/mutasi-pegawai', [MutasiPegawaiController::class, 'index'])->name('mutasi-pegawai.index');
 

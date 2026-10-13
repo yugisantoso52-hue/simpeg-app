@@ -227,33 +227,33 @@
                     PARAF DIGITAL KOORDINASI TATA NASKAH:
                 </div>
                 <table style="width: 100%; border-collapse: collapse; font-size: 7pt; line-height: 1.15;">
-                    {{-- 1. Ka Pokja Keu-Kepeg --}}
+                    {{-- 1. Kepala Bagian Umum --}}
                     <tr style="border-bottom: 1px dashed #cbd5e1;">
                         <td style="width: 32px; vertical-align: middle; padding: 2px 4px 2px 0; text-align: center;">
-                            @if(isset($qrPokjaUri))
-                                <img src="{{ $qrPokjaUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
-                            @endif
-                        </td>
-                        <td style="vertical-align: middle; padding: 2px 0;">
-                            <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">1. Ka Pokja Keu-Kepeg</div>
-                            <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina' }}, SE</div>
-                            <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
-                                [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafPokjaAt ?? '07/10/2026' }}
-                            </div>
-                        </td>
-                    </tr>
-                    {{-- 2. Kepala Bagian Umum --}}
-                    <tr>
-                        <td style="width: 32px; vertical-align: middle; padding: 3px 4px 2px 0; text-align: center;">
                             @if(isset($qrKabagUri))
                                 <img src="{{ $qrKabagUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
                             @endif
                         </td>
-                        <td style="vertical-align: middle; padding: 3px 0;">
-                            <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">2. Kepala Bagian Umum</div>
+                        <td style="vertical-align: middle; padding: 2px 0;">
+                            <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">1. Kepala Bagian Umum</div>
                             <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKabag->nama ?? 'Bakhtiar' }}, S.Sos., M.Si</div>
                             <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
                                 [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafKabagAt ?? '07/10/2026' }}
+                            </div>
+                        </td>
+                    </tr>
+                    {{-- 2. Ka Pokja Keu-Kepeg --}}
+                    <tr>
+                        <td style="width: 32px; vertical-align: middle; padding: 3px 4px 2px 0; text-align: center;">
+                            @if(isset($qrPokjaUri))
+                                <img src="{{ $qrPokjaUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
+                            @endif
+                        </td>
+                        <td style="vertical-align: middle; padding: 3px 0;">
+                            <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">2. Ka Pokja Keu-Kepeg</div>
+                            <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina' }}, SE</div>
+                            <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
+                                [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafPokjaAt ?? '07/10/2026' }}
                             </div>
                         </td>
                     </tr>

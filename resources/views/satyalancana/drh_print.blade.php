@@ -343,16 +343,16 @@
         </tr>
     </table>
 
-    <!-- TANDA TANGAN DENGAN FORMAT TTE ELEKTRONIK SEPERTI FORMULIR CUTI -->
+    <!-- TANDA TANGAN DENGAN FORMAT TTE ELEKTRONIK SEPERTI FORMULIR CUTI & PARAF TATA NASKAH -->
     <div class="ttd-container">
-        <!-- Mengetahui Wakil Dekan Bidang Keuangan dan Umum -->
+        <!-- SISI KIRI: Mengetahui Wakil Dekan Bidang Keuangan dan Umum & Paraf Koordinasi Tata Naskah -->
         <div class="ttd-box-left">
             <div>Mengetahui :</div>
             <div>Wakil Dekan Bidang Keuangan dan Umum,</div>
             
             {{-- TTE Digital Signature (QR Code Otentikasi) --}}
-            <div style="text-align: center; width: 170px; margin: 3px 0 3px 0;">
-                <img src="{{ $qrCodeDataUri }}" style="width: 48px; height: 48px; display: inline-block;" />
+            <div style="text-align: left; margin: 3px 0 3px 0;">
+                <img src="{{ $qrCodeDataUri }}" style="width: 44px; height: 44px; display: inline-block;" />
                 <div style="font-size: 6pt; color: #15803d; font-weight: bold; margin-top: 1px;">
                     Ditandatangani secara Elektronik (TTE)
                 </div>
@@ -363,16 +363,53 @@
 
             <div style="font-weight: bold; text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? 'Dr. Safri, M.Kep, Sp. Kep.M.B' }}</div>
             <div>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</div>
+
+            {{-- KOTAK PARAF DIGITAL KOORDINASI TATA NASKAH (1. Kabag Umum, 2. Ka Pokja) --}}
+            <div style="margin-top: 6px; border: 1px solid #1e293b; padding: 3px 5px; border-radius: 4px; background-color: #f8fafc; width: 94%;">
+                <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 2px; color: #0f172a; border-bottom: 1px solid #94a3b8; padding-bottom: 1px; font-size: 6.5pt; letter-spacing: 0.2px;">
+                    PARAF DIGITAL KOORDINASI TATA NASKAH:
+                </div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 6.5pt; line-height: 1.15;">
+                    <tr style="border-bottom: 1px dashed #cbd5e1;">
+                        <td style="width: 26px; vertical-align: middle; padding: 1.5px 3px 1.5px 0; text-align: center;">
+                            @if(isset($qrKabagUri))
+                                <img src="{{ $qrKabagUri }}" style="width: 22px; height: 22px; display: block; margin: 0 auto;" />
+                            @endif
+                        </td>
+                        <td style="vertical-align: middle; padding: 1.5px 0;">
+                            <div style="font-weight: bold; color: #0f172a;">1. Kepala Bagian Umum</div>
+                            <div style="color: #1e293b;">{{ $pejabatKabag->nama_lengkap ?? ($pejabatKabag->nama ?? 'Bakhtiar, S.Sos., M.Si') }}</div>
+                            <div style="color: #047857; font-weight: bold; font-size: 5.8pt;">
+                                [ Terverifikasi & Diparaf ] &bull; {{ $parafKabagAt ?? date('d/m/Y H:i') . ' WIB' }}
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 26px; vertical-align: middle; padding: 2px 3px 1.5px 0; text-align: center;">
+                            @if(isset($qrPokjaUri))
+                                <img src="{{ $qrPokjaUri }}" style="width: 22px; height: 22px; display: block; margin: 0 auto;" />
+                            @endif
+                        </td>
+                        <td style="vertical-align: middle; padding: 2px 0;">
+                            <div style="font-weight: bold; color: #0f172a;">2. Ka Pokja Keu-Kepeg</div>
+                            <div style="color: #1e293b;">{{ $pejabatKaPokja->nama_lengkap ?? ($pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina, SE') }}</div>
+                            <div style="color: #047857; font-weight: bold; font-size: 5.8pt;">
+                                [ Terverifikasi & Diparaf ] &bull; {{ $parafPokjaAt ?? date('d/m/Y H:i') . ' WIB' }}
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
 
-        <!-- Yang Membuat (Pegawai Bersangkutan) Rapat Tanpa Baris Kosong -->
+        <!-- SISI KANAN: Yang Membuat (Pegawai Bersangkutan) Rapat Tanpa Baris Kosong -->
         <div class="ttd-box-right">
             <div>Pekanbaru, {{ $tglDokumen }}</div>
             <div style="margin-top: 0;">Yang Membuat,</div>
 
             {{-- TTE Digital Signature Pegawai --}}
-            <div style="text-align: center; width: 170px; margin: 3px 0 3px 0;">
-                <img src="{{ $qrCodeDataUri }}" style="width: 48px; height: 48px; display: inline-block;" />
+            <div style="text-align: left; margin: 3px 0 3px 0;">
+                <img src="{{ $qrCodeDataUri }}" style="width: 44px; height: 44px; display: inline-block;" />
                 <div style="font-size: 6pt; color: #15803d; font-weight: bold; margin-top: 1px;">
                     Ditandatangani secara Elektronik (TTE)
                 </div>
@@ -386,6 +423,16 @@
         </div>
 
         <div class="clear"></div>
+    </div>
+
+    {{-- OTENTIKASI DIGITAL SIKAP FKP UNRI (PALING BAWAH) --}}
+    <div style="margin-top: 8px; border: 1px dashed #0284c7; padding: 3px 5px; border-radius: 4px; font-size: 6.2pt; line-height: 1.2; color: #0c4a6e; background-color: #f0f9ff; page-break-inside: avoid;">
+        <strong style="color: #0369a1; display: block; margin-bottom: 1px; font-size: 6.8pt;">OTENTIKASI DIGITAL SIKAP FKP UNRI:</strong>
+        Dokumen DRH resmi usulan tanda kehormatan ini telah diverifikasi keabsahannya dan diterbitkan secara elektronik melalui Sistem Informasi Kepegawaian (SIKAP) Fakultas Keperawatan Universitas Riau.<br>
+        @if(isset($verifyUrl))
+            Kode Otentikasi: <span style="font-family: monospace; font-size: 5.8pt; color: #0284c7;">{{ $verifyCode ?? 'SIKAP-DRH-VALID' }}</span> | 
+            Tautan Verifikasi: <a href="{{ $verifyUrl }}" style="color: #0284c7; text-decoration: underline; font-size: 5.8pt;">{{ $verifyUrl }}</a>
+        @endif
     </div>
 
 </body>
