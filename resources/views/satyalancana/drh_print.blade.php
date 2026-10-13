@@ -449,16 +449,16 @@
         <div class="clear"></div>
     </div>
 
-    {{-- OTENTIKASI DIGITAL SIKAP FKP UNRI (PALING BAWAH) --}}
-    <div style="margin-top: 8px; border: 1px dashed #0284c7; padding: 3px 5px; border-radius: 4px; font-size: 6.2pt; line-height: 1.2; color: #0c4a6e; background-color: #f0f9ff; page-break-inside: avoid;">
-        <strong style="color: #0369a1; display: block; margin-bottom: 1px; font-size: 6.8pt;">OTENTIKASI DIGITAL SIKAP FKP UNRI:</strong>
-        Dokumen DRH resmi usulan tanda kehormatan ini diterbitkan secara elektronik melalui Sistem Informasi Kepegawaian (SIKAP) Fakultas Keperawatan Universitas Riau.<br>
-        @if(isset($verifyUrl))
-            Kode Otentikasi: <span style="font-family: monospace; font-size: 5.8pt; color: #0284c7;">{{ $verifyCode ?? 'SIKAP-DRH-VALID' }}</span> | 
-            Status Sistem: <span style="font-weight: bold; color: {{ !empty($sudahTtdWd2) ? '#15803d' : '#d97706' }};">{{ !empty($sudahTtdWd2) ? 'Disahkan Resmi Pimpinan' : 'Dalam Proses Verifikasi Berjenjang' }}</span> |
-            Tautan Verifikasi: <a href="{{ $verifyUrl }}" style="color: #0284c7; text-decoration: underline; font-size: 5.8pt;">{{ $verifyUrl }}</a>
-        @endif
+    {{-- OTENTIKASI DIGITAL SIKAP FKP UNRI (SERAGAM DENGAN FORMULIR CUTI & SURAT LAIN) --}}
+    @if(isset($verifyUrl))
+    <div style="margin-top: 10px; border: 1px dashed #64748b; padding: 4px 6px; font-size: 7pt; color: #475569; background-color: #f8fafc; line-height: 1.3; page-break-inside: avoid;">
+        <div style="font-weight: bold; color: #1e293b; margin-bottom: 2px;">Otentikasi Digital SIKAP FKP UNRI:</div>
+        <div>Dokumen DRH resmi usulan tanda kehormatan ini diterbitkan secara elektronik melalui Sistem Informasi Kepegawaian (SIKAP) Fakultas Keperawatan Universitas Riau. Status: <strong style="color: {{ !empty($sudahTtdWd2) ? '#15803d' : '#d97706' }};">{{ !empty($sudahTtdWd2) ? 'Disahkan Resmi Pimpinan' : 'Dalam Proses Verifikasi Berjenjang' }}</strong>. Tautan verifikasi keabsahan resmi:</div>
+        <div style="margin-top: 2px; word-break: break-all;">
+            <a href="{{ $verifyUrl }}" style="color: #2563eb; font-family: monospace; font-size: 6.2pt; text-decoration: underline; word-break: break-all;">{{ $verifyUrl }}</a>
+        </div>
     </div>
+    @endif
 
 </body>
 </html>

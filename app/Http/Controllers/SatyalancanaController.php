@@ -52,6 +52,7 @@ class SatyalancanaController extends Controller
 
         $daftarUsulan = UsulanSatyalancana::with([
             'pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan',
+            'pegawai.riwayatSkp', 'pegawai.riwayatPangkat.golongan', 'pegawai.riwayatJabatan.jabatan', 'pegawai.riwayatPenghargaan',
             'diajukanOleh', 'verifikasiAdminBy', 'parafKabagBy', 'parafKaPokjaBy', 'ttdWd2By'
         ])->orderByDesc('id')->paginate(15);
 
@@ -103,8 +104,8 @@ class SatyalancanaController extends Controller
             'status'              => 'diajukan',
             'catatan'             => $request->input('catatan', 'Diajukan melalui modul Satyalancana SIKAP FKP UNRI.'),
             'diajukan_oleh'       => Auth::id(),
-            'verifikasi_admin_at' => now(),
-            'verifikasi_admin_by' => Auth::id(),
+            'verifikasi_admin_at' => null,
+            'verifikasi_admin_by' => null,
         ]);
 
         // Kirim notifikasi ke pegawai yang bersangkutan
@@ -372,6 +373,20 @@ class SatyalancanaController extends Controller
         $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
         $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
 
+        // Hitung status kolektif dari usulan yang ada
+        // Minimal ada usulan yang telah diverifikasi/diparaf
+        $sudahParafPokja = $usulans->isNotEmpty() && $usulans->whereNotNull('paraf_kapokja_at')->count() === $usulans->count();
+        $sudahParafKabag = $usulans->isNotEmpty() && $usulans->whereNotNull('paraf_kabag_at')->count() === $usulans->count();
+        $sudahTtdWd2     = $usulans->isNotEmpty() && $usulans->whereNotNull('ttd_wd2_at')->count() === $usulans->count();
+
+        $tglPokjaLatest = $usulans->whereNotNull('paraf_kapokja_at')->sortByDesc('paraf_kapokja_at')->first()?->paraf_kapokja_at;
+        $tglKabagLatest = $usulans->whereNotNull('paraf_kabag_at')->sortByDesc('paraf_kabag_at')->first()?->paraf_kabag_at;
+        $tglWd2Latest   = $usulans->whereNotNull('ttd_wd2_at')->sortByDesc('ttd_wd2_at')->first()?->ttd_wd2_at;
+
+        $parafPokjaAt = $sudahParafPokja && $tglPokjaLatest ? $tglPokjaLatest->format('d/m/Y H:i') . ' WIB' : null;
+        $parafKabagAt = $sudahParafKabag && $tglKabagLatest ? $tglKabagLatest->format('d/m/Y H:i') . ' WIB' : null;
+        $ttdWd2At     = $sudahTtdWd2 && $tglWd2Latest ? $tglWd2Latest->format('d/m/Y H:i') . ' WIB' : null;
+
         $watermarkService = app(DocumentWatermarkService::class);
         $verifyCode = $watermarkService->generateVerificationCode(
             'Surat Pengantar Satyalancana Karya Satya',
@@ -380,18 +395,16 @@ class SatyalancanaController extends Controller
         );
         $verifyUrl = route('verify.document', ['code' => $verifyCode]);
 
-        $parafPokjaAt = date('d/m/Y H:i') . ' WIB';
-        $parafKabagAt = date('d/m/Y H:i') . ' WIB';
-
-        $qrWd2Uri   = QrCodeService::generateDataUri($verifyUrl . '&ttd=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001'));
-        $qrPokjaUri = QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001'));
-        $qrKabagUri = QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002'));
+        $qrWd2Uri   = $sudahTtdWd2 ? QrCodeService::generateDataUri($verifyUrl . '&ttd=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
+        $qrPokjaUri = $sudahParafPokja ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) : null;
+        $qrKabagUri = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) : null;
 
         $pdf = Pdf::loadView('satyalancana.surat_pengantar_print', compact(
             'periodeUsulan', 'nomorSurat', 'tanggalSurat', 'daftarPegawai',
             'suratRujukanNomor', 'suratRujukanTanggal', 'suratRujukanPerihal',
             'pejabatWd2', 'pejabatKaPokja', 'pejabatKabag',
-            'parafPokjaAt', 'parafKabagAt',
+            'sudahParafPokja', 'sudahParafKabag', 'sudahTtdWd2',
+            'parafPokjaAt', 'parafKabagAt', 'ttdWd2At',
             'verifyCode', 'verifyUrl', 'qrWd2Uri', 'qrPokjaUri', 'qrKabagUri'
         ))->setPaper('a4', 'portrait');
 

@@ -245,7 +245,8 @@
         <tbody>
             @forelse($daftarPegawai as $p)
                 @php
-                    $mkgY = $p->tmt_sk_pertama ? \Carbon\Carbon::parse($p->tmt_sk_pertama)->diffInYears(now()) : ($p->tanggal_masuk ? \Carbon\Carbon::parse($p->tanggal_masuk)->diffInYears(now()) : 10);
+                    $tglAwal = $p->tmt_sk_pertama ?? $p->tanggal_masuk;
+                    $mkgY = $tglAwal ? \App\Helpers\TanggalHelper::hitungSelisihTahun(\Carbon\Carbon::parse($tglAwal)->format('Y-m-d')) : 10;
                 @endphp
                 <tr>
                     <td style="text-align: center;">{{ $loop->iteration }}</td>
@@ -260,7 +261,7 @@
                     <td style="text-align: center;">
                         {{ $p->tmt_sk_pertama ? \Carbon\Carbon::parse($p->tmt_sk_pertama)->format('d-m-Y') : ($p->tanggal_masuk ? \Carbon\Carbon::parse($p->tanggal_masuk)->format('d-m-Y') : '-') }}
                     </td>
-                    <td style="text-align: center; font-weight: bold;">{{ $mkgY }} Thn</td>
+                    <td style="text-align: center; font-weight: bold;">{{ (int) $mkgY }} Thn</td>
                     <td style="text-align: center;">
                         <strong>{{ $p->kategori_satyalancana ?? '10 Tahun' }}</strong>
                     </td>
@@ -290,31 +291,47 @@
                         {{-- 1. Ka Pokja Keu-Kepeg --}}
                         <tr style="border-bottom: 1px dashed #cbd5e1;">
                             <td style="width: 32px; vertical-align: middle; padding: 2px 4px 2px 0; text-align: center;">
-                                @if(isset($qrPokjaUri))
+                                @if(!empty($sudahParafPokja) && !empty($qrPokjaUri))
                                     <img src="{{ $qrPokjaUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
+                                @else
+                                    <span style="font-size: 6pt; color: #94a3b8;">[ - ]</span>
                                 @endif
                             </td>
                             <td style="vertical-align: middle; padding: 2px 0;">
                                 <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">1. Ka Pokja Keu-Kepeg</div>
                                 <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKaPokja->nama_lengkap ?? ($pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina, SE') }}</div>
-                                <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
-                                    [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafPokjaAt ?? date('d/m/Y H:i') . ' WIB' }}
-                                </div>
+                                @if(!empty($sudahParafPokja))
+                                    <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
+                                        [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafPokjaAt }}
+                                    </div>
+                                @else
+                                    <div style="color: #64748b; font-size: 6pt; font-style: italic;">
+                                        [ Menunggu Pemeriksaan Berkas ]
+                                    </div>
+                                @endif
                             </td>
                         </tr>
                         {{-- 2. Kepala Bagian Umum --}}
                         <tr>
                             <td style="width: 32px; vertical-align: middle; padding: 3px 4px 2px 0; text-align: center;">
-                                @if(isset($qrKabagUri))
+                                @if(!empty($sudahParafKabag) && !empty($qrKabagUri))
                                     <img src="{{ $qrKabagUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
+                                @else
+                                    <span style="font-size: 6pt; color: #94a3b8;">[ - ]</span>
                                 @endif
                             </td>
                             <td style="vertical-align: middle; padding: 3px 0;">
                                 <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">2. Kepala Bagian Umum</div>
                                 <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKabag->nama_lengkap ?? ($pejabatKabag->nama ?? 'Bakhtiar, S.Sos., M.Si') }}</div>
-                                <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
-                                    [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafKabagAt ?? date('d/m/Y H:i') . ' WIB' }}
-                                </div>
+                                @if(!empty($sudahParafKabag))
+                                    <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
+                                        [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafKabagAt }}
+                                    </div>
+                                @else
+                                    <div style="color: #64748b; font-size: 6pt; font-style: italic;">
+                                        [ Menunggu Verifikasi Tata Naskah ]
+                                    </div>
+                                @endif
                             </td>
                         </tr>
                     </table>
@@ -328,14 +345,19 @@
                     Bidang Keuangan dan Umum,
                     
                     {{-- QR Code TTE Pimpinan --}}
-                    <div style="text-align: left; margin: 4px 0 4px 0;">
-                        @if(isset($qrWd2Uri))
+                    <div style="text-align: left; margin: 4px 0 4px 0; min-height: 48px;">
+                        @if(!empty($sudahTtdWd2) && !empty($qrWd2Uri))
                             <img src="{{ $qrWd2Uri }}" style="width: 46px; height: 46px; display: inline-block;" />
                             <div style="font-size: 6pt; color: #15803d; font-weight: bold;">
                                 Ditandatangani secara Elektronik (TTE)
                             </div>
+                            <div style="font-size: 5.5pt; color: #64748b;">
+                                SIKAP FKP UNRI &bull; {{ $ttdWd2At }}
+                            </div>
                         @else
-                            <div style="height: 48px;"></div>
+                            <div style="height: 38px; padding-top: 10px; font-size: 7.5pt; color: #64748b; font-style: italic;">
+                                [ Menunggu Pengesahan TTE ]
+                            </div>
                         @endif
                     </div>
 
@@ -346,15 +368,16 @@
         </tr>
     </table>
 
-    {{-- 7. OTENTIKASI DIGITAL SIKAP FKP UNRI --}}
-    <div class="otentikasi-bar">
-        <strong style="color: #0369a1; display: block; margin-bottom: 1px; font-size: 7pt;">OTENTIKASI DIGITAL SIKAP FKP UNRI:</strong>
-        Dokumen surat pengantar resmi ini telah diverifikasi validitas koordinasi tata naskah dan diterbitkan secara elektronik melalui Sistem Informasi Kepegawaian (SIKAP) Fakultas Keperawatan Universitas Riau.<br>
-        @if(isset($verifyUrl))
-            Kode Otentikasi: <span style="font-family: monospace; font-size: 6pt; color: #0284c7;">{{ $verifyCode ?? 'SIKAP-SLKS-VALID' }}</span> | 
-            Tautan Verifikasi Keabsahan: <a href="{{ $verifyUrl }}" style="color: #0284c7; text-decoration: underline; font-size: 6pt;">{{ $verifyUrl }}</a>
-        @endif
+    {{-- 7. OTENTIKASI DIGITAL SIKAP FKP UNRI (SERAGAM DENGAN FORMULIR CUTI & KGB) --}}
+    @if(isset($verifyUrl))
+    <div style="margin-top: 10px; border: 1px dashed #64748b; padding: 5px 8px; font-size: 7.5pt; color: #475569; background-color: #f8fafc; line-height: 1.35; page-break-inside: avoid;">
+        <div style="font-weight: bold; color: #1e293b; margin-bottom: 2px;">Otentikasi Digital SIKAP FKP UNRI:</div>
+        <div>Dokumen surat pengantar resmi usulan tanda kehormatan ini divalidasi dan diterbitkan secara elektronik melalui Sistem Informasi Kepegawaian (SIKAP) Fakultas Keperawatan Universitas Riau. Tautan verifikasi keabsahan resmi:</div>
+        <div style="margin-top: 3px; word-break: break-all;">
+            <a href="{{ $verifyUrl }}" style="color: #2563eb; font-family: monospace; font-size: 6.5pt; text-decoration: underline; word-break: break-all;">{{ $verifyUrl }}</a>
+        </div>
     </div>
+    @endif
 
 </body>
 </html>
