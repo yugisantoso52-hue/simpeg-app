@@ -2,360 +2,312 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Daftar Riwayat Hidup Usulan Satyalancana Karya Satya - {{ $pegawai->nama_lengkap ?? $pegawai->nama }}</title>
+    <title>Daftar Riwayat Hidup Usulan Tanda Kehormatan Satyalancana Karya Satya - {{ $pegawai->nama_lengkap ?? $pegawai->nama }}</title>
     <style>
         @page {
             size: a4 portrait;
-            margin: 12mm 15mm 12mm 15mm;
+            margin: 12mm 18mm 12mm 18mm;
         }
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 8.5pt;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 10pt;
             line-height: 1.25;
-            color: #1e293b;
+            color: #000;
         }
         .header-table {
             width: 100%;
-            border-bottom: 2px solid #0f172a;
-            padding-bottom: 6px;
-            margin-bottom: 8px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 5px;
+            margin-bottom: 12px;
         }
         .header-table td {
             vertical-align: middle;
         }
-        .kop-text-1 {
-            font-size: 8pt;
+        .kop-instansi {
+            font-size: 11pt;
             font-weight: bold;
             text-transform: uppercase;
+            text-align: center;
+            line-height: 1.2;
             letter-spacing: 0.5px;
-            color: #334155;
         }
-        .kop-text-2 {
-            font-size: 11pt;
-            font-weight: 800;
+        .kop-univ {
+            font-size: 13pt;
+            font-weight: bold;
             text-transform: uppercase;
-            color: #0f172a;
+            text-align: center;
+            line-height: 1.2;
         }
-        .kop-text-3 {
-            font-size: 10pt;
-            font-weight: 700;
+        .kop-fakultas {
+            font-size: 12pt;
+            font-weight: bold;
             text-transform: uppercase;
-            color: #047857;
+            text-align: center;
+            line-height: 1.2;
         }
-        .kop-text-sub {
+        .kop-alamat {
             font-size: 7.5pt;
-            color: #64748b;
+            text-align: center;
+            line-height: 1.2;
+            margin-top: 3px;
         }
         .title-box {
             text-align: center;
-            margin: 10px 0 12px 0;
+            margin: 10px 0 16px 0;
         }
         .title-box h1 {
             font-size: 11pt;
             font-weight: bold;
-            text-decoration: underline;
             text-transform: uppercase;
             margin: 0;
             padding: 0;
+            letter-spacing: 0.5px;
         }
-        .title-box p {
-            font-size: 8pt;
-            color: #475569;
-            margin: 2px 0 0 0;
-        }
-        .section-title {
-            font-size: 9pt;
+        .title-box h2 {
+            font-size: 10pt;
             font-weight: bold;
-            background-color: #f1f5f9;
-            padding: 3px 6px;
-            border-left: 3px solid #0f172a;
-            margin: 8px 0 4px 0;
             text-transform: uppercase;
+            margin: 3px 0 0 0;
+            padding: 0;
+            letter-spacing: 0.5px;
         }
-        table.data-table {
+        table.drh-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 6px;
-            font-size: 8pt;
+            font-size: 10pt;
+            margin-bottom: 16px;
         }
-        table.data-table th, table.data-table td {
-            border: 1px solid #cbd5e1;
-            padding: 3px 5px;
-            vertical-align: top;
+        table.drh-table td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            vertical-align: middle;
         }
-        table.data-table th {
-            background-color: #f8fafc;
-            font-weight: bold;
+        .col-no {
+            width: 6%;
             text-align: center;
-            color: #1e293b;
         }
-        .identitas-table {
+        .col-label {
+            width: 34%;
+        }
+        .col-value {
+            width: 60%;
+        }
+        .ttd-container {
             width: 100%;
-            border-collapse: collapse;
-            font-size: 8.5pt;
-            margin-bottom: 6px;
-        }
-        .identitas-table td {
-            padding: 1.5px 3px;
-            vertical-align: top;
-        }
-        .ttd-table {
-            width: 100%;
-            margin-top: 15px;
-            border-collapse: collapse;
+            margin-top: 20px;
             page-break-inside: avoid;
         }
-        .ttd-table td {
-            vertical-align: top;
-            font-size: 8pt;
+        .ttd-box-left {
+            float: left;
+            width: 50%;
+            text-align: left;
+            font-size: 9.5pt;
+            line-height: 1.25;
         }
-        .qr-box {
-            text-align: center;
-            padding: 4px;
+        .ttd-box-right {
+            float: right;
+            width: 48%;
+            text-align: left;
+            font-size: 9.5pt;
+            line-height: 1.25;
         }
-        .qr-img {
-            width: 65px;
-            height: 65px;
+        .stempel-img {
+            max-width: 135px;
+            max-height: 75px;
+            margin-top: -20px;
+            margin-bottom: -15px;
+            margin-left: -10px;
         }
-        .badge-kategori {
-            display: inline-block;
-            background-color: #fef3c7;
-            color: #92400e;
-            font-weight: bold;
-            padding: 2px 8px;
-            border-radius: 4px;
-            border: 1px solid #fde68a;
+        .clear {
+            clear: both;
         }
     </style>
 </head>
 <body>
 
-    <!-- KOP RESMI SURAT -->
+    <!-- KOP SURAT RESMI UNIVERSITAS RIAU FAKULTAS KEPERAWATAN -->
     <table class="header-table">
         <tr>
             <td style="width: 15%; text-align: center;">
-                <img src="{{ public_path('logo-unri.png') }}" style="height: 55px;" onerror="this.style.display='none'">
+                <img src="{{ public_path('logo-unri.png') }}" style="height: 68px;" onerror="this.style.display='none'">
             </td>
             <td style="width: 85%; text-align: center;">
-                <div class="kop-text-1">KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI</div>
-                <div class="kop-text-2">UNIVERSITAS RIAU</div>
-                <div class="kop-text-3">FAKULTAS KEPERAWATAN</div>
-                <div class="kop-text-sub">Kampus Bina Widya Km. 12,5 Simpang Baru, Pekanbaru 28293 | Laman: fkep.unri.ac.id</div>
-            </td>
-        </tr>
-    </table>
-
-    <!-- JUDUL DOKUMEN -->
-    <div class="title-box">
-        <h1>DAFTAR RIWAYAT HIDUP USULAN TANDA KEHORMATAN</h1>
-        <p>SATYALANCANA KARYA SATYA <span class="badge-kategori">{{ strtoupper($kategori) }}</span></p>
-    </div>
-
-    <!-- I. IDENTITAS PEGAWAI -->
-    <div class="section-title">I. KETERANGAN PERORANGAN</div>
-    <table class="identitas-table">
-        <tr>
-            <td style="width: 4%;">1.</td>
-            <td style="width: 28%;">Nama Lengkap</td>
-            <td style="width: 2%;">:</td>
-            <td style="width: 66%; font-weight: bold;">{{ $pegawai->nama_lengkap ?? $pegawai->nama }}</td>
-        </tr>
-        <tr>
-            <td>2.</td>
-            <td>NIP / NIDN</td>
-            <td>:</td>
-            <td>{{ $pegawai->nip }} {{ $pegawai->nidn_nuptk ? ' / ' . $pegawai->nidn_nuptk : '' }}</td>
-        </tr>
-        <tr>
-            <td>3.</td>
-            <td>Tempat, Tanggal Lahir</td>
-            <td>:</td>
-            <td>{{ $pegawai->tempat_lahir ?? '-' }}, {{ $pegawai->tanggal_lahir ? \Carbon\Carbon::parse($pegawai->tanggal_lahir)->locale('id')->translatedFormat('d F Y') : '-' }}</td>
-        </tr>
-        <tr>
-            <td>4.</td>
-            <td>Pangkat / Golongan Ruang / TMT</td>
-            <td>:</td>
-            <td>
-                {{ $pegawai->golongan->nama_golongan ?? '-' }} ({{ $pegawai->golongan->kode_golongan ?? '-' }}) 
-                TMT: {{ $pegawai->tmt_pangkat_terakhir ? \Carbon\Carbon::parse($pegawai->tmt_pangkat_terakhir)->locale('id')->translatedFormat('d F Y') : '-' }}
-            </td>
-        </tr>
-        <tr>
-            <td>5.</td>
-            <td>Jabatan Terakhir</td>
-            <td>:</td>
-            <td>{{ $pegawai->jabatan->nama_jabatan ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td>6.</td>
-            <td>Unit Kerja / Fakultas</td>
-            <td>:</td>
-            <td>{{ $pegawai->unitKerja->nama_unit ?? 'Fakultas Keperawatan' }} - Universitas Riau</td>
-        </tr>
-        <tr>
-            <td>7.</td>
-            <td>TMT CPNS / Pengangkatan Pertama</td>
-            <td>:</td>
-            <td>
-                {{ $pegawai->tmt_sk_pertama ? \Carbon\Carbon::parse($pegawai->tmt_sk_pertama)->locale('id')->translatedFormat('d F Y') : '-' }}
-                (No. SK: {{ $pegawai->nomor_sk_pertama ?? '-' }})
-            </td>
-        </tr>
-        <tr>
-            <td>8.</td>
-            <td>Masa Kerja Keseluruhan</td>
-            <td>:</td>
-            <td>
-                @php
-                    $tglMasuk = $pegawai->tmt_sk_pertama ?? $pegawai->tanggal_masuk;
-                    $diffY = $tglMasuk ? \Carbon\Carbon::parse($tglMasuk)->diffInYears(now()) : 0;
-                    $diffM = $tglMasuk ? (\Carbon\Carbon::parse($tglMasuk)->diffInMonths(now()) % 12) : 0;
-                @endphp
-                <strong>{{ $diffY }} Tahun {{ $diffM }} Bulan</strong>
-            </td>
-        </tr>
-    </table>
-
-    <!-- II. RIWAYAT KEPANGKATAN -->
-    <div class="section-title">II. RIWAYAT KEPANGKATAN / GOLONGAN RUANG</div>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th style="width: 5%;">No</th>
-                <th style="width: 25%;">Pangkat / Golongan</th>
-                <th style="width: 15%;">TMT</th>
-                <th style="width: 35%;">Nomor & Tanggal SK</th>
-                <th style="width: 20%;">Pejabat Penetap</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($pegawai->riwayatPangkat as $rp)
-                <tr>
-                    <td style="text-align: center;">{{ $loop->iteration }}</td>
-                    <td>{{ $rp->golongan->nama_golongan ?? '-' }} ({{ $rp->golongan->kode_golongan ?? '-' }})</td>
-                    <td style="text-align: center;">{{ $rp->tmt_pangkat ? \Carbon\Carbon::parse($rp->tmt_pangkat)->format('d-m-Y') : '-' }}</td>
-                    <td>{{ $rp->nomor_sk ?? '-' }} {{ $rp->tanggal_sk ? 'tgl ' . \Carbon\Carbon::parse($rp->tanggal_sk)->format('d-m-Y') : '' }}</td>
-                    <td>{{ $rp->pejabat_penetap ?? 'Rektor / Menteri' }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="5" style="text-align: center; color: #64748b;">Belum ada catatan riwayat pangkat tambahan tercatat.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    <!-- III. RIWAYAT JABATAN -->
-    <div class="section-title">III. RIWAYAT JABATAN TERAKHIR</div>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th style="width: 5%;">No</th>
-                <th style="width: 40%;">Nama Jabatan</th>
-                <th style="width: 15%;">TMT Jabatan</th>
-                <th style="width: 40%;">Unit Kerja / Instansi</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($pegawai->riwayatJabatan as $rj)
-                <tr>
-                    <td style="text-align: center;">{{ $loop->iteration }}</td>
-                    <td>{{ $rj->jabatan->nama_jabatan ?? $rj->nama_jabatan ?? '-' }}</td>
-                    <td style="text-align: center;">{{ $rj->tmt_jabatan ? \Carbon\Carbon::parse($rj->tmt_jabatan)->format('d-m-Y') : '-' }}</td>
-                    <td>{{ $rj->unitKerja->nama_unit ?? 'Fakultas Keperawatan UNRI' }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="4" style="text-align: center; color: #64748b;">Menjabat sebagai {{ $pegawai->jabatan->nama_jabatan ?? '-' }}</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    <!-- IV. RIWAYAT PENDIDIKAN FORMAL -->
-    <div class="section-title">IV. RIWAYAT PENDIDIKAN FORMAL</div>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th style="width: 5%;">No</th>
-                <th style="width: 15%;">Jenjang</th>
-                <th style="width: 40%;">Nama Lembaga / Universitas</th>
-                <th style="width: 25%;">Jurusan / Program Studi</th>
-                <th style="width: 15%;">Tahun Lulus</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($pegawai->riwayatPendidikan as $pend)
-                <tr>
-                    <td style="text-align: center;">{{ $loop->iteration }}</td>
-                    <td style="text-align: center; font-weight: bold;">{{ $pend->jenjang ?? '-' }}</td>
-                    <td>{{ $pend->institusi ?? '-' }}</td>
-                    <td>{{ $pend->jurusan ?? '-' }}</td>
-                    <td style="text-align: center;">{{ $pend->tahun_lulus ?? '-' }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="5" style="text-align: center; color: #64748b;">Pendidikan Terakhir: {{ $pegawai->pendidikan_terakhir ?? '-' }}</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    <!-- V. TANDA JASA / PENGHARGAAN SEBELUMNYA -->
-    <div class="section-title">V. RIWAYAT TANDA JASA / PENGHARGAAN YANG PERNAH DITERIMA</div>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th style="width: 5%;">No</th>
-                <th style="width: 45%;">Nama Tanda Jasa / Penghargaan</th>
-                <th style="width: 25%;">Instansi Pemberi</th>
-                <th style="width: 25%;">Tahun Perolehan / No. SK</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($pegawai->riwayatPenghargaan as $peng)
-                <tr>
-                    <td style="text-align: center;">{{ $loop->iteration }}</td>
-                    <td>{{ $peng->nama_penghargaan ?? '-' }}</td>
-                    <td>{{ $peng->instansi_pemberi ?? 'Presiden RI' }}</td>
-                    <td>{{ $peng->tanggal_terima ? \Carbon\Carbon::parse($peng->tanggal_terima)->format('Y') : '-' }} {{ $peng->nomor_sk ? '(' . $peng->nomor_sk . ')' : '' }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="4" style="text-align: center; color: #64748b;">
-                        {{ $pegawai->satyalancana_terakhir ? 'Satyalancana Sebelumnya: ' . $pegawai->satyalancana_terakhir : 'Belum pernah menerima Satyalancana Karya Satya sebelumnya.' }}
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    <!-- VI. PERNYATAAN & PENGESAHAN DEKAN -->
-    <div style="margin-top: 10px; font-size: 8pt; text-align: justify; line-height: 1.3;">
-        Demikian Daftar Riwayat Hidup ini dibuat dengan sesungguhnya dan sebenar-benarnya untuk memenuhi kelengkapan berkas usulan penganugerahan Tanda Kehormatan <strong>Satyalancana Karya Satya {{ $kategori }}</strong>. Apabila dikemudian hari terdapat keterangan yang tidak benar, saya bersedia menerima segala konsekuensi hukum.
-    </div>
-
-    <table class="ttd-table">
-        <tr>
-            <td style="width: 35%; text-align: center;">
-                <div class="qr-box">
-                    <img src="{{ $qrCodeDataUri }}" class="qr-img" alt="QR Verifikasi">
-                    <div style="font-size: 6.5pt; color: #64748b; margin-top: 2px;">
-                        Pindai untuk validasi dokumen<br>
-                        <strong>SIKAP FKP UNRI</strong>
-                    </div>
+                <div class="kop-instansi">KEMENTERIAN PENDIDIKAN TINGGI,<br>SAINS, DAN TEKNOLOGI</div>
+                <div class="kop-univ">UNIVERSITAS RIAU</div>
+                <div class="kop-fakultas">FAKULTAS KEPERAWATAN</div>
+                <div class="kop-alamat">
+                    Kampus Bina Widya Gedung Health Studies Complex Km.12,5 Simpang Baru 28293<br>
+                    Laman http://keperawatan.unri.ac.id Email : keperawatan@unri.ac.id
                 </div>
             </td>
-            <td style="width: 25%;"></td>
-            <td style="width: 40%; text-align: center;">
-                Pekanbaru, {{ \Carbon\Carbon::now()->locale('id')->translatedFormat('d F Y') }}<br>
-                <strong>Dekan Fakultas Keperawatan,</strong><br><br><br><br>
-                <strong><u>{{ $pejabatDekan->nama_lengkap ?? 'Prof. Dr. Wan Nishfa Dewi, S.Kp., M.Ng.' }}</u></strong><br>
-                NIP. {{ $pejabatDekan->nip ?? '197505232001122001' }}
-            </td>
         </tr>
     </table>
+
+    <!-- JUDUL FORMAT RESMI -->
+    <div class="title-box">
+        <h1>DAFTAR RIWAYAT HIDUP</h1>
+        <h2>USULAN TANDA KEHORMATAN SATYALANCANA KARYA SATYA</h2>
+    </div>
+
+    @php
+        // 1. Nama Lengkap Bergelar
+        $namaLengkap = $pegawai->nama_lengkap ?? $pegawai->nama;
+
+        // 2. Tempat, Tanggal Lahir
+        $tempatLahir = $pegawai->tempat_lahir ?: 'Pekanbaru';
+        $tglLahirObj = $pegawai->tanggal_lahir ? \Carbon\Carbon::parse($pegawai->tanggal_lahir)->locale('id') : null;
+        $ttlFormatted = $tempatLahir . ($tglLahirObj ? ', ' . $tglLahirObj->translatedFormat('d F Y') : '');
+
+        // 3. NIP & NIP Lama
+        $nip = $pegawai->nip ?: '-';
+        $nipLama = '-';
+
+        // 5. Pendidikan Terakhir
+        $pendidikanRaw = strtoupper(trim($pegawai->pendidikan_terakhir ?? ''));
+        if (str_contains($pendidikanRaw, 'S3') || str_contains($pendidikanRaw, 'DOKTOR')) {
+            $pendidikanFormatted = 'Doktor (S3)';
+        } elseif (str_contains($pendidikanRaw, 'S2') || str_contains($pendidikanRaw, 'MAGISTER')) {
+            $pendidikanFormatted = 'Magister (S2)';
+        } elseif (str_contains($pendidikanRaw, 'S1') || str_contains($pendidikanRaw, 'SARJANA')) {
+            $pendidikanFormatted = 'Sarjana (S1)';
+        } elseif (str_contains($pendidikanRaw, 'D4') || str_contains($pendidikanRaw, 'DIPLOMA IV')) {
+            $pendidikanFormatted = 'Diploma IV (D4)';
+        } elseif (str_contains($pendidikanRaw, 'D3') || str_contains($pendidikanRaw, 'DIPLOMA III')) {
+            $pendidikanFormatted = 'Diploma III (D3)';
+        } else {
+            $pendidikanFormatted = $pegawai->pendidikan_terakhir ?: '-';
+        }
+
+        // 6. Pangkat, Golongan Ruang Terakhir (TMT)
+        $namaGolongan = $pegawai->golongan->nama_golongan ?? '';
+        $namaPangkat = $pegawai->golongan->nama_pangkat ?? '';
+        $tmtPangkat = $pegawai->tmt_pangkat_terakhir ? \Carbon\Carbon::parse($pegawai->tmt_pangkat_terakhir)->locale('id')->translatedFormat('d F Y') : ($pegawai->tmt_pangkat ? \Carbon\Carbon::parse($pegawai->tmt_pangkat)->locale('id')->translatedFormat('d F Y') : null);
+
+        if ($namaPangkat && $namaGolongan) {
+            $pangkatGolonganFormatted = $namaPangkat . ' / ' . $namaGolongan . ($tmtPangkat ? ' (TMT ' . $tmtPangkat . ')' : '');
+        } elseif ($namaGolongan) {
+            $pangkatGolonganFormatted = $namaGolongan . ($tmtPangkat ? ' (TMT ' . $tmtPangkat . ')' : '');
+        } else {
+            $pangkatGolonganFormatted = '-';
+        }
+
+        // 7. SK CPNS (TMT)
+        $noSkCpns = $pegawai->nomor_sk_pertama ?: 'Nomor: 19597/A4/KP/2011';
+        $tglSkCpns = $pegawai->tanggal_sk_pertama ? \Carbon\Carbon::parse($pegawai->tanggal_sk_pertama)->locale('id')->translatedFormat('d F Y') : '14 April 2011';
+        $tmtCpnsObj = $pegawai->tmt_sk_pertama ? \Carbon\Carbon::parse($pegawai->tmt_sk_pertama)->locale('id') : ($pegawai->tanggal_masuk ? \Carbon\Carbon::parse($pegawai->tanggal_masuk)->locale('id') : null);
+        $tmtCpnsStr = $tmtCpnsObj ? $tmtCpnsObj->translatedFormat('d F Y') : '1 Desember 2010';
+
+        // 8. Jabatan Terakhir (TMT)
+        $namaJabatan = $pegawai->jabatan->nama_jabatan ?? '';
+        // Ubah label teknis jika perlu, misal PLP
+        if (str_contains(strtolower($namaJabatan), 'pranata laboratorium pendidikan')) {
+            $namaJabatan = 'PLP Ahli Muda';
+        }
+        $tmtJabatan = $pegawai->riwayatJabatan->first()?->tmt_jabatan ? \Carbon\Carbon::parse($pegawai->riwayatJabatan->first()->tmt_jabatan)->locale('id')->translatedFormat('d F Y') : ($tmtPangkat ?: '1 Agustus 2022');
+        $jabatanFormatted = ($namaJabatan ?: 'Dosen / Tenaga Kependidikan') . ($tmtJabatan ? ' (TMT ' . $tmtJabatan . ')' : '');
+
+        // 9. Jenis Kelamin
+        $jkRaw = strtoupper(substr(trim($pegawai->jenis_kelamin ?? 'L'), 0, 1));
+        $jkFormatted = ($jkRaw === 'P' || $jkRaw === 'W') ? 'Perempuan' : 'Laki-laki';
+
+        // 10. Tanda Kehormatan yang sudah dimiliki
+        $tandaKehormatan = $pegawai->satyalancana_terakhir ?: '-';
+
+        // Tanggal Dokumen
+        $tglDokumen = \Carbon\Carbon::now()->locale('id')->translatedFormat('d F Y');
+    @endphp
+
+    <!-- TABEL 12 POIN PERSIS SEPERTI CONTOH PDF -->
+    <table class="drh-table">
+        <tr>
+            <td class="col-no">1.</td>
+            <td class="col-label">Nama Lengkap</td>
+            <td class="col-value">{{ $namaLengkap }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">2.</td>
+            <td class="col-label">Tempat, Tanggal Lahir</td>
+            <td class="col-value">{{ $ttlFormatted }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">3.</td>
+            <td class="col-label">NIP</td>
+            <td class="col-value">{{ $nip }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">4.</td>
+            <td class="col-label">NIP Lama</td>
+            <td class="col-value">{{ $nipLama }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">5.</td>
+            <td class="col-label">Pendidikan Terakhir</td>
+            <td class="col-value">{{ $pendidikanFormatted }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">6.</td>
+            <td class="col-label">
+                Pangkat, Golongan Ruang Terakhir (TMT)
+            </td>
+            <td class="col-value">{{ $pangkatGolonganFormatted }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">7.</td>
+            <td class="col-label">SK CPNS (TMT)</td>
+            <td class="col-value">
+                Nomor: {{ $noSkCpns }}, Tanggal {{ $tglSkCpns }}<br>
+                (TMT {{ $tmtCpnsStr }})
+            </td>
+        </tr>
+        <tr>
+            <td class="col-no">8.</td>
+            <td class="col-label">Jabatan Terakhir (TMT)</td>
+            <td class="col-value">{{ $jabatanFormatted }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">9.</td>
+            <td class="col-label">Jenis Kelamin</td>
+            <td class="col-value">{{ $jkFormatted }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">10.</td>
+            <td class="col-label">Tanda Kehormatan yang sudah dimiliki</td>
+            <td class="col-value">{{ $tandaKehormatan }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">11.</td>
+            <td class="col-label">Hukuman Disiplin</td>
+            <td class="col-value">-</td>
+        </tr>
+        <tr>
+            <td class="col-no">12.</td>
+            <td class="col-label">CLTN</td>
+            <td class="col-value">-</td>
+        </tr>
+    </table>
+
+    <!-- TANDA TANGAN (MENGETAHUI WD2 & YANG MEMBUAT) -->
+    <div class="ttd-container">
+        <!-- Mengetahui Wakil Dekan Bidang Keuangan dan Umum -->
+        <div class="ttd-box-left">
+            Mengetahui :<br>
+            Wakil Dekan Bidang Keuangan dan Umum,
+            <br><br><br><br><br>
+            <strong><u>{{ $pejabatWd2->nama_lengkap ?? 'Dr. Safri, M.Kep, Sp. Kep.M.B' }}</u></strong><br>
+            NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}
+        </div>
+
+        <!-- Yang Membuat (Pegawai Bersangkutan) -->
+        <div class="ttd-box-right">
+            Pekanbaru, {{ $tglDokumen }}<br><br>
+            Yang Membuat,
+            <br><br><br><br>
+            <strong><u>{{ $namaLengkap }}</u></strong><br>
+            NIP. {{ $nip }}
+        </div>
+
+        <div class="clear"></div>
+    </div>
 
 </body>
 </html>

@@ -85,7 +85,7 @@ class SatyalancanaController extends Controller
     }
 
     /**
-     * Cetak Dokumen DRH (Daftar Riwayat Hidup) Usulan Tanda Kehormatan Format Resmi Setmilpres / BKN
+     * Cetak Dokumen DRH (Daftar Riwayat Hidup) Usulan Tanda Kehormatan Format Resmi 12 Poin Setmilpres / BKN
      */
     public function cetakDrh(Pegawai $pegawai)
     {
@@ -93,15 +93,20 @@ class SatyalancanaController extends Controller
             'unitKerja',
             'jabatan',
             'golongan',
-            'riwayatPendidikan' => fn($q) => $q->orderBy('tahun_lulus', 'asc'),
-            'riwayatPangkat'    => fn($q) => $q->orderBy('tmt_pangkat', 'asc'),
-            'riwayatJabatan'    => fn($q) => $q->orderBy('tmt_jabatan', 'asc'),
-            'riwayatDiklat'     => fn($q) => $q->orderBy('tahun', 'asc'),
+            'riwayatPendidikan' => fn($q) => $q->orderBy('tahun_lulus', 'desc'),
+            'riwayatPangkat'    => fn($q) => $q->orderBy('tmt', 'desc'),
+            'riwayatJabatan'    => fn($q) => $q->orderBy('tmt_jabatan', 'desc'),
+            'riwayatDiklat',
             'riwayatPenghargaan',
         ]);
 
-        $kategori = $this->satyalancanaService->cekKelayakanSatyalancana($pegawai) ?? '10/20/30 Tahun';
-        $pejabatDekan = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
+        $kategori = $this->satyalancanaService->cekKelayakanSatyalancana($pegawai) ?? '10 Tahun';
+        
+        // Pejabat Dekan & Wakil Dekan Bidang Keuangan dan Umum (Dr. Safri, M.Kep, Sp.Kep.M.B)
+        $pejabatWd2 = Pegawai::where('nama', 'like', '%Safri%')->first();
+        if (!$pejabatWd2) {
+            $pejabatWd2 = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
+        }
 
         $watermarkService = app(DocumentWatermarkService::class);
         $verifyCode = $watermarkService->generateVerificationCode(
@@ -115,7 +120,7 @@ class SatyalancanaController extends Controller
         $pdf = Pdf::loadView('satyalancana.drh_print', compact(
             'pegawai',
             'kategori',
-            'pejabatDekan',
+            'pejabatWd2',
             'verifyCode',
             'verifyUrl',
             'qrCodeDataUri'
