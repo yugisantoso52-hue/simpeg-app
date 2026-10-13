@@ -225,9 +225,9 @@
         Pekanbaru
     </div>
 
-    {{-- 4. ISI SURAT PENGANTAR --}}
+    {{-- 4. ISI SURAT PENGANTAR (DINAMIS SESUAI SURAT MASUK / RUJUKAN DARI REKTOR) --}}
     <p class="content-p">
-        Sehubungan dengan surat nomor : 200/DST/UN19.5.2.2.1/KP.11.02/{{ date('Y') }} perihal Pengusulan Tanda Kehormatan Satyalancana Karya Satya {{ $periodeUsulan ?? ('Periode Mei ' . (date('Y') + 1)) }}, berikut ini kami mengajukan usulan tanda kehormatan tersebut untuk PNS tenaga kependidikan dan pendidik (dosen) dari Fakultas Keperawatan Universitas Riau, dengan rincian data terlampir:
+        Sehubungan dengan surat nomor : {{ $suratRujukanNomor ?? ('200/DST/UN19.5.2.2.1/KP.11.02/' . date('Y')) }} tanggal {{ $suratRujukanTanggal ?? ('22 Juli ' . date('Y')) }} perihal {{ $suratRujukanPerihal ?? ('Pengusulan Tanda Satyalancana Karya Satya ' . ($periodeUsulan ?? ('Periode Mei ' . (date('Y') + 1)))) }}, berikut ini kami mengajukan usulan tanda kehormatan tersebut untuk PNS tenaga kependidikan dan pendidik (dosen) dari Fakultas Keperawatan Universitas Riau, dengan rincian data terlampir:
     </p>
 
     {{-- 5. TABEL DAFTAR NOMINASI PEGAWAI --}}
@@ -277,7 +277,7 @@
         Demikian disampaikan, atas perhatian, bantuan, dan kerjasamanya kami ucapkan terima kasih.
     </p>
 
-    {{-- 6. TTD WAKIL DEKAN II DENGAN PARAF DIGITAL TATA NASKAH (1. KABAG UMUM, 2. KA POKJA) --}}
+    {{-- 6. TTD WAKIL DEKAN II DENGAN PARAF DIGITAL TATA NASKAH (1. KA POKJA, 2. KABAG UMUM) --}}
     <table class="ttd-area-table">
         <tr>
             {{-- SISI KIRI: PARAF KOORDINASI TATA NASKAH --}}
@@ -287,33 +287,33 @@
                         PARAF DIGITAL KOORDINASI TATA NASKAH:
                     </div>
                     <table style="width: 100%; border-collapse: collapse; font-size: 7pt; line-height: 1.15;">
-                        {{-- 1. Kepala Bagian Umum --}}
+                        {{-- 1. Ka Pokja Keu-Kepeg --}}
                         <tr style="border-bottom: 1px dashed #cbd5e1;">
                             <td style="width: 32px; vertical-align: middle; padding: 2px 4px 2px 0; text-align: center;">
-                                @if(isset($qrKabagUri))
-                                    <img src="{{ $qrKabagUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
-                                @endif
-                            </td>
-                            <td style="vertical-align: middle; padding: 2px 0;">
-                                <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">1. Kepala Bagian Umum</div>
-                                <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKabag->nama_lengkap ?? ($pejabatKabag->nama ?? 'Bakhtiar, S.Sos., M.Si') }}</div>
-                                <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
-                                    [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafKabagAt ?? date('d/m/Y H:i') . ' WIB' }}
-                                </div>
-                            </td>
-                        </tr>
-                        {{-- 2. Ka Pokja Keu-Kepeg --}}
-                        <tr>
-                            <td style="width: 32px; vertical-align: middle; padding: 3px 4px 2px 0; text-align: center;">
                                 @if(isset($qrPokjaUri))
                                     <img src="{{ $qrPokjaUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
                                 @endif
                             </td>
-                            <td style="vertical-align: middle; padding: 3px 0;">
-                                <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">2. Ka Pokja Keu-Kepeg</div>
+                            <td style="vertical-align: middle; padding: 2px 0;">
+                                <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">1. Ka Pokja Keu-Kepeg</div>
                                 <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKaPokja->nama_lengkap ?? ($pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina, SE') }}</div>
                                 <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
                                     [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafPokjaAt ?? date('d/m/Y H:i') . ' WIB' }}
+                                </div>
+                            </td>
+                        </tr>
+                        {{-- 2. Kepala Bagian Umum --}}
+                        <tr>
+                            <td style="width: 32px; vertical-align: middle; padding: 3px 4px 2px 0; text-align: center;">
+                                @if(isset($qrKabagUri))
+                                    <img src="{{ $qrKabagUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
+                                @endif
+                            </td>
+                            <td style="vertical-align: middle; padding: 3px 0;">
+                                <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">2. Kepala Bagian Umum</div>
+                                <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKabag->nama_lengkap ?? ($pejabatKabag->nama ?? 'Bakhtiar, S.Sos., M.Si') }}</div>
+                                <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
+                                    [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafKabagAt ?? date('d/m/Y H:i') . ' WIB' }}
                                 </div>
                             </td>
                         </tr>

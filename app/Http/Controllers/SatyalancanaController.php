@@ -25,7 +25,13 @@ class SatyalancanaController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $allPegawai = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])->get();
+        $allPegawai = Pegawai::with([
+            'unitKerja', 'jabatan', 'golongan',
+            'riwayatSkp' => fn($q) => $q->orderBy('tahun', 'desc'),
+            'riwayatPangkat' => fn($q) => $q->orderBy('tmt', 'desc'),
+            'riwayatJabatan' => fn($q) => $q->orderBy('tmt_jabatan', 'desc'),
+            'riwayatPenghargaan' => fn($q) => $q->orderBy('tanggal_terima', 'desc'),
+        ])->get();
         $layakSatyalancana = [];
 
         // Ambil usulan yang sudah diajukan untuk tahun berjalan
@@ -130,7 +136,7 @@ class SatyalancanaController extends Controller
     }
 
     /**
-     * Proses Verifikasi & Paraf Bertingkat (Admin -> Kabag Umum -> Ka Pokja -> TTD WD2)
+     * Proses Verifikasi & Paraf Bertingkat (Urutan: Admin Kepegawaian -> Ka Pokja Keu-Kepeg -> Kepala Bagian Umum -> TTE Wakil Dekan II)
      */
     public function verifikasi(Request $request, int $id)
     {
@@ -140,63 +146,78 @@ class SatyalancanaController extends Controller
         }
 
         $usulan = UsulanSatyalancana::with('pegawai.user')->findOrFail($id);
-        $tahap = $request->input('tahap'); // verifikasi_admin, paraf_kabag, paraf_kapokja, ttd_wd2, tolak
+        $tahap = $request->input('tahap'); // verifikasi_admin, paraf_kapokja, paraf_kabag, ttd_wd2, tolak
         $catatan = $request->input('catatan');
 
         $pejabatLogin = $user->pegawai ?? Pegawai::where('nama', 'like', '%' . $user->name . '%')->first();
 
+        // 1. TAHAP VERIFIKASI ADMIN KEPEGAWAIAN
         if ($tahap === 'verifikasi_admin') {
             $usulan->update([
                 'status'              => 'diverifikasi_admin',
                 'verifikasi_admin_at' => now(),
                 'verifikasi_admin_by' => $user->id,
-                'catatan'             => $catatan ?? 'Telah diverifikasi kelengkapan berkas SKP, Hukdis, dan CLTN oleh Admin Kepegawaian.',
+                'catatan'             => $catatan ?? 'Telah diverifikasi kelengkapan berkas DRH 12 poin, SK CPNS, SK Pangkat, SK Jabatan, SKP 2 tahun, Surat Bebas Hukdis, dan Piagam sebelumnya oleh Admin Kepegawaian.',
             ]);
-            $msg = 'Verifikasi berkas administrasi oleh Admin Kepegawaian berhasil.';
-        } elseif ($tahap === 'paraf_kabag') {
+            $msg = 'Verifikasi berkas persyaratan oleh Admin Kepegawaian berhasil.';
+        }
+        // 2. TAHAP PARAF 1: KA POKJA KEUANGAN & KEPEGAWAIAN
+        elseif ($tahap === 'paraf_kapokja') {
+            $dataPokja = [
+                'status'           => 'diparaf_kapokja',
+                'paraf_kapokja_at' => now(),
+                'paraf_kapokja_by' => $pejabatLogin?->id,
+            ];
+            if (!$usulan->verifikasi_admin_at) {
+                $dataPokja['verifikasi_admin_at'] = now()->subMinutes(10);
+                $dataPokja['verifikasi_admin_by'] = $user->id;
+            }
+            $usulan->update($dataPokja);
+            $msg = 'Paraf 1 (Ka Pokja Keuangan & Kepegawaian) berhasil dibubuhkan.';
+        }
+        // 3. TAHAP PARAF 2: KEPALA BAGIAN UMUM
+        elseif ($tahap === 'paraf_kabag') {
             $dataKabag = [
                 'status'         => 'diparaf_kabag',
                 'paraf_kabag_at' => now(),
                 'paraf_kabag_by' => $pejabatLogin?->id,
             ];
             if (!$usulan->verifikasi_admin_at) {
-                $dataKabag['verifikasi_admin_at'] = now()->subMinutes(10);
+                $dataKabag['verifikasi_admin_at'] = now()->subMinutes(15);
                 $dataKabag['verifikasi_admin_by'] = $user->id;
             }
-            $usulan->update($dataKabag);
-            $msg = 'Paraf 1 (Kepala Bagian Umum) berhasil dibubuhkan.';
-        } elseif ($tahap === 'paraf_kapokja') {
-            $dataPokja = [
-                'status'           => 'diparaf_kapokja',
-                'paraf_kapokja_at' => now(),
-                'paraf_kapokja_by' => $pejabatLogin?->id,
-            ];
-            if (!$usulan->paraf_kabag_at) {
-                $kabag = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
-                $dataPokja['paraf_kabag_at'] = now()->subMinutes(10);
-                $dataPokja['paraf_kabag_by'] = $kabag?->id;
+            if (!$usulan->paraf_kapokja_at) {
+                $pokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
+                $dataKabag['paraf_kapokja_at'] = now()->subMinutes(5);
+                $dataKabag['paraf_kapokja_by'] = $pokja?->id;
             }
-            $usulan->update($dataPokja);
-            $msg = 'Paraf 2 (Ka Pokja Keu-Kepeg) berhasil dibubuhkan.';
-        } elseif ($tahap === 'ttd_wd2' || $tahap === 'setujui') {
+            $usulan->update($dataKabag);
+            $msg = 'Paraf 2 (Kepala Bagian Umum) berhasil dibubuhkan.';
+        }
+        // 4. TAHAP PENGESAHAN: TTE WAKIL DEKAN II
+        elseif ($tahap === 'ttd_wd2' || $tahap === 'setujui') {
             $dataWd2 = [
                 'status'      => 'disetujui_wd2',
                 'ttd_wd2_at'  => now(),
                 'ttd_wd2_by'  => $pejabatLogin?->id,
                 'catatan'     => $catatan ?? 'Telah ditandatangani dan disetujui resmi oleh Wakil Dekan Bidang Keuangan dan Umum.',
             ];
-            if (!$usulan->paraf_kabag_at) {
-                $kabag = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
-                $dataWd2['paraf_kabag_at'] = now()->subMinutes(20);
-                $dataWd2['paraf_kabag_by'] = $kabag?->id;
+            if (!$usulan->verifikasi_admin_at) {
+                $dataWd2['verifikasi_admin_at'] = now()->subMinutes(20);
+                $dataWd2['verifikasi_admin_by'] = $user->id;
             }
             if (!$usulan->paraf_kapokja_at) {
                 $pokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
-                $dataWd2['paraf_kapokja_at'] = now()->subMinutes(10);
+                $dataWd2['paraf_kapokja_at'] = now()->subMinutes(15);
                 $dataWd2['paraf_kapokja_by'] = $pokja?->id;
             }
+            if (!$usulan->paraf_kabag_at) {
+                $kabag = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
+                $dataWd2['paraf_kabag_at'] = now()->subMinutes(5);
+                $dataWd2['paraf_kabag_by'] = $kabag?->id;
+            }
             $usulan->update($dataWd2);
-            $msg = 'Pengesahan Tanda Tangan Elektronik Wakil Dekan II berhasil. Berkas siap dikirimkan ke Rektorat / BKN.';
+            $msg = 'Pengesahan Tanda Tangan Elektronik (TTE) Wakil Dekan II berhasil. Berkas sah dan siap dikirimkan ke Rektorat / BKN.';
 
             // Notifikasi ke pegawai bahwa usulannya telah disetujui pimpinan
             if ($usulan->pegawai && $usulan->pegawai->user) {
@@ -238,10 +259,10 @@ class SatyalancanaController extends Controller
 
         $kategori = $this->satyalancanaService->cekKelayakanSatyalancana($pegawai) ?? '10 Tahun';
         
-        // Pejabat Dekan, WD2, Kabag Umum, dan Ka Pokja
+        // Pejabat Dekan, WD2, Ka Pokja, dan Kabag Umum
         $pejabatWd2     = Pegawai::where('nama', 'like', '%Safri%')->first() ?? Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
-        $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
         $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
+        $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
 
         // Cari data usulan untuk waktu paraf faktual jika ada
         $usulan = UsulanSatyalancana::where('pegawai_id', $pegawai->id)
@@ -257,31 +278,41 @@ class SatyalancanaController extends Controller
         );
         $verifyUrl = route('verify.document', ['code' => $verifyCode]);
 
-        $parafKabagAt = $usulan?->paraf_kabag_at 
-            ? $usulan->paraf_kabag_at->format('d/m/Y H:i') . ' WIB' 
-            : date('d/m/Y H:i') . ' WIB';
+        // Kondisi faktual: hanya generate waktu dan QR code jika benar-benar SUDAH diverifikasi/diparaf/disetujui
+        $sudahVerifAdmin = (bool) ($usulan && $usulan->verifikasi_admin_at);
+        $sudahParafPokja = (bool) ($usulan && $usulan->paraf_kapokja_at);
+        $sudahParafKabag = (bool) ($usulan && $usulan->paraf_kabag_at);
+        $sudahTtdWd2     = (bool) ($usulan && $usulan->ttd_wd2_at);
 
-        $parafPokjaAt = $usulan?->paraf_kapokja_at 
-            ? $usulan->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB' 
-            : date('d/m/Y H:i') . ' WIB';
+        $parafPokjaAt = $sudahParafPokja ? $usulan->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB' : null;
+        $parafKabagAt = $sudahParafKabag ? $usulan->paraf_kabag_at->format('d/m/Y H:i') . ' WIB' : null;
+        $ttdWd2At     = $sudahTtdWd2     ? $usulan->ttd_wd2_at->format('d/m/Y H:i') . ' WIB' : null;
 
         $qrCodeDataUri = QrCodeService::generateDataUri($verifyUrl);
-        $qrKabagUri = QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002'));
-        $qrPokjaUri = QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001'));
+        $qrPokjaUri    = $sudahParafPokja ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) : null;
+        $qrKabagUri    = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) : null;
+        $qrWd2Uri      = $sudahTtdWd2     ? QrCodeService::generateDataUri($verifyUrl . '&ttd=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
 
         $pdf = Pdf::loadView('satyalancana.drh_print', compact(
             'pegawai',
+            'usulan',
             'kategori',
             'pejabatWd2',
-            'pejabatKabag',
             'pejabatKaPokja',
-            'parafKabagAt',
+            'pejabatKabag',
+            'sudahVerifAdmin',
+            'sudahParafPokja',
+            'sudahParafKabag',
+            'sudahTtdWd2',
             'parafPokjaAt',
+            'parafKabagAt',
+            'ttdWd2At',
             'verifyCode',
             'verifyUrl',
             'qrCodeDataUri',
+            'qrPokjaUri',
             'qrKabagUri',
-            'qrPokjaUri'
+            'qrWd2Uri'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);
@@ -294,9 +325,21 @@ class SatyalancanaController extends Controller
      */
     public function cetakSuratPengantar(Request $request)
     {
-        $periodeUsulan = $request->input('periode', 'Periode Mei ' . (date('Y') + 1));
-        $nomorSurat = $request->input('nomor_surat', '2422/UN19.5.1.1.10/KP/' . date('Y'));
-        $tanggalSurat = \Carbon\Carbon::now()->locale('id')->translatedFormat('d F Y');
+        // 3.1 & 3.2: Parameter dinamis yang diisi Admin
+        $nomorSuratInput = trim((string) $request->input('nomor_surat_input', ''));
+        $nomorSurat = $nomorSuratInput !== '' 
+            ? $nomorSuratInput . '/UN19.5.1.1.10/KP/' . date('Y') 
+            : $request->input('nomor_surat', '2422/UN19.5.1.1.10/KP/' . date('Y'));
+
+        $tanggalSuratInput = $request->input('tanggal_surat');
+        $tanggalSurat = $tanggalSuratInput 
+            ? \Carbon\Carbon::parse($tanggalSuratInput)->locale('id')->translatedFormat('d F Y') 
+            : \Carbon\Carbon::now()->locale('id')->translatedFormat('d F Y');
+
+        $suratRujukanNomor   = $request->input('surat_rujukan_nomor', '200/DST/UN19.5.2.2.1/KP.11.02/' . date('Y'));
+        $suratRujukanTanggal = $request->input('surat_rujukan_tanggal', '22 Juli ' . date('Y'));
+        $suratRujukanPerihal = $request->input('surat_rujukan_perihal', 'Pengusulan Tanda Satyalancana Karya Satya Periode Mei ' . (date('Y') + 1));
+        $periodeUsulan       = $request->input('periode', 'Periode Mei ' . (date('Y') + 1));
 
         // Ambil pegawai yang berhak atau pegawai yang sudah diusulkan resmi
         $usulans = UsulanSatyalancana::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])
@@ -326,8 +369,8 @@ class SatyalancanaController extends Controller
         }
 
         $pejabatWd2     = Pegawai::where('nama', 'like', '%Safri%')->first() ?? Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
-        $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
         $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
+        $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
 
         $watermarkService = app(DocumentWatermarkService::class);
         $verifyCode = $watermarkService->generateVerificationCode(
@@ -337,18 +380,19 @@ class SatyalancanaController extends Controller
         );
         $verifyUrl = route('verify.document', ['code' => $verifyCode]);
 
-        $parafKabagAt = date('d/m/Y H:i') . ' WIB';
         $parafPokjaAt = date('d/m/Y H:i') . ' WIB';
+        $parafKabagAt = date('d/m/Y H:i') . ' WIB';
 
         $qrWd2Uri   = QrCodeService::generateDataUri($verifyUrl . '&ttd=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001'));
-        $qrKabagUri = QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002'));
         $qrPokjaUri = QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001'));
+        $qrKabagUri = QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002'));
 
         $pdf = Pdf::loadView('satyalancana.surat_pengantar_print', compact(
             'periodeUsulan', 'nomorSurat', 'tanggalSurat', 'daftarPegawai',
-            'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja',
-            'parafKabagAt', 'parafPokjaAt',
-            'verifyCode', 'verifyUrl', 'qrWd2Uri', 'qrKabagUri', 'qrPokjaUri'
+            'suratRujukanNomor', 'suratRujukanTanggal', 'suratRujukanPerihal',
+            'pejabatWd2', 'pejabatKaPokja', 'pejabatKabag',
+            'parafPokjaAt', 'parafKabagAt',
+            'verifyCode', 'verifyUrl', 'qrWd2Uri', 'qrPokjaUri', 'qrKabagUri'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);
