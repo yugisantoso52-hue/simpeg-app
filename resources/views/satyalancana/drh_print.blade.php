@@ -6,58 +6,87 @@
     <style>
         @page {
             size: a4 portrait;
-            margin: 12mm 18mm 12mm 18mm;
+            margin: 8mm 14mm 8mm 14mm;
         }
         body {
             font-family: 'Times New Roman', Times, serif;
-            font-size: 10pt;
-            line-height: 1.25;
+            font-size: 9.5pt;
+            line-height: 1.2;
             color: #000;
         }
-        .header-table {
+
+        /* KOP SURAT RESMI IDENTIK DENGAN FORMULIR PERMINTAAN DAN PEMBERIAN CUTI */
+        .kop-surat-table {
             width: 100%;
-            border-bottom: 2px solid #000;
-            padding-bottom: 5px;
-            margin-bottom: 12px;
+            border-collapse: collapse;
+            border-bottom: 2.5px solid #000000;
+            padding-bottom: 4px;
+            margin-bottom: 10px;
         }
-        .header-table td {
+        .kop-surat-table td {
+            vertical-align: middle;
+            padding: 0;
+            border: none;
+        }
+        .kop-logo-cell {
+            width: 26mm;
+            text-align: left;
             vertical-align: middle;
         }
-        .kop-instansi {
-            font-size: 11pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            text-align: center;
-            line-height: 1.2;
-            letter-spacing: 0.5px;
+        .kop-logo-cell img {
+            width: 24mm;
+            height: 24mm;
+            display: block;
         }
-        .kop-univ {
+        .kop-text-cell {
+            text-align: center;
+            vertical-align: middle;
+            padding-left: 4px;
+            padding-right: 26mm;
+        }
+        .kop-text-cell .kop-kemdikti {
+            margin: 0;
             font-size: 13pt;
-            font-weight: bold;
+            font-weight: normal;
+            font-family: 'Times New Roman', Times, serif;
             text-transform: uppercase;
-            text-align: center;
-            line-height: 1.2;
+            line-height: 1.15;
+            letter-spacing: 0.2px;
         }
-        .kop-fakultas {
+        .kop-text-cell .kop-ptn {
+            margin: 1.5px 0 0 0;
             font-size: 12pt;
             font-weight: bold;
+            font-family: 'Times New Roman', Times, serif;
             text-transform: uppercase;
-            text-align: center;
+            line-height: 1.15;
+            letter-spacing: 0.3px;
+        }
+        .kop-text-cell .kop-fakultas {
+            margin: 1.5px 0 0 0;
+            font-size: 12pt;
+            font-weight: bold;
+            font-family: 'Times New Roman', Times, serif;
+            text-transform: uppercase;
+            line-height: 1.15;
+            letter-spacing: 0.3px;
+        }
+        .kop-text-cell .kop-alamat {
+            margin: 3px 0 0 0;
+            font-size: 8.5pt;
+            font-family: 'Times New Roman', Times, serif;
             line-height: 1.2;
         }
-        .kop-alamat {
-            font-size: 7.5pt;
-            text-align: center;
-            line-height: 1.2;
-            margin-top: 3px;
-        }
+
+        /* JUDUL DOKUMEN */
         .title-box {
             text-align: center;
-            margin: 10px 0 16px 0;
+            margin: 8px 0 12px 0;
         }
         .title-box h1 {
             font-size: 11pt;
             font-weight: bold;
+            text-decoration: underline;
             text-transform: uppercase;
             margin: 0;
             padding: 0;
@@ -67,19 +96,21 @@
             font-size: 10pt;
             font-weight: bold;
             text-transform: uppercase;
-            margin: 3px 0 0 0;
+            margin: 2.5px 0 0 0;
             padding: 0;
             letter-spacing: 0.5px;
         }
+
+        /* TABEL 12 POIN */
         table.drh-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 10pt;
-            margin-bottom: 16px;
+            font-size: 9.5pt;
+            margin-bottom: 12px;
         }
         table.drh-table td {
             border: 1px solid #000;
-            padding: 4px 6px;
+            padding: 3.5px 6px;
             vertical-align: middle;
         }
         .col-no {
@@ -92,31 +123,26 @@
         .col-value {
             width: 60%;
         }
+
+        /* BLOK TANDA TANGAN */
         .ttd-container {
             width: 100%;
-            margin-top: 20px;
+            margin-top: 14px;
             page-break-inside: avoid;
         }
         .ttd-box-left {
             float: left;
             width: 50%;
             text-align: left;
-            font-size: 9.5pt;
-            line-height: 1.25;
+            font-size: 9pt;
+            line-height: 1.2;
         }
         .ttd-box-right {
             float: right;
             width: 48%;
             text-align: left;
-            font-size: 9.5pt;
-            line-height: 1.25;
-        }
-        .stempel-img {
-            max-width: 135px;
-            max-height: 75px;
-            margin-top: -20px;
-            margin-bottom: -15px;
-            margin-left: -10px;
+            font-size: 9pt;
+            line-height: 1.2;
         }
         .clear {
             clear: both;
@@ -125,19 +151,44 @@
 </head>
 <body>
 
-    <!-- KOP SURAT RESMI UNIVERSITAS RIAU FAKULTAS KEPERAWATAN -->
-    <table class="header-table">
+    {{-- KOP SURAT IDENTIK DENGAN FORMULIR PERMINTAAN DAN PEMBERIAN CUTI --}}
+    @php
+        $candidatePaths = [
+            public_path('images/logo-unri-bw.png'),
+            public_path('images/logo-unri-bw.jpg'),
+            public_path('logo-unri-bw.png'),
+            public_path('images/logo-unri.png'),
+            public_path('logo-unri.png'),
+        ];
+
+        $foundLogo = null;
+        foreach ($candidatePaths as $path) {
+            if (file_exists($path)) {
+                $foundLogo = $path;
+                break;
+            }
+        }
+    @endphp
+
+    <table class="kop-surat-table">
         <tr>
-            <td style="width: 15%; text-align: center;">
-                <img src="{{ public_path('logo-unri.png') }}" style="height: 68px;" onerror="this.style.display='none'">
+            <td class="kop-logo-cell">
+                @if($foundLogo)
+                    @php
+                        $mimeType = str_ends_with(strtolower($foundLogo), '.jpg') || str_ends_with(strtolower($foundLogo), '.jpeg') ? 'image/jpeg' : 'image/png';
+                    @endphp
+                    <img src="data:{{ $mimeType }};base64,{{ base64_encode(file_get_contents($foundLogo)) }}" alt="Logo UNRI">
+                @else
+                    <div style="font-size: 8pt; color: #666; text-align: center;">[LOGO UNRI]</div>
+                @endif
             </td>
-            <td style="width: 85%; text-align: center;">
-                <div class="kop-instansi">KEMENTERIAN PENDIDIKAN TINGGI,<br>SAINS, DAN TEKNOLOGI</div>
-                <div class="kop-univ">UNIVERSITAS RIAU</div>
+            <td class="kop-text-cell">
+                <div class="kop-kemdikti">KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI</div>
+                <div class="kop-ptn">UNIVERSITAS RIAU</div>
                 <div class="kop-fakultas">FAKULTAS KEPERAWATAN</div>
                 <div class="kop-alamat">
-                    Kampus Bina Widya Gedung Health Studies Complex Km.12,5 Simpang Baru 28293<br>
-                    Laman http://keperawatan.unri.ac.id Email : keperawatan@unri.ac.id
+                    Kampus Bina Widya Gedung Health Studies Complex KM. 12,5 Simpang Baru 28293<br>
+                    Laman : www.keperawatan.unri.ac.id &nbsp;&nbsp;|&nbsp;&nbsp; Email : keperawatan@unri.co.id
                 </div>
             </td>
         </tr>
@@ -191,15 +242,20 @@
             $pangkatGolonganFormatted = '-';
         }
 
-        // 7. SK CPNS (TMT)
-        $noSkCpns = $pegawai->nomor_sk_pertama ?: 'Nomor: 19597/A4/KP/2011';
+        // 7. SK CPNS (TMT) - Normalisasi awalan 'Nomor:' agar tidak dobel
+        $rawNoSk = trim($pegawai->nomor_sk_pertama ?? '');
+        if (empty($rawNoSk) || $rawNoSk === '-') {
+            $cleanNoSk = '19597/A4/KP/2011';
+        } else {
+            $cleanNoSk = preg_replace('/^(nomor|no)\.?\s*:?\s*/i', '', $rawNoSk);
+        }
+
         $tglSkCpns = $pegawai->tanggal_sk_pertama ? \Carbon\Carbon::parse($pegawai->tanggal_sk_pertama)->locale('id')->translatedFormat('d F Y') : '14 April 2011';
         $tmtCpnsObj = $pegawai->tmt_sk_pertama ? \Carbon\Carbon::parse($pegawai->tmt_sk_pertama)->locale('id') : ($pegawai->tanggal_masuk ? \Carbon\Carbon::parse($pegawai->tanggal_masuk)->locale('id') : null);
         $tmtCpnsStr = $tmtCpnsObj ? $tmtCpnsObj->translatedFormat('d F Y') : '1 Desember 2010';
 
         // 8. Jabatan Terakhir (TMT)
         $namaJabatan = $pegawai->jabatan->nama_jabatan ?? '';
-        // Ubah label teknis jika perlu, misal PLP
         if (str_contains(strtolower($namaJabatan), 'pranata laboratorium pendidikan')) {
             $namaJabatan = 'PLP Ahli Muda';
         }
@@ -215,6 +271,7 @@
 
         // Tanggal Dokumen
         $tglDokumen = \Carbon\Carbon::now()->locale('id')->translatedFormat('d F Y');
+        $tglDokumenFormatWib = \Carbon\Carbon::now()->locale('id')->translatedFormat('d/m/Y H:i') . ' WIB';
     @endphp
 
     <!-- TABEL 12 POIN PERSIS SEPERTI CONTOH PDF -->
@@ -255,7 +312,7 @@
             <td class="col-no">7.</td>
             <td class="col-label">SK CPNS (TMT)</td>
             <td class="col-value">
-                Nomor: {{ $noSkCpns }}, Tanggal {{ $tglSkCpns }}<br>
+                Nomor: {{ $cleanNoSk }}, Tanggal {{ $tglSkCpns }}<br>
                 (TMT {{ $tmtCpnsStr }})
             </td>
         </tr>
@@ -286,24 +343,46 @@
         </tr>
     </table>
 
-    <!-- TANDA TANGAN (MENGETAHUI WD2 & YANG MEMBUAT) -->
+    <!-- TANDA TANGAN DENGAN FORMAT TTE ELEKTRONIK SEPERTI FORMULIR CUTI -->
     <div class="ttd-container">
         <!-- Mengetahui Wakil Dekan Bidang Keuangan dan Umum -->
         <div class="ttd-box-left">
-            Mengetahui :<br>
-            Wakil Dekan Bidang Keuangan dan Umum,
-            <br><br><br><br><br>
-            <strong><u>{{ $pejabatWd2->nama_lengkap ?? 'Dr. Safri, M.Kep, Sp. Kep.M.B' }}</u></strong><br>
-            NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}
+            <div>Mengetahui :</div>
+            <div>Wakil Dekan Bidang Keuangan dan Umum,</div>
+            
+            {{-- TTE Digital Signature (QR Code Otentikasi) --}}
+            <div style="text-align: center; width: 170px; margin: 3px 0 3px 0;">
+                <img src="{{ $qrCodeDataUri }}" style="width: 48px; height: 48px; display: inline-block;" />
+                <div style="font-size: 6pt; color: #15803d; font-weight: bold; margin-top: 1px;">
+                    Ditandatangani secara Elektronik (TTE)
+                </div>
+                <div style="font-size: 5.5pt; color: #64748b;">
+                    SIKAP FKP UNRI &bull; {{ $tglDokumenFormatWib }}
+                </div>
+            </div>
+
+            <div style="font-weight: bold; text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? 'Dr. Safri, M.Kep, Sp. Kep.M.B' }}</div>
+            <div>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</div>
         </div>
 
-        <!-- Yang Membuat (Pegawai Bersangkutan) -->
+        <!-- Yang Membuat (Pegawai Bersangkutan) Rapat Tanpa Baris Kosong -->
         <div class="ttd-box-right">
-            Pekanbaru, {{ $tglDokumen }}<br><br>
-            Yang Membuat,
-            <br><br><br><br>
-            <strong><u>{{ $namaLengkap }}</u></strong><br>
-            NIP. {{ $nip }}
+            <div>Pekanbaru, {{ $tglDokumen }}</div>
+            <div style="margin-top: 0;">Yang Membuat,</div>
+
+            {{-- TTE Digital Signature Pegawai --}}
+            <div style="text-align: center; width: 170px; margin: 3px 0 3px 0;">
+                <img src="{{ $qrCodeDataUri }}" style="width: 48px; height: 48px; display: inline-block;" />
+                <div style="font-size: 6pt; color: #15803d; font-weight: bold; margin-top: 1px;">
+                    Ditandatangani secara Elektronik (TTE)
+                </div>
+                <div style="font-size: 5.5pt; color: #64748b;">
+                    SIKAP FKP UNRI &bull; {{ $tglDokumenFormatWib }}
+                </div>
+            </div>
+
+            <div style="font-weight: bold; text-decoration: underline;">{{ $namaLengkap }}</div>
+            <div>NIP. {{ $nip }}</div>
         </div>
 
         <div class="clear"></div>
