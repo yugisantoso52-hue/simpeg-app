@@ -131,7 +131,7 @@ class PegawaiController extends Controller
             'jabatan'      => $this->getOrderedJabatan(),
             'golongan'     => Golongan::orderBy('nama_golongan')->get(),
             'jenisJabatan' => JenisJabatan::orderBy('nama_jenis_jabatan')->get(),
-            'atasanList'   => Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->get(['id', 'nama', 'nip', 'jabatan_id']),
+            'atasanList'   => Pegawai::with('jabatan')->where('status_pegawai', 'Aktif')->orderBy('nama')->get(['id', 'nama', 'nama_lengkap', 'nip', 'jabatan_id']),
         ]);
     }
 
@@ -202,10 +202,10 @@ class PegawaiController extends Controller
             'jabatan'      => $this->getOrderedJabatan(),
             'golongan'     => Golongan::orderBy('nama_golongan')->get(),
             'jenisJabatan' => JenisJabatan::orderBy('nama_jenis_jabatan')->get(),
-            'atasanList'   => Pegawai::where('status_pegawai', 'Aktif')
+            'atasanList'   => Pegawai::with('jabatan')->where('status_pegawai', 'Aktif')
                 ->where('id', '!=', $id)
                 ->orderBy('nama')
-                ->get(['id', 'nama', 'nip', 'jabatan_id']),
+                ->get(['id', 'nama', 'nama_lengkap', 'nip', 'jabatan_id']),
         ]);
     }
 

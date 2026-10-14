@@ -59,6 +59,27 @@ class ApprovalHierarchyService
      */
     public function getApprovalRuleInfo(Pegawai $pegawai): array
     {
+        // Prioritas Utama: Pejabat Penilai Kinerja yang Ditetapkan Khusus pada Profil Pegawai
+        if (!empty($pegawai->pejabat_penilai_id) && $pegawai->pejabat_penilai_id !== $pegawai->id) {
+            $penilai = $pegawai->relationLoaded('pejabatPenilai')
+                ? $pegawai->pejabatPenilai
+                : Pegawai::with(['jabatan', 'unitKerja'])->find($pegawai->pejabat_penilai_id);
+
+            if ($penilai) {
+                return [
+                    'rule_number'                => 0,
+                    'rule_label'                 => 'Penetapan Langsung Profil: Pejabat Penilai Kinerja Terpilih',
+                    'subject_role'               => $pegawai->jabatan?->nama_jabatan ?? 'Pegawai',
+                    'approver_title'             => $penilai->jabatan?->nama_jabatan ?? 'Pejabat Penilai Kinerja',
+                    'approver_pegawai'           => $penilai,
+                    'approver_name'              => $penilai->nama_lengkap ?? $penilai->nama,
+                    'approver_nip'               => $penilai->nip ?? '-',
+                    'secondary_approver_title'   => null,
+                    'secondary_approver_pegawai' => null,
+                ];
+            }
+        }
+
         $jabatanNama = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
         $unitNama    = strtoupper(trim((string)($pegawai->unitKerja->nama_unit ?? '')));
         $isDosen     = $pegawai->isDosen();
@@ -634,8 +655,12 @@ class ApprovalHierarchyService
         $cacheKey = "bawahan_ids_pegawai_" . $pimpinan->id;
         
         return Cache::remember($cacheKey, 60, function () use ($pimpinan) {
-            // 1. Bawahan eksplisit via atasan_id manual di DB
-            $directIds = Pegawai::where('atasan_id', $pimpinan->id)->pluck('id')->toArray();
+            // 1. Bawahan eksplisit via atasan_id, pejabat_penilai_id, atau atasan_cuti_id di DB
+            $directIds = Pegawai::where(function ($q) use ($pimpinan) {
+                $q->where('atasan_id', $pimpinan->id)
+                  ->orWhere('pejabat_penilai_id', $pimpinan->id)
+                  ->orWhere('atasan_cuti_id', $pimpinan->id);
+            })->pluck('id')->toArray();
 
             $jabatanNama = strtoupper(trim((string)($pimpinan->jabatan->nama_jabatan ?? '')));
             $implicitIds = [];
@@ -971,6 +996,17 @@ class ApprovalHierarchyService
      */
     public function getAtasanLangsungCuti(Pegawai $pegawai): ?Pegawai
     {
+        // 1. Prioritas Utama: Atasan Langsung Pertimbangan Cuti yang Ditetapkan Eksplisit pada Profil Pegawai
+        if (!empty($pegawai->atasan_cuti_id) && $pegawai->atasan_cuti_id !== $pegawai->id) {
+            $atasanCuti = $pegawai->relationLoaded('atasanCuti')
+                ? $pegawai->atasanCuti
+                : Pegawai::with(['jabatan', 'unitKerja'])->find($pegawai->atasan_cuti_id);
+
+            if ($atasanCuti) {
+                return $atasanCuti;
+            }
+        }
+
         $jabatanNama = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
 
         // Dekan → Rektor (eksternal, fallback ke diri sendiri karena Rektor tidak ada di DB)

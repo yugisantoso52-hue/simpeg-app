@@ -75,8 +75,24 @@
                             <table class="w-full text-sm text-gray-600">
                                 <tbody>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500 w-48">NIP / NIK</td>
+                                        <td class="py-1.5 font-medium text-gray-500 w-48">NIP (Nomor Induk Pegawai)</td>
                                         <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->nip ?? '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">NIK (No. KTP)</td>
+                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->nik ?? '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">NPWP</td>
+                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->npwp ?? '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">No. BPJS Kesehatan</td>
+                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->bpjs_kesehatan ?? '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">No. BPJS Ketenagakerjaan</td>
+                                        <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->bpjs_ketenagakerjaan ?? '-' }}</td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">Nama Lengkap</td>
@@ -193,7 +209,7 @@
                                          </td>
                                      </tr>
                                      <tr class="border-b border-gray-50">
-                                         <td class="py-1.5 font-medium text-gray-500">Atasan Langsung (Verifikator)</td>
+                                         <td class="py-1.5 font-medium text-gray-500">Atasan Langsung Utama</td>
                                          <td class="py-1.5 text-gray-900">
                                              @if($pegawai->atasan)
                                                  <a href="{{ route('pegawai.show', $pegawai->atasan->id) }}" class="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-800 hover:underline">
@@ -202,7 +218,35 @@
                                                      <span class="text-xs text-gray-500 font-normal">({{ $pegawai->atasan->jabatan->nama_jabatan ?? 'Pejabat' }})</span>
                                                  </a>
                                              @else
-                                                 <span class="text-gray-400 italic">Pucuk Pimpinan (Dekan) / Belum Ditentukan</span>
+                                                 <span class="text-gray-400 italic">Otomatis Sesuai Matriks Jabatan</span>
+                                             @endif
+                                         </td>
+                                     </tr>
+                                     <tr class="border-b border-gray-50">
+                                         <td class="py-1.5 font-medium text-gray-500">Pejabat Penilai Kinerja (Logbook)</td>
+                                         <td class="py-1.5 text-gray-900">
+                                             @if($pegawai->pejabatPenilai)
+                                                 <a href="{{ route('pegawai.show', $pegawai->pejabatPenilai->id) }}" class="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-800 hover:underline">
+                                                     <span>👤</span>
+                                                     <span>{{ $pegawai->pejabatPenilai->nama_lengkap ?? $pegawai->pejabatPenilai->nama }}</span>
+                                                     <span class="text-xs text-gray-500 font-normal">({{ $pegawai->pejabatPenilai->jabatan->nama_jabatan ?? 'Pejabat Penilai' }})</span>
+                                                 </a>
+                                             @else
+                                                 <span class="text-gray-400 italic">Mengikuti Atasan Langsung / Matriks Resmi</span>
+                                             @endif
+                                         </td>
+                                     </tr>
+                                     <tr class="border-b border-gray-50">
+                                         <td class="py-1.5 font-medium text-gray-500">Atasan Pertimbangan Cuti (E-Cuti)</td>
+                                         <td class="py-1.5 text-gray-900">
+                                             @if($pegawai->atasanCuti)
+                                                 <a href="{{ route('pegawai.show', $pegawai->atasanCuti->id) }}" class="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-800 hover:underline">
+                                                     <span>👤</span>
+                                                     <span>{{ $pegawai->atasanCuti->nama_lengkap ?? $pegawai->atasanCuti->nama }}</span>
+                                                     <span class="text-xs text-gray-500 font-normal">({{ $pegawai->atasanCuti->jabatan->nama_jabatan ?? 'Atasan Cuti' }})</span>
+                                                 </a>
+                                             @else
+                                                 <span class="text-gray-400 italic">Mengikuti Regulasi Ketetapan Cuti</span>
                                              @endif
                                          </td>
                                      </tr>
@@ -286,6 +330,42 @@
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">NIDN / NUPTK</td>
                                         <td class="py-1.5 text-gray-900 font-mono">{{ $pegawai->nidn_nuptk ?? '-' }}</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Surat Tanda Registrasi (STR)</td>
+                                        <td class="py-1.5 text-gray-900">
+                                            @if($pegawai->nomor_str)
+                                                <span class="font-mono font-semibold">{{ $pegawai->nomor_str }}</span>
+                                                @if($pegawai->tanggal_kadaluarsa_str)
+                                                    <span class="text-xs text-gray-500 ml-2">(Berlaku s/d: {{ is_string($pegawai->tanggal_kadaluarsa_str) ? \Carbon\Carbon::parse($pegawai->tanggal_kadaluarsa_str)->translatedFormat('d F Y') : $pegawai->tanggal_kadaluarsa_str->translatedFormat('d F Y') }})</span>
+                                                @endif
+                                                @if($pegawai->file_str)
+                                                    <a href="{{ route('document.preview', ['path' => $pegawai->file_str]) }}" target="_blank" class="ml-2 inline-flex items-center text-xs text-emerald-600 hover:underline font-semibold">
+                                                        📄 Lihat Berkas STR
+                                                    </a>
+                                                @endif
+                                            @else
+                                                <span class="text-gray-400 italic">-</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Surat Izin Praktik (SIP)</td>
+                                        <td class="py-1.5 text-gray-900">
+                                            @if($pegawai->nomor_sip)
+                                                <span class="font-mono font-semibold">{{ $pegawai->nomor_sip }}</span>
+                                                @if($pegawai->tanggal_kadaluarsa_sip)
+                                                    <span class="text-xs text-gray-500 ml-2">(Berlaku s/d: {{ is_string($pegawai->tanggal_kadaluarsa_sip) ? \Carbon\Carbon::parse($pegawai->tanggal_kadaluarsa_sip)->translatedFormat('d F Y') : $pegawai->tanggal_kadaluarsa_sip->translatedFormat('d F Y') }})</span>
+                                                @endif
+                                                @if($pegawai->file_sip)
+                                                    <a href="{{ route('document.preview', ['path' => $pegawai->file_sip]) }}" target="_blank" class="ml-2 inline-flex items-center text-xs text-emerald-600 hover:underline font-semibold">
+                                                        📄 Lihat Berkas SIP
+                                                    </a>
+                                                @endif
+                                            @else
+                                                <span class="text-gray-400 italic">-</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">Tanggal Masuk / TMT Awal</td>

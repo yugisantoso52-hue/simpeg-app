@@ -55,34 +55,136 @@
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>
 
-    {{-- Atasan Langsung (Verifikator Hierarkis) --}}
-    <x-enterprise.forms.row cols="1">
-        <x-enterprise.forms.field>
-            <x-enterprise.form-group label="Atasan Langsung (Pejabat Penilai / Verifikator)" hint="Pejabat berwenang menyetujui logbook & cuti pegawai ini sesuai hirarki resmi FKp UNRI">
-                <x-enterprise.select name="atasan_id">
-                    <option value="">-- Tidak Ada / Pucuk Pimpinan (Dekan / Rektor) --</option>
-                    @php
-                        $listAtasan = $atasanList ?? \App\Models\Pegawai::where('status_pegawai', 'Aktif')->when(isset($pegawai->id), fn($q) => $q->where('id', '!=', $pegawai->id))->orderBy('nama')->get();
-                        $selectedAtasan = old('atasan_id', $pegawai->atasan_id ?? '');
-                    @endphp
-                    @foreach($listAtasan as $item)
-                        <option value="{{ $item->id }}" @selected($selectedAtasan == $item->id)>
-                            {{ $item->nama_lengkap ?? $item->nama }} (NIP. {{ $item->nip ?? '-' }}) {{ $item->jabatan ? '— ' . ($item->jabatan->nama_jabatan ?? $item->jabatan->nama) : '' }}
-                        </option>
-                    @endforeach
-                </x-enterprise.select>
-                <div class="mt-2 text-xs text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200 leading-relaxed">
-                    <span class="font-semibold text-slate-700 block mb-1">📌 Panduan Hirarki Penilai / Verifikator FKp UNRI:</span>
-                    <ul class="list-disc list-inside space-y-0.5 text-slate-600">
-                        <li><strong>Dosen:</strong> Atasan Langsung adalah <em>Kaprodi / Ketua Jurusan</em> ➔ atasan berikutnya <em>Wakil Dekan I (Akademik)</em> ➔ <em>Dekan</em>.</li>
-                        <li><strong>Tendik:</strong> Atasan Langsung adalah <em>Ketua Pokja</em> (Umum & Sarana / Akademik & Kemahasiswaan / Keuangan & Kepegawaian) ➔ <em>Kabag Umum</em> ➔ <em>Wakil Dekan II (Keuangan & Kepegawaian)</em> ➔ <em>Dekan</em>.</li>
-                        <li><strong>Wakil Dekan (WD I, II, III):</strong> Atasan Langsung adalah <em>Dekan</em>.</li>
-                        <li><strong>Dekan:</strong> Atasan Langsung adalah <em>Rektor / Wakil Rektor</em>.</li>
-                    </ul>
-                </div>
-            </x-enterprise.form-group>
-        </x-enterprise.forms.field>
-    </x-enterprise.forms.row>
+    {{-- Hirarki Persetujuan & Verifikator Resmi --}}
+    @php
+        $listAtasan = $atasanList ?? \App\Models\Pegawai::where('status_pegawai', 'Aktif')->when(isset($pegawai->id), fn($q) => $q->where('id', '!=', $pegawai->id))->orderBy('nama')->get();
+        $selectedAtasan = old('atasan_id', $pegawai->atasan_id ?? '');
+        $selectedPenilai = old('pejabat_penilai_id', $pegawai->pejabat_penilai_id ?? '');
+        $selectedAtasanCuti = old('atasan_cuti_id', $pegawai->atasan_cuti_id ?? '');
+    @endphp
+
+    <div class="p-4 bg-slate-50/80 rounded-xl border border-slate-200 my-4 space-y-4">
+        <div class="font-bold text-slate-800 text-sm flex items-center justify-between">
+            <span class="flex items-center gap-2">🏛️ Hirarki Alur Persetujuan & Verifikator (Approval Flow)</span>
+            <span class="text-xs text-slate-500 font-normal">*Digunakan untuk modul Logbook Kinerja & E-Cuti</span>
+        </div>
+
+        <x-enterprise.forms.row cols="3">
+            <x-enterprise.forms.field>
+                <x-enterprise.form-group label="Atasan Langsung Utama" hint="Atasan umum struktural pegawai">
+                    <x-enterprise.select name="atasan_id">
+                        <option value="">-- Otomatis Sesuai Matriks Jabatan --</option>
+                        @foreach($listAtasan as $item)
+                            <option value="{{ $item->id }}" @selected($selectedAtasan == $item->id)>
+                                {{ $item->nama_lengkap ?? $item->nama }} {{ $item->jabatan ? '— ' . ($item->jabatan->nama_jabatan ?? $item->jabatan->nama) : '' }}
+                            </option>
+                        @endforeach
+                    </x-enterprise.select>
+                </x-enterprise.form-group>
+            </x-enterprise.forms.field>
+
+            <x-enterprise.forms.field>
+                <x-enterprise.form-group label="Pejabat Penilai Kinerja (Logbook)" hint="Pejabat verifikator logbook harian & bulanan">
+                    <x-enterprise.select name="pejabat_penilai_id">
+                        <option value="">-- Ikut Atasan Langsung / Matriks --</option>
+                        @foreach($listAtasan as $item)
+                            <option value="{{ $item->id }}" @selected($selectedPenilai == $item->id)>
+                                {{ $item->nama_lengkap ?? $item->nama }} {{ $item->jabatan ? '— ' . ($item->jabatan->nama_jabatan ?? $item->jabatan->nama) : '' }}
+                            </option>
+                        @endforeach
+                    </x-enterprise.select>
+                </x-enterprise.form-group>
+            </x-enterprise.forms.field>
+
+            <x-enterprise.forms.field>
+                <x-enterprise.form-group label="Atasan Pertimbangan Cuti (E-Cuti)" hint="Pejabat pemberi pertimbangan usulan cuti">
+                    <x-enterprise.select name="atasan_cuti_id">
+                        <option value="">-- Ikut Aturan Cuti Resmi --</option>
+                        @foreach($listAtasan as $item)
+                            <option value="{{ $item->id }}" @selected($selectedAtasanCuti == $item->id)>
+                                {{ $item->nama_lengkap ?? $item->nama }} {{ $item->jabatan ? '— ' . ($item->jabatan->nama_jabatan ?? $item->jabatan->nama) : '' }}
+                            </option>
+                        @endforeach
+                    </x-enterprise.select>
+                </x-enterprise.form-group>
+            </x-enterprise.forms.field>
+        </x-enterprise.forms.row>
+
+        <div class="text-xs text-slate-500 bg-white p-2.5 rounded-lg border border-slate-200 leading-relaxed">
+            <span class="font-semibold text-slate-700 block mb-1">📌 Panduan Hirarki Penilai / Verifikator FKp UNRI:</span>
+            <ul class="list-disc list-inside space-y-0.5 text-slate-600">
+                <li><strong>Dosen:</strong> Pejabat Penilai Logbook adalah <em>Kaprodi / Ketua Jurusan</em>, Pertimbangan Cuti oleh <em>Ketua Jurusan</em> ➔ PYBMC <em>Dekan / Wadek II</em>.</li>
+                <li><strong>Tendik:</strong> Pejabat Penilai Logbook adalah <em>Ka Pokja</em> ➔ <em>Kabag Umum</em>, Pertimbangan Cuti oleh <em>Kabag Umum</em> ➔ PYBMC <em>Wadek II / Dekan</em>.</li>
+                <li><strong>Pimpinan Struktural:</strong> Disetujui langsung oleh atasan struktural di atasnya sesuai SK Ketetapan.</li>
+            </ul>
+        </div>
+    </div>
+
+    {{-- Legalitas Profesi Kesehatan (STR & SIP Dosen / Nakes) --}}
+    <div class="p-4 bg-emerald-50/60 rounded-xl border border-emerald-200 my-4 space-y-4">
+        <div class="font-bold text-emerald-900 text-sm flex items-center justify-between">
+            <span class="flex items-center gap-2">🩺 Legalitas Profesi Kesehatan (STR & SIP Dosen / Tenaga Medis)</span>
+            <span class="text-xs text-emerald-700 font-normal">*Khusus Dosen Keperawatan & Tenaga Kesehatan/Ners</span>
+        </div>
+
+        {{-- Section STR --}}
+        <div class="bg-white p-3.5 rounded-lg border border-emerald-100 space-y-3">
+            <span class="font-semibold text-xs text-emerald-800 uppercase tracking-wide flex items-center gap-1.5">
+                📜 Surat Tanda Registrasi (STR)
+            </span>
+            <x-enterprise.forms.row cols="3">
+                <x-enterprise.forms.field>
+                    <x-enterprise.form-group label="Nomor STR">
+                        <x-enterprise.input name="nomor_str" :value="old('nomor_str', $pegawai->nomor_str ?? '')" placeholder="Nomor STR perawat/dosen..." />
+                    </x-enterprise.form-group>
+                </x-enterprise.forms.field>
+
+                <x-enterprise.forms.field>
+                    <x-enterprise.form-group label="Masa Berlaku STR (Tanggal Kadaluarsa)">
+                        <x-enterprise.date-picker name="tanggal_kadaluarsa_str" :value="old('tanggal_kadaluarsa_str', (isset($pegawai->tanggal_kadaluarsa_str) && $pegawai->tanggal_kadaluarsa_str) ? \Carbon\Carbon::parse($pegawai->tanggal_kadaluarsa_str)->format('Y-m-d') : '')" />
+                    </x-enterprise.form-group>
+                </x-enterprise.forms.field>
+
+                <x-enterprise.forms.field>
+                    <x-enterprise.form-group label="Upload Dokumen STR (PDF/Gambar)">
+                        <x-enterprise.file-upload name="file_str" accept=".pdf,.jpg,.jpeg,.png"/>
+                        @if(isset($pegawai->file_str) && $pegawai->file_str)
+                            <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ route('document.preview', ['path' => $pegawai->file_str]) }}" target="_blank" class="text-blue-600 underline font-semibold">Lihat Berkas STR</a></p>
+                        @endif
+                    </x-enterprise.form-group>
+                </x-enterprise.forms.field>
+            </x-enterprise.forms.row>
+        </div>
+
+        {{-- Section SIP --}}
+        <div class="bg-white p-3.5 rounded-lg border border-emerald-100 space-y-3">
+            <span class="font-semibold text-xs text-emerald-800 uppercase tracking-wide flex items-center gap-1.5">
+                🏥 Surat Izin Praktik (SIP)
+            </span>
+            <x-enterprise.forms.row cols="3">
+                <x-enterprise.forms.field>
+                    <x-enterprise.form-group label="Nomor SIP">
+                        <x-enterprise.input name="nomor_sip" :value="old('nomor_sip', $pegawai->nomor_sip ?? '')" placeholder="Nomor SIP..." />
+                    </x-enterprise.form-group>
+                </x-enterprise.forms.field>
+
+                <x-enterprise.forms.field>
+                    <x-enterprise.form-group label="Masa Berlaku SIP (Tanggal Kadaluarsa)">
+                        <x-enterprise.date-picker name="tanggal_kadaluarsa_sip" :value="old('tanggal_kadaluarsa_sip', (isset($pegawai->tanggal_kadaluarsa_sip) && $pegawai->tanggal_kadaluarsa_sip) ? \Carbon\Carbon::parse($pegawai->tanggal_kadaluarsa_sip)->format('Y-m-d') : '')" />
+                    </x-enterprise.form-group>
+                </x-enterprise.forms.field>
+
+                <x-enterprise.forms.field>
+                    <x-enterprise.form-group label="Upload Dokumen SIP (PDF/Gambar)">
+                        <x-enterprise.file-upload name="file_sip" accept=".pdf,.jpg,.jpeg,.png"/>
+                        @if(isset($pegawai->file_sip) && $pegawai->file_sip)
+                            <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ route('document.preview', ['path' => $pegawai->file_sip]) }}" target="_blank" class="text-blue-600 underline font-semibold">Lihat Berkas SIP</a></p>
+                        @endif
+                    </x-enterprise.form-group>
+                </x-enterprise.forms.field>
+            </x-enterprise.forms.row>
+        </div>
+    </div>
 
     {{-- Jenis Jabatan --}}
     <x-enterprise.forms.row cols="1">

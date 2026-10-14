@@ -29,17 +29,19 @@ class Pegawai extends Model
     public const STATUS_RESIGN        = 'Resign';
 
     protected $fillable = [
-        // Identitas Utama
-        'sync_uuid', 'nip', 'karpeg_karis_karsu', 'nidn_nuptk', 'nama', 'gelar_depan', 'gelar_belakang',
+        // Identitas Utama & Kependudukan
+        'sync_uuid', 'nip', 'nik', 'karpeg_karis_karsu', 'nidn_nuptk', 'nama', 'gelar_depan', 'gelar_belakang',
+        // Pajak & Jaminan Sosial
+        'npwp', 'bpjs_kesehatan', 'bpjs_ketenagakerjaan',
         // Data Pribadi
         'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'agama',
         // Kontak
         'email', 'no_hp', 'alamat',
         // Status Keluarga
         'status_pernikahan', 'nama_pasangan', 'jumlah_anak',
-        // Kepegawaian
+        // Kepegawaian & Hirarki Persetujuan (Approval Flow)
         'jenis_pegawai', 'status_asn', 'pendidikan_terakhir',
-        'unit_kerja_id', 'jabatan_id', 'atasan_id', 'golongan_id',
+        'unit_kerja_id', 'jabatan_id', 'atasan_id', 'pejabat_penilai_id', 'atasan_cuti_id', 'golongan_id',
         // Masa Kerja Golongan (MKG)
         'mkg_tahun', 'mkg_bulan',
         // Tanggal Masuk & TMT
@@ -60,6 +62,9 @@ class Pegawai extends Model
         'tanggal_kontrak_mulai', 'tanggal_kontrak_selesai',
         // Berkas KARPEG & PAK (Syarat KP)
         'file_karpeg', 'file_pak', 'nomor_pak', 'tanggal_pak',
+        // Legalitas Tenaga Kesehatan / Dosen Keperawatan (STR & SIP)
+        'nomor_str', 'tanggal_kadaluarsa_str', 'file_str',
+        'nomor_sip', 'tanggal_kadaluarsa_sip', 'file_sip',
     ];
 
     protected $casts = [
@@ -79,6 +84,8 @@ class Pegawai extends Model
         'tmt_pensiun'             => 'date',
         'tanggal_kontrak_mulai'   => 'date',
         'tanggal_kontrak_selesai' => 'date',
+        'tanggal_kadaluarsa_str'  => 'date',
+        'tanggal_kadaluarsa_sip'  => 'date',
         'angka_kredit'            => 'decimal:2',
         'batas_usia_pensiun'      => 'integer',
         'mkg_tahun'               => 'integer',
@@ -166,6 +173,16 @@ class Pegawai extends Model
     public function bawahan(): HasMany
     {
         return $this->hasMany(Pegawai::class, 'atasan_id');
+    }
+
+    public function pejabatPenilai(): BelongsTo
+    {
+        return $this->belongsTo(Pegawai::class, 'pejabat_penilai_id');
+    }
+
+    public function atasanCuti(): BelongsTo
+    {
+        return $this->belongsTo(Pegawai::class, 'atasan_cuti_id');
     }
 
     public function jabatan(): BelongsTo
@@ -440,6 +457,20 @@ class Pegawai extends Model
     {
         return Attribute::make(
             get: fn () => $this->file_pak ? route('document.preview', ['path' => $this->file_pak]) : null
+        );
+    }
+
+    protected function fileStrUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->file_str ? route('document.preview', ['path' => $this->file_str]) : null
+        );
+    }
+
+    protected function fileSipUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->file_sip ? route('document.preview', ['path' => $this->file_sip]) : null
         );
     }
 

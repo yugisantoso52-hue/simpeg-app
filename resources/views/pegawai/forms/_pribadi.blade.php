@@ -4,31 +4,15 @@
 
     <x-enterprise.forms.row cols="3">
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="NIP / NIK" required>
-                <x-enterprise.input name="nip" :value="old('nip', $pegawai->nip ?? '')" required placeholder="Nomor Induk Pegawai / NIK..." />
+            <x-enterprise.form-group label="NIP (Nomor Induk Pegawai)" required>
+                <x-enterprise.input name="nip" :value="old('nip', $pegawai->nip ?? '')" required placeholder="NIP 18 digit pegawai..." />
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
 
-        {{-- Nomor Kartu ASN (Disembunyikan jika PHL) --}}
         <x-enterprise.forms.field>
-            <div x-show="kategori !== 'phl'">
-                <x-enterprise.form-group label="KARPEG / KARIS / KARSU">
-                    <x-enterprise.input name="karpeg_karis_karsu"
-                        :value="old('karpeg_karis_karsu', $pegawai->karpeg_karis_karsu ?? '')"
-                        placeholder="Nomor Kartu ASN / KARIS / KARSU" />
-                </x-enterprise.form-group>
-                <div class="mt-2">
-                    <x-enterprise.form-group label="Upload Fotocopy KARPEG (PDF/Gambar)">
-                        <x-enterprise.file-upload name="file_karpeg" accept=".pdf,.jpg,.jpeg,.png"/>
-                        @if(isset($pegawai->file_karpeg) && $pegawai->file_karpeg)
-                            <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ route('document.preview', ['path' => $pegawai->file_karpeg]) }}" target="_blank" class="text-blue-600 underline font-semibold">Lihat Berkas KARPEG</a></p>
-                        @endif
-                    </x-enterprise.form-group>
-                </div>
-            </div>
-            <div x-show="kategori === 'phl'" class="text-xs text-slate-400 pt-7">
-                <span class="italic text-amber-600">Khusus Non-ASN / PHL</span>
-            </div>
+            <x-enterprise.form-group label="NIK (Nomor Induk Kependudukan / KTP)">
+                <x-enterprise.input name="nik" :value="old('nik', $pegawai->nik ?? '')" placeholder="Nomor KTP 16 digit..." maxlength="20" />
+            </x-enterprise.form-group>
         </x-enterprise.forms.field>
 
         {{-- NIDN / NUPTK (Khusus Dosen / Tendik Terdaftar) --}}
@@ -87,7 +71,7 @@
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>
 
-    <x-enterprise.forms.row cols="1">
+    <x-enterprise.forms.row cols="2">
         <x-enterprise.forms.field>
             <x-enterprise.form-group label="Agama">
                 <x-enterprise.select name="agama">
@@ -98,6 +82,49 @@
                         </option>
                     @endforeach
                 </x-enterprise.select>
+            </x-enterprise.form-group>
+        </x-enterprise.forms.field>
+
+        {{-- Nomor Kartu ASN (Disembunyikan jika PHL) --}}
+        <x-enterprise.forms.field>
+            <div x-show="kategori !== 'phl'">
+                <x-enterprise.form-group label="KARPEG / KARIS / KARSU">
+                    <x-enterprise.input name="karpeg_karis_karsu"
+                        :value="old('karpeg_karis_karsu', $pegawai->karpeg_karis_karsu ?? '')"
+                        placeholder="Nomor Kartu ASN / KARIS / KARSU" />
+                </x-enterprise.form-group>
+                <div class="mt-2">
+                    <x-enterprise.form-group label="Upload Fotocopy KARPEG (PDF/Gambar)">
+                        <x-enterprise.file-upload name="file_karpeg" accept=".pdf,.jpg,.jpeg,.png"/>
+                        @if(isset($pegawai->file_karpeg) && $pegawai->file_karpeg)
+                            <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ route('document.preview', ['path' => $pegawai->file_karpeg]) }}" target="_blank" class="text-blue-600 underline font-semibold">Lihat Berkas KARPEG</a></p>
+                        @endif
+                    </x-enterprise.form-group>
+                </div>
+            </div>
+            <div x-show="kategori === 'phl'" class="text-xs text-slate-400 pt-7">
+                <span class="italic text-amber-600">Khusus Non-ASN / PHL</span>
+            </div>
+        </x-enterprise.forms.field>
+    </x-enterprise.forms.row>
+
+    {{-- Legalitas Finansial & Jaminan Sosial (NPWP & BPJS) --}}
+    <x-enterprise.forms.row cols="3">
+        <x-enterprise.forms.field>
+            <x-enterprise.form-group label="NPWP (Nomor Pokok Wajib Pajak)">
+                <x-enterprise.input name="npwp" :value="old('npwp', $pegawai->npwp ?? '')" placeholder="Nomor NPWP..." />
+            </x-enterprise.form-group>
+        </x-enterprise.forms.field>
+
+        <x-enterprise.forms.field>
+            <x-enterprise.form-group label="No. BPJS Kesehatan">
+                <x-enterprise.input name="bpjs_kesehatan" :value="old('bpjs_kesehatan', $pegawai->bpjs_kesehatan ?? '')" placeholder="Nomor BPJS Kesehatan..." />
+            </x-enterprise.form-group>
+        </x-enterprise.forms.field>
+
+        <x-enterprise.forms.field>
+            <x-enterprise.form-group label="No. BPJS Ketenagakerjaan">
+                <x-enterprise.input name="bpjs_ketenagakerjaan" :value="old('bpjs_ketenagakerjaan', $pegawai->bpjs_ketenagakerjaan ?? '')" placeholder="Nomor BPJS Ketenagakerjaan..." />
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
     </x-enterprise.forms.row>

@@ -20,6 +20,10 @@ class StorePegawaiRequest extends FormRequest
             'nama_lengkap'         => 'nullable|string|max:150',
 
             // Opsional (Nullable): Seluruh kolom identitas & kontak
+            'nik'                  => 'nullable|string|max:20|unique:pegawai,nik',
+            'npwp'                 => 'nullable|string|max:30',
+            'bpjs_kesehatan'       => 'nullable|string|max:30',
+            'bpjs_ketenagakerjaan' => 'nullable|string|max:30',
             'karpeg_karis_karsu'   => 'nullable|string|max:50',
             'nidn_nuptk'           => 'nullable|string|max:20',
             'gelar_depan'          => 'nullable|string|max:20',
@@ -60,11 +64,21 @@ class StorePegawaiRequest extends FormRequest
             'tanggal_kontrak_mulai'    => 'nullable|date',
             'tanggal_kontrak_selesai'  => 'nullable|date|after_or_equal:tanggal_kontrak_mulai',
 
-            // Relasi Utama (Opsional saat pengisian parsial)
+            // Relasi Utama & Alur Persetujuan (Approval Flow)
             'unit_kerja_id'        => 'nullable|exists:unit_kerja,id',
             'jabatan_id'           => 'nullable|exists:jabatan,id',
             'atasan_id'            => 'nullable|exists:pegawai,id',
+            'pejabat_penilai_id'   => 'nullable|exists:pegawai,id',
+            'atasan_cuti_id'       => 'nullable|exists:pegawai,id',
             'golongan_id'          => 'nullable|exists:golongan,id',
+
+            // Legalitas Profesi Kesehatan (STR & SIP Dosen/Nakes)
+            'nomor_str'                => 'nullable|string|max:50',
+            'tanggal_kadaluarsa_str'   => 'nullable|date',
+            'file_str'                 => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'nomor_sip'                => 'nullable|string|max:50',
+            'tanggal_kadaluarsa_sip'   => 'nullable|date',
+            'file_sip'                 => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
             
             // Tanggal, SK & Dokumen
             'tanggal_masuk'        => 'nullable|date',
@@ -163,6 +177,14 @@ class StorePegawaiRequest extends FormRequest
             'tanggal_sk_pertama'         => 'Tanggal SK Pertama',
             'nomor_sk_pangkat_terakhir'   => 'Nomor SK Pangkat Terakhir',
             'tanggal_sk_pangkat_terakhir' => 'Tanggal SK Pangkat Terakhir',
+            'nik'                         => 'NIK (Nomor Induk Kependudukan)',
+            'npwp'                        => 'NPWP',
+            'bpjs_kesehatan'              => 'Nomor BPJS Kesehatan',
+            'bpjs_ketenagakerjaan'        => 'Nomor BPJS Ketenagakerjaan',
+            'pejabat_penilai_id'          => 'Pejabat Penilai Kinerja',
+            'atasan_cuti_id'              => 'Atasan Langsung Cuti',
+            'nomor_str'                   => 'Nomor STR',
+            'nomor_sip'                   => 'Nomor SIP',
         ];
     }
 

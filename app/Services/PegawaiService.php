@@ -7,6 +7,7 @@ use App\Models\RiwayatJabatan;
 use App\Models\RiwayatPangkat;
 use App\Models\RiwayatPendidikan;
 use App\Models\RiwayatDiklat;
+use App\Models\RiwayatStrSip;
 use App\Models\User;
 use App\Models\Role;
 use App\Repositories\Contracts\PegawaiRepositoryInterface;
@@ -131,6 +132,9 @@ class PegawaiService
                 'unitKerja',
                 'jabatan',
                 'golongan',
+                'atasan',
+                'pejabatPenilai',
+                'atasanCuti',
                 'riwayatPendidikan',
                 'riwayatDiklat',
                 'riwayatJabatan',
@@ -143,7 +147,7 @@ class PegawaiService
                 'riwayatPublikasi',
             ]);
         } else {
-            $pegawai->load(['unitKerja', 'jabatan', 'golongan']);
+            $pegawai->load(['unitKerja', 'jabatan', 'golongan', 'atasan', 'pejabatPenilai', 'atasanCuti']);
         }
 
         return $pegawai;
@@ -177,6 +181,12 @@ class PegawaiService
             if (!empty($files['file_pak'])) {
                 $data['file_pak'] = $this->uploadSK($files['file_pak'], $data, 'pak');
             }
+            if (!empty($files['file_str'])) {
+                $data['file_str'] = $this->uploadSK($files['file_str'], $data, 'str_sip', 'STR');
+            }
+            if (!empty($files['file_sip'])) {
+                $data['file_sip'] = $this->uploadSK($files['file_sip'], $data, 'str_sip', 'SIP');
+            }
 
             $data['kgb_berikutnya'] = $this->generateKGB($data['tmt_kgb_terakhir'] ?? null);
             $data['kp_berikutnya'] = $this->generateKP($data['tmt_pangkat_terakhir'] ?? null);
@@ -206,6 +216,40 @@ class PegawaiService
             }
             if (!empty($files['file_pak'])) {
                 $this->syncFileToDrive($pegawai, $files['file_pak'], 'PAK', '04_KINERJA_PENILAIAN');
+            }
+            if (!empty($files['file_str'])) {
+                $this->syncFileToDrive($pegawai, $files['file_str'], 'STR', '01_DOKUMEN_UTAMA');
+            }
+            if (!empty($files['file_sip'])) {
+                $this->syncFileToDrive($pegawai, $files['file_sip'], 'SIP', '01_DOKUMEN_UTAMA');
+            }
+
+            // Sinkronisasi Data STR & SIP ke Riwayat Terkait jika diisi
+            if (!empty($pegawai->nomor_str)) {
+                RiwayatStrSip::updateOrCreate(
+                    ['pegawai_id' => $pegawai->id, 'jenis_dokumen' => 'STR'],
+                    [
+                        'nomor_registrasi' => $pegawai->nomor_str,
+                        'nama_dokumen'     => 'Surat Tanda Registrasi (STR)',
+                        'tanggal_berakhir' => $pegawai->tanggal_kadaluarsa_str,
+                        'status'           => 'aktif',
+                        'file_dokumen'     => $pegawai->file_str,
+                        'keterangan'       => 'Tersinkronisasi otomatis dari profil pegawai',
+                    ]
+                );
+            }
+            if (!empty($pegawai->nomor_sip)) {
+                RiwayatStrSip::updateOrCreate(
+                    ['pegawai_id' => $pegawai->id, 'jenis_dokumen' => 'SIP'],
+                    [
+                        'nomor_registrasi' => $pegawai->nomor_sip,
+                        'nama_dokumen'     => 'Surat Izin Praktik (SIP)',
+                        'tanggal_berakhir' => $pegawai->tanggal_kadaluarsa_sip,
+                        'status'           => 'aktif',
+                        'file_dokumen'     => $pegawai->file_sip,
+                        'keterangan'       => 'Tersinkronisasi otomatis dari profil pegawai',
+                    ]
+                );
             }
 
             // 2. OTOMATISASI: Buat Akun User Login untuk Pegawai Baru (NIP Tanpa Spasi)
@@ -403,6 +447,20 @@ class PegawaiService
                 unset($data['file_pak']);
             }
 
+            if (!empty($files['file_str'])) {
+                $this->deleteSK($pegawai->file_str);
+                $data['file_str'] = $this->uploadSK($files['file_str'], $pegawai, 'str_sip', 'STR');
+            } else {
+                unset($data['file_str']);
+            }
+
+            if (!empty($files['file_sip'])) {
+                $this->deleteSK($pegawai->file_sip);
+                $data['file_sip'] = $this->uploadSK($files['file_sip'], $pegawai, 'str_sip', 'SIP');
+            } else {
+                unset($data['file_sip']);
+            }
+
             $data['kgb_berikutnya'] = $this->generateKGB($data['tmt_kgb_terakhir'] ?? null);
             $data['kp_berikutnya'] = $this->generateKP($data['tmt_pangkat_terakhir'] ?? null);
 
@@ -428,6 +486,40 @@ class PegawaiService
             }
             if (!empty($files['file_pak'])) {
                 $this->syncFileToDrive($pegawaiUpdated, $files['file_pak'], 'PAK', '04_KINERJA_PENILAIAN');
+            }
+            if (!empty($files['file_str'])) {
+                $this->syncFileToDrive($pegawaiUpdated, $files['file_str'], 'STR', '01_DOKUMEN_UTAMA');
+            }
+            if (!empty($files['file_sip'])) {
+                $this->syncFileToDrive($pegawaiUpdated, $files['file_sip'], 'SIP', '01_DOKUMEN_UTAMA');
+            }
+
+            // Sinkronisasi Data STR & SIP ke Riwayat Terkait jika diisi
+            if (!empty($pegawaiUpdated->nomor_str)) {
+                RiwayatStrSip::updateOrCreate(
+                    ['pegawai_id' => $pegawaiUpdated->id, 'jenis_dokumen' => 'STR'],
+                    [
+                        'nomor_registrasi' => $pegawaiUpdated->nomor_str,
+                        'nama_dokumen'     => 'Surat Tanda Registrasi (STR)',
+                        'tanggal_berakhir' => $pegawaiUpdated->tanggal_kadaluarsa_str,
+                        'status'           => 'aktif',
+                        'file_dokumen'     => $pegawaiUpdated->file_str,
+                        'keterangan'       => 'Tersinkronisasi otomatis dari profil pegawai',
+                    ]
+                );
+            }
+            if (!empty($pegawaiUpdated->nomor_sip)) {
+                RiwayatStrSip::updateOrCreate(
+                    ['pegawai_id' => $pegawaiUpdated->id, 'jenis_dokumen' => 'SIP'],
+                    [
+                        'nomor_registrasi' => $pegawaiUpdated->nomor_sip,
+                        'nama_dokumen'     => 'Surat Izin Praktik (SIP)',
+                        'tanggal_berakhir' => $pegawaiUpdated->tanggal_kadaluarsa_sip,
+                        'status'           => 'aktif',
+                        'file_dokumen'     => $pegawaiUpdated->file_sip,
+                        'keterangan'       => 'Tersinkronisasi otomatis dari profil pegawai',
+                    ]
+                );
             }
 
             if ($oldNip !== $pegawaiUpdated->nip) {
