@@ -209,6 +209,23 @@ class UpdatePegawaiRequest extends FormRequest
             'riwayat_diklat.*.status'                  => 'nullable|string|max:50',
             'riwayat_diklat.*.keterangan'              => 'nullable|string',
             'riwayat_diklat.*.file_sertifikat'         => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+
+            // Validasi Penilaian Kinerja (SKP 2 Tahun Lalu)
+            'riwayat_skp'                              => 'nullable|array',
+            'riwayat_skp.*.id'                         => 'nullable|integer',
+            'riwayat_skp.*.tahun'                      => 'nullable|integer',
+            'riwayat_skp.*.predikat_kinerja'           => 'nullable|string|max:50',
+            'riwayat_skp.*.pejabat_penilai'            => 'nullable|string|max:255',
+            'riwayat_skp.*.file_evaluasi_skp'          => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+
+            // Validasi Piagam Satyalancana Terdahulu
+            'piagam_satyalancana'                      => 'nullable|array',
+            'piagam_satyalancana.id'                   => 'nullable|integer',
+            'piagam_satyalancana.nama_penghargaan'     => 'nullable|string|max:255',
+            'piagam_satyalancana.nomor_sk'              => 'nullable|string|max:100',
+            'piagam_satyalancana.tanggal_sk'            => 'nullable|date',
+            'piagam_satyalancana.instansi_pemberi'      => 'nullable|string|max:255',
+            'piagam_satyalancana.file_sk'               => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ];
     }
 

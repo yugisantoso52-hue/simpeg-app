@@ -187,7 +187,7 @@ class PegawaiController extends Controller
 
     public function edit(Request $request, int $id)
     {
-        $pegawai = $this->pegawaiService->find($id, false);
+        $pegawai = $this->pegawaiService->find($id, true);
 
         // OTORISASI POLICY: Cek izin edit data
         $this->authorize('update', $pegawai);

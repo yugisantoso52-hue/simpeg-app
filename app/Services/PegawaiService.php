@@ -8,6 +8,8 @@ use App\Models\RiwayatPangkat;
 use App\Models\RiwayatPendidikan;
 use App\Models\RiwayatDiklat;
 use App\Models\RiwayatStrSip;
+use App\Models\RiwayatSkp;
+use App\Models\RiwayatPenghargaan;
 use App\Models\User;
 use App\Models\Role;
 use App\Repositories\Contracts\PegawaiRepositoryInterface;
@@ -386,7 +388,52 @@ class PegawaiService
                 }
             }
 
-            // 7. Sinkronisasikan data ke pegawai utama
+            // 7. Simpan Riwayat SKP 2 Tahun Lalu (Kinerja & Syarat Satyalancana/KP)
+            if (isset($data['riwayat_skp']) && is_array($data['riwayat_skp'])) {
+                foreach ($data['riwayat_skp'] as $index => $row) {
+                    if (empty($row['predikat_kinerja']) && empty($row['pejabat_penilai']) && !isset($files['riwayat_skp'][$index]['file_evaluasi_skp'])) {
+                        continue;
+                    }
+                    $tahunSkp = !empty($row['tahun']) ? (int)$row['tahun'] : ((int)date('Y') - ($index + 1));
+                    $fileEvaluasi = null;
+                    if (isset($files['riwayat_skp'][$index]['file_evaluasi_skp'])) {
+                        $fileEvaluasi = PegawaiStorageService::store($files['riwayat_skp'][$index]['file_evaluasi_skp'], $pegawai, 'skp', 'skp_' . $tahunSkp);
+                        $this->syncFileToDrive($pegawai, $files['riwayat_skp'][$index]['file_evaluasi_skp'], 'EVALUASI SKP ' . $tahunSkp, '08_SKP');
+                    }
+                    $pegawai->riwayatSkp()->create([
+                        'tahun'            => $tahunSkp,
+                        'predikat_kinerja' => $row['predikat_kinerja'] ?? null,
+                        'pejabat_penilai'  => $row['pejabat_penilai'] ?? null,
+                        'file_evaluasi_skp'=> $fileEvaluasi,
+                        'keterangan'       => 'Input otomatis dari formulir pegawai',
+                    ]);
+                }
+            }
+
+            // 8. Simpan Piagam Satyalancana Terdahulu (Jika Ada)
+            if (isset($data['piagam_satyalancana']) && is_array($data['piagam_satyalancana']) && !empty($data['piagam_satyalancana']['nama_penghargaan'])) {
+                $piagamData = $data['piagam_satyalancana'];
+                $filePiagam = null;
+                if (isset($files['piagam_satyalancana']['file_sk'])) {
+                    $filePiagam = PegawaiStorageService::store($files['piagam_satyalancana']['file_sk'], $pegawai, 'penghargaan', 'piagam_satyalancana');
+                    $this->syncFileToDrive($pegawai, $files['piagam_satyalancana']['file_sk'], 'PIAGAM ' . strtoupper($piagamData['nama_penghargaan']), '16_PENGHARGAAN');
+                }
+                $pegawai->riwayatPenghargaan()->create([
+                    'nama_penghargaan'  => $piagamData['nama_penghargaan'],
+                    'jenis_penghargaan' => 'Satyalancana',
+                    'instansi_pemberi'  => $piagamData['instansi_pemberi'] ?? 'Presiden Republik Indonesia',
+                    'tanggal_terima'    => !empty($piagamData['tanggal_sk']) ? $piagamData['tanggal_sk'] : null,
+                    'nomor_sk'          => $piagamData['nomor_sk'] ?? null,
+                    'file_sk'           => $filePiagam,
+                    'keterangan'        => 'Tercatat dari profil awal kepegawaian',
+                ]);
+
+                if (empty($pegawai->satyalancana_terakhir)) {
+                    $pegawai->update(['satyalancana_terakhir' => $piagamData['nama_penghargaan']]);
+                }
+            }
+
+            // 9. Sinkronisasikan data ke pegawai utama
             $this->syncPegawaiFromHistories($pegawai);
 
             return $pegawai;
@@ -741,7 +788,94 @@ class PegawaiService
                 }
             }
 
-            // 5. Sinkronisasikan data ke pegawai utama
+            // 5. UPDATE / SIMPAN RIWAYAT SKP (2 TAHUN LALU)
+            if (isset($data['riwayat_skp']) && is_array($data['riwayat_skp'])) {
+                foreach ($data['riwayat_skp'] as $index => $row) {
+                    if (empty($row['predikat_kinerja']) && empty($row['pejabat_penilai']) && !isset($files['riwayat_skp'][$index]['file_evaluasi_skp']) && empty($row['id'])) {
+                        continue;
+                    }
+                    $tahunSkp = !empty($row['tahun']) ? (int)$row['tahun'] : ((int)date('Y') - ($index + 1));
+                    $fileEvaluasi = null;
+                    if (isset($files['riwayat_skp'][$index]['file_evaluasi_skp'])) {
+                        if (!empty($row['id'])) {
+                            $oldSkp = $pegawai->riwayatSkp()->where('id', $row['id'])->first();
+                            if ($oldSkp?->file_evaluasi_skp) {
+                                PegawaiStorageService::delete($oldSkp->file_evaluasi_skp);
+                            }
+                        }
+                        $fileEvaluasi = PegawaiStorageService::store($files['riwayat_skp'][$index]['file_evaluasi_skp'], $pegawaiUpdated, 'skp', 'skp_' . $tahunSkp);
+                        $this->syncFileToDrive($pegawaiUpdated, $files['riwayat_skp'][$index]['file_evaluasi_skp'], 'EVALUASI SKP ' . $tahunSkp, '08_SKP');
+                    }
+
+                    $payload = [
+                        'tahun'            => $tahunSkp,
+                        'predikat_kinerja' => $row['predikat_kinerja'] ?? null,
+                        'pejabat_penilai'  => $row['pejabat_penilai'] ?? null,
+                        'keterangan'       => 'Update dari formulir profil pegawai',
+                    ];
+                    if ($fileEvaluasi) {
+                        $payload['file_evaluasi_skp'] = $fileEvaluasi;
+                    }
+
+                    if (!empty($row['id'])) {
+                        $pegawai->riwayatSkp()->where('id', $row['id'])->update($payload);
+                    } else {
+                        $existingByYear = $pegawai->riwayatSkp()->where('tahun', $tahunSkp)->first();
+                        if ($existingByYear) {
+                            $existingByYear->update($payload);
+                        } else {
+                            $pegawai->riwayatSkp()->create($payload);
+                        }
+                    }
+                }
+            }
+
+            // 6. UPDATE / SIMPAN PIAGAM SATYALANCANA
+            if (isset($data['piagam_satyalancana']) && is_array($data['piagam_satyalancana'])) {
+                $piagamData = $data['piagam_satyalancana'];
+                if (!empty($piagamData['nama_penghargaan']) || !empty($piagamData['id'])) {
+                    $filePiagam = null;
+                    if (isset($files['piagam_satyalancana']['file_sk'])) {
+                        if (!empty($piagamData['id'])) {
+                            $oldPiagam = $pegawai->riwayatPenghargaan()->where('id', $piagamData['id'])->first();
+                            if ($oldPiagam?->file_sk) {
+                                PegawaiStorageService::delete($oldPiagam->file_sk);
+                            }
+                        }
+                        $filePiagam = PegawaiStorageService::store($files['piagam_satyalancana']['file_sk'], $pegawaiUpdated, 'penghargaan', 'piagam_satyalancana');
+                        $this->syncFileToDrive($pegawaiUpdated, $files['piagam_satyalancana']['file_sk'], 'PIAGAM ' . strtoupper($piagamData['nama_penghargaan'] ?? 'SATYALANCANA'), '16_PENGHARGAAN');
+                    }
+
+                    $payload = [
+                        'nama_penghargaan'  => $piagamData['nama_penghargaan'] ?? 'Satyalancana Karya Satya',
+                        'jenis_penghargaan' => 'Satyalancana',
+                        'instansi_pemberi'  => $piagamData['instansi_pemberi'] ?? 'Presiden Republik Indonesia',
+                        'tanggal_terima'    => !empty($piagamData['tanggal_sk']) ? $piagamData['tanggal_sk'] : null,
+                        'nomor_sk'          => $piagamData['nomor_sk'] ?? null,
+                        'keterangan'        => 'Update dari profil pegawai',
+                    ];
+                    if ($filePiagam) {
+                        $payload['file_sk'] = $filePiagam;
+                    }
+
+                    if (!empty($piagamData['id'])) {
+                        $pegawai->riwayatPenghargaan()->where('id', $piagamData['id'])->update($payload);
+                    } else {
+                        $existingPiagam = $pegawai->riwayatPenghargaan()->where('jenis_penghargaan', 'Satyalancana')->first();
+                        if ($existingPiagam) {
+                            $existingPiagam->update($payload);
+                        } else {
+                            $pegawai->riwayatPenghargaan()->create($payload);
+                        }
+                    }
+
+                    if (!empty($piagamData['nama_penghargaan'])) {
+                        $pegawaiUpdated->update(['satyalancana_terakhir' => $piagamData['nama_penghargaan']]);
+                    }
+                }
+            }
+
+            // 7. Sinkronisasikan data ke pegawai utama
             $this->syncPegawaiFromHistories($pegawaiUpdated);
 
             return $pegawaiUpdated;

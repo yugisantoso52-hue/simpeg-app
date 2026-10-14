@@ -174,6 +174,9 @@
                         {{-- 10. RIWAYAT DIKLAT / PELATIHAN --}}
                         @include('pegawai.forms._diklat')
 
+                        {{-- 11. PENILAIAN KINERJA (SKP 2 TAHUN LALU) & PIAGAM SATYALANCANA --}}
+                        @include('pegawai.forms._penghargaan_skp')
+
                         <x-enterprise.forms.actions
                             :back="$backUrl"
                             submit="Simpan Perubahan"/>
