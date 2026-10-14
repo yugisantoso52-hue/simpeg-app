@@ -1,20 +1,20 @@
 {{-- ============================================================== --}}
-{{-- 1. DASHBOARD (Akses Semua Pengguna)                            --}}
+{{-- 1. DASHBOARD UTAMA (Akses Semua Pengguna)                      --}}
 {{-- ============================================================== --}}
 <a href="{{ route('dashboard') }}" 
    class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('dashboard') ? 'bg-[#007a3d]/10 text-[#007a3d] font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
     <x-icon name="dashboard" class="w-4 h-4 {{ request()->routeIs('dashboard') ? 'text-[#007a3d]' : 'text-slate-500' }}" />
-    <span>Dashboard</span>
+    <span>Dashboard Utama</span>
 </a>
 
 {{-- ============================================================== --}}
-{{-- 2. ANALITIK EKSEKUTIF (Dekan, Wadek II, Kabag Umum, Admin)     --}}
+{{-- 2. ANALITIK EKSEKUTIF DEKANAT (Dekan, Wadek II, Kabag Umum, Admin) --}}
 {{-- ============================================================== --}}
 @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
     <a href="{{ route('pimpinan.analytics') }}" 
        class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('pimpinan.analytics*') ? 'bg-indigo-50 text-indigo-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
         <x-icon name="chart" class="w-4 h-4 {{ request()->routeIs('pimpinan.analytics*') ? 'text-indigo-600' : 'text-slate-500' }}" />
-        <span>Analitik</span>
+        <span>Analitik Eksekutif Dekanat</span>
     </a>
 @endif
 
@@ -30,19 +30,19 @@
     <a href="{{ route('pengajuan-karir.index') }}" 
        class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('pengajuan-karir.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
         <x-icon name="award" class="w-4 h-4 {{ request()->routeIs('pengajuan-karir.*') ? 'text-emerald-600' : 'text-slate-500' }}" />
-        <span>Usul KGB & KP</span>
+        <span>Usul KGB & Kenaikan Pangkat</span>
     </a>
 @endif
 
 {{-- ============================================================== --}}
-{{-- 3. PRESENSI (Mandiri & Rekap Kehadiran)                        --}}
+{{-- 3. PRESENSI PEGAWAI (Mandiri & Rekap Kehadiran)               --}}
 {{-- ============================================================== --}}
 @if(Auth::user()->hasRole('admin') || Auth::user()->isAtasan())
     <x-dropdown align="left" width="w-64">
         <x-slot name="trigger">
             <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('presensi.*', 'admin.presensi.*') ? 'bg-blue-50 text-blue-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
                 <x-icon name="clock" class="w-4 h-4 {{ request()->routeIs('presensi.*', 'admin.presensi.*') ? 'text-blue-600' : 'text-slate-500' }}" />
-                <span>Presensi</span>
+                <span>Presensi Pegawai</span>
                 <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
             </button>
         </x-slot>
@@ -79,19 +79,19 @@
     <a href="{{ route('presensi.index') }}" 
        class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('presensi.*') ? 'bg-blue-50 text-blue-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
         <x-icon name="clock" class="w-4 h-4 {{ request()->routeIs('presensi.*') ? 'text-blue-600' : 'text-slate-500' }}" />
-        <span>Presensi</span>
+        <span>Presensi Pegawai</span>
     </a>
 @endif
 
 {{-- ============================================================== --}}
-{{-- 4. LOGBOOK KINERJA (Mandiri & Verifikasi)                      --}}
+{{-- 4. LOGBOOK KINERJA (Mandiri & Verifikasi)                     --}}
 {{-- ============================================================== --}}
 @if(Auth::user()->hasRole('admin') || Auth::user()->isAtasan())
     <x-dropdown align="left" width="w-60">
         <x-slot name="trigger">
             <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('logbook.*', 'admin.logbook.*') ? 'bg-violet-50 text-violet-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
                 <x-icon name="book-open" class="w-4 h-4 {{ request()->routeIs('logbook.*', 'admin.logbook.*') ? 'text-violet-600' : 'text-slate-500' }}" />
-                <span>Logbook</span>
+                <span>Logbook Kinerja</span>
                 <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
             </button>
         </x-slot>
@@ -122,12 +122,12 @@
     <a href="{{ route('logbook.index') }}" 
        class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('logbook.*') ? 'bg-violet-50 text-violet-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
         <x-icon name="book-open" class="w-4 h-4 {{ request()->routeIs('logbook.*') ? 'text-violet-600' : 'text-slate-500' }}" />
-        <span>Logbook</span>
+        <span>Logbook Kinerja</span>
     </a>
 @endif
 
 {{-- ============================================================== --}}
-{{-- 5. E-CUTI (Pengajuan & Persetujuan)                            --}}
+{{-- 5. E-CUTI (Pengajuan & Persetujuan)                           --}}
 {{-- ============================================================== --}}
 @if(Auth::user()->isAtasan() || Auth::user()->hasRole('admin'))
     <x-dropdown align="left" width="w-60">
@@ -170,138 +170,146 @@
 @endif
 
 {{-- ============================================================== --}}
-{{-- 5b. LAYANAN E-SURAT MANDIRI (Semua Pegawai & Pimpinan)         --}}
+{{-- 6. E-SURAT KETERANGAN (Semua Pegawai & Pimpinan)               --}}
 {{-- ============================================================== --}}
 <a href="{{ route('layanan-surat.index') }}" 
    class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('layanan-surat.*') ? 'bg-blue-50 text-blue-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
     <x-icon name="file-text" class="w-4 h-4 {{ request()->routeIs('layanan-surat.*') ? 'text-blue-600' : 'text-slate-500' }}" />
-    <span>E-Surat</span>
+    <span>E-Surat Keterangan</span>
 </a>
 
 {{-- ============================================================== --}}
-{{-- 6. DATA KEPEGAWAIAN & RIWAYAT (Dropdown Multi-Kolom Terpadu)   --}}
+{{-- 7. DATA & LAYANAN KEPEGAWAIAN                                  --}}
 {{-- ============================================================== --}}
 @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
-    <x-dropdown align="left" width="w-[540px]">
+    <x-dropdown align="left" width="w-64">
         <x-slot name="trigger">
-            <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('kepegawaian.*', 'pegawai.*', 'duk.*', 'kp.*', 'kgb.*', 'satyalancana.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'riwayat-*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-                <x-icon name="users" class="w-4 h-4 {{ request()->routeIs('kepegawaian.*', 'pegawai.*', 'duk.*', 'kp.*', 'kgb.*', 'satyalancana.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'riwayat-*') ? 'text-emerald-600' : 'text-slate-500' }}" />
-                <span>Kepegawaian</span>
+            <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('kepegawaian.*', 'pegawai.*', 'duk.*', 'kp.*', 'kgb.*', 'satyalancana.*', 'mutasi-pegawai.*', 'tugas-belajar.*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                <x-icon name="users" class="w-4 h-4 {{ request()->routeIs('kepegawaian.*', 'pegawai.*', 'duk.*', 'kp.*', 'kgb.*', 'satyalancana.*', 'mutasi-pegawai.*', 'tugas-belajar.*') ? 'text-emerald-600' : 'text-slate-500' }}" />
+                <span>Data & Layanan Kepegawaian</span>
                 <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
             </button>
         </x-slot>
         <x-slot name="content">
-            <div class="grid grid-cols-2 divide-x divide-slate-100">
-                {{-- Kolom Kiri: Kategori & Karir Pegawai --}}
-                <div class="py-1">
-                    <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
-                        Data Induk & Kategori
-                    </div>
-                    <x-dropdown-link :href="route('pegawai.index')" class="flex items-center gap-2 {{ request()->routeIs('pegawai.index', 'pegawai.show', 'pegawai.edit', 'pegawai.create') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
-                        <x-icon name="users" class="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span>Semua Pegawai (Master)</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('kepegawaian.dosen.index')" class="flex items-center gap-2 {{ request()->routeIs('kepegawaian.dosen.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                        <x-icon name="user" class="w-4 h-4 text-blue-600 shrink-0" />
-                        <span>Data Dosen</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('kepegawaian.tendik.index')" class="flex items-center gap-2 {{ request()->routeIs('kepegawaian.tendik.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
-                        <x-icon name="user" class="w-4 h-4 text-teal-600 shrink-0" />
-                        <span>Data Tenaga Kependidikan</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('kepegawaian.phl.index')" class="flex items-center gap-2 {{ request()->routeIs('kepegawaian.phl.*') ? 'bg-amber-50 text-amber-700 font-semibold' : '' }}">
-                        <x-icon name="user" class="w-4 h-4 text-amber-600 shrink-0" />
-                        <span>Data PHL / Honorer</span>
-                    </x-dropdown-link>
-
-                    <div class="border-t border-slate-100 my-1"></div>
-                    <div class="px-3.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
-                        Layanan Karir
-                    </div>
-                    <x-dropdown-link :href="route('duk.index')" class="flex items-center gap-2 {{ request()->routeIs('duk.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                        <x-icon name="list-ordered" class="w-4 h-4 text-blue-600 shrink-0" />
-                        <span>Daftar Urut Kepangkatan (DUK)</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('pengajuan-karir.index')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
-                        <x-icon name="clipboard-check" class="w-4 h-4 text-indigo-600 shrink-0" />
-                        <span>Verifikasi Usulan KGB & KP</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('kp.index')" class="flex items-center gap-2 {{ request()->routeIs('kp.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
-                        <x-icon name="award" class="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span>Kenaikan Pangkat (KP)</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('kgb.index')" class="flex items-center gap-2 {{ request()->routeIs('kgb.*') ? 'bg-amber-50 text-amber-700 font-semibold' : '' }}">
-                        <x-icon name="banknote" class="w-4 h-4 text-amber-600 shrink-0" />
-                        <span>Kenaikan Gaji Berkala (KGB)</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('satyalancana.index')" class="flex items-center gap-2 {{ request()->routeIs('satyalancana.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
-                        <x-icon name="award" class="w-4 h-4 text-indigo-600 shrink-0" />
-                        <span>Satyalancana Karya Satya</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('mutasi-pegawai.index')" class="flex items-center gap-2 {{ request()->routeIs('mutasi-pegawai.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                        <x-icon name="git-branch" class="w-4 h-4 text-blue-600 shrink-0" />
-                        <span>Mutasi Pegawai</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('tugas-belajar.index')" class="flex items-center gap-2 {{ request()->routeIs('tugas-belajar.*') ? 'bg-rose-50 text-rose-700 font-semibold' : '' }}">
-                        <x-icon name="graduation-cap" class="w-4 h-4 text-rose-600 shrink-0" />
-                        <span>Tugas Belajar & Studi</span>
-                    </x-dropdown-link>
-                </div>
-
-                {{-- Kolom Kanan: Riwayat Pegawai Lengkap --}}
-                <div class="py-1">
-                    <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
-                        Riwayat & Dokumen
-                    </div>
-                    <x-dropdown-link :href="route('riwayat-pendidikan.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-pendidikan.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                        <x-icon name="graduation-cap" class="w-4 h-4 text-blue-600 shrink-0" />
-                        <span>Riwayat Pendidikan</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('riwayat-diklat.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-diklat.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                        <x-icon name="file-text" class="w-4 h-4 text-indigo-600 shrink-0" />
-                        <span>Riwayat Diklat & Pelatihan</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('riwayat-str-sip.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-str-sip.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                        <x-icon name="stethoscope" class="w-4 h-4 text-sky-600 shrink-0" />
-                        <span>Riwayat STR & SIP Profesi</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('riwayat-skp.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-skp.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                        <x-icon name="chart" class="w-4 h-4 text-teal-600 shrink-0" />
-                        <span>Riwayat SKP & Kinerja</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('riwayat-publikasi.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-publikasi.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                        <x-icon name="book-open" class="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span>Riwayat Publikasi & Karya</span>
-                    </x-dropdown-link>
-
-                    <div class="border-t border-slate-100 my-1"></div>
-                    <div class="px-3.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
-                        Karir & Jabatan
-                    </div>
-                    <x-dropdown-link :href="route('riwayat-pangkat.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-pangkat.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                        <x-icon name="award" class="w-4 h-4 text-amber-600 shrink-0" />
-                        <span>Riwayat Pangkat & Golongan</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('riwayat-jabatan.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-jabatan.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                        <x-icon name="briefcase" class="w-4 h-4 text-blue-600 shrink-0" />
-                        <span>Riwayat Jabatan</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('riwayat-penghargaan.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-penghargaan.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                        <x-icon name="award" class="w-4 h-4 text-rose-600 shrink-0" />
-                        <span>Riwayat Penghargaan</span>
-                    </x-dropdown-link>
-                    <x-dropdown-link :href="route('riwayat-organisasi.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-organisasi.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                        <x-icon name="building" class="w-4 h-4 text-slate-600 shrink-0" />
-                        <span>Riwayat Organisasi</span>
-                    </x-dropdown-link>
-                </div>
+            <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
+                Data Induk
             </div>
+            <x-dropdown-link :href="route('pegawai.index')" class="flex items-center gap-2 {{ request()->routeIs('pegawai.index', 'pegawai.show', 'pegawai.edit', 'pegawai.create') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
+                <x-icon name="users" class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Semua Pegawai (Master)</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('kepegawaian.dosen.index')" class="flex items-center gap-2 {{ request()->routeIs('kepegawaian.dosen.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="user" class="w-4 h-4 text-blue-600 shrink-0" />
+                <span>Data Dosen</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('kepegawaian.tendik.index')" class="flex items-center gap-2 {{ request()->routeIs('kepegawaian.tendik.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
+                <x-icon name="user" class="w-4 h-4 text-teal-600 shrink-0" />
+                <span>Data Tenaga Kependidikan</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('kepegawaian.phl.index')" class="flex items-center gap-2 {{ request()->routeIs('kepegawaian.phl.*') ? 'bg-amber-50 text-amber-700 font-semibold' : '' }}">
+                <x-icon name="user" class="w-4 h-4 text-amber-600 shrink-0" />
+                <span>Data PHL / Honorer</span>
+            </x-dropdown-link>
+
+            <div class="border-t border-slate-100 my-1"></div>
+            <div class="px-3.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
+                Layanan Karir
+            </div>
+            <x-dropdown-link :href="route('duk.index')" class="flex items-center gap-2 {{ request()->routeIs('duk.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="list-ordered" class="w-4 h-4 text-blue-600 shrink-0" />
+                <span>Daftar Urut Kepangkatan (DUK)</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('pengajuan-karir.index')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
+                <x-icon name="clipboard-check" class="w-4 h-4 text-indigo-600 shrink-0" />
+                <span>Verifikasi Usulan KGB & KP</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('kp.index')" class="flex items-center gap-2 {{ request()->routeIs('kp.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
+                <x-icon name="award" class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Kenaikan Pangkat (KP)</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('kgb.index')" class="flex items-center gap-2 {{ request()->routeIs('kgb.*') ? 'bg-amber-50 text-amber-700 font-semibold' : '' }}">
+                <x-icon name="banknote" class="w-4 h-4 text-amber-600 shrink-0" />
+                <span>Kenaikan Gaji Berkala (KGB)</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('satyalancana.index')" class="flex items-center gap-2 {{ request()->routeIs('satyalancana.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
+                <x-icon name="award" class="w-4 h-4 text-indigo-600 shrink-0" />
+                <span>Satyalancana Karya Satya</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('mutasi-pegawai.index')" class="flex items-center gap-2 {{ request()->routeIs('mutasi-pegawai.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="git-branch" class="w-4 h-4 text-blue-600 shrink-0" />
+                <span>Mutasi Pegawai</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('tugas-belajar.index')" class="flex items-center gap-2 {{ request()->routeIs('tugas-belajar.*') ? 'bg-rose-50 text-rose-700 font-semibold' : '' }}">
+                <x-icon name="graduation-cap" class="w-4 h-4 text-rose-600 shrink-0" />
+                <span>Tugas Belajar & Studi</span>
+            </x-dropdown-link>
         </x-slot>
     </x-dropdown>
 @endif
 
 {{-- ============================================================== --}}
-{{-- 7. ANJAB & ABK (Analisis Jabatan & Formasi Kebutuhan)          --}}
+{{-- 8. RIWAYAT & DOKUMEN PEGAWAI                                   --}}
+{{-- ============================================================== --}}
+@if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+    <x-dropdown align="left" width="w-64">
+        <x-slot name="trigger">
+            <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('riwayat-*') ? 'bg-blue-50 text-blue-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                <x-icon name="history" class="w-4 h-4 {{ request()->routeIs('riwayat-*') ? 'text-blue-600' : 'text-slate-500' }}" />
+                <span>Riwayat & Dokumen Pegawai</span>
+                <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
+            </button>
+        </x-slot>
+        <x-slot name="content">
+            <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
+                Riwayat & Dokumen
+            </div>
+            <x-dropdown-link :href="route('riwayat-pendidikan.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-pendidikan.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="graduation-cap" class="w-4 h-4 text-blue-600 shrink-0" />
+                <span>Riwayat Pendidikan</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('riwayat-diklat.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-diklat.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="file-text" class="w-4 h-4 text-indigo-600 shrink-0" />
+                <span>Riwayat Diklat</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('riwayat-str-sip.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-str-sip.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="stethoscope" class="w-4 h-4 text-sky-600 shrink-0" />
+                <span>Riwayat STR & SIP</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('riwayat-skp.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-skp.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="chart" class="w-4 h-4 text-teal-600 shrink-0" />
+                <span>Riwayat SKP</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('riwayat-publikasi.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-publikasi.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="book-open" class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Riwayat Publikasi</span>
+            </x-dropdown-link>
+
+            <div class="border-t border-slate-100 my-1"></div>
+            <div class="px-3.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
+                Karir & Jabatan
+            </div>
+            <x-dropdown-link :href="route('riwayat-pangkat.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-pangkat.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="award" class="w-4 h-4 text-amber-600 shrink-0" />
+                <span>Riwayat Pangkat</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('riwayat-jabatan.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-jabatan.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="briefcase" class="w-4 h-4 text-blue-600 shrink-0" />
+                <span>Riwayat Jabatan</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('riwayat-penghargaan.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-penghargaan.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="award" class="w-4 h-4 text-rose-600 shrink-0" />
+                <span>Riwayat Penghargaan</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('riwayat-organisasi.index')" class="flex items-center gap-2 {{ request()->routeIs('riwayat-organisasi.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="building" class="w-4 h-4 text-slate-600 shrink-0" />
+                <span>Riwayat Organisasi</span>
+            </x-dropdown-link>
+        </x-slot>
+    </x-dropdown>
+@endif
+
+{{-- ============================================================== --}}
+{{-- 9. ANJAB & ABK (Analisis Jabatan & Formasi Kebutuhan)          --}}
 {{-- ============================================================== --}}
 @if(Auth::user()->canAccessAnjabAbk())
     <x-dropdown align="left" width="w-64">
@@ -348,14 +356,14 @@
 @endif
 
 {{-- ============================================================== --}}
-{{-- 8. MANAJEMEN TALENTA ASN (PermenPAN-RB No. 3/2020)             --}}
+{{-- 10. MANAJEMEN TALENTA ASN (PermenPAN-RB No. 3/2020)            --}}
 {{-- ============================================================== --}}
 @if(Auth::user()->canAccessTalentManagement())
-    <x-dropdown align="left" width="w-64">
+    <x-dropdown align="right" width="w-64">
         <x-slot name="trigger">
             <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('manajemen-talenta.*') ? 'bg-rose-50 text-rose-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
                 <x-icon name="target" class="w-4 h-4 {{ request()->routeIs('manajemen-talenta.*') ? 'text-rose-600' : 'text-slate-500' }}" />
-                <span>Manajemen Talenta</span>
+                <span>Manajemen Talenta ASN</span>
                 <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
             </button>
         </x-slot>
@@ -403,14 +411,14 @@
 @endif
 
 {{-- ============================================================== --}}
-{{-- 9. MASTER DATA (Khusus Administrator Sistem)                   --}}
+{{-- 11. MASTER DATA & SISTEM (Khusus Administrator Sistem)         --}}
 {{-- ============================================================== --}}
 @if(Auth::user()->hasRole('admin'))
     <x-dropdown align="right" width="w-56">
         <x-slot name="trigger">
             <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('unit-kerja.*', 'jabatan.*', 'golongan.*', 'jenis-jabatan.*', 'audit-logs.*', 'backup.*') ? 'bg-slate-100 text-slate-900 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
                 <x-icon name="database" class="w-4 h-4 {{ request()->routeIs('unit-kerja.*', 'jabatan.*', 'golongan.*', 'jenis-jabatan.*', 'audit-logs.*', 'backup.*') ? 'text-slate-800' : 'text-slate-500' }}" />
-                <span>Master Data</span>
+                <span>Master Data & Sistem</span>
                 <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
             </button>
         </x-slot>

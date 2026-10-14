@@ -87,7 +87,7 @@
 
                     <x-dropdown-link :href="route('profile.edit')" class="flex items-center gap-2">
                         <x-icon name="settings" class="w-4 h-4 text-slate-500" />
-                        <span>{{ __('Profile & Pengaturan') }}</span>
+                        <span>{{ __('Profile & Pengaturan Akun') }}</span>
                     </x-dropdown-link>
 
                     <!-- Authentication -->
@@ -97,7 +97,7 @@
                                 onclick="event.preventDefault(); this.closest('form').submit();"
                                 class="flex items-center gap-2 text-rose-600 hover:text-rose-700">
                             <x-icon name="log-out" class="w-4 h-4 text-rose-500" />
-                            <span>{{ __('Log Out') }}</span>
+                            <span>{{ __('Log Out (Keluar Aplikasi)') }}</span>
                         </x-dropdown-link>
                     </form>
                 </x-slot>

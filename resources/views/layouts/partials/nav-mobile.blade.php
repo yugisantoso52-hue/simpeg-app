@@ -163,7 +163,7 @@
     @else
         <x-responsive-nav-link :href="route('pengajuan-cuti.index')" :active="request()->routeIs('pengajuan-cuti.*')" class="flex items-center gap-2.5 rounded-xl font-bold">
             <x-icon name="calendar-off" class="w-4 h-4 text-amber-600" />
-            <span>E-Cuti Pegawai</span>
+            <span>E-Cuti</span>
         </x-responsive-nav-link>
     @endif
 
