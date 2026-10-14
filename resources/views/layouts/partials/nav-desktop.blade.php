@@ -221,7 +221,7 @@
             </x-dropdown-link>
             <x-dropdown-link :href="route('pengajuan-karir.index')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
                 <x-icon name="clipboard-check" class="w-4 h-4 text-indigo-600 shrink-0" />
-                <span>Verifikasi Usulan KGB & KP</span>
+                <span>Verifikasi Usulan Karir & Satyalancana</span>
             </x-dropdown-link>
             <x-dropdown-link :href="route('kp.index')" class="flex items-center gap-2 {{ request()->routeIs('kp.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
                 <x-icon name="award" class="w-4 h-4 text-emerald-600 shrink-0" />

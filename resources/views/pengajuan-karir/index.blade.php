@@ -1,8 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <x-enterprise.page-header
-            title="Layanan Pengajuan Karir (KGB & Kenaikan Pangkat)"
-            subtitle="Portal Mandiri Pegawai (Dosen & Tendik) dan Verifikasi Administratif Berjenjang"
+            title="Layanan & Verifikasi Usulan Karir ASN (KP, KGB & Satyalancana)"
+            subtitle="Pusat Layanan Mandiri Pegawai, Verifikasi Administratif Berjenjang & Monitoring Jatuh Tempo"
         />
     </x-slot>
 
@@ -28,6 +28,54 @@
                     <button onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-900 font-bold">✕</button>
                 </div>
             @endif
+
+            {{-- NAVIGASI TAB CLUSTER LAYANAN KARIR & SATYALANCANA --}}
+            <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
+                <a href="{{ route('pengajuan-karir.index', ['tab' => 'all']) }}" 
+                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-xs {{ in_array($tab, ['all']) && !request()->filled('jenis') ? 'bg-indigo-600 text-white shadow-indigo-500/20' : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200' }}">
+                    <span>📑 Semua Usulan Karir</span>
+                </a>
+
+                <a href="{{ route('pengajuan-karir.index', ['tab' => 'kp', 'jenis' => 'KP']) }}" 
+                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-xs {{ $tab === 'kp' || request('jenis') === 'KP' ? 'bg-emerald-600 text-white shadow-emerald-500/20' : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200' }}">
+                    <span>🎖️ Kenaikan Pangkat (KP)</span>
+                    @if(($countKpPending ?? 0) > 0)
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black {{ $tab === 'kp' || request('jenis') === 'KP' ? 'bg-emerald-800 text-white' : 'bg-emerald-100 text-emerald-800' }}">{{ $countKpPending }}</span>
+                    @endif
+                </a>
+
+                <a href="{{ route('pengajuan-karir.index', ['tab' => 'kgb', 'jenis' => 'KGB']) }}" 
+                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-xs {{ $tab === 'kgb' || request('jenis') === 'KGB' ? 'bg-amber-600 text-white shadow-amber-500/20' : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200' }}">
+                    <span>💰 Gaji Berkala (KGB)</span>
+                    @if(($countKgbPending ?? 0) > 0)
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black {{ $tab === 'kgb' || request('jenis') === 'KGB' ? 'bg-amber-800 text-white' : 'bg-amber-100 text-amber-800' }}">{{ $countKgbPending }}</span>
+                    @endif
+                </a>
+
+                <a href="{{ route('pengajuan-karir.index', ['tab' => 'satyalancana']) }}" 
+                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-xs {{ $tab === 'satyalancana' ? 'bg-indigo-700 text-white shadow-indigo-600/20' : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200' }}">
+                    <span>🏆 Satyalancana Karya Satya</span>
+                    @if(($countSatyalancanaPending ?? 0) > 0)
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black {{ $tab === 'satyalancana' ? 'bg-indigo-950 text-white' : 'bg-indigo-100 text-indigo-800' }}">{{ $countSatyalancanaPending }}</span>
+                    @endif
+                </a>
+
+                @if($isExecutive ?? false)
+                    <a href="{{ route('pengajuan-karir.index', ['tab' => 'radar']) }}" 
+                       class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-xs {{ $tab === 'radar' ? 'bg-blue-600 text-white shadow-blue-500/20' : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200' }}">
+                        <span>🎯 Radar Monitoring (KP & KGB)</span>
+                        @if((($reminderKp->count() ?? 0) + ($reminderKgb->count() ?? 0)) > 0)
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black {{ $tab === 'radar' ? 'bg-blue-800 text-white' : 'bg-blue-100 text-blue-800' }}">{{ ($reminderKp->count() ?? 0) + ($reminderKgb->count() ?? 0) }}</span>
+                        @endif
+                    </a>
+                @endif
+            </div>
+
+            @if(($tab ?? '') === 'satyalancana')
+                @include('pengajuan-karir._tab_satyalancana')
+            @elseif(($tab ?? '') === 'radar')
+                @include('pengajuan-karir._tab_radar')
+            @else
 
             {{-- Kartu Aksi Buat Pengajuan Mandiri (Bagi Pegawai) --}}
             <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
@@ -211,6 +259,7 @@
                     </div>
                 </div>
             </x-enterprise.card>
+            @endif
 
         </div>
     </div>

@@ -213,7 +213,7 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('pengajuan-karir.index')" :active="request()->routeIs('pengajuan-karir.*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="clipboard-check" class="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Verifikasi Usulan KGB & KP</span>
+                    <span>Verifikasi Usulan Karir & Satyalancana</span>
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('kp.index')" :active="request()->routeIs('kp.*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="award" class="w-3.5 h-3.5 text-emerald-600" />

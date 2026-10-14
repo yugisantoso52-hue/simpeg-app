@@ -21,7 +21,7 @@ class KgbController extends Controller
      */
     public function index(Request $request)
     {
-        $allPegawai = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])
+        $allPegawai = Pegawai::with(['unitKerja', 'jabatan', 'golongan', 'pengajuanKarir'])
             ->where('status_pegawai', 'Aktif')
             ->get();
 

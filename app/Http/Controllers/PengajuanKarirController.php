@@ -5,9 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Golongan;
 use App\Models\Pegawai;
 use App\Models\PengajuanKarir;
+use App\Models\UsulanSatyalancana;
+use App\Services\SatyalancanaService;
+use App\Services\KpService;
+use App\Services\KgbService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class PengajuanKarirController extends Controller
 {
@@ -18,6 +23,14 @@ class PengajuanKarirController extends Controller
     {
         $user = Auth::user();
         $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
+        $tab = strtolower((string)$request->query('tab', 'all'));
+
+        // Otomatis sinkronkan tab dengan filter jenis jika tab kp atau kgb
+        if ($tab === 'kp' && !$request->filled('jenis')) {
+            $request->merge(['jenis' => 'KP']);
+        } elseif ($tab === 'kgb' && !$request->filled('jenis')) {
+            $request->merge(['jenis' => 'KGB']);
+        }
 
         $query = PengajuanKarir::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan', 'golonganLama', 'golonganTujuan']);
 
@@ -39,7 +52,83 @@ class PengajuanKarirController extends Controller
         $pengajuans = $query->latest()->paginate(15);
         $userPegawai = $user->pegawai;
 
-        return view('pengajuan-karir.index', compact('pengajuans', 'isExecutive', 'userPegawai'));
+        // Badge counters untuk notifikasi usulan yang memerlukan verifikasi
+        $countKpPending = PengajuanKarir::where('jenis_pengajuan', 'KP')->whereNotIn('status', ['disetujui_dekan', 'disetujui_wd2', 'ditolak'])->count();
+        $countKgbPending = PengajuanKarir::where('jenis_pengajuan', 'KGB')->whereNotIn('status', ['disetujui_dekan', 'disetujui_wd2', 'ditolak'])->count();
+        $countSatyalancanaPending = UsulanSatyalancana::whereNotIn('status', ['disetujui_wd2', 'ditolak'])->count();
+
+        // Data Usulan & Nominasi Satyalancana (jika tab aktif atau executive)
+        $layakSatyalancana = [];
+        $daftarUsulanSatyalancana = null;
+        if ($tab === 'satyalancana' || $isExecutive) {
+            $satyalancanaService = app(SatyalancanaService::class);
+            $tahunIni = (int) date('Y');
+            $usulanTerkini = UsulanSatyalancana::where('tahun_usulan', $tahunIni)
+                ->get()
+                ->keyBy('pegawai_id');
+
+            $allPegawaiSatyalancana = Pegawai::with([
+                'unitKerja', 'jabatan', 'golongan',
+                'riwayatSkp' => fn($q) => $q->orderBy('tahun', 'desc'),
+                'riwayatPangkat' => fn($q) => $q->orderBy('tmt', 'desc'),
+                'riwayatJabatan' => fn($q) => $q->orderBy('tmt_jabatan', 'desc'),
+                'riwayatPenghargaan' => fn($q) => $q->orderBy('tanggal_terima', 'desc'),
+            ])->where('status_pegawai', 'Aktif')->get();
+
+            foreach ($allPegawaiSatyalancana as $p) {
+                $kat = $satyalancanaService->cekKelayakanSatyalancana($p);
+                if ($kat) {
+                    $p->kategori_satyalancana = $kat;
+                    $p->usulan_aktif = $usulanTerkini->get($p->id);
+                    $layakSatyalancana[] = $p;
+                }
+            }
+
+            $daftarUsulanSatyalancana = UsulanSatyalancana::with([
+                'pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan',
+                'pegawai.riwayatSkp', 'pegawai.riwayatPangkat.golongan', 'pegawai.riwayatJabatan.jabatan', 'pegawai.riwayatPenghargaan',
+                'diajukanOleh', 'verifikasiAdminBy', 'parafKabagBy', 'parafKaPokjaBy', 'ttdWd2By'
+            ])->orderByDesc('id')->paginate(15, ['*'], 'sl_page');
+        }
+
+        // Data Radar Jatuh Tempo (Monitoring KP & KGB)
+        $reminderKp = collect();
+        $reminderKgb = collect();
+        if ($tab === 'radar' || $isExecutive) {
+            $hariIni = Carbon::now()->startOfDay();
+            $hariTarget = Carbon::now()->addMonths(3)->endOfDay();
+            $allPegawaiRadar = Pegawai::with(['unitKerja', 'jabatan', 'golongan', 'pengajuanKarir'])
+                ->where('status_pegawai', 'Aktif')
+                ->get();
+            $reminderKp = $allPegawaiRadar->filter(function ($p) use ($hariIni, $hariTarget) {
+                if (!$p->kp_berikutnya) return false;
+                $tgl = Carbon::parse($p->kp_berikutnya);
+                return $tgl->between($hariIni, $hariTarget);
+            })->sortBy('kp_berikutnya')->values();
+
+            $reminderKgb = $allPegawaiRadar->filter(function ($p) use ($hariIni, $hariTarget) {
+                if (!$p->kgb_berikutnya) return false;
+                $tgl = Carbon::parse($p->kgb_berikutnya);
+                return $tgl->between($hariIni, $hariTarget);
+            })->sortBy('kgb_berikutnya')->values();
+        }
+
+        // Jabatan & wewenang login
+        $jabatan = strtoupper(trim((string)($user->pegawai?->jabatan->nama_jabatan ?? '')));
+        $isAdmin = $user->hasRole('admin');
+        $isKaPokja = (str_contains($jabatan, 'KA POKJA') || str_contains($jabatan, 'KEPALA POKJA') || str_contains($jabatan, 'KETUA POKJA'))
+            && (str_contains($jabatan, 'KEU') || str_contains($jabatan, 'KEPEG'));
+        $isKabag = str_contains($jabatan, 'KEPALA BAGIAN UMUM') || str_contains($jabatan, 'KABAG UMUM') || str_contains($jabatan, 'KABAG TU');
+        $isWd2 = str_contains($jabatan, 'WADEK II') || str_contains($jabatan, 'WAKIL DEKAN II') || (str_contains($jabatan, 'WAKIL DEKAN') && str_contains($jabatan, 'KEUANGAN'));
+        $isDekan = str_contains($jabatan, 'DEKAN') && !str_contains($jabatan, 'WAKIL') && !str_contains($jabatan, 'WADEK');
+
+        return view('pengajuan-karir.index', compact(
+            'pengajuans', 'isExecutive', 'userPegawai', 'tab',
+            'countKpPending', 'countKgbPending', 'countSatyalancanaPending',
+            'layakSatyalancana', 'daftarUsulanSatyalancana',
+            'reminderKp', 'reminderKgb',
+            'isAdmin', 'isKaPokja', 'isKabag', 'isWd2', 'isDekan'
+        ));
     }
 
     /**
@@ -260,7 +349,11 @@ class PengajuanKarirController extends Controller
                 $dataWd2['paraf_kabag_by'] = $kabag?->id;
             }
             $pengajuan->update($dataWd2);
-            $msg = 'Pengajuan resmi ditandatangani dan disetujui oleh Wakil Dekan Bidang Keuangan dan Umum.';
+
+            // SINKRONISASI OTOMATIS: Eksekusi perubahan ke master data pegawai & riwayat
+            $this->sinkronisasiKeMasterPegawai($pengajuan);
+
+            $msg = 'Pengajuan resmi ditandatangani dan disetujui oleh Wakil Dekan Bidang Keuangan dan Umum, serta disinkronkan ke master data kepegawaian.';
         } elseif ($tahap === 'ttd_dekan') {
             $pengajuan->update([
                 'status'              => 'disetujui_dekan',
@@ -268,7 +361,11 @@ class PengajuanKarirController extends Controller
                 'ttd_dekan_by'        => $pejabatLogin?->id,
                 'catatan_verifikator' => $catatan ?? 'Disetujui secara resmi oleh Dekan Fakultas Keperawatan.',
             ]);
-            $msg = 'Pengajuan resmi disetujui oleh Dekan.';
+
+            // SINKRONISASI OTOMATIS: Eksekusi perubahan ke master data pegawai & riwayat
+            $this->sinkronisasiKeMasterPegawai($pengajuan);
+
+            $msg = 'Pengajuan resmi disetujui oleh Dekan dan data induk pegawai telah diperbarui.';
         } elseif ($tahap === 'tolak') {
             $pengajuan->update([
                 'status'              => 'ditolak',
@@ -280,5 +377,53 @@ class PengajuanKarirController extends Controller
         }
 
         return back()->with('success', $msg);
+    }
+
+    /**
+     * Sinkronisasi hasil pengesahan karir (KP atau KGB) ke data master Pegawai & Riwayat Terkait
+     */
+    private function sinkronisasiKeMasterPegawai(PengajuanKarir $pengajuan): void
+    {
+        try {
+            $pegawai = $pengajuan->pegawai;
+            if (!$pegawai) return;
+
+            if ($pengajuan->jenis_pengajuan === 'KP' && $pengajuan->golongan_tujuan_id) {
+                $tahun = $pengajuan->tahun_periode ?? date('Y');
+                $bulanMap = [
+                    'Februari' => '02-01',
+                    'April'    => '04-01',
+                    'Juni'     => '06-01',
+                    'Agustus'  => '08-01',
+                    'Oktober'  => '10-01',
+                    'Desember' => '12-01',
+                ];
+                $bulanTmt = $bulanMap[$pengajuan->periode_kp] ?? '04-01';
+                $tmtPangkatBaru = "{$tahun}-{$bulanTmt}";
+
+                app(KpService::class)->prosesKp($pegawai, [
+                    'golongan_baru_id' => $pengajuan->golongan_tujuan_id,
+                    'tmt_pangkat_baru' => $tmtPangkatBaru,
+                ]);
+
+                if ($pengajuan->file_sk_pangkat_terakhir || $pengajuan->file_sk_terakhir) {
+                    $fileSk = $pengajuan->file_sk_pangkat_terakhir ?? $pengajuan->file_sk_terakhir;
+                    $pegawai->update(['file_sk_pangkat_terakhir' => $fileSk]);
+                }
+            } elseif ($pengajuan->jenis_pengajuan === 'KGB' && $pengajuan->tmt_baru) {
+                $tmtKgb = is_string($pengajuan->tmt_baru) ? $pengajuan->tmt_baru : $pengajuan->tmt_baru->format('Y-m-d');
+                app(KgbService::class)->prosesKgb($pegawai, [
+                    'tmt_kgb_baru'    => $tmtKgb,
+                    'gaji_pokok_baru' => $pengajuan->gaji_pokok_baru,
+                ]);
+
+                if ($pengajuan->file_sk_kgb_terakhir || $pengajuan->file_sk_terakhir) {
+                    $fileSk = $pengajuan->file_sk_kgb_terakhir ?? $pengajuan->file_sk_terakhir;
+                    $pegawai->update(['file_sk_kgb_terakhir' => $fileSk]);
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Gagal sinkronisasi pengajuan karir ID {$pengajuan->id}: " . $e->getMessage());
+        }
     }
 }

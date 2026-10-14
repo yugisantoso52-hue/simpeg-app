@@ -18,7 +18,7 @@ class KpController extends Controller
 
     public function index(Request $request)
     {
-        $allPegawai = Pegawai::with(['unitKerja', 'jabatan', 'golongan', 'riwayatSkp', 'riwayatPangkat'])
+        $allPegawai = Pegawai::with(['unitKerja', 'jabatan', 'golongan', 'riwayatSkp', 'riwayatPangkat', 'pengajuanKarir'])
             ->where('status_pegawai', 'Aktif')
             ->get();
 

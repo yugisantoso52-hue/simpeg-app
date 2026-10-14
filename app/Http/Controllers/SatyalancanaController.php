@@ -218,7 +218,31 @@ class SatyalancanaController extends Controller
                 $dataWd2['paraf_kabag_by'] = $kabag?->id;
             }
             $usulan->update($dataWd2);
-            $msg = 'Pengesahan Tanda Tangan Elektronik (TTE) Wakil Dekan II berhasil. Berkas sah dan siap dikirimkan ke Rektorat / BKN.';
+
+            // SINKRONISASI OTOMATIS: Catat ke Riwayat Penghargaan & update satyalancana_terakhir di profil pegawai
+            if ($usulan->pegawai) {
+                $namaPenghargaan = 'Satyalancana Karya Satya ' . $usulan->kategori;
+                \App\Models\RiwayatPenghargaan::updateOrCreate(
+                    [
+                        'pegawai_id'        => $usulan->pegawai_id,
+                        'nama_penghargaan'  => $namaPenghargaan,
+                    ],
+                    [
+                        'jenis_penghargaan' => 'Satyalancana',
+                        'instansi_pemberi'  => 'Presiden Republik Indonesia',
+                        'tanggal_terima'    => now()->toDateString(),
+                        'nomor_sk'          => $usulan->nomor_surat_usulan,
+                        'file_sk'           => $usulan->file_surat_pengantar,
+                        'keterangan'        => 'Disahkan melalui alur persetujuan Satyalancana SIKAP FKp UNRI (' . ($usulan->periode_usulan ?? 'Tahun ' . $usulan->tahun_usulan) . ')',
+                    ]
+                );
+
+                $usulan->pegawai->update([
+                    'satyalancana_terakhir' => $usulan->kategori
+                ]);
+            }
+
+            $msg = 'Pengesahan Tanda Tangan Elektronik (TTE) Wakil Dekan II berhasil. Berkas sah, tercatat pada riwayat penghargaan, dan siap dikirimkan ke Rektorat / BKN.';
 
             // Notifikasi ke pegawai bahwa usulannya telah disetujui pimpinan
             if ($usulan->pegawai && $usulan->pegawai->user) {

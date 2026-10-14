@@ -19,6 +19,26 @@
                 </div>
             @endif
 
+            {{-- NAVIGASI TAB CLUSTER LAYANAN KARIR & SATYALANCANA --}}
+            <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
+                <a href="{{ route('pengajuan-karir.index') }}" 
+                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-xs bg-white text-slate-700 hover:bg-slate-50 border border-slate-200">
+                    <span>📋 Pusat Verifikasi Usulan Karir</span>
+                </a>
+                <a href="{{ route('kp.index') }}" 
+                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-xs bg-emerald-600 text-white shadow-emerald-500/20">
+                    <span>🎖️ Kenaikan Pangkat (KP)</span>
+                </a>
+                <a href="{{ route('kgb.index') }}" 
+                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-xs bg-white text-slate-700 hover:bg-slate-50 border border-slate-200">
+                    <span>💰 Gaji Berkala (KGB)</span>
+                </a>
+                <a href="{{ route('satyalancana.index') }}" 
+                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-xs bg-white text-slate-700 hover:bg-slate-50 border border-slate-200">
+                    <span>🏆 Satyalancana Karya Satya</span>
+                </a>
+            </div>
+
             {{-- Ringkasan Informasi 5 Syarat KP --}}
             <div class="rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-5 shadow-sm">
                 <div class="flex items-start gap-3">
@@ -78,6 +98,7 @@
                                 <th class="px-3 py-3 text-left">Golongan</th>
                                 <th class="px-3 py-3 text-center">TMT Terakhir</th>
                                 <th class="px-4 py-3 text-left">Ceklis 5 Persyaratan Berkas</th>
+                                <th class="px-3 py-3 text-center">Status Usulan Mandiri</th>
                                 <th class="w-40 px-3 py-3 text-center">Aksi</th>
                             </tr>
                         </x-slot>
@@ -209,6 +230,21 @@
                                     </div>
                                 </td>
                                 <td class="px-3 py-3 text-center">
+                                    @php
+                                        $usulanKp = $row->pengajuanKarir?->firstWhere('jenis_pengajuan', 'KP');
+                                    @endphp
+                                    @if($usulanKp)
+                                        <a href="{{ route('pengajuan-karir.show', $usulanKp->id) }}" 
+                                           class="inline-flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[11px] font-bold transition hover:shadow-xs {{ $usulanKp->status === 'disetujui_wd2' || $usulanKp->status === 'disetujui_dekan' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : ($usulanKp->status === 'ditolak' ? 'bg-rose-50 text-rose-800 border-rose-300' : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100') }}">
+                                            <span>📋 {{ ucfirst(str_replace('_', ' ', $usulanKp->status)) }}</span>
+                                            <span class="text-[9px] text-slate-500 font-normal">Klik Lihat Berkas</span>
+                                        </a>
+                                    @else
+                                        <span class="text-[11px] text-slate-400 italic block">Belum Ada Usulan</span>
+                                        <span class="text-[9px] text-slate-400">(Bisa Proses Langsung)</span>
+                                    @endif
+                                </td>
+                                <td class="px-3 py-3 text-center">
                                     <div class="flex flex-col gap-1.5 items-center justify-center">
                                         @if(auth()->user()->hasRole('admin'))
                                         <button 
@@ -229,7 +265,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6">
+                                <td colspan="7">
                                     <x-enterprise.empty-state
                                         title="Belum Ada Usulan Kenaikan Pangkat"
                                         description="Tidak ada pegawai aktif yang memenuhi kriteria masa kerja pangkat (>= 4 tahun)."

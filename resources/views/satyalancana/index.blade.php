@@ -55,6 +55,26 @@
                 </div>
             @endif
 
+            {{-- NAVIGASI TAB CLUSTER LAYANAN KARIR & SATYALANCANA --}}
+            <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
+                <a href="{{ route('pengajuan-karir.index') }}" 
+                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-xs bg-white text-slate-700 hover:bg-slate-50 border border-slate-200">
+                    <span>📋 Pusat Verifikasi Usulan Karir</span>
+                </a>
+                <a href="{{ route('kp.index') }}" 
+                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-xs bg-white text-slate-700 hover:bg-slate-50 border border-slate-200">
+                    <span>🎖️ Kenaikan Pangkat (KP)</span>
+                </a>
+                <a href="{{ route('kgb.index') }}" 
+                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-xs bg-white text-slate-700 hover:bg-slate-50 border border-slate-200">
+                    <span>💰 Gaji Berkala (KGB)</span>
+                </a>
+                <a href="{{ route('satyalancana.index') }}" 
+                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-xs bg-indigo-700 text-white shadow-indigo-600/20">
+                    <span>🏆 Satyalancana Karya Satya</span>
+                </a>
+            </div>
+
             {{-- ACTION CARD: TOMBOL CEPAT & INFORMASI DOKUMEN KOLEKTIF --}}
             <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 rounded-2xl p-6 text-white shadow-lg border border-slate-700">
                 <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">

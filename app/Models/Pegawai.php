@@ -250,6 +250,16 @@ class Pegawai extends Model
         return $this->hasMany(RiwayatPenghargaan::class, 'pegawai_id')->orderBy('tanggal_terima', 'desc');
     }
 
+    public function pengajuanKarir(): HasMany
+    {
+        return $this->hasMany(PengajuanKarir::class, 'pegawai_id')->latest();
+    }
+
+    public function usulanSatyalancana(): HasMany
+    {
+        return $this->hasMany(UsulanSatyalancana::class, 'pegawai_id')->latest();
+    }
+
     public function riwayatOrganisasi(): HasMany
     {
         return $this->hasMany(RiwayatOrganisasi::class, 'pegawai_id');
