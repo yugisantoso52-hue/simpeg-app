@@ -77,12 +77,14 @@
                 <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition">
                     <span>🖨️</span> Cetak Bagan
                 </button>
-                <a href="{{ route('abk.index') }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition">
-                    <span>🧮</span> Rekap ABK & Formasi
-                </a>
-                <a href="{{ route('anjab.index') }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm transition">
-                    <span>📑</span> Katalog Anjab
-                </a>
+                @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+                    <a href="{{ route('abk.index') }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition">
+                        <span>🧮</span> Rekap ABK & Formasi
+                    </a>
+                    <a href="{{ route('anjab.index') }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm transition">
+                        <span>📑</span> Katalog Anjab
+                    </a>
+                @endif
             </div>
         </div>
     </x-slot>
@@ -1018,21 +1020,23 @@
                     <button @click="showModal = false" class="px-3.5 py-2 text-xs font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
                         Tutup
                     </button>
-                    <template x-if="activeNode && activeNode.anjabUrl && activeNode.anjabUrl !== '#'">
-                        <a :href="activeNode.anjabUrl" class="px-3.5 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition">
-                            📑 Dokumen Anjab
-                        </a>
-                    </template>
-                    <template x-if="activeNode && activeNode.abkUrl && activeNode.abkUrl !== '#'">
-                        <a :href="activeNode.abkUrl" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
-                            🧮 Rincian / Formasi ABK ➔
-                        </a>
-                    </template>
-                    <template x-if="!activeNode || !activeNode.abkUrl || activeNode.abkUrl === '#'">
-                        <a :href="'{{ route('abk.index') }}'" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
-                            Buka Rekap ABK ➔
-                        </a>
-                    </template>
+                    @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+                        <template x-if="activeNode && activeNode.anjabUrl && activeNode.anjabUrl !== '#'">
+                            <a :href="activeNode.anjabUrl" class="px-3.5 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition">
+                                📑 Dokumen Anjab
+                            </a>
+                        </template>
+                        <template x-if="activeNode && activeNode.abkUrl && activeNode.abkUrl !== '#'">
+                            <a :href="activeNode.abkUrl" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+                                🧮 Rincian / Formasi ABK ➔
+                            </a>
+                        </template>
+                        <template x-if="!activeNode || !activeNode.abkUrl || activeNode.abkUrl === '#'">
+                            <a :href="'{{ route('abk.index') }}'" class="px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+                                Buka Rekap ABK ➔
+                            </a>
+                        </template>
+                    @endif
                 </div>
             </div>
         </div>

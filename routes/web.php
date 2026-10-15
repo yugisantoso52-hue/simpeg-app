@@ -201,6 +201,10 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         /* Unduh Berkas Persyaratan & Cetak DRH Satyalancana Karya Satya */
         Route::get('/satyalancana/download-syarat', [SatyalancanaController::class, 'downloadSyarat'])->name('satyalancana.download-syarat');
         Route::get('/satyalancana/{pegawai}/cetak-drh', [SatyalancanaController::class, 'cetakDrh'])->name('satyalancana.cetak-drh');
+
+        /* Transparansi Struktur Organisasi & Peta Jabatan Digital (Akses Semua Pegawai) */
+        Route::get('/anjab/peta-jabatan', [\App\Http\Controllers\PetaJabatanController::class, 'index'])->name('anjab.peta-jabatan');
+        Route::get('/anjab/peta-jabatan/{jabatan}', [\App\Http\Controllers\PetaJabatanController::class, 'getJabatanDetail'])->name('anjab.peta-jabatan.detail');
     });
 
     // ======================================================================
@@ -285,10 +289,6 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
          * MODUL ANALISIS JABATAN (ANJAB) & ANALISIS BEBAN KERJA (ABK)
          * Acuan: PermenPAN-RB No. 1/2020 & Peraturan BKN No. 12 & 19/2011
          * ====================================================================== */
-        // Peta Jabatan Digital Interaktif
-        Route::get('/anjab/peta-jabatan', [\App\Http\Controllers\PetaJabatanController::class, 'index'])->name('anjab.peta-jabatan');
-        Route::get('/anjab/peta-jabatan/{jabatan}', [\App\Http\Controllers\PetaJabatanController::class, 'getJabatanDetail'])->name('anjab.peta-jabatan.detail');
-
         // Analisis Beban Kerja (ABK) & Formasi
         Route::get('/abk', [\App\Http\Controllers\AbkController::class, 'index'])->name('abk.index');
         Route::get('/abk/simulasi-formasi', [\App\Http\Controllers\AbkController::class, 'simulasiFormasi'])->name('abk.simulasi-formasi');
