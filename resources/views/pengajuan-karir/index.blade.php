@@ -202,16 +202,20 @@
                                                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-{{ $badge['color'] }}-100 text-{{ $badge['color'] }}-800 border border-{{ $badge['color'] }}-200">
                                                     {{ $badge['label'] }}
                                                 </span>
-                                                {{-- Tracking Mini Paraf 3 Tahap --}}
-                                                <div class="flex items-center gap-1.5 text-[10px] text-slate-500 pt-0.5">
+                                                {{-- Tracking Mini 4 Tahap Bertingkat --}}
+                                                <div class="flex items-center gap-1 text-[10px] text-slate-500 pt-0.5">
+                                                    <span class="{{ $item->verifikasi_admin_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">
+                                                        Admin: {{ $item->verifikasi_admin_at ? '✓' : '...' }}
+                                                    </span>
+                                                    <span>➔</span>
                                                     <span class="{{ $item->paraf_kapokja_at ? 'text-sky-700 font-bold' : 'text-slate-400' }}">
                                                         Pokja: {{ $item->paraf_kapokja_at ? '✓' : '...' }}
                                                     </span>
-                                                    <span>•</span>
+                                                    <span>➔</span>
                                                     <span class="{{ $item->paraf_kabag_at ? 'text-indigo-700 font-bold' : 'text-slate-400' }}">
                                                         Kabag: {{ $item->paraf_kabag_at ? '✓' : '...' }}
                                                     </span>
-                                                    <span>•</span>
+                                                    <span>➔</span>
                                                     <span class="{{ $item->paraf_wd2_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">
                                                         WD II: {{ $item->paraf_wd2_at ? '✓' : '...' }}
                                                     </span>
@@ -222,23 +226,118 @@
                                             {{ $item->created_at->format('d/m/Y H:i') }}
                                         </td>
                                         <td class="py-3 px-3 text-center">
-                                            <div class="flex items-center justify-center gap-1.5">
-                                                <a href="{{ route('pengajuan-karir.show', $item->id) }}" 
-                                                   class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-                                                    Detail & Tracking
-                                                </a>
-                                                @if($item->jenis_pengajuan === 'KP')
-                                                    <a href="{{ route('reports.kp.pdf', $item->id) }}" target="_blank"
-                                                       class="px-2 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition"
-                                                       title="Cetak Surat Usulan KP Resmi">
-                                                        📄 PDF
+                                            <div class="flex flex-col items-center gap-1.5">
+                                                <div class="flex items-center justify-center gap-1.5">
+                                                    <a href="{{ route('pengajuan-karir.show', $item->id) }}" 
+                                                       class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                                                        Detail & Tracking
                                                     </a>
-                                                @else
-                                                    <a href="{{ route('reports.kgb.pdf', $item->id) }}" target="_blank"
-                                                       class="px-2 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition"
-                                                       title="Cetak Surat KGB Resmi">
-                                                        📄 PDF
-                                                    </a>
+                                                    @if($item->jenis_pengajuan === 'KP')
+                                                        <a href="{{ route('reports.kp.pdf', $item->id) }}" target="_blank"
+                                                           class="px-2 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition"
+                                                           title="Cetak Surat Usulan KP Resmi">
+                                                            📄 PDF
+                                                        </a>
+                                                    @else
+                                                        <a href="{{ route('reports.kgb.pdf', $item->id) }}" target="_blank"
+                                                           class="px-2 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition"
+                                                           title="Cetak Surat KGB Resmi">
+                                                            📄 PDF
+                                                        </a>
+                                                    @endif
+                                                </div>
+
+                                                {{-- TOMBOL VERIFIKASI BERTINGKAT TERKUNCI (ADMIN -> POKJA -> KABAG -> WD2) --}}
+                                                @if($isExecutive ?? false)
+                                                    <div class="flex items-center justify-center gap-1 flex-wrap pt-1 border-t border-slate-100">
+                                                        {{-- 1. ADMIN SCREENING --}}
+                                                        @if($item->verifikasi_admin_at)
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300" title="1. Admin: Selesai">
+                                                                ✓ 1. Admin
+                                                            </span>
+                                                        @elseif(($isAdmin ?? false) && $item->status !== 'disetujui_wd2' && $item->status !== 'ditolak')
+                                                            <form action="{{ route('pengajuan-karir.verifikasi', $item->id) }}" method="POST">
+                                                                @csrf
+                                                                <input type="hidden" name="tahap" value="verifikasi_admin">
+                                                                <button type="submit" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-600 text-white hover:bg-amber-700 transition" title="1. Verifikasi Screening Berkas">
+                                                                    ✓ 1. Admin
+                                                                </button>
+                                                            </form>
+                                                        @else
+                                                            <button type="button" disabled class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed" title="Menunggu Screening Admin">
+                                                                ⏳ 1. Admin
+                                                            </button>
+                                                        @endif
+
+                                                        {{-- 2. PARAF POKJA --}}
+                                                        @if($item->paraf_kapokja_at)
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300" title="2. Paraf Pokja: Selesai">
+                                                                ✓ 2. Pokja
+                                                            </span>
+                                                        @elseif(!$item->verifikasi_admin_at)
+                                                            <button type="button" disabled class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 cursor-not-allowed opacity-60" title="🔒 Terkunci: Menunggu Admin Screening Berkas">
+                                                                🔒 2. Pokja
+                                                            </button>
+                                                        @elseif((($isKaPokja ?? false) || ($isAdmin ?? false)) && $item->status !== 'disetujui_wd2' && $item->status !== 'ditolak')
+                                                            <form action="{{ route('pengajuan-karir.verifikasi', $item->id) }}" method="POST">
+                                                                @csrf
+                                                                <input type="hidden" name="tahap" value="paraf_kapokja">
+                                                                <button type="submit" class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-600 text-white hover:bg-teal-700 transition" title="2. Bubuhkan Paraf Ka Pokja">
+                                                                    ✒ 2. Pokja
+                                                                </button>
+                                                            </form>
+                                                        @else
+                                                            <button type="button" disabled class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed" title="Menunggu Ka Pokja">
+                                                                ⏳ 2. Pokja
+                                                            </button>
+                                                        @endif
+
+                                                        {{-- 3. PARAF KABAG --}}
+                                                        @if($item->paraf_kabag_at)
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300" title="3. Paraf Kabag: Selesai">
+                                                                ✓ 3. Kabag
+                                                            </span>
+                                                        @elseif(!$item->paraf_kapokja_at)
+                                                            <button type="button" disabled class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 cursor-not-allowed opacity-60" title="🔒 Terkunci: Menunggu Paraf Ka Pokja">
+                                                                🔒 3. Kabag
+                                                            </button>
+                                                        @elseif((($isKabag ?? false) || ($isAdmin ?? false)) && $item->status !== 'disetujui_wd2' && $item->status !== 'ditolak')
+                                                            <form action="{{ route('pengajuan-karir.verifikasi', $item->id) }}" method="POST">
+                                                                @csrf
+                                                                <input type="hidden" name="tahap" value="paraf_kabag">
+                                                                <button type="submit" class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white hover:bg-blue-700 transition" title="3. Bubuhkan Paraf Kabag Umum">
+                                                                    ✒ 3. Kabag
+                                                                </button>
+                                                            </form>
+                                                        @else
+                                                            <button type="button" disabled class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed" title="Menunggu Kabag Umum">
+                                                                ⏳ 3. Kabag
+                                                            </button>
+                                                        @endif
+
+                                                        {{-- 4. TTE WD2 --}}
+                                                        @if($item->paraf_wd2_at || $item->status === 'disetujui_wd2')
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300" title="4. Disahkan TTE WD2">
+                                                                ✓ 4. Sah (WD2)
+                                                            </span>
+                                                        @elseif(!$item->paraf_kabag_at)
+                                                            <button type="button" disabled class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 cursor-not-allowed opacity-60" title="🔒 Terkunci: Menunggu Paraf Kabag Umum">
+                                                                🔒 4. WD2
+                                                            </button>
+                                                        @elseif((($isWd2 ?? false) || ($isAdmin ?? false)) && $item->status !== 'ditolak')
+                                                            <form action="{{ route('pengajuan-karir.verifikasi', $item->id) }}" method="POST">
+                                                                @csrf
+                                                                <input type="hidden" name="tahap" value="paraf_wd2">
+                                                                <button type="submit" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition" title="4. Sahkan Usulan Resmi TTE WD II">
+                                                                    ✍ 4. TTE WD2
+                                                                </button>
+                                                            </form>
+                                                        @else
+                                                            <button type="button" disabled class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed" title="Menunggu TTE WD II">
+                                                                ⏳ 4. WD2
+                                                            </button>
+                                                        @endif
+                                                    </div>
                                                 @endif
                                             </div>
                                         </td>

@@ -238,43 +238,84 @@
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2 pt-2">
-                            {{-- 1. Tombol Paraf Ka Pokja Keu-Kepeg --}}
-                            @if(!$pengajuan->paraf_kapokja_at && ($isAdmin || $isKaPokja))
-                                <button type="submit" name="tahap" value="paraf_kapokja" class="px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-xs transition">
-                                    ✓ 1. Periksa Berkas & Bubuhkan Paraf Ka Pokja
+                            {{-- 1. Tombol Admin Screening Berkas --}}
+                            @if($pengajuan->verifikasi_admin_at)
+                                <span class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5" title="Selesai pada {{ $pengajuan->verifikasi_admin_at->format('d/m/Y H:i') }}">
+                                    ✓ 1. Admin Screening: Selesai
+                                </span>
+                            @elseif($isAdmin)
+                                <button type="submit" name="tahap" value="verifikasi_admin" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs transition">
+                                    ✓ 1. Admin Screening Berkas
                                 </button>
+                            @else
+                                <span class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200 select-none">
+                                    ⏳ 1. Menunggu Admin Screening Berkas
+                                </span>
                             @endif
 
-                            {{-- 2. Tombol Paraf Kabag Umum --}}
-                            @if(!$pengajuan->paraf_kabag_at && ($isAdmin || $isKabag))
-                                @if($pengajuan->paraf_kapokja_at || $isAdmin)
-                                    <button type="submit" name="tahap" value="paraf_kabag" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition">
-                                        ✓ 2. Telaah Tata Naskah & Paraf Kabag Umum
-                                    </button>
-                                @else
-                                    <span class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none" title="Harus diparaf Ka Pokja terlebih dahulu">
-                                        ⏳ 2. Paraf Kabag (Menunggu Paraf Ka Pokja)
-                                    </span>
-                                @endif
+                            {{-- 2. Tombol Paraf Ka Pokja Keu-Kepeg --}}
+                            @if($pengajuan->paraf_kapokja_at)
+                                <span class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5" title="Selesai pada {{ $pengajuan->paraf_kapokja_at->format('d/m/Y H:i') }}">
+                                    ✓ 2. Paraf Ka Pokja: Selesai
+                                </span>
+                            @elseif(!$pengajuan->verifikasi_admin_at)
+                                <span class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Admin Screening Berkas">
+                                    🔒 2. Paraf Pokja (Terkunci)
+                                </span>
+                            @elseif($isAdmin || $isKaPokja)
+                                <button type="submit" name="tahap" value="paraf_kapokja" class="px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-xs transition">
+                                    ✒ 2. Periksa & Paraf Ka Pokja
+                                </button>
+                            @else
+                                <span class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200 select-none">
+                                    ⏳ 2. Menunggu Paraf Ka Pokja
+                                </span>
                             @endif
 
-                            {{-- 3. Tombol Tanda Tangan Wakil Dekan II --}}
-                            @if(!$pengajuan->paraf_wd2_at && ($isAdmin || $isWd2))
-                                @if($pengajuan->paraf_kabag_at || $isAdmin)
-                                    <button type="submit" name="tahap" value="paraf_wd2" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition">
-                                        🎖️ 3. Setujui & Tanda Tangan Resmi Wakil Dekan II
-                                    </button>
-                                @else
-                                    <span class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none" title="Harus ditelaah Kabag terlebih dahulu">
-                                        ⏳ 3. Tanda Tangan Pimpinan (Menunggu Paraf Kabag)
-                                    </span>
-                                @endif
+                            {{-- 3. Tombol Paraf Kabag Umum --}}
+                            @if($pengajuan->paraf_kabag_at)
+                                <span class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5" title="Selesai pada {{ $pengajuan->paraf_kabag_at->format('d/m/Y H:i') }}">
+                                    ✓ 3. Paraf Kabag: Selesai
+                                </span>
+                            @elseif(!$pengajuan->paraf_kapokja_at)
+                                <span class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Paraf Ka Pokja">
+                                    🔒 3. Paraf Kabag (Terkunci)
+                                </span>
+                            @elseif($isAdmin || $isKabag)
+                                <button type="submit" name="tahap" value="paraf_kabag" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition">
+                                    ✒ 3. Telaah Naskah & Paraf Kabag
+                                </button>
+                            @else
+                                <span class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200 select-none">
+                                    ⏳ 3. Menunggu Paraf Kabag
+                                </span>
+                            @endif
+
+                            {{-- 4. Tombol Tanda Tangan Wakil Dekan II --}}
+                            @if($pengajuan->paraf_wd2_at || $pengajuan->status === 'disetujui_wd2')
+                                <span class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5">
+                                    ✓ 4. Sah (TTE WD2)
+                                </span>
+                            @elseif(!$pengajuan->paraf_kabag_at)
+                                <span class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Paraf Kabag Umum">
+                                    🔒 4. TTE WD2 (Terkunci)
+                                </span>
+                            @elseif($isAdmin || $isWd2)
+                                <button type="submit" name="tahap" value="paraf_wd2" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition">
+                                    ✍ 4. Setujui & TTE Wakil Dekan II
+                                </button>
+                            @else
+                                <span class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200 select-none">
+                                    ⏳ 4. Menunggu TTE WD II
+                                </span>
                             @endif
 
                             {{-- Tombol Tolak / Kembalikan --}}
-                            <button type="submit" name="tahap" value="tolak" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition">
-                                ✕ Kembalikan / Perlu Perbaikan
-                            </button>
+                            @if($pengajuan->status !== 'disetujui_wd2' && $pengajuan->status !== 'ditolak')
+                                <button type="submit" name="tahap" value="tolak" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition">
+                                    ✕ Kembalikan / Tolak
+                                </button>
+                            @endif
                         </div>
                     </form>
                 </div>

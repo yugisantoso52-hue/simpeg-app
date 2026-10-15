@@ -329,17 +329,35 @@ class PengajuanKarirController extends Controller
 
         $pejabatLogin = $user->pegawai ?? Pegawai::where('nama', 'like', '%' . $user->name . '%')->first();
 
-        if ($tahap === 'paraf_kapokja') {
+        if ($tahap === 'verifikasi_admin') {
             $pengajuan->update([
+                'status'              => 'diverifikasi_admin',
+                'verifikasi_admin_at' => now(),
+                'verifikasi_admin_by' => $user->id,
+                'catatan_verifikator' => $catatan ?? 'Telah diverifikasi kelengkapan berkas usulan karir (SK terakhir, SKP, dll) oleh Admin Kepegawaian.',
+            ]);
+            $msg = '1. Verifikasi Screening Berkas oleh Admin Kepegawaian berhasil.';
+        } elseif ($tahap === 'paraf_kapokja') {
+            if (!$pengajuan->verifikasi_admin_at && !$user->canManageSystem()) {
+                return back()->with('error', 'SOP Tata Naskah: Berkas usulan harus diperiksa kelengkapannya (Admin Screening Berkas) terlebih dahulu sebelum diparaf Ka Pokja.');
+            }
+
+            $dataPokja = [
                 'status'              => 'diverifikasi_kapokja',
                 'paraf_kapokja_at'    => now(),
                 'paraf_kapokja_by'    => $pejabatLogin?->id,
                 'catatan_verifikator' => $catatan ?? 'Telah diperiksa kelengkapan berkas administrasi dan diverifikasi sah oleh Ka Pokja Keu-Kepeg.',
-            ]);
-            $msg = 'Paraf Ka Pokja Keuangan dan Kepegawaian berhasil dibubuhkan.';
+            ];
+            if (!$pengajuan->verifikasi_admin_at) {
+                $dataPokja['verifikasi_admin_at'] = now();
+                $dataPokja['verifikasi_admin_by'] = $user->id;
+            }
+
+            $pengajuan->update($dataPokja);
+            $msg = '2. Paraf Ka Pokja Keuangan dan Kepegawaian berhasil dibubuhkan.';
         } elseif ($tahap === 'paraf_kabag') {
             // Validasi SOP: Harus sudah diperiksa Ka Pokja terlebih dahulu
-            if (!$pengajuan->paraf_kapokja_at && !$user->hasRole('admin')) {
+            if (!$pengajuan->paraf_kapokja_at && !$user->canManageSystem()) {
                 return back()->with('error', 'SOP Tata Naskah: Berkas harus diperiksa kelengkapannya dan diparaf terlebih dahulu oleh Ka Pokja Keu-Kepeg sebelum ditelaah oleh Kabag Umum.');
             }
 
@@ -350,17 +368,20 @@ class PengajuanKarirController extends Controller
                 'catatan_verifikator' => $catatan ?? 'Telah ditelaah format tata naskah dinas dan diparaf oleh Kepala Bagian Umum.',
             ];
 
-            // Jika admin melakukan verifikasi langsung, catat waktu riil tanpa memanipulasi waktu mundur
-            if (!$pengajuan->paraf_kapokja_at && $user->hasRole('admin')) {
+            if (!$pengajuan->verifikasi_admin_at) {
+                $dataKabag['verifikasi_admin_at'] = now();
+                $dataKabag['verifikasi_admin_by'] = $user->id;
+            }
+            if (!$pengajuan->paraf_kapokja_at) {
                 $dataKabag['paraf_kapokja_at'] = now();
                 $dataKabag['paraf_kapokja_by'] = $pejabatLogin?->id;
             }
 
             $pengajuan->update($dataKabag);
-            $msg = 'Paraf Kepala Bagian Umum berhasil dibubuhkan.';
+            $msg = '3. Paraf Kepala Bagian Umum berhasil dibubuhkan.';
         } elseif ($tahap === 'paraf_wd2' || $tahap === 'ttd_wd2') {
             // Validasi SOP: Harus sudah diparaf Kabag Umum
-            if (!$pengajuan->paraf_kabag_at && !$user->hasRole('admin')) {
+            if (!$pengajuan->paraf_kabag_at && !$user->canManageSystem()) {
                 return back()->with('error', 'SOP Tata Naskah: Naskah dinas harus melalui telaah paraf koordinasi Kepala Bagian Umum sebelum ditandatangani Wakil Dekan II.');
             }
 
@@ -371,12 +392,15 @@ class PengajuanKarirController extends Controller
                 'catatan_verifikator' => $catatan ?? 'Telah ditandatangani dan disetujui secara resmi oleh Wakil Dekan Bidang Keuangan dan Umum.',
             ];
 
-            // Jika admin melakukan pengesahan langsung, catat riil
-            if (!$pengajuan->paraf_kapokja_at && $user->hasRole('admin')) {
+            if (!$pengajuan->verifikasi_admin_at) {
+                $dataWd2['verifikasi_admin_at'] = now();
+                $dataWd2['verifikasi_admin_by'] = $user->id;
+            }
+            if (!$pengajuan->paraf_kapokja_at) {
                 $dataWd2['paraf_kapokja_at'] = now();
                 $dataWd2['paraf_kapokja_by'] = $pejabatLogin?->id;
             }
-            if (!$pengajuan->paraf_kabag_at && $user->hasRole('admin')) {
+            if (!$pengajuan->paraf_kabag_at) {
                 $dataWd2['paraf_kabag_at'] = now();
                 $dataWd2['paraf_kabag_by'] = $pejabatLogin?->id;
             }
@@ -386,7 +410,7 @@ class PengajuanKarirController extends Controller
             // SINKRONISASI OTOMATIS: Eksekusi perubahan ke master data pegawai & riwayat
             $this->sinkronisasiKeMasterPegawai($pengajuan);
 
-            $msg = 'Pengajuan resmi ditandatangani dan disetujui oleh Wakil Dekan Bidang Keuangan dan Umum, serta disinkronkan ke master data kepegawaian.';
+            $msg = '4. Pengajuan resmi ditandatangani dan disetujui oleh Wakil Dekan Bidang Keuangan dan Umum, serta disinkronkan ke master data kepegawaian.';
         } elseif ($tahap === 'ttd_dekan') {
             $pengajuan->update([
                 'status'              => 'disetujui_dekan',

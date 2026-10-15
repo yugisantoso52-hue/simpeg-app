@@ -247,40 +247,91 @@
                                                 </a>
 
                                                 {{-- Tombol Verifikasi SOP Berjenjang untuk Pimpinan / Verifikator --}}
-                                                @if($isExecutiveOrAdmin && $item->status !== 'selesai' && $item->status !== 'ditolak')
-                                                    <div class="flex items-center gap-1">
-                                                        @if(!$item->paraf_kapokja_at)
+                                                @if($isExecutiveOrAdmin)
+                                                    <div class="flex items-center justify-center gap-1 flex-wrap pt-1 border-t border-slate-100">
+                                                        {{-- 1. ADMIN SCREENING --}}
+                                                        @if($item->verifikasi_admin_at)
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300" title="1. Admin: Selesai">
+                                                                ✓ 1. Admin
+                                                            </span>
+                                                        @elseif($item->status !== 'selesai' && $item->status !== 'ditolak')
+                                                            <form action="{{ route('layanan-surat.surat-aktif.verifikasi', $item->id) }}" method="POST">
+                                                                @csrf
+                                                                <input type="hidden" name="tahap" value="verifikasi_admin">
+                                                                <button type="submit" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-600 text-white hover:bg-amber-700 transition" title="1. Verifikasi Screening Berkas oleh Admin">
+                                                                    ✓ 1. Admin
+                                                                </button>
+                                                            </form>
+                                                        @else
+                                                            <span class="text-[10px] text-slate-400">1. Admin</span>
+                                                        @endif
+
+                                                        {{-- 2. PARAF POKJA --}}
+                                                        @if($item->paraf_kapokja_at)
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300" title="2. Paraf Pokja: Selesai">
+                                                                ✓ 2. Pokja
+                                                            </span>
+                                                        @elseif(!$item->verifikasi_admin_at)
+                                                            <button type="button" disabled class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 cursor-not-allowed opacity-60" title="🔒 Terkunci: Menunggu Admin Screening Berkas">
+                                                                🔒 2. Pokja
+                                                            </button>
+                                                        @elseif($item->status !== 'selesai' && $item->status !== 'ditolak')
                                                             <form action="{{ route('layanan-surat.surat-aktif.verifikasi', $item->id) }}" method="POST">
                                                                 @csrf
                                                                 <input type="hidden" name="tahap" value="paraf_kapokja">
-                                                                <button type="submit" class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-600 text-white hover:bg-sky-700 transition" title="1. Periksa berkas & bubuhkan paraf Ka Pokja">
-                                                                    ✓ 1. Paraf Pokja
-                                                                </button>
-                                                            </form>
-                                                        @elseif(!$item->paraf_kabag_at)
-                                                            <form action="{{ route('layanan-surat.surat-aktif.verifikasi', $item->id) }}" method="POST">
-                                                                @csrf
-                                                                <input type="hidden" name="tahap" value="paraf_kabag">
-                                                                <button type="submit" class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition" title="2. Telaah naskah & bubuhkan paraf Kabag">
-                                                                    ✓ 2. Paraf Kabag
-                                                                </button>
-                                                            </form>
-                                                        @elseif($item->status === 'diparaf_kabag')
-                                                            <form action="{{ route('layanan-surat.surat-aktif.verifikasi', $item->id) }}" method="POST">
-                                                                @csrf
-                                                                <input type="hidden" name="tahap" value="ttd_pimpinan">
-                                                                <button type="submit" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition" title="3. Sahkan & tanda tangani resmi Pimpinan">
-                                                                    🎖️ 3. Sahkan
+                                                                <button type="submit" class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-600 text-white hover:bg-teal-700 transition" title="2. Periksa berkas & bubuhkan paraf Ka Pokja">
+                                                                    ✒ 2. Pokja
                                                                 </button>
                                                             </form>
                                                         @endif
-                                                        <form action="{{ route('layanan-surat.surat-aktif.verifikasi', $item->id) }}" method="POST" onsubmit="return confirm('Kembalikan permohonan surat ini untuk perbaikan?')">
-                                                            @csrf
-                                                            <input type="hidden" name="tahap" value="tolak">
-                                                            <button type="submit" class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition" title="Kembalikan / Tolak">
-                                                                ✕
+
+                                                        {{-- 3. PARAF KABAG --}}
+                                                        @if($item->paraf_kabag_at)
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300" title="3. Paraf Kabag: Selesai">
+                                                                ✓ 3. Kabag
+                                                            </span>
+                                                        @elseif(!$item->paraf_kapokja_at)
+                                                            <button type="button" disabled class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 cursor-not-allowed opacity-60" title="🔒 Terkunci: Menunggu Paraf Ka Pokja">
+                                                                🔒 3. Kabag
                                                             </button>
-                                                        </form>
+                                                        @elseif($item->status !== 'selesai' && $item->status !== 'ditolak')
+                                                            <form action="{{ route('layanan-surat.surat-aktif.verifikasi', $item->id) }}" method="POST">
+                                                                @csrf
+                                                                <input type="hidden" name="tahap" value="paraf_kabag">
+                                                                <button type="submit" class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white hover:bg-blue-700 transition" title="3. Telaah naskah & bubuhkan paraf Kabag Umum">
+                                                                    ✒ 3. Kabag
+                                                                </button>
+                                                            </form>
+                                                        @endif
+
+                                                        {{-- 4. TTE PIMPINAN (WD2 / DEKAN) --}}
+                                                        @if($item->status === 'selesai')
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300" title="4. Disahkan TTE Pimpinan">
+                                                                ✓ 4. Sah (TTE)
+                                                            </span>
+                                                        @elseif(!$item->paraf_kabag_at)
+                                                            <button type="button" disabled class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 cursor-not-allowed opacity-60" title="🔒 Terkunci: Menunggu Paraf Kabag Umum">
+                                                                🔒 4. TTE
+                                                            </button>
+                                                        @elseif($item->status !== 'ditolak')
+                                                            <form action="{{ route('layanan-surat.surat-aktif.verifikasi', $item->id) }}" method="POST">
+                                                                @csrf
+                                                                <input type="hidden" name="tahap" value="ttd_pimpinan">
+                                                                <button type="submit" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition" title="4. Sahkan & tanda tangani resmi Pimpinan">
+                                                                    ✍ 4. Sahkan
+                                                                </button>
+                                                            </form>
+                                                        @endif
+
+                                                        @if($item->status !== 'selesai' && $item->status !== 'ditolak')
+                                                            <form action="{{ route('layanan-surat.surat-aktif.verifikasi', $item->id) }}" method="POST" onsubmit="return confirm('Kembalikan permohonan surat ini untuk perbaikan?')">
+                                                                @csrf
+                                                                <input type="hidden" name="tahap" value="tolak">
+                                                                <button type="submit" class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition" title="Kembalikan / Tolak">
+                                                                    ✕
+                                                                </button>
+                                                            </form>
+                                                        @endif
                                                     </div>
                                                 @endif
                                             </div>

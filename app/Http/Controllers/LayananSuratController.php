@@ -179,16 +179,34 @@ class LayananSuratController extends Controller
         $catatan = $request->input('catatan');
         $pejabatLogin = $user->pegawai;
 
-        if ($tahap === 'paraf_kapokja') {
+        if ($tahap === 'verifikasi_admin') {
             $surat->update([
+                'status'              => 'diverifikasi_admin',
+                'verifikasi_admin_at' => now(),
+                'verifikasi_admin_by' => $user->id,
+                'catatan'             => $catatan ?? 'Telah diverifikasi kelengkapan berkas permohonan surat oleh Admin Kepegawaian.',
+            ]);
+            $msg = '1. Verifikasi Screening Berkas oleh Admin Kepegawaian berhasil.';
+        } elseif ($tahap === 'paraf_kapokja') {
+            if (!$surat->verifikasi_admin_at && !$user->canManageSystem()) {
+                return back()->with('error', 'SOP Tata Naskah: Berkas harus diperiksa kelengkapannya (Admin Screening Berkas) terlebih dahulu sebelum diparaf Ka Pokja.');
+            }
+
+            $dataPokja = [
                 'status'           => 'diparaf_kapokja',
                 'paraf_kapokja_at' => now(),
                 'paraf_kapokja_by' => $pejabatLogin?->id,
                 'catatan'          => $catatan ?? 'Telah diperiksa keaktifan pegawai dan kelayakan berkas oleh Ka Pokja Keu-Kepeg.',
-            ]);
-            $msg = 'Paraf 1 (Ka Pokja Keuangan & Kepegawaian) berhasil dibubuhkan.';
+            ];
+            if (!$surat->verifikasi_admin_at) {
+                $dataPokja['verifikasi_admin_at'] = now();
+                $dataPokja['verifikasi_admin_by'] = $user->id;
+            }
+
+            $surat->update($dataPokja);
+            $msg = '2. Paraf Ka Pokja Keuangan & Kepegawaian berhasil dibubuhkan.';
         } elseif ($tahap === 'paraf_kabag') {
-            if (!$surat->paraf_kapokja_at && !$user->hasRole('admin')) {
+            if (!$surat->paraf_kapokja_at && !$user->canManageSystem()) {
                 return back()->with('error', 'SOP Tata Naskah: Berkas harus diperiksa keaktifannya dan diparaf terlebih dahulu oleh Ka Pokja Keu-Kepeg sebelum ditelaah Kabag Umum.');
             }
 
@@ -199,15 +217,19 @@ class LayananSuratController extends Controller
                 'catatan'        => $catatan ?? 'Telah ditelaah format naskah dinas dan diparaf oleh Kepala Bagian Umum.',
             ];
 
-            if (!$surat->paraf_kapokja_at && $user->hasRole('admin')) {
+            if (!$surat->verifikasi_admin_at) {
+                $dataKabag['verifikasi_admin_at'] = now();
+                $dataKabag['verifikasi_admin_by'] = $user->id;
+            }
+            if (!$surat->paraf_kapokja_at) {
                 $dataKabag['paraf_kapokja_at'] = now();
                 $dataKabag['paraf_kapokja_by'] = $pejabatLogin?->id;
             }
 
             $surat->update($dataKabag);
-            $msg = 'Paraf 2 (Kepala Bagian Umum) berhasil dibubuhkan.';
+            $msg = '3. Paraf Kepala Bagian Umum berhasil dibubuhkan.';
         } elseif ($tahap === 'ttd_pimpinan') {
-            if (!$surat->paraf_kabag_at && !$user->hasRole('admin')) {
+            if (!$surat->paraf_kabag_at && !$user->canManageSystem()) {
                 return back()->with('error', 'SOP Tata Naskah: Konsep surat harus melalui telaah paraf koordinasi Kepala Bagian Umum sebelum ditandatangani Pimpinan.');
             }
 
@@ -216,17 +238,21 @@ class LayananSuratController extends Controller
                 'catatan' => $catatan ?? 'Telah disetujui dan ditandatangani secara elektronik oleh Pimpinan.',
             ];
 
-            if (!$surat->paraf_kapokja_at && $user->hasRole('admin')) {
+            if (!$surat->verifikasi_admin_at) {
+                $dataTtd['verifikasi_admin_at'] = now();
+                $dataTtd['verifikasi_admin_by'] = $user->id;
+            }
+            if (!$surat->paraf_kapokja_at) {
                 $dataTtd['paraf_kapokja_at'] = now();
                 $dataTtd['paraf_kapokja_by'] = $pejabatLogin?->id;
             }
-            if (!$surat->paraf_kabag_at && $user->hasRole('admin')) {
+            if (!$surat->paraf_kabag_at) {
                 $dataTtd['paraf_kabag_at'] = now();
                 $dataTtd['paraf_kabag_by'] = $pejabatLogin?->id;
             }
 
             $surat->update($dataTtd);
-            $msg = 'Surat Keterangan Aktif Bekerja resmi disetujui dan ditandatangani secara elektronik oleh Pimpinan.';
+            $msg = '4. Surat Keterangan Aktif Bekerja resmi disahkan dan ditandatangani secara elektronik oleh Pimpinan.';
         } elseif ($tahap === 'tolak') {
             $surat->update([
                 'status'  => 'ditolak',
