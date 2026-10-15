@@ -115,7 +115,22 @@ class PengajuanCutiController extends Controller
 
     public function approve(ApprovePengajuanCutiRequest $request, int $id)
     {
-        $this->service->approve($id, $request->validated(), (int)$request->user()->id);
+        $validated = $request->validated();
+        $tahunSurat = date('Y');
+
+        if ($request->filled('nomor_surat_input')) {
+            $nomorInput = trim((string)$request->input('nomor_surat_input'));
+            $validated['nomor_surat'] = str_contains($nomorInput, '/UN19') 
+                ? $nomorInput 
+                : $nomorInput . '/UN19.5.1.1.10/KP/' . $tahunSurat;
+        } elseif ($request->filled('nomor_surat')) {
+            $nomorRaw = trim((string)$request->input('nomor_surat'));
+            $validated['nomor_surat'] = str_contains($nomorRaw, '/UN19') 
+                ? $nomorRaw 
+                : $nomorRaw . '/UN19.5.1.1.10/KP/' . $tahunSurat;
+        }
+
+        $this->service->approve($id, $validated, (int)$request->user()->id);
 
         $status = $request->get('status');
         $msg = $status === 'Disetujui' 
@@ -135,6 +150,32 @@ class PengajuanCutiController extends Controller
         return redirect()
             ->route('pengajuan-cuti.index')
             ->with('success', 'Permohonan cuti telah dibatalkan.');
+    }
+
+    public function updateNomorSurat(Request $request, int $id)
+    {
+        $user = $request->user();
+        if (!$user->hasRole('admin') && !$user->canAccessExecutiveKepegawaianMenus()) {
+            abort(403, 'Hanya Admin Kepegawaian yang berwenang mengisi atau mengubah nomor surat.');
+        }
+
+        $cuti = $this->service->find($id);
+        $nomorInput = trim((string) $request->input('nomor_surat_input', ''));
+        $tahunSurat = $cuti->created_at ? $cuti->created_at->format('Y') : date('Y');
+
+        if ($nomorInput !== '') {
+            $nomorSuratFormatted = str_contains($nomorInput, '/UN19') 
+                ? $nomorInput 
+                : $nomorInput . '/UN19.5.1.1.10/KP/' . $tahunSurat;
+        } else {
+            $nomorSuratFormatted = null;
+        }
+
+        $cuti->update(['nomor_surat' => $nomorSuratFormatted]);
+
+        return redirect()
+            ->route('pengajuan-cuti.show', $id)
+            ->with('success', 'Nomor surat cuti berhasil disimpan oleh Admin: ' . ($nomorSuratFormatted ?? '(Dikosongkan)'));
     }
 
     public function destroy(int $id)
@@ -157,12 +198,38 @@ class PengajuanCutiController extends Controller
             }
         }
 
+        // Format Nomor Surat: Nomor: (nomor buat diisi manual)/UN19.5.1.1.10/KP/2026
+        // Pengisian nomor surat dinas hanya diakomodasi dari Admin / Executive
+        $isAdminOrExecutive = $user->hasRole('admin') || $user->hasRole('pimpinan') || $user->canAccessExecutiveKepegawaianMenus();
+        $tahunSurat = $cuti->created_at ? $cuti->created_at->format('Y') : date('Y');
+        $nomorInput = $isAdminOrExecutive 
+            ? trim((string) $request->input('nomor_surat_input', $request->input('nomor_surat', '')))
+            : '';
+
+        if ($nomorInput !== '') {
+            $nomorSuratFormatted = str_contains($nomorInput, '/UN19') 
+                ? $nomorInput 
+                : $nomorInput . '/UN19.5.1.1.10/KP/' . $tahunSurat;
+
+            // Simpan ke database jika belum tersimpan dan user adalah admin/pimpinan
+            if (empty($cuti->nomor_surat) && $isAdminOrExecutive) {
+                $cuti->update(['nomor_surat' => $nomorSuratFormatted]);
+            }
+        } elseif (!empty($cuti->nomor_surat)) {
+            $nomorSuratFormatted = str_contains($cuti->nomor_surat, '/UN19') 
+                ? $cuti->nomor_surat 
+                : $cuti->nomor_surat . '/UN19.5.1.1.10/KP/' . $tahunSurat;
+        } else {
+            // Default template jika belum diisi manual oleh Admin
+            $nomorSuratFormatted = '............/UN19.5.1.1.10/KP/' . $tahunSurat;
+        }
+
         $watermarkService = app(\App\Services\DocumentWatermarkService::class);
-        $verifyCode = $watermarkService->generateVerificationCode('Formulir Permohonan Cuti', 'CUTI/' . ($cuti->nomor_surat ?? $cuti->id) . '/' . date('Y'), $cuti->pegawai->nama_lengkap ?? $cuti->pegawai->nama);
+        $verifyCode = $watermarkService->generateVerificationCode('Formulir Permohonan Cuti', 'CUTI/' . $nomorSuratFormatted, $cuti->pegawai->nama_lengkap ?? $cuti->pegawai->nama);
         $verifyUrl = route('verify.document', ['code' => $verifyCode]);
         $qrCodeDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl);
 
-        $pdf = Pdf::loadView('exports.pdf.formulir_cuti', compact('cuti', 'verifyUrl', 'verifyCode', 'qrCodeDataUri'))
+        $pdf = Pdf::loadView('exports.pdf.formulir_cuti', compact('cuti', 'verifyUrl', 'verifyCode', 'qrCodeDataUri', 'nomorSuratFormatted'))
             ->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);

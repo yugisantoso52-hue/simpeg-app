@@ -196,6 +196,15 @@
                                                     TMT: {{ $item->tmt_baru ? \Carbon\Carbon::parse($item->tmt_baru)->format('d-m-Y') : '-' }}
                                                 </div>
                                             @endif
+                                            @if($item->nomor_surat)
+                                                <div class="text-[10px] font-mono font-bold text-indigo-700 mt-1">
+                                                    No: {{ $item->nomor_surat }}
+                                                </div>
+                                            @else
+                                                <div class="text-[10px] text-slate-400 italic mt-0.5">
+                                                    No: [Ditetapkan Admin]
+                                                </div>
+                                            @endif
                                         </td>
                                         <td class="py-3 px-3">
                                             <div class="space-y-1">

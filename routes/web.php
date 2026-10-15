@@ -104,6 +104,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/', [\App\Http\Controllers\LayananSuratController::class, 'index'])->name('index');
         Route::post('/surat-aktif', [\App\Http\Controllers\LayananSuratController::class, 'storeSuratAktif'])->name('surat-aktif.store');
         Route::post('/surat-aktif/{id}/verifikasi', [\App\Http\Controllers\LayananSuratController::class, 'verifikasi'])->name('surat-aktif.verifikasi');
+        Route::post('/surat-aktif/{id}/update-nomor', [\App\Http\Controllers\LayananSuratController::class, 'updateNomorSurat'])->name('surat-aktif.update-nomor');
         Route::get('/surat-aktif/{id}/cetak', [\App\Http\Controllers\LayananSuratController::class, 'cetakSuratAktif'])->name('surat-aktif.cetak');
     });
 
@@ -173,6 +174,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('/pegawai/bulk-delete', [PegawaiController::class, 'bulkDelete'])->name('pegawai.bulk-delete');
         Route::delete('/pegawai/{pegawai}', [PegawaiController::class, 'destroy'])->name('pegawai.destroy');
         Route::delete('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'destroy'])->name('pengajuan-cuti.destroy');
+        Route::post('/pengajuan-cuti/{id}/update-nomor', [PengajuanCutiController::class, 'updateNomorSurat'])->name('pengajuan-cuti.update-nomor');
 
         // Backup & Restore Database
         Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
@@ -265,6 +267,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/satyalancana', [SatyalancanaController::class, 'index'])->name('satyalancana.index');
         Route::post('/satyalancana/{pegawai}/ajukan', [SatyalancanaController::class, 'ajukan'])->name('satyalancana.ajukan');
         Route::post('/satyalancana/{id}/verifikasi', [SatyalancanaController::class, 'verifikasi'])->name('satyalancana.verifikasi');
+        Route::post('/satyalancana/{id}/update-nomor', [SatyalancanaController::class, 'updateNomorSurat'])->name('satyalancana.update-nomor');
         Route::get('/satyalancana/cetak-surat-pengantar', [SatyalancanaController::class, 'cetakSuratPengantar'])->name('satyalancana.cetak-surat-pengantar');
         Route::get('/tugas-belajar', [TugasBelajarController::class, 'index'])->name('tugas-belajar.index');
         Route::get('/mutasi-pegawai', [MutasiPegawaiController::class, 'index'])->name('mutasi-pegawai.index');
@@ -282,6 +285,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
 
         /* Verifikasi & Paraf Hirarkis Pengajuan Karir */
         Route::post('/pengajuan-karir/{id}/verifikasi', [\App\Http\Controllers\PengajuanKarirController::class, 'verifikasi'])->name('pengajuan-karir.verifikasi');
+        Route::post('/pengajuan-karir/{id}/update-nomor', [\App\Http\Controllers\PengajuanKarirController::class, 'updateNomorSurat'])->name('pengajuan-karir.update-nomor');
 
         /* Pengaturan Titik Lokasi Acuan Presensi (Admin & Dekanat) */
         Route::prefix('admin/presensi')->name('admin.presensi.')->group(function () {

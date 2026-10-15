@@ -73,7 +73,7 @@
         <td style="width: 12%;">Nomor</td>
         <td style="width: 2%;">:</td>
         <td style="width: 46%;">
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/UN19.5.1.1.10/KP/{{ $tahunSurat ?? date('Y') }}
+            {{ $nomorSuratFormatted ?? ($pengajuan->nomor_surat ?? ('............/UN19.5.1.1.10/KP/' . ($tahunSurat ?? date('Y')))) }}
         </td>
         <td style="width: 40%; text-align: right;">
             Pekanbaru, {{ $tanggalSurat ?? \Carbon\Carbon::now()->translatedFormat('d F Y') }}

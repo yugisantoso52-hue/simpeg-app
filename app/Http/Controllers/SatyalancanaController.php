@@ -154,13 +154,23 @@ class SatyalancanaController extends Controller
 
         // 1. TAHAP VERIFIKASI ADMIN KEPEGAWAIAN
         if ($tahap === 'verifikasi_admin') {
-            $usulan->update([
+            $updateData = [
                 'status'              => 'diverifikasi_admin',
                 'verifikasi_admin_at' => now(),
                 'verifikasi_admin_by' => $user->id,
                 'catatan'             => $catatan ?? 'Telah diverifikasi kelengkapan berkas DRH 12 poin, SK CPNS, SK Pangkat, SK Jabatan, SKP 2 tahun, Surat Bebas Hukdis, dan Piagam sebelumnya oleh Admin Kepegawaian.',
-            ]);
-            $msg = 'Verifikasi berkas persyaratan oleh Admin Kepegawaian berhasil.';
+            ];
+
+            if ($request->filled('nomor_surat_input')) {
+                $nomorInput = trim((string) $request->input('nomor_surat_input'));
+                $tahun = $usulan->tahun_usulan ?: date('Y');
+                $updateData['nomor_surat_usulan'] = str_contains($nomorInput, '/UN19') 
+                    ? $nomorInput 
+                    : $nomorInput . '/UN19.5.1.1.10/KP/' . $tahun;
+            }
+
+            $usulan->update($updateData);
+            $msg = '1. Verifikasi kelengkapan berkas & penomoran oleh Admin Kepegawaian berhasil.';
         }
         // 2. TAHAP PARAF 1: KA POKJA KEUANGAN & KEPEGAWAIAN
         elseif ($tahap === 'paraf_kapokja') {
@@ -367,11 +377,22 @@ class SatyalancanaController extends Controller
      */
     public function cetakSuratPengantar(Request $request)
     {
-        // 3.1 & 3.2: Parameter dinamis yang diisi Admin
-        $nomorSuratInput = trim((string) $request->input('nomor_surat_input', ''));
-        $nomorSurat = $nomorSuratInput !== '' 
-            ? $nomorSuratInput . '/UN19.5.1.1.10/KP/' . date('Y') 
-            : $request->input('nomor_surat', '2422/UN19.5.1.1.10/KP/' . date('Y'));
+        $user = Auth::user();
+        $isExecutiveOrAdmin = $user && ($user->canAccessExecutiveKepegawaianMenus() || $user->hasRole('admin'));
+        $nomorSuratInput = $isExecutiveOrAdmin ? trim((string) $request->input('nomor_surat_input', '')) : '';
+
+        if ($nomorSuratInput !== '') {
+            $nomorSurat = str_contains($nomorSuratInput, '/UN19') 
+                ? $nomorSuratInput 
+                : $nomorSuratInput . '/UN19.5.1.1.10/KP/' . date('Y');
+        } else {
+            // Ambil nomor surat yang sudah ditetapkan Admin pada usulan tahun berjalan
+            $existingNomor = UsulanSatyalancana::where('tahun_usulan', date('Y'))
+                ->whereNotNull('nomor_surat_usulan')
+                ->where('nomor_surat_usulan', 'like', '%/UN19%')
+                ->value('nomor_surat_usulan');
+            $nomorSurat = $existingNomor ?? $request->input('nomor_surat', '2422/UN19.5.1.1.10/KP/' . date('Y'));
+        }
 
         $tanggalSuratInput = $request->input('tanggal_surat');
         $tanggalSurat = $tanggalSuratInput 
@@ -467,5 +488,32 @@ class SatyalancanaController extends Controller
         $pdf = $watermarkService->applyWatermark($pdf);
 
         return $pdf->stream('Petunjuk_Persyaratan_Satyalancana_FKP_UNRI.pdf');
+    }
+
+    /**
+     * Update Nomor Surat Pengantar Satyalancana Khusus Admin Kepegawaian
+     */
+    public function updateNomorSurat(Request $request, int $id)
+    {
+        $user = $request->user() ?? Auth::user();
+        if (!$user || (!$user->canAccessExecutiveKepegawaianMenus() && !$user->hasRole('admin'))) {
+            abort(403, 'Hanya Admin Kepegawaian yang berwenang mengisi atau mengubah nomor surat.');
+        }
+
+        $usulan = UsulanSatyalancana::findOrFail($id);
+        $nomorInput = trim((string) $request->input('nomor_surat_input', ''));
+        $tahun = $usulan->tahun_usulan ?: date('Y');
+
+        if ($nomorInput !== '') {
+            $nomorSuratFormatted = str_contains($nomorInput, '/UN19') 
+                ? $nomorInput 
+                : $nomorInput . '/UN19.5.1.1.10/KP/' . $tahun;
+        } else {
+            $nomorSuratFormatted = null;
+        }
+
+        $usulan->update(['nomor_surat_usulan' => $nomorSuratFormatted]);
+
+        return back()->with('success', 'Nomor surat usulan Satyalancana berhasil disimpan oleh Admin: ' . ($nomorSuratFormatted ?? '(Dikosongkan)'));
     }
 }

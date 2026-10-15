@@ -27,6 +27,17 @@
                             {{ $pengajuan->pegawai->nama_lengkap ?? $pengajuan->pegawai->nama }}
                         </h2>
                         <p class="text-xs text-slate-500 font-mono">NIP: {{ $pengajuan->pegawai->nip }} | {{ $pengajuan->pegawai->jabatan->nama_jabatan ?? '-' }}</p>
+                        <div class="mt-1">
+                            @if($pengajuan->nomor_surat)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                    No. Surat: {{ $pengajuan->nomor_surat }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                                    No. Surat: [Ditetapkan oleh Admin]
+                                </span>
+                            @endif
+                        </div>
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
@@ -46,6 +57,54 @@
                         @endif
                     </div>
                 </div>
+
+                @if($isAdmin || $isExecutive)
+                    {{-- PANEL KHUSUS ADMIN: INPUT / UPDATE NOMOR SURAT RESMI INSTANSI --}}
+                    <div class="mb-5 p-4 rounded-xl border border-indigo-200 bg-indigo-50/40">
+                        <div class="flex items-center justify-between pb-2 border-b border-indigo-200/60 mb-2.5">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-950 flex items-center gap-1.5">
+                                <span>🏛️</span> Penomoran Surat Usulan {{ $pengajuan->jenis_pengajuan }} (Khusus Admin Kepegawaian)
+                            </h4>
+                            @if($pengajuan->nomor_surat)
+                                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-indigo-100 text-indigo-800 border border-indigo-300">
+                                    {{ $pengajuan->nomor_surat }}
+                                </span>
+                            @else
+                                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                    Belum Bernomor Resmi
+                                </span>
+                            @endif
+                        </div>
+                        <p class="text-xs text-indigo-900/80 mb-3 leading-relaxed">
+                            Berdasarkan SOP Tata Naskah Dinas, penomoran naskah dinas resmi diisi dan dicatat oleh Admin Kepegawaian.
+                        </p>
+                        @php
+                            $nomorExisting = $pengajuan->nomor_surat ? explode('/UN19', $pengajuan->nomor_surat)[0] : '';
+                            if ($pengajuan->jenis_pengajuan === 'KP' && str_starts_with($nomorExisting, 'B/')) {
+                                $nomorExisting = substr($nomorExisting, 2);
+                            }
+                            $tahunVal = $pengajuan->tahun_periode ?: ($pengajuan->created_at ? $pengajuan->created_at->format('Y') : date('Y'));
+                        @endphp
+                        <form action="{{ route('pengajuan-karir.update-nomor', $pengajuan->id) }}" method="POST" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                            @csrf
+                            <div class="flex flex-1 rounded-lg shadow-xs">
+                                <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-indigo-300 bg-indigo-100/70 text-indigo-800 font-mono text-xs font-semibold">
+                                    {{ $pengajuan->jenis_pengajuan === 'KP' ? 'Nomor: B/' : 'Nomor:' }}
+                                </span>
+                                <input type="text" name="nomor_surat_input" 
+                                       value="{{ $nomorExisting }}"
+                                       placeholder="Ketik nomor urut surat..."
+                                       class="flex-1 min-w-0 block w-full px-3 py-1.5 border border-indigo-300 text-sm font-mono font-bold text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                                <span class="inline-flex items-center px-3 rounded-r-lg border border-l-0 border-indigo-300 bg-indigo-100/70 text-indigo-800 font-mono text-xs font-semibold">
+                                    /UN19.5.1.1.10/KP/{{ $tahunVal }}
+                                </span>
+                            </div>
+                            <button type="submit" class="px-4 py-2 bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-bold rounded-lg shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap">
+                                <span>💾</span> Simpan Nomor Surat
+                            </button>
+                        </form>
+                    </div>
+                @endif
 
                 {{-- Status Verifikasi Berjenjang (Stepper Paraf) --}}
                 <div class="rounded-xl bg-slate-50 p-4 border border-slate-200">

@@ -394,9 +394,40 @@
                                         ];
                                     @endphp
                                     <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3">
-                                            <div class="font-mono text-xs font-bold text-slate-800">{{ $usulan->nomor_surat_usulan }}</div>
+                                        <td class="px-4 py-3" x-data="{ editNomorSL: false, nomorInputSL: '{{ explode('/UN19', $usulan->nomor_surat_usulan)[0] }}' }">
+                                            <div class="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-800">
+                                                <span>{{ $usulan->nomor_surat_usulan }}</span>
+                                                @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+                                                    <button type="button" @click="editNomorSL = true" class="text-blue-600 hover:text-blue-800 p-0.5 rounded hover:bg-blue-50 text-[11px]" title="Ubah Nomor Surat Usulan (Admin)">
+                                                        ✏️
+                                                    </button>
+                                                @endif
+                                            </div>
                                             <div class="text-[11px] text-blue-600 font-medium">{{ $usulan->periode_usulan ?? ('Tahun ' . $usulan->tahun_usulan) }}</div>
+
+                                            @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+                                                <!-- Modal Edit Nomor Surat Satyalancana Khusus Admin -->
+                                                <div x-show="editNomorSL" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                                                    <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-4 text-left" @click.outside="editNomorSL = false">
+                                                        <h4 class="text-sm font-bold text-slate-800 mb-1">Penomoran Usulan Satyalancana (Admin)</h4>
+                                                        <p class="text-xs text-slate-500 mb-3">Tuliskan nomor urut dinas resmi untuk usulan an. <strong>{{ $usulan->pegawai->nama }}</strong>.</p>
+                                                        <form action="{{ route('satyalancana.update-nomor', $usulan->id) }}" method="POST">
+                                                            @csrf
+                                                            <div class="flex rounded-lg shadow-sm mb-3">
+                                                                <input type="text" name="nomor_surat_input" x-model="nomorInputSL" required
+                                                                       class="flex-1 min-w-0 px-3 py-2 text-sm font-mono rounded-l-lg border-slate-300">
+                                                                <span class="inline-flex items-center px-2 rounded-r-lg border border-l-0 border-slate-300 bg-slate-100 text-slate-600 text-xs font-mono font-semibold">
+                                                                    /UN19.5.1.1.10/KP/{{ $usulan->tahun_usulan ?: date('Y') }}
+                                                                </span>
+                                                            </div>
+                                                            <div class="flex justify-end gap-2">
+                                                                <button type="button" @click="editNomorSL = false" class="px-3 py-1.5 rounded-lg text-xs bg-slate-100 text-slate-700 hover:bg-slate-200">Batal</button>
+                                                                <button type="submit" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700">Simpan Nomor</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            @endif
                                         </td>
                                         <td class="px-4 py-3">
                                             <div class="font-semibold text-slate-900">{{ $usulan->pegawai->nama_lengkap ?? $usulan->pegawai->nama }}</div>

@@ -330,13 +330,29 @@ class PengajuanKarirController extends Controller
         $pejabatLogin = $user->pegawai ?? Pegawai::where('nama', 'like', '%' . $user->name . '%')->first();
 
         if ($tahap === 'verifikasi_admin') {
-            $pengajuan->update([
+            $updateData = [
                 'status'              => 'diverifikasi_admin',
                 'verifikasi_admin_at' => now(),
                 'verifikasi_admin_by' => $user->id,
                 'catatan_verifikator' => $catatan ?? 'Telah diverifikasi kelengkapan berkas usulan karir (SK terakhir, SKP, dll) oleh Admin Kepegawaian.',
-            ]);
-            $msg = '1. Verifikasi Screening Berkas oleh Admin Kepegawaian berhasil.';
+            ];
+
+            if ($request->filled('nomor_surat_input')) {
+                $nomorInput = trim((string) $request->input('nomor_surat_input'));
+                $tahun = $pengajuan->tahun_periode ?: ($pengajuan->created_at ? $pengajuan->created_at->format('Y') : date('Y'));
+                if ($pengajuan->jenis_pengajuan === 'KP') {
+                    $updateData['nomor_surat'] = str_contains($nomorInput, '/UN19') 
+                        ? $nomorInput 
+                        : 'B/' . ltrim($nomorInput, 'B/') . '/UN19.5.1.1.10/KP/' . $tahun;
+                } else {
+                    $updateData['nomor_surat'] = str_contains($nomorInput, '/UN19') 
+                        ? $nomorInput 
+                        : $nomorInput . '/UN19.5.1.1.10/KP/' . $tahun;
+                }
+            }
+
+            $pengajuan->update($updateData);
+            $msg = '1. Verifikasi Screening Berkas & Penomoran oleh Admin Kepegawaian berhasil.';
         } elseif ($tahap === 'paraf_kapokja') {
             if (!$pengajuan->verifikasi_admin_at && !$user->canManageSystem()) {
                 return back()->with('error', 'SOP Tata Naskah: Berkas usulan harus diperiksa kelengkapannya (Admin Screening Berkas) terlebih dahulu sebelum diparaf Ka Pokja.');
@@ -482,5 +498,38 @@ class PengajuanKarirController extends Controller
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error("Gagal sinkronisasi pengajuan karir ID {$pengajuan->id}: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Update Nomor Surat Usulan Karir Khusus Admin
+     */
+    public function updateNomorSurat(Request $request, $id)
+    {
+        $user = $request->user() ?? Auth::user();
+        if (!$user || (!$user->canAccessExecutiveKepegawaianMenus() && !$user->hasRole('admin'))) {
+            abort(403, 'Hanya Admin Kepegawaian yang berwenang mengisi atau mengubah nomor surat.');
+        }
+
+        $pengajuan = PengajuanKarir::findOrFail($id);
+        $nomorInput = trim((string) $request->input('nomor_surat_input', ''));
+        $tahun = $pengajuan->tahun_periode ?: ($pengajuan->created_at ? $pengajuan->created_at->format('Y') : date('Y'));
+
+        if ($nomorInput !== '') {
+            if ($pengajuan->jenis_pengajuan === 'KP') {
+                $nomorSuratFormatted = str_contains($nomorInput, '/UN19') 
+                    ? $nomorInput 
+                    : 'B/' . ltrim($nomorInput, 'B/') . '/UN19.5.1.1.10/KP/' . $tahun;
+            } else {
+                $nomorSuratFormatted = str_contains($nomorInput, '/UN19') 
+                    ? $nomorInput 
+                    : $nomorInput . '/UN19.5.1.1.10/KP/' . $tahun;
+            }
+        } else {
+            $nomorSuratFormatted = null;
+        }
+
+        $pengajuan->update(['nomor_surat' => $nomorSuratFormatted]);
+
+        return back()->with('success', 'Nomor surat usulan karir berhasil disimpan oleh Admin: ' . ($nomorSuratFormatted ?? '(Dikosongkan)'));
     }
 }

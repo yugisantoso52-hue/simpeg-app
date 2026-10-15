@@ -165,6 +165,9 @@
     </table>
 
     <div class="title">FORMULIR PERMINTAAN DAN PEMBERIAN CUTI</div>
+    <div style="text-align: center; font-size: 9pt; font-family: 'Times New Roman', Times, serif; margin-top: -6px; margin-bottom: 6px;">
+        Nomor : {{ $nomorSuratFormatted ?? ($cuti->nomor_surat ?? '............/UN19.5.1.1.10/KP/' . (date('Y'))) }}
+    </div>
     <div style="text-align: right; font-size: 8.5pt; margin-bottom: 6px;">
         Pekanbaru, {{ $cuti->created_at->translatedFormat('d F Y') }}<br>
         Kepada Yth. Dekan Fakultas Keperawatan UNRI
@@ -380,7 +383,7 @@
                 {{-- Status dan No. SK di pojok bawah kiri --}}
                 <div style="margin-top: 6px; font-size: 8.5pt; text-align: left;">
                     <div>Status: <strong>{{ in_array($cuti->status, ['Disetujui', 'Ditolak']) ? $cuti->status : 'Menunggu Keputusan' }}</strong></div>
-                    <div>No. SK/Izin: {{ $cuti->nomor_surat ?: '-' }}</div>
+                    <div>No. SK/Izin: {{ $nomorSuratFormatted ?? ($cuti->nomor_surat ?: '-') }}</div>
                 </div>
             </td>
         </tr>

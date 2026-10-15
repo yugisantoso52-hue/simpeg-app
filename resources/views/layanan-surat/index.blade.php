@@ -99,18 +99,30 @@
 
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                                    Nomor Surat <span class="text-xs font-normal text-slate-500">(Isi Manual)</span>
+                                    Nomor Surat <span class="text-xs font-normal text-slate-500">(@if($isExecutiveOrAdmin) Diisi Manual oleh Admin @else Ditetapkan Admin @endif)</span>
                                 </label>
-                                <div class="flex rounded-lg shadow-sm">
-                                    <input type="text" name="nomor_surat_manual" 
-                                           value="{{ old('nomor_surat_manual', $nextNomorPrefix ?? 'B/0001') }}"
-                                           placeholder="Contoh: B/0001"
-                                           class="flex-1 min-w-0 block w-full px-3 py-2 text-sm font-mono rounded-none rounded-l-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500">
-                                    <span class="inline-flex items-center px-2.5 rounded-r-lg border border-l-0 border-slate-300 bg-slate-100 text-slate-600 text-xs font-mono font-semibold select-none">
-                                        /UN19.5.1.1.10/KP/{{ date('Y') }}
-                                    </span>
-                                </div>
-                                <p class="text-[11px] text-slate-400 mt-1">Format: <em>(isi manual)/UN19.5.1.1.10/KP/{{ date('Y') }}</em></p>
+                                @if($isExecutiveOrAdmin)
+                                    <div class="flex rounded-lg shadow-sm">
+                                        <input type="text" name="nomor_surat_manual" 
+                                               value="{{ old('nomor_surat_manual', $nextNomorPrefix ?? 'B/0001') }}"
+                                               placeholder="Contoh: B/0001"
+                                               class="flex-1 min-w-0 block w-full px-3 py-2 text-sm font-mono rounded-none rounded-l-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500">
+                                        <span class="inline-flex items-center px-2.5 rounded-r-lg border border-l-0 border-slate-300 bg-slate-100 text-slate-600 text-xs font-mono font-semibold select-none">
+                                            /UN19.5.1.1.10/KP/{{ date('Y') }}
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">Format: <em>(isi manual)/UN19.5.1.1.10/KP/{{ date('Y') }}</em></p>
+                                @else
+                                    <div class="flex rounded-lg shadow-sm">
+                                        <input type="text" disabled 
+                                               value="[Ditetapkan oleh Admin Kepegawaian]"
+                                               class="flex-1 min-w-0 block w-full px-3 py-2 text-sm font-mono rounded-none rounded-l-lg border-slate-300 bg-slate-100 text-slate-500 cursor-not-allowed">
+                                        <span class="inline-flex items-center px-2.5 rounded-r-lg border border-l-0 border-slate-300 bg-slate-100 text-slate-400 text-xs font-mono font-semibold select-none">
+                                            /UN19.5.1.1.10/KP/{{ date('Y') }}
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] text-amber-600 mt-1 font-medium">ℹ️ Sesuai Tata Naskah Dinas, penomoran resmi surat dilakukan oleh Admin Kepegawaian.</p>
+                                @endif
                             </div>
 
                             <div>
@@ -189,8 +201,39 @@
                             <tbody class="divide-y divide-slate-100">
                                 @forelse($surats as $item)
                                     <tr class="hover:bg-slate-50">
-                                        <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-800">
-                                            {{ $item->nomor_surat }}
+                                        <td class="px-4 py-3 font-mono text-xs font-semibold text-slate-800" x-data="{ editNomor: false, nomorBaru: '{{ explode('/UN19', $item->nomor_surat)[0] }}' }">
+                                            <div class="flex items-center gap-1.5">
+                                                <span>{{ $item->nomor_surat }}</span>
+                                                @if($isExecutiveOrAdmin)
+                                                    <button type="button" @click="editNomor = true" class="text-blue-600 hover:text-blue-800 p-0.5 rounded hover:bg-blue-50 text-[11px]" title="Ubah Nomor Surat Resmi (Admin)">
+                                                        ✏️
+                                                    </button>
+                                                @endif
+                                            </div>
+
+                                            @if($isExecutiveOrAdmin)
+                                                <!-- Modal Edit Nomor Surat Khusus Admin -->
+                                                <div x-show="editNomor" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                                                    <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-4 text-left" @click.outside="editNomor = false">
+                                                        <h4 class="text-sm font-bold text-slate-800 mb-1">Penomoran Surat (Khusus Admin)</h4>
+                                                        <p class="text-xs text-slate-500 mb-3">Tuliskan nomor urut manual resmi untuk pemohon <strong>{{ $item->pegawai->nama }}</strong>.</p>
+                                                        <form action="{{ route('layanan-surat.surat-aktif.update-nomor', $item->id) }}" method="POST">
+                                                            @csrf
+                                                            <div class="flex rounded-lg shadow-sm mb-3">
+                                                                <input type="text" name="nomor_surat_manual" x-model="nomorBaru" required
+                                                                       class="flex-1 min-w-0 px-3 py-2 text-sm font-mono rounded-l-lg border-slate-300">
+                                                                <span class="inline-flex items-center px-2 rounded-r-lg border border-l-0 border-slate-300 bg-slate-100 text-slate-600 text-xs font-mono font-semibold">
+                                                                    /UN19.5.1.1.10/KP/{{ $item->created_at ? $item->created_at->format('Y') : date('Y') }}
+                                                                </span>
+                                                            </div>
+                                                            <div class="flex justify-end gap-2">
+                                                                <button type="button" @click="editNomor = false" class="px-3 py-1.5 rounded-lg text-xs bg-slate-100 text-slate-700 hover:bg-slate-200">Batal</button>
+                                                                <button type="submit" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700">Simpan Nomor</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            @endif
                                         </td>
                                         <td class="px-4 py-3">
                                             <div class="font-semibold text-slate-900">{{ $item->pegawai->nama_lengkap ?? $item->pegawai->nama }}</div>

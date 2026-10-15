@@ -70,7 +70,31 @@
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold {{ $usl->kategori == '30 Tahun' ? 'bg-amber-100 text-amber-900 border border-amber-300' : ($usl->kategori == '20 Tahun' ? 'bg-slate-200 text-slate-800 border border-slate-300' : 'bg-orange-100 text-orange-900 border border-orange-300') }}">
                                         🏆 {{ $usl->kategori }}
                                     </span>
-                                    <div class="text-[10px] text-slate-500 mt-1 font-mono">No: {{ $usl->nomor_surat_usulan }}</div>
+                                    <div class="text-[10px] text-slate-500 mt-1 font-mono flex items-center gap-1" x-data="{ editNomorTab: false, valNomor: '{{ explode('/UN19', $usl->nomor_surat_usulan)[0] }}' }">
+                                        <span>No: {{ $usl->nomor_surat_usulan }}</span>
+                                        @if($isExecutive ?? false)
+                                            <button type="button" @click="editNomorTab = true" class="text-blue-600 hover:text-blue-800 p-0.5 text-[10px]" title="Edit Nomor Surat (Admin)">✏️</button>
+                                            <div x-show="editNomorTab" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                                                <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-4 text-left" @click.outside="editNomorTab = false">
+                                                    <h4 class="text-sm font-bold text-slate-800 mb-1">Penomoran Satyalancana (Admin)</h4>
+                                                    <p class="text-xs text-slate-500 mb-3">Tuliskan nomor urut dinas resmi untuk usulan <strong>{{ $usl->pegawai->nama }}</strong>.</p>
+                                                    <form action="{{ route('satyalancana.update-nomor', $usl->id) }}" method="POST">
+                                                        @csrf
+                                                        <div class="flex rounded-lg shadow-sm mb-3">
+                                                            <input type="text" name="nomor_surat_input" x-model="valNomor" required class="flex-1 min-w-0 px-3 py-2 text-sm font-mono rounded-l-lg border-slate-300">
+                                                            <span class="inline-flex items-center px-2 rounded-r-lg border border-l-0 border-slate-300 bg-slate-100 text-slate-600 text-xs font-mono font-semibold">
+                                                                /UN19.5.1.1.10/KP/{{ $usl->tahun_usulan ?: date('Y') }}
+                                                            </span>
+                                                        </div>
+                                                        <div class="flex justify-end gap-2">
+                                                            <button type="button" @click="editNomorTab = false" class="px-3 py-1.5 rounded-lg text-xs bg-slate-100 text-slate-700 hover:bg-slate-200">Batal</button>
+                                                            <button type="submit" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700">Simpan Nomor</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="py-3 px-3">
                                     <div class="space-y-1">

@@ -153,12 +153,16 @@ class ReportController extends Controller
             : null;
         $qrCodeDataUri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl) : null;
 
+        $nomorSuratFormatted = !empty($pengajuan?->nomor_surat) 
+            ? $pengajuan->nomor_surat 
+            : '............/UN19.5.1.1.10/KP/' . ($tahunSurat ?? date('Y'));
+
         $pdf = Pdf::loadView('exports.pdf.sk-kgb', compact(
             'kgb', 'pegawai', 'verifyUrl', 'verifyCode', 'qrCodeDataUri',
             'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja', 'isPppk',
             'tahunSurat', 'tanggalSurat', 'dasarSkTanggal', 'dasarSkNomor', 'dasarSkTmt', 'dasarMkgTahun',
             'pengajuan', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri',
-            'isDisahkan', 'sudahParafPokja', 'sudahParafKabag'
+            'isDisahkan', 'sudahParafPokja', 'sudahParafKabag', 'nomorSuratFormatted'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);
@@ -231,10 +235,14 @@ class ReportController extends Controller
             : null;
         $qrCodeDataUri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl) : null;
 
+        $nomorSuratFormatted = !empty($pengajuan->nomor_surat)
+            ? $pengajuan->nomor_surat
+            : 'B/............/UN19.5.1.1.10/KP/' . ($pengajuan->tahun_periode ?? date('Y'));
+
         $pdf = Pdf::loadView('exports.pdf.surat-usulan-kp', compact(
             'pengajuan', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja',
             'verifyUrl', 'verifyCode', 'qrCodeDataUri', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri',
-            'isDisahkan', 'sudahParafPokja', 'sudahParafKabag'
+            'isDisahkan', 'sudahParafPokja', 'sudahParafKabag', 'nomorSuratFormatted'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);

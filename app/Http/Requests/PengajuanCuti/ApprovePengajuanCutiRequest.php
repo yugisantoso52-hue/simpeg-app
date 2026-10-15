@@ -26,6 +26,7 @@ class ApprovePengajuanCutiRequest extends FormRequest
             'catatan_atasan_langsung' => 'nullable|string|max:500',
             'catatan_pimpinan'        => 'nullable|string|max:500',
             'nomor_surat'             => 'nullable|string|max:100',
+            'nomor_surat_input'       => 'nullable|string|max:100',
         ];
     }
 

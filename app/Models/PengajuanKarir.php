@@ -17,6 +17,7 @@ class PengajuanKarir extends Model
         'sync_uuid',
         'pegawai_id',
         'jenis_pengajuan',
+        'nomor_surat',
         'periode_kp',
         'tahun_periode',
         'golongan_lama_id',
@@ -38,6 +39,8 @@ class PengajuanKarir extends Model
         'status',
         'catatan_pegawai',
         'catatan_verifikator',
+        'verifikasi_admin_at',
+        'verifikasi_admin_by',
         'paraf_kapokja_at',
         'paraf_kapokja_by',
         'paraf_kabag_at',
@@ -49,9 +52,10 @@ class PengajuanKarir extends Model
     ];
 
     protected $casts = [
-        'tmt_lama'          => 'date',
-        'tmt_baru'          => 'date',
-        'paraf_kapokja_at'  => 'datetime',
+        'tmt_lama'              => 'date',
+        'tmt_baru'              => 'date',
+        'verifikasi_admin_at'   => 'datetime',
+        'paraf_kapokja_at'      => 'datetime',
         'paraf_kabag_at'    => 'datetime',
         'paraf_wd2_at'      => 'datetime',
         'ttd_dekan_at'      => 'datetime',

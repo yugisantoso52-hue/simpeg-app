@@ -9,15 +9,82 @@
                     Informasi lengkap permohonan cuti dan riwayat persetujuan pimpinan
                 </p>
             </div>
-            <div class="flex items-center gap-3">
-                <a href="{{ route('pengajuan-cuti.cetak-pdf', $cuti->id) }}" target="_blank"
-                   class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">
-                    📄 Cetak Formulir BKN (PDF)
-                </a>
+            <div class="flex items-center gap-2" x-data="{ openModalCetak: false, nomorInput: '{{ $cuti->nomor_surat ? explode('/', $cuti->nomor_surat)[0] : '' }}' }">
+                <button type="button" @click="openModalCetak = true"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">
+                    <span>📄</span> Cetak Formulir Cuti (PDF)
+                </button>
                 <a href="{{ route('pengajuan-cuti.index') }}"
                    class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition">
                     ← Kembali
                 </a>
+
+                {{-- MODAL CETAK FORMULIR CUTI DENGAN INPUT NOMOR SURAT MANUAL --}}
+                <div x-show="openModalCetak" x-cloak
+                     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
+                     @keydown.escape.window="openModalCetak = false">
+                    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 text-left border border-slate-200"
+                         @click.away="openModalCetak = false">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                            <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                <span>📄</span> Cetak Formulir Permintaan & Pemberian Cuti
+                            </h3>
+                            <button type="button" @click="openModalCetak = false" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+                        </div>
+                        
+                        <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+                            Pastikan nomor surat dinas sesuai format resmi institusi Fakultas Keperawatan Universitas Riau sebelum mencetak dokumen.
+                        </p>
+
+                        @php
+                            $userIsAdmin = Auth::user()->hasRole('admin') || Auth::user()->canAccessExecutiveKepegawaianMenus();
+                        @endphp
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                                    Nomor Surat @if($userIsAdmin) (Diisi Manual oleh Admin) @else (Ditetapkan oleh Admin) @endif
+                                </label>
+                                @if($userIsAdmin)
+                                    <div class="flex items-center">
+                                        <input type="text" x-model="nomorInput"
+                                               placeholder="Isi nomor manual..."
+                                               class="w-full rounded-l-lg border-slate-300 font-mono text-sm focus:ring-emerald-500 focus:border-emerald-500">
+                                        <span class="inline-flex items-center px-3 py-2 rounded-r-lg border border-l-0 border-slate-300 bg-slate-100 text-slate-700 text-xs font-mono font-bold whitespace-nowrap">
+                                            /UN19.5.1.1.10/KP/{{ date('Y') }}
+                                        </span>
+                                    </div>
+                                    <span class="text-[10px] text-slate-500 mt-1 block">
+                                        Format Surat: <span class="font-mono text-emerald-700 font-bold" x-text="(nomorInput ? nomorInput : '......') + '/UN19.5.1.1.10/KP/{{ date('Y') }}'"></span>
+                                    </span>
+                                @else
+                                    <div class="flex items-center">
+                                        <input type="text" :value="nomorInput ? nomorInput : '[Belum Diterbitkan Admin]'" disabled
+                                               class="w-full rounded-l-lg border-slate-300 bg-slate-100 text-slate-500 font-mono text-sm cursor-not-allowed">
+                                        <span class="inline-flex items-center px-3 py-2 rounded-r-lg border border-l-0 border-slate-300 bg-slate-100 text-slate-400 text-xs font-mono font-bold whitespace-nowrap">
+                                            /UN19.5.1.1.10/KP/{{ date('Y') }}
+                                        </span>
+                                    </div>
+                                    <span class="text-[11px] text-amber-600 mt-1 block font-medium">
+                                        ℹ️ Sesuai Tata Naskah Dinas, pengisian nomor surat dinas resmi dilakukan oleh Admin Kepegawaian.
+                                    </span>
+                                @endif
+                            </div>
+
+                            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                                <button type="button" @click="openModalCetak = false"
+                                        class="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                                    Batal
+                                </button>
+                                <a :href="'{{ route('pengajuan-cuti.cetak-pdf', $cuti->id) }}' + (nomorInput ? '?nomor_surat_input=' + encodeURIComponent(nomorInput) : '')"
+                                   target="_blank"
+                                   @click="openModalCetak = false"
+                                   class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow transition flex items-center gap-1.5">
+                                    <span>🖨️</span> Buka & Cetak PDF
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </x-slot>
@@ -64,6 +131,47 @@
                         </form>
                     @endif
                 </div>
+
+                @if(Auth::user()->hasRole('admin') || Auth::user()->canAccessExecutiveKepegawaianMenus())
+                    {{-- PANEL KHUSUS ADMIN: INPUT / UPDATE NOMOR SURAT RESMI INSTANSI --}}
+                    <div class="mt-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50/40">
+                        <div class="flex items-center justify-between pb-2 border-b border-emerald-200/60 mb-2.5">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
+                                <span>🏛️</span> Penomoran Surat Izin Cuti (Khusus Admin Kepegawaian)
+                            </h4>
+                            @if($cuti->nomor_surat)
+                                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                    {{ $cuti->nomor_surat }}
+                                </span>
+                            @else
+                                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                    Belum Bernomor Resmi
+                                </span>
+                            @endif
+                        </div>
+                        <p class="text-xs text-emerald-900/80 mb-3 leading-relaxed">
+                            Berdasarkan SOP Tata Naskah Dinas, penetapan dan pencatatan nomor agenda surat izin cuti dilakukan oleh Admin Kepegawaian.
+                        </p>
+                        <form action="{{ route('pengajuan-cuti.update-nomor', $cuti->id) }}" method="POST" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                            @csrf
+                            <div class="flex flex-1 rounded-lg shadow-xs">
+                                <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-emerald-300 bg-emerald-100/70 text-emerald-800 font-mono text-xs font-semibold">
+                                    Nomor:
+                                </span>
+                                <input type="text" name="nomor_surat_input" 
+                                       value="{{ $cuti->nomor_surat ? explode('/UN19', $cuti->nomor_surat)[0] : '' }}"
+                                       placeholder="Ketik nomor urut (contoh: 045)..."
+                                       class="flex-1 min-w-0 block w-full px-3 py-1.5 border border-emerald-300 text-sm font-mono font-bold text-gray-900 focus:ring-emerald-500 focus:border-emerald-500 bg-white">
+                                <span class="inline-flex items-center px-3 rounded-r-lg border border-l-0 border-emerald-300 bg-emerald-100/70 text-emerald-800 font-mono text-xs font-semibold">
+                                    /UN19.5.1.1.10/KP/{{ $cuti->created_at ? $cuti->created_at->format('Y') : date('Y') }}
+                                </span>
+                            </div>
+                            <button type="submit" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap">
+                                <span>💾</span> Simpan Nomor Surat
+                            </button>
+                        </form>
+                    </div>
+                @endif
 
                 {{-- RINCIAN DATA PERMOHONAN --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-5 text-sm">
@@ -378,13 +486,29 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="nomor_surat" class="block text-xs font-semibold text-gray-700 uppercase mb-1">
+                                <label for="nomor_surat_input" class="block text-xs font-semibold text-gray-700 uppercase mb-1">
                                     Nomor Surat Izin Cuti (Opsional)
                                 </label>
-                                <input type="text" name="nomor_surat" id="nomor_surat"
-                                       value="{{ old('nomor_surat', $cuti->nomor_surat) }}"
-                                       placeholder="Contoh: 123/UN19.5.1/KP/2026"
-                                       class="w-full rounded-lg border-gray-300 font-mono text-sm focus:ring-emerald-500 focus:border-emerald-500">
+                                @php
+                                    $currentNomor = old('nomor_surat_input', old('nomor_surat', $cuti->nomor_surat ?? ''));
+                                    $prefixVal = $currentNomor;
+                                    if (str_contains($currentNomor, '/UN19')) {
+                                        $prefixVal = explode('/UN19', $currentNomor)[0];
+                                    }
+                                @endphp
+                                <div class="flex rounded-lg shadow-sm">
+                                    <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 font-mono text-xs">
+                                        Nomor:
+                                    </span>
+                                    <input type="text" name="nomor_surat_input" id="nomor_surat_input"
+                                           value="{{ $prefixVal }}"
+                                           placeholder="123"
+                                           class="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 text-sm font-mono font-bold text-gray-900 focus:ring-emerald-500 focus:border-emerald-500">
+                                    <span class="inline-flex items-center px-3 rounded-r-lg border border-l-0 border-gray-300 bg-slate-100 text-slate-700 font-mono text-xs font-semibold">
+                                        /UN19.5.1.1.10/KP/{{ date('Y') }}
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-gray-500 mt-1">Isi nomor manual urut surat (misal: 125). Format instansi otomatis disematkan.</p>
                             </div>
                         </div>
                         <div>

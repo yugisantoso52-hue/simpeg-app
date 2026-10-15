@@ -75,7 +75,7 @@ class LayananSuratController extends Controller
         $tahunSurat = date('Y');
         $suffixStandard = "/UN19.5.1.1.10/KP/{$tahunSurat}";
 
-        if ($request->filled('nomor_surat_manual')) {
+        if ($isExecutiveOrAdmin && $request->filled('nomor_surat_manual')) {
             $inputNomor = trim($request->nomor_surat_manual);
             if (str_contains($inputNomor, '/UN19.')) {
                 $nomorSurat = $inputNomor;
@@ -84,14 +84,15 @@ class LayananSuratController extends Controller
                 $nomorSurat = $inputNomor . $suffixStandard;
             }
         } else {
+            // Pengajuan mandiri oleh pegawai: nomor urut draft instansi (ditetapkan & disahkan Admin saat verifikasi)
             $nomorUrut = LayananSurat::whereYear('tanggal_surat', $tahunSurat)
                 ->orWhereYear('created_at', $tahunSurat)
                 ->count() + 1;
             $nomorSurat = 'B/' . str_pad($nomorUrut, 4, '0', STR_PAD_LEFT) . $suffixStandard;
         }
 
-        // Cek duplikasi nomor surat agar aman dan ramah pengguna
-        if (LayananSurat::where('nomor_surat', $nomorSurat)->exists()) {
+        // Cek duplikasi nomor surat jika diinput manual oleh Admin
+        if ($isExecutiveOrAdmin && LayananSurat::where('nomor_surat', $nomorSurat)->exists()) {
             return back()->with('error', "Nomor surat {$nomorSurat} sudah pernah digunakan. Silakan tentukan nomor urut manual yang berbeda.")->withInput();
         }
 
@@ -180,13 +181,24 @@ class LayananSuratController extends Controller
         $pejabatLogin = $user->pegawai;
 
         if ($tahap === 'verifikasi_admin') {
-            $surat->update([
+            $updateData = [
                 'status'              => 'diverifikasi_admin',
                 'verifikasi_admin_at' => now(),
                 'verifikasi_admin_by' => $user->id,
                 'catatan'             => $catatan ?? 'Telah diverifikasi kelengkapan berkas permohonan surat oleh Admin Kepegawaian.',
-            ]);
-            $msg = '1. Verifikasi Screening Berkas oleh Admin Kepegawaian berhasil.';
+            ];
+
+            if ($request->filled('nomor_surat_manual')) {
+                $inputNomor = trim($request->nomor_surat_manual);
+                $tahunSurat = $surat->created_at ? $surat->created_at->format('Y') : date('Y');
+                $suffixStandard = "/UN19.5.1.1.10/KP/{$tahunSurat}";
+                $updateData['nomor_surat'] = str_contains($inputNomor, '/UN19.') 
+                    ? $inputNomor 
+                    : rtrim($inputNomor, '/') . $suffixStandard;
+            }
+
+            $surat->update($updateData);
+            $msg = '1. Verifikasi Screening Berkas & Penomoran oleh Admin Kepegawaian berhasil.';
         } elseif ($tahap === 'paraf_kapokja') {
             if (!$surat->verifikasi_admin_at && !$user->canManageSystem()) {
                 return back()->with('error', 'SOP Tata Naskah: Berkas harus diperiksa kelengkapannya (Admin Screening Berkas) terlebih dahulu sebelum diparaf Ka Pokja.');
@@ -326,5 +338,32 @@ class LayananSuratController extends Controller
         $pdf = $watermarkService->applyWatermark($pdf);
 
         return $pdf->stream('Surat_Keterangan_Aktif_' . $pegawai->nip . '.pdf');
+    }
+
+    /**
+     * Update Nomor Surat Khusus Admin Kepegawaian
+     */
+    public function updateNomorSurat(Request $request, int $id)
+    {
+        $user = $request->user() ?? Auth::user();
+        if (!$user || (!$user->canAccessExecutiveKepegawaianMenus() && !$user->hasRole('admin'))) {
+            abort(403, 'Hanya Admin Kepegawaian yang berwenang mengisi atau mengubah nomor surat.');
+        }
+
+        $request->validate([
+            'nomor_surat_manual' => 'required|string|max:100',
+        ]);
+
+        $surat = LayananSurat::findOrFail($id);
+        $inputNomor = trim($request->nomor_surat_manual);
+        $tahunSurat = $surat->created_at ? $surat->created_at->format('Y') : date('Y');
+        $suffixStandard = "/UN19.5.1.1.10/KP/{$tahunSurat}";
+        $nomorSurat = str_contains($inputNomor, '/UN19.') 
+            ? $inputNomor 
+            : rtrim($inputNomor, '/') . $suffixStandard;
+
+        $surat->update(['nomor_surat' => $nomorSurat]);
+
+        return back()->with('success', "Nomor surat berhasil diperbarui oleh Admin: {$nomorSurat}");
     }
 }
