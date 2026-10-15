@@ -160,8 +160,9 @@ class PengajuanCutiController extends Controller
         $watermarkService = app(\App\Services\DocumentWatermarkService::class);
         $verifyCode = $watermarkService->generateVerificationCode('Formulir Permohonan Cuti', 'CUTI/' . ($cuti->nomor_surat ?? $cuti->id) . '/' . date('Y'), $cuti->pegawai->nama_lengkap ?? $cuti->pegawai->nama);
         $verifyUrl = route('verify.document', ['code' => $verifyCode]);
+        $qrCodeDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl);
 
-        $pdf = Pdf::loadView('exports.pdf.formulir_cuti', compact('cuti', 'verifyUrl', 'verifyCode'))
+        $pdf = Pdf::loadView('exports.pdf.formulir_cuti', compact('cuti', 'verifyUrl', 'verifyCode', 'qrCodeDataUri'))
             ->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);

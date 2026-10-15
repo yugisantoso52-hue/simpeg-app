@@ -153,7 +153,12 @@ class AnjabController extends Controller
     public function print(AnalisisJabatan $anjab)
     {
         $anjab->load(['jabatan', 'unitKerja', 'uraianTugas']);
-        return view('anjab.print', compact('anjab'));
+        
+        $verifyCode = $anjab->verification_token;
+        $verifyUrl = $verifyCode ? route('verify.document', ['code' => $verifyCode]) : null;
+        $qrCodeDataUri = $verifyUrl ? \App\Services\QrCodeService::generateDataUri($verifyUrl) : null;
+
+        return view('anjab.print', compact('anjab', 'verifyCode', 'verifyUrl', 'qrCodeDataUri'));
     }
 
     /**

@@ -295,15 +295,8 @@
     </table>
 </div>
 
-{{-- OTENTIKASI DIGITAL SIKAP FKP UNRI (PALING BAWAH, BEBAS OVERFLOW, TANPA TANDA '?') --}}
-<div style="margin-top: 6px; border: 1px dashed #0284c7; padding: 3px 6px; border-radius: 4px; font-size: 6.5pt; line-height: 1.2; color: #0c4a6e; background-color: #f0f9ff; width: 100%; box-sizing: border-box; word-wrap: break-word; word-break: break-all;">
-    <strong style="color: #0369a1; display: block; margin-bottom: 1px; font-size: 7pt;">OTENTIKASI DIGITAL SIKAP FKP UNRI:</strong>
-    Dokumen resmi ini telah diverifikasi validitas kepegawaiannya dan diterbitkan secara elektronik melalui Sistem Informasi Kepegawaian (SIKAP) Fakultas Keperawatan Universitas Riau.<br>
-    @if(isset($verifyUrl))
-        Kode Verifikasi: <span style="font-family: monospace; font-size: 6pt; color: #0284c7;">{{ $verifyCode ?? 'SIKAP-KGB-VALID' }}</span><br>
-        Tautan Verifikasi: <a href="{{ $verifyUrl }}" style="color: #0284c7; text-decoration: underline; font-size: 5.8pt; font-family: monospace;">{!! wordwrap($verifyUrl, 65, '<br>', true) !!}</a>
-    @endif
-</div>
+{{-- OTENTIKASI DIGITAL SIKAP FKP UNRI (DOKUMEN RESMI ELEKTRONIK DENGAN QR CODE) --}}
+@include('exports.pdf.partials.otentikasi_dokumen')
 @endsection
 
 {{-- Suppress default ttd from master layout --}}

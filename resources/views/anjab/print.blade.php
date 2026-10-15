@@ -262,5 +262,8 @@
         </tr>
     </table>
 
+    {{-- OTENTIKASI DIGITAL SIKAP FKP UNRI (DOKUMEN RESMI ELEKTRONIK DENGAN QR CODE) --}}
+    @include('exports.pdf.partials.otentikasi_dokumen')
+
 </body>
 </html>

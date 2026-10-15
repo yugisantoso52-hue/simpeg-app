@@ -424,9 +424,10 @@ class SatyalancanaController extends Controller
         );
         $verifyUrl = route('verify.document', ['code' => $verifyCode]);
 
-        $qrWd2Uri   = $sudahTtdWd2 ? QrCodeService::generateDataUri($verifyUrl . '&ttd=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
-        $qrPokjaUri = $sudahParafPokja ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) : null;
-        $qrKabagUri = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) : null;
+        $qrWd2Uri      = $sudahTtdWd2 ? QrCodeService::generateDataUri($verifyUrl . '&ttd=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
+        $qrPokjaUri    = $sudahParafPokja ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) : null;
+        $qrKabagUri    = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) : null;
+        $qrCodeDataUri = QrCodeService::generateDataUri($verifyUrl);
 
         $pdf = Pdf::loadView('satyalancana.surat_pengantar_print', compact(
             'periodeUsulan', 'nomorSurat', 'tanggalSurat', 'daftarPegawai',
@@ -434,7 +435,7 @@ class SatyalancanaController extends Controller
             'pejabatWd2', 'pejabatKaPokja', 'pejabatKabag',
             'sudahParafPokja', 'sudahParafKabag', 'sudahTtdWd2',
             'parafPokjaAt', 'parafKabagAt', 'ttdWd2At',
-            'verifyCode', 'verifyUrl', 'qrWd2Uri', 'qrPokjaUri', 'qrKabagUri'
+            'verifyCode', 'verifyUrl', 'qrCodeDataUri', 'qrWd2Uri', 'qrPokjaUri', 'qrKabagUri'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);

@@ -147,9 +147,10 @@ class ReportController extends Controller
 
         $qrPokjaUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001'));
         $qrKabagUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002'));
+        $qrCodeDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl);
 
         $pdf = Pdf::loadView('exports.pdf.sk-kgb', compact(
-            'kgb', 'pegawai', 'verifyUrl', 'verifyCode', 
+            'kgb', 'pegawai', 'verifyUrl', 'verifyCode', 'qrCodeDataUri',
             'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja', 'isPppk',
             'tahunSurat', 'tanggalSurat', 'dasarSkTanggal', 'dasarSkNomor', 'dasarSkTmt', 'dasarMkgTahun',
             'pengajuan', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri'
@@ -205,6 +206,7 @@ class ReportController extends Controller
 
         $watermarkService = app(\App\Services\DocumentWatermarkService::class);
         $verifyCodeKp = $watermarkService->generateVerificationCode('Surat Usulan Kenaikan Pangkat', 'KP/' . $pengajuan->pegawai->nip . '/' . date('Y'), $pengajuan->pegawai->nama_lengkap ?? $pengajuan->pegawai->nama);
+        $verifyCode = $verifyCodeKp;
         $verifyUrl  = route('verify.document', ['code' => $verifyCodeKp]);
 
         $parafPokjaAt = $pengajuan?->paraf_kapokja_at 
@@ -217,10 +219,11 @@ class ReportController extends Controller
 
         $qrPokjaUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001'));
         $qrKabagUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002'));
+        $qrCodeDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl);
 
         $pdf = Pdf::loadView('exports.pdf.surat-usulan-kp', compact(
             'pengajuan', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja',
-            'verifyUrl', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri'
+            'verifyUrl', 'verifyCode', 'qrCodeDataUri', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);

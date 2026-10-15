@@ -758,7 +758,12 @@ class TalentManagementController extends Controller
             ->orderBy('peringkat_prioritas')
             ->get();
 
-        return view('talent.berita_acara_print', compact('talentPool', 'successionPlans', 'tahun'));
+        $watermarkService = app(\App\Services\DocumentWatermarkService::class);
+        $verifyCode = $watermarkService->generateVerificationCode('Berita Acara Sidang Komite Talenta', 'BA-TALENTA/' . $tahun . '/' . date('Ymd'), 'Fakultas Keperawatan UNRI');
+        $verifyUrl = route('verify.document', ['code' => $verifyCode]);
+        $qrCodeDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl);
+
+        return view('talent.berita_acara_print', compact('talentPool', 'successionPlans', 'tahun', 'verifyCode', 'verifyUrl', 'qrCodeDataUri'));
     }
 }
 

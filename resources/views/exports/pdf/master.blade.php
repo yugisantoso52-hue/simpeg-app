@@ -253,5 +253,12 @@
     <!-- TANDA TANGAN PEJABAT -->
     @yield('ttd')
 
+    <!-- OTENTIKASI DIGITAL SIKAP FKP UNRI (DOKUMEN RESMI ELEKTRONIK DENGAN QR CODE) -->
+    @hasSection('otentikasi')
+        @yield('otentikasi')
+    @else
+        @include('exports.pdf.partials.otentikasi_dokumen')
+    @endif
+
 </body>
 </html>

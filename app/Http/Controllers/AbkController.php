@@ -109,7 +109,12 @@ class AbkController extends Controller
         $anjabs = $query->get()->sortByDesc('hierarchy_order')->values();
         $selectedUnit = $request->filled('unit_kerja_id') ? UnitKerja::find($request->unit_kerja_id) : null;
 
-        return view('abk.print_rekap', compact('anjabs', 'selectedUnit'));
+        $watermarkService = app(\App\Services\DocumentWatermarkService::class);
+        $verifyCode = $watermarkService->generateVerificationCode('Rekap Analisis Beban Kerja', 'ABK/' . date('Ymd'), 'Fakultas Keperawatan UNRI');
+        $verifyUrl = route('verify.document', ['code' => $verifyCode]);
+        $qrCodeDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl);
+
+        return view('abk.print_rekap', compact('anjabs', 'selectedUnit', 'verifyCode', 'verifyUrl', 'qrCodeDataUri'));
     }
 
     /**

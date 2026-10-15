@@ -368,16 +368,8 @@
         </tr>
     </table>
 
-    {{-- 7. OTENTIKASI DIGITAL SIKAP FKP UNRI (SERAGAM DENGAN FORMULIR CUTI & KGB) --}}
-    @if(isset($verifyUrl))
-    <div style="margin-top: 10px; border: 1px dashed #64748b; padding: 5px 8px; font-size: 7.5pt; color: #475569; background-color: #f8fafc; line-height: 1.35; page-break-inside: avoid; border-radius: 4px; box-sizing: border-box; width: 100%;">
-        <div style="font-weight: bold; color: #1e293b; margin-bottom: 2px;">Otentikasi Digital SIKAP FKP UNRI:</div>
-        <div>Dokumen surat pengantar resmi usulan tanda kehormatan ini divalidasi dan diterbitkan secara elektronik melalui Sistem Informasi Kepegawaian (SIKAP) Fakultas Keperawatan Universitas Riau. Status: <strong style="color: {{ !empty($sudahTtdWd2) ? '#15803d' : '#d97706' }};">{{ !empty($sudahTtdWd2) ? 'Disahkan Resmi Pimpinan' : 'Dalam Proses Verifikasi Berjenjang' }}</strong>. Tautan verifikasi keabsahan resmi:</div>
-        <div style="margin-top: 3px; font-family: monospace; font-size: 5.8pt; line-height: 1.25; word-wrap: break-word;">
-            <a href="{{ $verifyUrl }}" style="color: #2563eb; text-decoration: underline;">{!! wordwrap($verifyUrl, 65, '<br>', true) !!}</a>
-        </div>
-    </div>
-    @endif
+    {{-- 7. OTENTIKASI DIGITAL SIKAP FKP UNRI (DOKUMEN RESMI ELEKTRONIK DENGAN QR CODE) --}}
+    @include('exports.pdf.partials.otentikasi_dokumen')
 
 </body>
 </html>

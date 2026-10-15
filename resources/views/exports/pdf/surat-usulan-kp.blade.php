@@ -262,6 +262,9 @@
         </tr>
     </table>
 </div>
+
+{{-- OTENTIKASI DIGITAL SIKAP FKP UNRI (DOKUMEN RESMI ELEKTRONIK DENGAN QR CODE) --}}
+@include('exports.pdf.partials.otentikasi_dokumen')
 @endsection
 
 {{-- Suppress default ttd from master layout --}}
