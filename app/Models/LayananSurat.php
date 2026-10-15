@@ -25,6 +25,8 @@ class LayananSurat extends Model
         'penandatangan_nip',
         'penandatangan_jabatan',
         'qr_token',
+        'verifikasi_admin_at',
+        'verifikasi_admin_by',
         'paraf_kabag_at',
         'paraf_kabag_by',
         'paraf_kapokja_at',
@@ -34,9 +36,10 @@ class LayananSurat extends Model
     ];
 
     protected $casts = [
-        'tanggal_surat'     => 'date',
-        'paraf_kabag_at'   => 'datetime',
-        'paraf_kapokja_at' => 'datetime',
+        'tanggal_surat'       => 'date',
+        'verifikasi_admin_at' => 'datetime',
+        'paraf_kabag_at'      => 'datetime',
+        'paraf_kapokja_at'    => 'datetime',
     ];
 
     public function pegawai(): BelongsTo

@@ -65,6 +65,59 @@
                     </div>
                 </div>
 
+                {{-- ⚡ PUSAT LAYANAN CEPAT PEGAWAI MANDIRI (QUICK ACTIONS) --}}
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+                    <a href="{{ route('layanan-surat.index') }}" class="p-3.5 rounded-2xl border border-blue-200/80 bg-white hover:bg-blue-50/50 hover:border-blue-400 shadow-2xs hover:shadow-xs transition duration-150 flex items-center gap-3 group">
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition">
+                            <x-icon name="file-text" class="w-5 h-5 stroke-[2]" />
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-xs font-bold text-slate-800 group-hover:text-blue-700 truncate">Surat Keterangan Aktif</h4>
+                            <p class="text-[11px] text-slate-500 truncate">E-Surat Sah TTE</p>
+                        </div>
+                    </a>
+
+                    <a href="{{ route('pengajuan-cuti.create') }}" class="p-3.5 rounded-2xl border border-amber-200/80 bg-white hover:bg-amber-50/50 hover:border-amber-400 shadow-2xs hover:shadow-xs transition duration-150 flex items-center gap-3 group">
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-white transition">
+                            <x-icon name="calendar-off" class="w-5 h-5 stroke-[2]" />
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-xs font-bold text-slate-800 group-hover:text-amber-700 truncate">Ajukan Cuti Online</h4>
+                            <p class="text-[11px] text-slate-500 truncate">Sisa: {{ $p->sisa_cuti_tahunan ?? 12 }} Hari</p>
+                        </div>
+                    </a>
+
+                    <a href="{{ route('kp.index') }}" class="p-3.5 rounded-2xl border border-purple-200/80 bg-white hover:bg-purple-50/50 hover:border-purple-400 shadow-2xs hover:shadow-xs transition duration-150 flex items-center gap-3 group">
+                        <div class="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center shrink-0 group-hover:bg-purple-600 group-hover:text-white transition">
+                            <x-icon name="award" class="w-5 h-5 stroke-[2]" />
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-xs font-bold text-slate-800 group-hover:text-purple-700 truncate">Kenaikan Pangkat (KP)</h4>
+                            <p class="text-[11px] text-slate-500 truncate">Usulan Periode</p>
+                        </div>
+                    </a>
+
+                    <a href="{{ route('kgb.index') }}" class="p-3.5 rounded-2xl border border-teal-200/80 bg-white hover:bg-teal-50/50 hover:border-teal-400 shadow-2xs hover:shadow-xs transition duration-150 flex items-center gap-3 group">
+                        <div class="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 text-teal-600 flex items-center justify-center shrink-0 group-hover:bg-teal-600 group-hover:text-white transition">
+                            <x-icon name="banknote" class="w-5 h-5 stroke-[2]" />
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-xs font-bold text-slate-800 group-hover:text-teal-700 truncate">Gaji Berkala (KGB)</h4>
+                            <p class="text-[11px] text-slate-500 truncate">Kenaikan 2 Tahun</p>
+                        </div>
+                    </a>
+
+                    <a href="{{ route('satyalancana.index') }}" class="p-3.5 rounded-2xl border border-indigo-200/80 bg-white hover:bg-indigo-50/50 hover:border-indigo-400 shadow-2xs hover:shadow-xs transition duration-150 flex items-center gap-3 group">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition">
+                            <x-icon name="award" class="w-5 h-5 stroke-[2]" />
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-xs font-bold text-slate-800 group-hover:text-indigo-700 truncate">Satyalancana</h4>
+                            <p class="text-[11px] text-slate-500 truncate">Penghargaan 10/20/30</p>
+                        </div>
+                    </a>
+                </div>
+
                 {{-- ===================================================================== --}}
                 {{-- ⚡ DAILY WORKSPACE: PRESENSI & E-LOGBOOK (GRID 2 KOLOM SEJAJAR)        --}}
                 {{-- ===================================================================== --}}
@@ -176,6 +229,237 @@
                         </div>
                     @endif
 
+                </div>
+
+                {{-- 📑 PUSAT PELACAKAN STATUS USULAN MANDIRI PEGAWAI (STEPPER 4 TAHAP) --}}
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6" x-data="{ activeTab: 'all' }">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-slate-100 gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shadow-2xs shrink-0">
+                                <x-icon name="check-circle" class="w-5 h-5 stroke-[2]" />
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-bold text-base text-slate-900">Pelacakan Berkas &amp; Progres Usulan Mandiri</h3>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200 uppercase">
+                                        Live Stepper
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-0.5">Monitoring real-time perjalanan dokumen Anda melalui SOP 4 Tahap Pengesahan Resmi.</p>
+                            </div>
+                        </div>
+
+                        {{-- Tab Filter Alpine.js --}}
+                        <div class="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl text-xs overflow-x-auto">
+                            <button type="button" @click="activeTab = 'all'" :class="activeTab === 'all' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3 py-1.5 rounded-lg transition whitespace-nowrap">
+                                Semua Berkas
+                            </button>
+                            <button type="button" @click="activeTab = 'surat'" :class="activeTab === 'surat' ? 'bg-white text-blue-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3 py-1.5 rounded-lg transition whitespace-nowrap">
+                                Surat Aktif
+                            </button>
+                            <button type="button" @click="activeTab = 'karir'" :class="activeTab === 'karir' ? 'bg-white text-purple-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3 py-1.5 rounded-lg transition whitespace-nowrap">
+                                KP &amp; KGB
+                            </button>
+                            <button type="button" @click="activeTab = 'satya'" :class="activeTab === 'satya' ? 'bg-white text-indigo-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3 py-1.5 rounded-lg transition whitespace-nowrap">
+                                Satyalancana
+                            </button>
+                            <button type="button" @click="activeTab = 'cuti'" :class="activeTab === 'cuti' ? 'bg-white text-amber-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 font-medium'" class="px-3 py-1.5 rounded-lg transition whitespace-nowrap">
+                                Cuti
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Daftar Berkas Aktif --}}
+                    @php
+                        $hasAnyUsulan = (isset($myLayananSurat) && $myLayananSurat->isNotEmpty())
+                            || (isset($myPengajuanKarir) && $myPengajuanKarir->isNotEmpty())
+                            || (isset($mySatyalancana) && $mySatyalancana->isNotEmpty())
+                            || (isset($myCuti) && $myCuti->isNotEmpty());
+                    @endphp
+
+                    @if($hasAnyUsulan)
+                        <div class="space-y-3.5">
+                            {{-- 1. Surat Keterangan Aktif --}}
+                            @if(isset($myLayananSurat))
+                                @foreach($myLayananSurat as $surat)
+                                    <div x-show="activeTab === 'all' || activeTab === 'surat'" class="p-4 rounded-xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:border-blue-300 hover:shadow-xs transition duration-150">
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <span class="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200 uppercase">
+                                                    📄 {{ $surat->jenis_surat ?? 'Surat Keterangan Aktif Bekerja' }}
+                                                </span>
+                                                @if($surat->nomor_surat)
+                                                    <span class="text-xs font-mono font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200">
+                                                        No: {{ $surat->nomor_surat }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-[10px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                                                        ⏳ Menunggu Penomoran Admin
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            <div class="flex items-center gap-2 shrink-0">
+                                                <span class="text-[11px] text-slate-400">Diajukan: {{ \Carbon\Carbon::parse($surat->tanggal_surat ?? $surat->created_at)->format('d-m-Y') }}</span>
+                                                @if($surat->status === 'selesai')
+                                                    <a href="{{ route('layanan-surat.surat-aktif.download', $surat->id) }}" class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-2xs">
+                                                        <span>📥</span> Unduh Dokumen (PDF)
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <p class="text-xs text-slate-600 mb-3">
+                                            Keperluan: <strong class="text-slate-800">{{ $surat->keperluan }}</strong>
+                                            @if($surat->penandatangan_jabatan)
+                                                <span class="text-slate-400">• Penandatangan: {{ $surat->penandatangan_jabatan }}</span>
+                                            @endif
+                                        </p>
+
+                                        {{-- 4-Stage Stepper Bar --}}
+                                        <div class="grid grid-cols-4 gap-2 pt-2 border-t border-slate-200/60 text-center">
+                                            <div class="p-2 rounded-lg {{ $surat->verifikasi_admin_at ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold' : 'bg-slate-100 text-slate-400' }} text-[11px]">
+                                                {{ $surat->verifikasi_admin_at ? '✓' : '1' }} Screening Admin
+                                            </div>
+                                            <div class="p-2 rounded-lg {{ $surat->paraf_kapokja_at ? 'bg-sky-50 text-sky-800 border border-sky-200 font-semibold' : 'bg-slate-100 text-slate-400' }} text-[11px]">
+                                                {{ $surat->paraf_kapokja_at ? '✓' : '2' }} Paraf Pokja
+                                            </div>
+                                            <div class="p-2 rounded-lg {{ $surat->paraf_kabag_at ? 'bg-purple-50 text-purple-800 border border-purple-200 font-semibold' : 'bg-slate-100 text-slate-400' }} text-[11px]">
+                                                {{ $surat->paraf_kabag_at ? '✓' : '3' }} Paraf Kabag
+                                            </div>
+                                            <div class="p-2 rounded-lg {{ $surat->status === 'selesai' ? 'bg-emerald-600 text-white font-bold shadow-2xs' : 'bg-slate-100 text-slate-400' }} text-[11px]">
+                                                {{ $surat->status === 'selesai' ? '✓' : '4' }} TTE Sah
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endif
+
+                            {{-- 2. Kenaikan Pangkat & KGB --}}
+                            @if(isset($myPengajuanKarir))
+                                @foreach($myPengajuanKarir as $karir)
+                                    <div x-show="activeTab === 'all' || activeTab === 'karir'" class="p-4 rounded-xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:border-purple-300 hover:shadow-xs transition duration-150">
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <span class="px-2.5 py-0.5 rounded-md text-[10px] font-bold {{ $karir->jenis_pengajuan === 'kp' ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-teal-100 text-teal-800 border border-teal-200' }} uppercase">
+                                                    {{ $karir->jenis_pengajuan === 'kp' ? '🎖️ Kenaikan Pangkat' : '💵 Gaji Berkala (KGB)' }}
+                                                </span>
+                                                @if($karir->nomor_surat)
+                                                    <span class="text-xs font-mono font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200">
+                                                        No: {{ $karir->nomor_surat }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            <span class="text-[11px] text-slate-400">Periode: {{ $karir->periode_kp ?? $karir->tahun_periode ?? '-' }}</span>
+                                        </div>
+
+                                        <p class="text-xs text-slate-600 mb-3">
+                                            @if($karir->jenis_pengajuan === 'kp')
+                                                Tujuan Golongan: <strong class="text-slate-800">{{ $karir->golonganTujuan?->nama_golongan ?? '-' }}</strong> (TMT: {{ $karir->tmt_baru ? \Carbon\Carbon::parse($karir->tmt_baru)->format('d-m-Y') : '-' }})
+                                            @else
+                                                Gaji Pokok Baru: <strong class="text-slate-800 font-mono">Rp {{ number_format($karir->gaji_pokok_baru ?? 0, 0, ',', '.') }}</strong> (TMT: {{ $karir->tmt_baru ? \Carbon\Carbon::parse($karir->tmt_baru)->format('d-m-Y') : '-' }})
+                                            @endif
+                                        </p>
+
+                                        {{-- 4-Stage Stepper Bar --}}
+                                        <div class="grid grid-cols-4 gap-2 pt-2 border-t border-slate-200/60 text-center">
+                                            <div class="p-2 rounded-lg {{ $karir->verifikasi_admin_at ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold' : 'bg-slate-100 text-slate-400' }} text-[11px]">
+                                                {{ $karir->verifikasi_admin_at ? '✓' : '1' }} Screening Admin
+                                            </div>
+                                            <div class="p-2 rounded-lg {{ $karir->paraf_kapokja_at ? 'bg-sky-50 text-sky-800 border border-sky-200 font-semibold' : 'bg-slate-100 text-slate-400' }} text-[11px]">
+                                                {{ $karir->paraf_kapokja_at ? '✓' : '2' }} Paraf Pokja
+                                            </div>
+                                            <div class="p-2 rounded-lg {{ $karir->paraf_kabag_at ? 'bg-purple-50 text-purple-800 border border-purple-200 font-semibold' : 'bg-slate-100 text-slate-400' }} text-[11px]">
+                                                {{ $karir->paraf_kabag_at ? '✓' : '3' }} Paraf Kabag
+                                            </div>
+                                            <div class="p-2 rounded-lg {{ ($karir->paraf_wd2_at || in_array($karir->status, ['disetujui_wd2', 'disetujui_dekan', 'selesai'])) ? 'bg-emerald-600 text-white font-bold shadow-2xs' : 'bg-slate-100 text-slate-400' }} text-[11px]">
+                                                {{ ($karir->paraf_wd2_at || in_array($karir->status, ['disetujui_wd2', 'disetujui_dekan', 'selesai'])) ? '✓' : '4' }} Disetujui WD II
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endif
+
+                            {{-- 3. Satyalancana --}}
+                            @if(isset($mySatyalancana))
+                                @foreach($mySatyalancana as $satya)
+                                    <div x-show="activeTab === 'all' || activeTab === 'satya'" class="p-4 rounded-xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:border-indigo-300 hover:shadow-xs transition duration-150">
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <span class="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200 uppercase">
+                                                    🏅 Satyalancana Karya Satya
+                                                </span>
+                                                <span class="text-xs font-semibold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+                                                    Kategori: {{ $satya->kategori ?? '10 Tahun' }}
+                                                </span>
+                                            </div>
+                                            <span class="text-[11px] text-slate-400">Tahun: {{ $satya->tahun_usulan ?? date('Y') }}</span>
+                                        </div>
+
+                                        {{-- 4-Stage Stepper Bar --}}
+                                        <div class="grid grid-cols-4 gap-2 pt-2 border-t border-slate-200/60 text-center">
+                                            <div class="p-2 rounded-lg {{ $satya->verifikasi_admin_at ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold' : 'bg-slate-100 text-slate-400' }} text-[11px]">
+                                                {{ $satya->verifikasi_admin_at ? '✓' : '1' }} Screening Admin
+                                            </div>
+                                            <div class="p-2 rounded-lg {{ $satya->paraf_kapokja_at ? 'bg-sky-50 text-sky-800 border border-sky-200 font-semibold' : 'bg-slate-100 text-slate-400' }} text-[11px]">
+                                                {{ $satya->paraf_kapokja_at ? '✓' : '2' }} Paraf Pokja
+                                            </div>
+                                            <div class="p-2 rounded-lg {{ $satya->paraf_kabag_at ? 'bg-purple-50 text-purple-800 border border-purple-200 font-semibold' : 'bg-slate-100 text-slate-400' }} text-[11px]">
+                                                {{ $satya->paraf_kabag_at ? '✓' : '3' }} Paraf Kabag
+                                            </div>
+                                            <div class="p-2 rounded-lg {{ ($satya->ttd_wd2_at || in_array($satya->status, ['disetujui_wd2', 'selesai'])) ? 'bg-emerald-600 text-white font-bold shadow-2xs' : 'bg-slate-100 text-slate-400' }} text-[11px]">
+                                                {{ ($satya->ttd_wd2_at || in_array($satya->status, ['disetujui_wd2', 'selesai'])) ? '✓' : '4' }} Disetujui WD II
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endif
+
+                            {{-- 4. Pengajuan Cuti --}}
+                            @if(isset($myCuti))
+                                @foreach($myCuti as $cuti)
+                                    <div x-show="activeTab === 'all' || activeTab === 'cuti'" class="p-4 rounded-xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:border-amber-300 hover:shadow-xs transition duration-150">
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <span class="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 uppercase">
+                                                    🏖️ {{ $cuti->jenis_cuti }}
+                                                </span>
+                                                <span class="text-xs font-semibold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+                                                    Durasi: {{ $cuti->jumlah_hari }} Hari Kerja
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center gap-2 shrink-0">
+                                                <span class="text-[11px] text-slate-400 font-mono">{{ \Carbon\Carbon::parse($cuti->tanggal_mulai)->format('d-m-Y') }} s.d {{ \Carbon\Carbon::parse($cuti->tanggal_selesai)->format('d-m-Y') }}</span>
+                                                @if($cuti->status === 'Disetujui')
+                                                    <a href="{{ route('pengajuan-cuti.print', $cuti->id) }}" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-2xs">
+                                                        <span>🖨️</span> Cetak Formulir BKN
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        {{-- 3-Stage Cuti Stepper Bar --}}
+                                        <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200/60 text-center">
+                                            <div class="p-2 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold text-[11px]">
+                                                ✓ Diajukan Pemohon
+                                            </div>
+                                            <div class="p-2 rounded-lg {{ $cuti->pertimbangan_atasan_at ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold' : 'bg-slate-100 text-slate-400' }} text-[11px]">
+                                                {{ $cuti->pertimbangan_atasan_at ? '✓' : '2' }} Pertimbangan Atasan
+                                            </div>
+                                            <div class="p-2 rounded-lg {{ $cuti->status === 'Disetujui' ? 'bg-emerald-600 text-white font-bold shadow-2xs' : ($cuti->status === 'Ditolak' ? 'bg-rose-600 text-white font-bold' : 'bg-slate-100 text-slate-400') }} text-[11px]">
+                                                {{ $cuti->status === 'Disetujui' ? '✓ Disetujui PYBMC' : ($cuti->status === 'Ditolak' ? '✕ Ditolak' : '3 Keputusan PYBMC') }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endif
+                        </div>
+                    @else
+                        <div class="text-center py-8 text-slate-400 text-xs">
+                            <span class="text-3xl block mb-2">📋</span>
+                            <p class="font-semibold text-slate-600">Belum ada usulan aktif atau permohonan surat yang sedang berjalan.</p>
+                            <p class="text-slate-400 mt-1">Gunakan tombol pintasan cepat di atas untuk mengajukan Surat Keterangan Aktif, Cuti, KP, atau KGB.</p>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- PUSAT TINDAKAN VERIFIKASI ATASAN LANGSUNG (JIKA PEGAWAI ADALAH ATASAN) --}}
@@ -788,6 +1072,215 @@
                 </div>
                 @endif
 
+                {{-- 🏛️ EXECUTIVE ACTION CENTER: MEJA VERIFIKASI & PENGESAHAN TATA NASKAH (URUTAN 4 TAHAP BERJENJANG) --}}
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-5 sm:p-6 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between pb-4 mb-5 border-b border-slate-100 gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-slate-900 via-indigo-900 to-blue-900 text-white flex items-center justify-center text-xl shadow-xs shrink-0">
+                                🏛️
+                            </div>
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h3 class="text-base sm:text-lg font-bold text-slate-900">Executive Action Center &amp; Meja Pengesahan Berjenjang</h3>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200 uppercase tracking-wider">
+                                        SOP Tata Naskah 4 Tahap
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-0.5">
+                                    Alur Bertingkat: Admin Screening &rarr; Paraf Ka Pokja &rarr; Paraf Kabag Umum &rarr; TTE Pimpinan (WD II / Dekan).
+                                </p>
+                            </div>
+                        </div>
+
+                        {{-- Tag Status User Login --}}
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-medium">Peran Anda:</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold shadow-2xs 
+                                {{ $isAdmin ? 'bg-amber-100 text-amber-900 border border-amber-300' : 
+                                  ($isDekan ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 
+                                  ($isWadek2 ? 'bg-blue-100 text-blue-900 border border-blue-300' : 
+                                  ($isKabag ? 'bg-purple-100 text-purple-900 border border-purple-300' : 
+                                  ($isPokja ? 'bg-sky-100 text-sky-900 border border-sky-300' : 'bg-slate-100 text-slate-800 border border-slate-200')))) }}">
+                                {{ $isAdmin ? '🛡️ Admin Kepegawaian' : 
+                                  ($isDekan ? '🎓 Dekan Fakultas' : 
+                                  ($isWadek2 ? '💼 Wakil Dekan II' : 
+                                  ($isKabag ? '🏛️ Kabag Umum' : 
+                                  ($isPokja ? '📋 Ka Pokja Keu-Kepeg' : '👔 Pejabat / Atasan')))) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    {{-- 4 Kotak Alur Bertingkat (Interactive Pipeline) --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        
+                        {{-- 1. TAHAP 1: SCREENING ADMIN & NOMOR SURAT --}}
+                        <div class="p-4 rounded-xl border {{ $isAdmin ? 'border-amber-400 bg-amber-50/70 shadow-sm ring-1 ring-amber-300' : 'border-slate-200 bg-slate-50/60' }} flex flex-col justify-between transition hover:shadow-md">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-6 h-6 rounded-lg bg-amber-500 text-white flex items-center justify-center text-xs font-black">1</span>
+                                        <span class="text-xs font-bold uppercase tracking-wider text-amber-900">Screening Admin</span>
+                                    </div>
+                                    @if($isAdmin)
+                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-amber-200 text-amber-900">👉 Tugas Anda</span>
+                                    @endif
+                                </div>
+                                <div class="mt-2 flex items-baseline gap-2">
+                                    <span class="text-3xl font-black text-slate-900">{{ $workflowStats['admin_screening_total'] ?? 0 }}</span>
+                                    <span class="text-xs font-bold text-amber-800">Berkas Menunggu</span>
+                                </div>
+                                <div class="text-[11px] text-slate-600 mt-2 space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <span>E-Surat Aktif:</span>
+                                        <strong class="font-mono text-slate-800">{{ $workflowStats['admin_screening_surat'] ?? 0 }}</strong>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span>Usulan KP &amp; KGB:</span>
+                                        <strong class="font-mono text-slate-800">{{ $workflowStats['admin_screening_karir'] ?? 0 }}</strong>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span>Satyalancana:</span>
+                                        <strong class="font-mono text-slate-800">{{ $workflowStats['admin_screening_satya'] ?? 0 }}</strong>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-1 border-t border-amber-200/50 text-amber-900 font-semibold">
+                                        <span>Perlu Penomoran Surat:</span>
+                                        <strong class="font-mono text-amber-950 font-bold">{{ $workflowStats['admin_nomor_total'] ?? 0 }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-2.5 border-t border-slate-200/80">
+                                <a href="{{ route('layanan-surat.index') }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isAdmin ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
+                                    Buka Meja Screening &rarr;
+                                </a>
+                            </div>
+                        </div>
+
+                        {{-- 2. TAHAP 2: PARAF KA POKJA KEU-KEPEG --}}
+                        <div class="p-4 rounded-xl border {{ $isPokja ? 'border-sky-400 bg-sky-50/70 shadow-sm ring-1 ring-sky-300' : 'border-slate-200 bg-slate-50/60' }} flex flex-col justify-between transition hover:shadow-md">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-6 h-6 rounded-lg bg-sky-600 text-white flex items-center justify-center text-xs font-black">2</span>
+                                        <span class="text-xs font-bold uppercase tracking-wider text-sky-950">Paraf Ka Pokja</span>
+                                    </div>
+                                    @if($isPokja)
+                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-sky-200 text-sky-900">👉 Tugas Anda</span>
+                                    @endif
+                                </div>
+                                <div class="mt-2 flex items-baseline gap-2">
+                                    <span class="text-3xl font-black text-slate-900">{{ $workflowStats['pokja_pending_total'] ?? 0 }}</span>
+                                    <span class="text-xs font-bold text-sky-800">Menunggu Paraf</span>
+                                </div>
+                                <div class="text-[11px] text-slate-600 mt-2 space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <span>E-Surat Mandiri:</span>
+                                        <strong class="font-mono text-slate-800">{{ $workflowStats['pokja_pending_surat'] ?? 0 }}</strong>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span>Usulan KP &amp; KGB:</span>
+                                        <strong class="font-mono text-slate-800">{{ $workflowStats['pokja_pending_karir'] ?? 0 }}</strong>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span>Satyalancana:</span>
+                                        <strong class="font-mono text-slate-800">{{ $workflowStats['pokja_pending_satya'] ?? 0 }}</strong>
+                                    </div>
+                                    <p class="text-[10px] text-sky-700 italic pt-1 border-t border-sky-200/50">
+                                        Pemeriksaan keaktifan dinas &amp; kelayakan berkas.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-2.5 border-t border-slate-200/80">
+                                <a href="{{ route('layanan-surat.index') }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isPokja ? 'bg-sky-600 hover:bg-sky-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
+                                    Paraf Koordinasi Pokja &rarr;
+                                </a>
+                            </div>
+                        </div>
+
+                        {{-- 3. TAHAP 3: TELAAH & PARAF KABAG UMUM --}}
+                        <div class="p-4 rounded-xl border {{ $isKabag ? 'border-purple-400 bg-purple-50/70 shadow-sm ring-1 ring-purple-300' : 'border-slate-200 bg-slate-50/60' }} flex flex-col justify-between transition hover:shadow-md">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-6 h-6 rounded-lg bg-purple-600 text-white flex items-center justify-center text-xs font-black">3</span>
+                                        <span class="text-xs font-bold uppercase tracking-wider text-purple-950">Paraf Kabag Umum</span>
+                                    </div>
+                                    @if($isKabag)
+                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-purple-200 text-purple-900">👉 Tugas Anda</span>
+                                    @endif
+                                </div>
+                                <div class="mt-2 flex items-baseline gap-2">
+                                    <span class="text-3xl font-black text-slate-900">{{ $workflowStats['kabag_pending_total'] ?? 0 }}</span>
+                                    <span class="text-xs font-bold text-purple-800">Menunggu Telaah</span>
+                                </div>
+                                <div class="text-[11px] text-slate-600 mt-2 space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <span>E-Surat Mandiri:</span>
+                                        <strong class="font-mono text-slate-800">{{ $workflowStats['kabag_pending_surat'] ?? 0 }}</strong>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span>Usulan KP &amp; KGB:</span>
+                                        <strong class="font-mono text-slate-800">{{ $workflowStats['kabag_pending_karir'] ?? 0 }}</strong>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span>Satyalancana:</span>
+                                        <strong class="font-mono text-slate-800">{{ $workflowStats['kabag_pending_satya'] ?? 0 }}</strong>
+                                    </div>
+                                    <p class="text-[10px] text-purple-700 italic pt-1 border-t border-purple-200/50">
+                                        Telaah format tata naskah &amp; paraf dinas.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-2.5 border-t border-slate-200/80">
+                                <a href="{{ route('layanan-surat.index') }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isKabag ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
+                                    Telaah Tata Naskah &rarr;
+                                </a>
+                            </div>
+                        </div>
+
+                        {{-- 4. TAHAP 4: TTE PIMPINAN (WD II / DEKAN) --}}
+                        <div class="p-4 rounded-xl border {{ ($isWadek2 || $isDekan) ? 'border-emerald-400 bg-emerald-50/70 shadow-sm ring-1 ring-emerald-300' : 'border-slate-200 bg-slate-50/60' }} flex flex-col justify-between transition hover:shadow-md">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-black">4</span>
+                                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-950">TTE Pimpinan</span>
+                                    </div>
+                                    @if($isWadek2 || $isDekan)
+                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-200 text-emerald-900">👉 Tugas Anda</span>
+                                    @endif
+                                </div>
+                                <div class="mt-2 flex items-baseline gap-2">
+                                    <span class="text-3xl font-black text-slate-900">{{ ($workflowStats['wd2_pending_total'] ?? 0) + ($workflowStats['dekan_pending_total'] ?? 0) }}</span>
+                                    <span class="text-xs font-bold text-emerald-800">Siap Sah TTE</span>
+                                </div>
+                                <div class="text-[11px] text-slate-600 mt-2 space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <span>TTE WD II (Umum &amp; Keu):</span>
+                                        <strong class="font-mono text-slate-800">{{ $workflowStats['wd2_pending_total'] ?? 0 }}</strong>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span>TTE Dekan Fakultas:</span>
+                                        <strong class="font-mono text-slate-800">{{ $workflowStats['dekan_pending_total'] ?? 0 }}</strong>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span>Keputusan Cuti PYBMC:</span>
+                                        <strong class="font-mono text-slate-800">{{ $pendingCutiCount ?? 0 }}</strong>
+                                    </div>
+                                    <p class="text-[10px] text-emerald-700 italic pt-1 border-t border-emerald-200/50">
+                                        Penandatanganan elektronik resmi bersertifikat.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-2.5 border-t border-slate-200/80">
+                                <a href="{{ route('layanan-surat.index') }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ ($isWadek2 || $isDekan) ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
+                                    Meja Pengesahan TTE &rarr;
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
                 {{-- 🚨 PUSAT TINDAKAN & OPERASIONAL HARIAN (ACTION ITEMS) --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     {{-- 1. Pending Cuti --}}
@@ -875,85 +1368,121 @@
                             </div>
                             <div>
                                 <h4 class="text-sm font-bold text-slate-800">Pintasan Cepat Modul Populer</h4>
-                                <p class="text-[11px] text-slate-500">Akses langsung ke modul operasional, data kepegawaian, dan monitoring harian.</p>
+                                <p class="text-[11px] text-slate-500">Akses langsung ke seluruh modul operasional, data kepegawaian, surat dinas, dan monitoring harian.</p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 gap-3">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                         @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
                             {{-- 1. Master Pegawai --}}
                             <a href="{{ route('pegawai.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
-                                <span class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 border border-blue-200/70 flex items-center justify-center mb-2 group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition duration-200 shadow-2xs">
+                                <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-200/70 flex items-center justify-center mb-1.5 group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition duration-200 shadow-2xs">
                                     <x-icon name="users" class="w-5 h-5" />
                                 </span>
                                 <span class="text-xs font-semibold text-slate-700 group-hover:text-blue-700">Master Pegawai</span>
-                                <span class="text-[10px] text-slate-400 mt-0.5">Kelola Data</span>
+                                <span class="text-[10px] text-slate-400">Data Profil</span>
+                            </a>
+
+                            {{-- 2. Layanan E-Surat Mandiri --}}
+                            <a href="{{ route('layanan-surat.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
+                                <span class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200/70 flex items-center justify-center mb-1.5 group-hover:scale-105 group-hover:bg-indigo-600 group-hover:text-white transition duration-200 shadow-2xs">
+                                    <x-icon name="file-text" class="w-5 h-5" />
+                                </span>
+                                <span class="text-xs font-semibold text-slate-700 group-hover:text-indigo-700">Layanan E-Surat</span>
+                                <span class="text-[10px] text-slate-400">Surat Aktif Bekerja</span>
                             </a>
                         @endif
 
-                        {{-- 2. Rekap Presensi --}}
+                        {{-- 3. Rekap Presensi --}}
                         <a href="{{ route('admin.presensi.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-emerald-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
-                            <span class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/70 flex items-center justify-center mb-2 group-hover:scale-105 group-hover:bg-emerald-600 group-hover:text-white transition duration-200 shadow-2xs">
+                            <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/70 flex items-center justify-center mb-1.5 group-hover:scale-105 group-hover:bg-emerald-600 group-hover:text-white transition duration-200 shadow-2xs">
                                 <x-icon name="calendar-check" class="w-5 h-5" />
                             </span>
                             <span class="text-xs font-semibold text-slate-700 group-hover:text-emerald-700">Rekap Presensi</span>
-                            <span class="text-[10px] text-slate-400 mt-0.5">Log & GPS</span>
+                            <span class="text-[10px] text-slate-400">Log &amp; GPS</span>
                         </a>
 
-                        {{-- 3. Verifikasi Logbook --}}
+                        {{-- 4. Verifikasi Logbook --}}
                         <a href="{{ route('admin.logbook.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-indigo-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
-                            <span class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200/70 flex items-center justify-center mb-2 group-hover:scale-105 group-hover:bg-indigo-600 group-hover:text-white transition duration-200 shadow-2xs">
+                            <span class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200/70 flex items-center justify-center mb-1.5 group-hover:scale-105 group-hover:bg-indigo-600 group-hover:text-white transition duration-200 shadow-2xs">
                                 <x-icon name="clipboard-list" class="w-5 h-5" />
                             </span>
                             <span class="text-xs font-semibold text-slate-700 group-hover:text-indigo-700">Logbook Kinerja</span>
-                            <span class="text-[10px] text-slate-400 mt-0.5">Verifikasi</span>
+                            <span class="text-[10px] text-slate-400">Verifikasi</span>
                         </a>
 
-                        {{-- 4. Pengajuan Cuti --}}
+                        {{-- 5. Pengajuan Cuti --}}
                         <a href="{{ route('pengajuan-cuti.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-amber-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
-                            <span class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/70 flex items-center justify-center mb-2 group-hover:scale-105 group-hover:bg-amber-600 group-hover:text-white transition duration-200 shadow-2xs">
+                            <span class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/70 flex items-center justify-center mb-1.5 group-hover:scale-105 group-hover:bg-amber-600 group-hover:text-white transition duration-200 shadow-2xs">
                                 <x-icon name="calendar-off" class="w-5 h-5" />
                             </span>
                             <span class="text-xs font-semibold text-slate-700 group-hover:text-amber-700">Layanan Cuti</span>
-                            <span class="text-[10px] text-slate-400 mt-0.5">Persetujuan</span>
+                            <span class="text-[10px] text-slate-400">Persetujuan BKN</span>
                         </a>
 
                         @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
-                            {{-- 5. Kenaikan Pangkat --}}
+                            {{-- 6. Kenaikan Pangkat --}}
                             <a href="{{ route('kp.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-purple-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
-                                <span class="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 border border-purple-200/70 flex items-center justify-center mb-2 group-hover:scale-105 group-hover:bg-purple-600 group-hover:text-white transition duration-200 shadow-2xs">
+                                <span class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 border border-purple-200/70 flex items-center justify-center mb-1.5 group-hover:scale-105 group-hover:bg-purple-600 group-hover:text-white transition duration-200 shadow-2xs">
                                     <x-icon name="award" class="w-5 h-5" />
                                 </span>
                                 <span class="text-xs font-semibold text-slate-700 group-hover:text-purple-700">Kenaikan Pangkat</span>
-                                <span class="text-[10px] text-slate-400 mt-0.5">Usulan KP</span>
+                                <span class="text-[10px] text-slate-400">Usulan KP</span>
                             </a>
 
-                            {{-- 6. Kenaikan Gaji Berkala --}}
+                            {{-- 7. Kenaikan Gaji Berkala --}}
                             <a href="{{ route('kgb.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-teal-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
-                                <span class="w-11 h-11 rounded-xl bg-teal-50 text-teal-600 border border-teal-200/70 flex items-center justify-center mb-2 group-hover:scale-105 group-hover:bg-teal-600 group-hover:text-white transition duration-200 shadow-2xs">
+                                <span class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 border border-teal-200/70 flex items-center justify-center mb-1.5 group-hover:scale-105 group-hover:bg-teal-600 group-hover:text-white transition duration-200 shadow-2xs">
                                     <x-icon name="banknote" class="w-5 h-5" />
                                 </span>
                                 <span class="text-xs font-semibold text-slate-700 group-hover:text-teal-700">Gaji Berkala</span>
-                                <span class="text-[10px] text-slate-400 mt-0.5">Jadwal KGB</span>
+                                <span class="text-[10px] text-slate-400">Jadwal KGB</span>
                             </a>
 
-                            {{-- 7. DUK --}}
+                            {{-- 8. Usulan Satyalancana --}}
+                            <a href="{{ route('satyalancana.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-indigo-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
+                                <span class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200/70 flex items-center justify-center mb-1.5 group-hover:scale-105 group-hover:bg-indigo-600 group-hover:text-white transition duration-200 shadow-2xs">
+                                    <x-icon name="award" class="w-5 h-5" />
+                                </span>
+                                <span class="text-xs font-semibold text-slate-700 group-hover:text-indigo-700">Satyalancana</span>
+                                <span class="text-[10px] text-slate-400">Penghargaan</span>
+                            </a>
+
+                            {{-- 9. Beban Kerja (ABK) --}}
+                            <a href="{{ route('abk.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
+                                <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-200/70 flex items-center justify-center mb-1.5 group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition duration-200 shadow-2xs">
+                                    <x-icon name="chart" class="w-5 h-5" />
+                                </span>
+                                <span class="text-xs font-semibold text-slate-700 group-hover:text-blue-700">Formasi ABK</span>
+                                <span class="text-[10px] text-slate-400">Analisis Beban</span>
+                            </a>
+
+                            {{-- 10. Manajemen Talenta ASN --}}
+                            <a href="{{ route('manajemen-talenta.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-purple-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
+                                <span class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 border border-purple-200/70 flex items-center justify-center mb-1.5 group-hover:scale-105 group-hover:bg-purple-600 group-hover:text-white transition duration-200 shadow-2xs">
+                                    <x-icon name="target" class="w-5 h-5" />
+                                </span>
+                                <span class="text-xs font-semibold text-slate-700 group-hover:text-purple-700">Manajemen Talenta</span>
+                                <span class="text-[10px] text-slate-400">9-Box &amp; Suksesi</span>
+                            </a>
+
+                            {{-- 11. DUK --}}
                             <a href="{{ route('duk.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-cyan-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
-                                <span class="w-11 h-11 rounded-xl bg-cyan-50 text-cyan-600 border border-cyan-200/70 flex items-center justify-center mb-2 group-hover:scale-105 group-hover:bg-cyan-600 group-hover:text-white transition duration-200 shadow-2xs">
+                                <span class="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 border border-cyan-200/70 flex items-center justify-center mb-1.5 group-hover:scale-105 group-hover:bg-cyan-600 group-hover:text-white transition duration-200 shadow-2xs">
                                     <x-icon name="list-ordered" class="w-5 h-5" />
                                 </span>
                                 <span class="text-xs font-semibold text-slate-700 group-hover:text-cyan-700">Matriks DUK</span>
-                                <span class="text-[10px] text-slate-400 mt-0.5">Urut Pangkat</span>
+                                <span class="text-[10px] text-slate-400">Urut Pangkat</span>
                             </a>
 
-                            {{-- 8. Tugas Belajar --}}
+                            {{-- 12. Tugas Belajar --}}
                             <a href="{{ route('tugas-belajar.index') }}" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-rose-400 hover:shadow-xs hover:-translate-y-0.5 transition duration-150 group text-center">
-                                <span class="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 border border-rose-200/70 flex items-center justify-center mb-2 group-hover:scale-105 group-hover:bg-rose-600 group-hover:text-white transition duration-200 shadow-2xs">
+                                <span class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 border border-rose-200/70 flex items-center justify-center mb-1.5 group-hover:scale-105 group-hover:bg-rose-600 group-hover:text-white transition duration-200 shadow-2xs">
                                     <x-icon name="graduation-cap" class="w-5 h-5" />
                                 </span>
                                 <span class="text-xs font-semibold text-slate-700 group-hover:text-rose-700">Tugas Belajar</span>
-                                <span class="text-[10px] text-slate-400 mt-0.5">Studi Pegawai</span>
+                                <span class="text-[10px] text-slate-400">Studi Pegawai</span>
                             </a>
                         @endif
                     </div>

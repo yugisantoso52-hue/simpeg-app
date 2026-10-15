@@ -158,6 +158,57 @@ class User extends Authenticatable
     }
 
     /**
+     * Cek apakah user adalah Dekan FKp UNRI
+     */
+    public function isDekan(): bool
+    {
+        if (!$this->pegawai_id) return false;
+        $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
+        if (!$pegawai || !$pegawai->jabatan) return false;
+        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
+        return str_contains($jabatan, 'DEKAN') && !str_contains($jabatan, 'WADEK') && !str_contains($jabatan, 'WAKIL');
+    }
+
+    /**
+     * Cek apakah user adalah Wakil Dekan II (Bidang Umum & Keuangan)
+     */
+    public function isWadek2(): bool
+    {
+        if (!$this->pegawai_id) return false;
+        $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
+        if (!$pegawai || !$pegawai->jabatan) return false;
+        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
+        return (str_contains($jabatan, 'WADEK II') || str_contains($jabatan, 'WAKIL DEKAN II') || str_contains($jabatan, 'WD II') || str_contains($jabatan, 'WD 2') || str_contains($jabatan, 'BIDANG UMUM') || str_contains($jabatan, 'KEUANGAN'));
+    }
+
+    /**
+     * Cek apakah user adalah Kepala Bagian Umum (Kabag Umum / TU)
+     */
+    public function isKabagUmum(): bool
+    {
+        if (!$this->pegawai_id) return false;
+        $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
+        if (!$pegawai || !$pegawai->jabatan) return false;
+        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
+        return str_contains($jabatan, 'KEPALA BAGIAN UMUM') || str_contains($jabatan, 'KABAG UMUM') || str_contains($jabatan, 'KABAG TU');
+    }
+
+    /**
+     * Cek apakah user adalah Kepala Pokja Kepegawaian & Keuangan
+     */
+    public function isKaPokjaKepeg(): bool
+    {
+        if (!$this->pegawai_id) return false;
+        $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
+        if (!$pegawai || !$pegawai->jabatan) return false;
+        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
+        $isKaPokja = (str_contains($jabatan, 'KA POKJA') || str_contains($jabatan, 'KEPALA POKJA') || str_contains($jabatan, 'KETUA POKJA'))
+            && !str_contains($jabatan, 'STAFF')
+            && !str_contains($jabatan, 'STAF');
+        return $isKaPokja && (str_contains($jabatan, 'KEU') || str_contains($jabatan, 'KEPEG'));
+    }
+
+    /**
      * Cek apakah user berhak mengakses menu Analitik Eksekutif, Data Kepegawaian, dan Riwayat Pegawai.
      * Diizinkan untuk:
      * 1. Admin
