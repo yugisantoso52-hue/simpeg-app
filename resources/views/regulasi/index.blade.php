@@ -117,11 +117,16 @@
                             <td class="px-4 py-3 font-semibold text-slate-900">
                                 Surat Keterangan Aktif Bekerja
                             </td>
-                            <td class="px-4 py-3">Dekan (Atribusi)</td>
-                            <td class="px-4 py-3">Dekan Fakultas Keperawatan</td>
+                            <td class="px-4 py-3">Dekan (Atribusi Pimpinan Fakultas)</td>
+                            <td class="px-4 py-3">
+                                <strong>Dekan</strong> (Utama / Visa / Beasiswa)<br>
+                                <span class="text-xs text-slate-500">atau <strong>Wakil Dekan II</strong> (Mandat a.n. Dekan untuk Bank/BPJS)</span>
+                            </td>
                             <td class="px-4 py-3 font-mono text-[11px] bg-slate-50">
-                                <strong>Dekan Fakultas Keperawatan,</strong><br>
-                                {{ $pejabatDekan->nama_lengkap ?? 'Prof. Dr. Wan Nishfa Dewi, S.Kp., M.Ng.' }}
+                                <strong>1. Opsi Dekan:</strong><br>
+                                <em>Dekan Fakultas Keperawatan</em><br>
+                                <strong class="text-blue-700">2. Opsi Wadek II (Mandat):</strong><br>
+                                <em>a.n. Dekan Fakultas Keperawatan,<br>Wakil Dekan Bidang Keuangan dan Umum</em>
                             </td>
                             <td class="px-4 py-3">
                                 1. Ka Pokja Keu-Kepeg<br>

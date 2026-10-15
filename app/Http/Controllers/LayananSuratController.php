@@ -54,6 +54,7 @@ class LayananSuratController extends Controller
             'keperluan'          => 'required|string|max:500',
             'pegawai_id'         => 'nullable|exists:pegawai,id',
             'nomor_surat_manual' => 'nullable|string|max:100',
+            'penandatangan_role' => 'nullable|in:dekan,wadek2',
         ]);
 
         $user = Auth::user();
@@ -94,14 +95,23 @@ class LayananSuratController extends Controller
             return back()->with('error', "Nomor surat {$nomorSurat} sudah pernah digunakan. Silakan tentukan nomor urut manual yang berbeda.")->withInput();
         }
 
-        // Pejabat Dekan FKP UNRI sebagai Penandatangan default
+        // Pejabat Dekan & Wakil Dekan II FKP UNRI
         $pejabatDekan   = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
+        $pejabatWd2     = Pegawai::where('nama', 'like', '%Safri%')->first();
         $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
         $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
 
-        $penandatanganNama    = $pejabatDekan ? ($pejabatDekan->nama_lengkap ?? $pejabatDekan->nama) : 'Prof. Dr. Wan Nishfa Dewi, S.Kp., M.Ng.';
-        $penandatanganNip     = $pejabatDekan ? $pejabatDekan->nip : '197508222001122001';
-        $penandatanganJabatan = 'Dekan Fakultas Keperawatan';
+        $rolePenandatangan = $request->input('penandatangan_role', 'dekan');
+
+        if ($rolePenandatangan === 'wadek2') {
+            $penandatanganNama    = $pejabatWd2 ? ($pejabatWd2->nama_lengkap ?? $pejabatWd2->nama) : 'Dr. Safri, M.Kep, Sp.Kep.M.B';
+            $penandatanganNip     = $pejabatWd2 ? $pejabatWd2->nip : '198509092014041001';
+            $penandatanganJabatan = 'Wakil Dekan Bidang Keuangan dan Umum';
+        } else {
+            $penandatanganNama    = $pejabatDekan ? ($pejabatDekan->nama_lengkap ?? $pejabatDekan->nama) : 'Prof. Wan Nishfa Dewi, S.Kp, MNg, PhD';
+            $penandatanganNip     = $pejabatDekan ? $pejabatDekan->nip : '197508222001122001';
+            $penandatanganJabatan = 'Dekan Fakultas Keperawatan';
+        }
 
         // Token Kriptografis Keaslian Dokumen
         $watermarkService = app(DocumentWatermarkService::class);

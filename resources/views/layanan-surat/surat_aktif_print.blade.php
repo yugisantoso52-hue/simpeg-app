@@ -155,7 +155,13 @@
         <tr>
             <td>Jabatan</td>
             <td>:</td>
-            <td>{{ $surat->penandatangan_jabatan }} Universitas Riau</td>
+            <td>
+                @if(str_contains(strtolower($surat->penandatangan_jabatan), 'wakil dekan'))
+                    Wakil Dekan Bidang Keuangan dan Umum Fakultas Keperawatan Universitas Riau
+                @else
+                    {{ $surat->penandatangan_jabatan }} Universitas Riau
+                @endif
+            </td>
         </tr>
     </table>
 
@@ -270,11 +276,16 @@
                 </div>
             </td>
 
-            <!-- SISI KANAN: TANDA TANGAN DEKAN -->
+            <!-- SISI KANAN: TANDA TANGAN PEJABAT -->
             <td style="width: 47%; text-align: left; vertical-align: top; padding-left: 10px;">
                 <div style="font-size: 10pt; line-height: 1.25;">
                     Pekanbaru, {{ \Carbon\Carbon::parse($surat->tanggal_surat)->locale('id')->translatedFormat('d F Y') }}<br>
-                    {{ $surat->penandatangan_jabatan }},
+                    @if(str_contains(strtolower($surat->penandatangan_jabatan), 'wakil dekan'))
+                        a.n. Dekan Fakultas Keperawatan,<br>
+                        Wakil Dekan Bidang Keuangan dan Umum,
+                    @else
+                        {{ $surat->penandatangan_jabatan }},
+                    @endif
                     <div style="height: 48px;"></div>
                     <strong style="text-decoration: underline;">{{ $surat->penandatangan_nama }}</strong><br>
                     <span>NIP. {{ $surat->penandatangan_nip }}</span>

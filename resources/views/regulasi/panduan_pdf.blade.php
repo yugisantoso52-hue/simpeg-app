@@ -270,9 +270,15 @@
             </tr>
             <tr>
                 <td><strong>Surat Keterangan Aktif Bekerja</strong></td>
-                <td>Dekan FKp UNRI</td>
-                <td>Dekan Fakultas Keperawatan (Definitif)</td>
-                <td><code>Dekan Fakultas Keperawatan</code></td>
+                <td>Dekan FKp UNRI (Atribusi)</td>
+                <td>
+                    1. Dekan (Definitif - Utama / Visa / Beasiswa)<br>
+                    2. Wakil Dekan II (Mandat a.n. Dekan - Operasional / Bank)
+                </td>
+                <td>
+                    1. <code>Dekan Fakultas Keperawatan</code><br>
+                    2. <code>a.n. Dekan Fakultas Keperawatan<br>Wakil Dekan Bidang Keuangan dan Umum</code>
+                </td>
             </tr>
         </tbody>
     </table>

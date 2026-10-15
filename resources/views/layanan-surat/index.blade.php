@@ -77,7 +77,7 @@
                     <form method="POST" action="{{ route('layanan-surat.surat-aktif.store') }}" class="space-y-4">
                         @csrf
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                                     Pegawai Pemohon
@@ -113,7 +113,22 @@
                                 <p class="text-[11px] text-slate-400 mt-1">Format: <em>(isi manual)/UN19.5.1.1.10/KP/{{ date('Y') }}</em></p>
                             </div>
 
-                            <div class="md:col-span-2 lg:col-span-1">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                    Pejabat Penandatangan Surat <span class="text-red-500">*</span>
+                                </label>
+                                <select name="penandatangan_role" required class="w-full text-sm rounded-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="dekan" {{ old('penandatangan_role') === 'dekan' ? 'selected' : '' }}>
+                                        Prof. Wan Nishfa Dewi, S.Kp, MNg, PhD — Dekan (Utama / Visa / Beasiswa / Formal)
+                                    </option>
+                                    <option value="wadek2" {{ old('penandatangan_role') === 'wadek2' ? 'selected' : '' }}>
+                                        Dr. Safri, M.Kep, Sp.Kep.M.B — a.n. Dekan, Wakil Dekan Bidang Keuangan & Umum (Bank / KPR / BPJS)
+                                    </option>
+                                </select>
+                                <p class="text-[11px] text-slate-400 mt-1">Pilih Dekan (utama) atau Wakil Dekan II (a.n. Dekan) sesuai peruntukan surat.</p>
+                            </div>
+
+                            <div>
                                 <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                                     Keperluan Surat <span class="text-red-500">*</span>
                                 </label>
@@ -151,6 +166,7 @@
                                 <tr>
                                     <th class="px-4 py-3">Nomor Surat</th>
                                     <th class="px-4 py-3">Nama Pegawai & NIP</th>
+                                    <th class="px-4 py-3">Penandatangan</th>
                                     <th class="px-4 py-3">Keperluan</th>
                                     <th class="px-4 py-3 text-center">Tanggal Terbit</th>
                                     <th class="px-4 py-3 text-center">Status</th>
@@ -166,6 +182,18 @@
                                         <td class="px-4 py-3">
                                             <div class="font-semibold text-slate-900">{{ $item->pegawai->nama_lengkap ?? $item->pegawai->nama }}</div>
                                             <div class="text-xs text-slate-500">NIP: {{ $item->pegawai->nip }}</div>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            @if(str_contains(strtolower($item->penandatangan_jabatan ?? ''), 'wakil dekan'))
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                                    a.n. Dekan (Wadek II)
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                                    Dekan (Utama)
+                                                </span>
+                                            @endif
+                                            <div class="text-[10.5px] text-slate-500 truncate max-w-[150px]" title="{{ $item->penandatangan_nama }}">{{ $item->penandatangan_nama }}</div>
                                         </td>
                                         <td class="px-4 py-3 text-slate-700 max-w-xs truncate" title="{{ $item->keperluan }}">
                                             {{ $item->keperluan }}
@@ -191,7 +219,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="px-4 py-8 text-center text-slate-400 text-sm">
+                                        <td colspan="7" class="px-4 py-8 text-center text-slate-400 text-sm">
                                             Belum ada arsip surat keterangan yang diterbitkan.
                                         </td>
                                     </tr>
