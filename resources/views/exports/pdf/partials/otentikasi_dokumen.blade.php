@@ -5,26 +5,24 @@
 @endphp
 
 @if(!empty($otentikasiQr) || !empty($otentikasiUrl))
-<div style="margin-top: 8px; border: 1px dashed #0284c7; padding: 4px 6px; border-radius: 4px; background-color: #f0f9ff; font-family: Arial, sans-serif; page-break-inside: avoid; width: 100%; box-sizing: border-box;">
-    <table style="width: 100%; border-collapse: collapse;">
-        <tr>
-            @if(!empty($otentikasiQr))
-                <td style="width: 44px; vertical-align: middle; text-align: center; padding-right: 6px;">
-                    <img src="{{ $otentikasiQr }}" style="width: 40px; height: 40px; display: block; margin: 0 auto;" alt="QR Otentikasi">
-                </td>
-            @endif
-            <td style="vertical-align: middle; font-size: 6.2pt; line-height: 1.25; color: #0c4a6e;">
-                <strong style="color: #0369a1; font-size: 6.8pt; display: block; margin-bottom: 1px;">DOKUMEN RESMI ELEKTRONIK SIKAP</strong>
-                Dokumen ini sah diterbitkan secara elektronik melalui SIKAP FKP UNRI. Validitas dokumen dapat diverifikasi secara daring.<br>
-                @if(!empty($otentikasiCode))
-                    <span style="font-family: monospace; font-size: 5.6pt; color: #0284c7;">Kode: {{ strlen($otentikasiCode) > 38 ? substr($otentikasiCode, 0, 34) . '...' : $otentikasiCode }}</span>
-                @endif
-                @if(!empty($otentikasiUrl))
-                    @if(!empty($otentikasiCode)) &bull; @endif
-                    <a href="{{ $otentikasiUrl }}" style="color: #0284c7; text-decoration: underline; font-size: 5.6pt; font-family: monospace;">Tautan Verifikasi Keabsahan</a>
-                @endif
+<table class="otentikasi-table-dokumen" style="width: 100% !important; max-width: 100% !important; border: 1px dashed #0284c7 !important; background-color: #f0f9ff !important; border-collapse: collapse !important; margin: 5px 0 0 0 !important; font-family: Arial, sans-serif !important; page-break-inside: avoid !important;">
+    <tr>
+        @if(!empty($otentikasiQr))
+            <td style="width: 42px !important; min-width: 42px !important; vertical-align: middle !important; text-align: center !important; padding: 3px 4px 3px 6px !important; border: none !important;">
+                <img src="{{ $otentikasiQr }}" style="width: 36px !important; height: 36px !important; display: block !important; margin: 0 auto !important;" alt="QR Otentikasi">
             </td>
-        </tr>
-    </table>
-</div>
+        @endif
+        <td style="vertical-align: middle !important; padding: 3px 6px !important; border: none !important; font-size: 6.2pt !important; line-height: 1.25 !important; color: #0c4a6e !important;">
+            <strong style="color: #0369a1 !important; font-size: 6.8pt !important; display: block !important; margin-bottom: 1px !important;">DOKUMEN RESMI ELEKTRONIK SIKAP</strong>
+            Dokumen ini sah diterbitkan secara elektronik melalui SIKAP FKP UNRI. Validitas dokumen dapat diverifikasi secara daring.<br>
+            @if(!empty($otentikasiCode))
+                <span style="font-family: monospace !important; font-size: 5.6pt !important; color: #0284c7 !important;">Kode: {{ strlen($otentikasiCode) > 38 ? substr($otentikasiCode, 0, 34) . '...' : $otentikasiCode }}</span>
+            @endif
+            @if(!empty($otentikasiUrl))
+                @if(!empty($otentikasiCode)) &bull; @endif
+                <a href="{{ $otentikasiUrl }}" style="color: #0284c7 !important; text-decoration: underline !important; font-size: 5.6pt !important; font-family: monospace !important;">Tautan Verifikasi Keabsahan</a>
+            @endif
+        </td>
+    </tr>
+</table>
 @endif
