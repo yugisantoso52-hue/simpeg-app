@@ -14,42 +14,68 @@
             line-height: 1.35;
             color: #000;
         }
-        .header-table {
+        /* KOP SURAT RESMI SESUAI STANDAR PERMENDIKTI SAINTEK NO. 42 TAHUN 2025 (SEPERTI KGB) */
+        .kop-surat-table {
             width: 100%;
-            border-bottom: 3px double #000;
-            padding-bottom: 6px;
+            border-collapse: collapse;
+            border-bottom: 2.5px solid #000000;
+            padding-bottom: 5px;
             margin-bottom: 12px;
         }
-        .header-table td {
+        .kop-surat-table td {
+            vertical-align: middle;
+            padding: 0;
+            border: none;
+        }
+        .kop-logo-cell {
+            width: 28mm;
+            text-align: left;
             vertical-align: middle;
         }
-        .kop-instansi {
-            font-size: 10.5pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            text-align: center;
-            line-height: 1.2;
+        .kop-logo-cell img {
+            width: 25mm;
+            height: 25mm;
+            display: block;
         }
-        .kop-univ {
-            font-size: 13pt;
-            font-weight: bold;
-            text-transform: uppercase;
+        .kop-text-cell {
             text-align: center;
-            line-height: 1.2;
+            vertical-align: middle;
+            padding-left: 5px;
+            padding-right: 28mm;
         }
-        .kop-fakultas {
-            font-size: 12pt;
-            font-weight: bold;
+        .kop-text-cell .kop-kemdikti {
+            margin: 0;
+            font-size: 14pt;
+            font-weight: normal;
+            font-family: 'Times New Roman', Times, serif;
             text-transform: uppercase;
-            text-align: center;
-            line-height: 1.2;
+            line-height: 1.15;
+            letter-spacing: 0.2px;
         }
-        .kop-alamat {
-            font-size: 8pt;
-            text-align: center;
-            font-family: Arial, sans-serif;
-            line-height: 1.2;
-            margin-top: 3px;
+        .kop-text-cell .kop-ptn {
+            margin: 1.5px 0 0 0;
+            font-size: 12.5pt;
+            font-weight: bold;
+            font-family: 'Times New Roman', Times, serif;
+            text-transform: uppercase;
+            line-height: 1.15;
+            letter-spacing: 0.3px;
+        }
+        .kop-text-cell .kop-fakultas {
+            margin: 1.5px 0 0 0;
+            font-size: 12.5pt;
+            font-weight: bold;
+            font-family: 'Times New Roman', Times, serif;
+            text-transform: uppercase;
+            line-height: 1.15;
+            letter-spacing: 0.3px;
+        }
+        .kop-text-cell .kop-alamat {
+            margin: 3.5px 0 0 0;
+            font-size: 9pt;
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: normal;
+            line-height: 1.25;
         }
         .title-surat {
             text-align: center;
@@ -111,19 +137,44 @@
 </head>
 <body>
 
-    <!-- KOP SURAT RESMI UNIVERSITAS RIAU -->
-    <table class="header-table">
+    <!-- KOP SURAT INSTANSI RESMI (FORMAT KENAIKAN GAJI BERKALA) -->
+    <table class="kop-surat-table">
         <tr>
-            <td style="width: 15%; text-align: center;">
-                <img src="{{ public_path('logo-unri.png') }}" style="height: 65px;" onerror="this.style.display='none'">
+            <td class="kop-logo-cell">
+                @php
+                    $candidatePaths = [
+                        public_path('images/logo-unri-bw.png'),
+                        public_path('images/logo-unri-bw.jpg'),
+                        public_path('logo-unri-bw.png'),
+                        public_path('images/logo-unri.png'),
+                        public_path('logo-unri.png'),
+                    ];
+
+                    $foundLogo = null;
+                    foreach ($candidatePaths as $path) {
+                        if (file_exists($path)) {
+                            $foundLogo = $path;
+                            break;
+                        }
+                    }
+                @endphp
+
+                @if($foundLogo)
+                    @php
+                        $mimeType = str_ends_with(strtolower($foundLogo), '.jpg') || str_ends_with(strtolower($foundLogo), '.jpeg') ? 'image/jpeg' : 'image/png';
+                    @endphp
+                    <img src="data:{{ $mimeType }};base64,{{ base64_encode(file_get_contents($foundLogo)) }}" alt="Logo UNRI">
+                @else
+                    <div style="font-size: 8pt; color: #666; text-align: center;">[LOGO UNRI]</div>
+                @endif
             </td>
-            <td style="width: 85%;">
-                <div class="kop-instansi">KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI</div>
-                <div class="kop-univ">UNIVERSITAS RIAU</div>
+            <td class="kop-text-cell">
+                <div class="kop-kemdikti">KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI</div>
+                <div class="kop-ptn">UNIVERSITAS RIAU</div>
                 <div class="kop-fakultas">FAKULTAS KEPERAWATAN</div>
                 <div class="kop-alamat">
-                    Kampus Bina Widya Km. 12,5 Simpang Baru Pekanbaru Kode Pos 28293<br>
-                    Telepon (0761) 63276 Laman: fkep.unri.ac.id Pos-el: keperawatan@unri.ac.id
+                    Kampus Bina Widya Gedung Health Studies Complex KM. 12,5 Simpang Baru 28293<br>
+                    Laman : www.keperawatan.unri.ac.id &nbsp;&nbsp;|&nbsp;&nbsp; Email : keperawatan@unri.co.id
                 </div>
             </td>
         </tr>
