@@ -229,51 +229,76 @@
                         <!-- 1. Kepala Bagian Umum -->
                         <tr style="border-bottom: 1px dashed #cbd5e1;">
                             <td style="width: 32px; vertical-align: middle; padding: 2px 4px 2px 0; text-align: center;">
-                                @if(isset($qrKabagUri))
+                                @if(!empty($sudahParafKabag) && isset($qrKabagUri))
                                     <img src="{{ $qrKabagUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
+                                @else
+                                    <div style="font-size: 5.5pt; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 4px 1px; border-radius: 2px; line-height: 1.1;">Belum<br>Paraf</div>
                                 @endif
                             </td>
                             <td style="vertical-align: middle; padding: 2px 0;">
                                 <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">1. Kepala Bagian Umum</div>
                                 <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKabag->nama_lengkap ?? ($pejabatKabag->nama ?? 'Bakhtiar, S.Sos., M.Si') }}</div>
-                                <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
-                                    [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafKabagAt }}
-                                </div>
+                                @if(!empty($sudahParafKabag))
+                                    <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
+                                        [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafKabagAt }}
+                                    </div>
+                                @else
+                                    <div style="color: #b45309; font-weight: bold; font-size: 6.2pt;">
+                                        [ Menunggu Telaah Tata Naskah & Paraf Kabag ]
+                                    </div>
+                                @endif
                             </td>
                         </tr>
                         <!-- 2. Ka Pokja Keu-Kepeg -->
                         <tr>
                             <td style="width: 32px; vertical-align: middle; padding: 3px 4px 2px 0; text-align: center;">
-                                @if(isset($qrPokjaUri))
+                                @if(!empty($sudahParafPokja) && isset($qrPokjaUri))
                                     <img src="{{ $qrPokjaUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
+                                @else
+                                    <div style="font-size: 5.5pt; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 4px 1px; border-radius: 2px; line-height: 1.1;">Belum<br>Paraf</div>
                                 @endif
                             </td>
                             <td style="vertical-align: middle; padding: 3px 0;">
                                 <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">2. Ka Pokja Keu-Kepeg</div>
                                 <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKaPokja->nama_lengkap ?? ($pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina, SE') }}</div>
-                                <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
-                                    [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafPokjaAt }}
-                                </div>
+                                @if(!empty($sudahParafPokja))
+                                    <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
+                                        [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafPokjaAt }}
+                                    </div>
+                                @else
+                                    <div style="color: #b45309; font-weight: bold; font-size: 6.2pt;">
+                                        [ Menunggu Verifikasi Keaktifan & Paraf Ka Pokja ]
+                                    </div>
+                                @endif
                             </td>
                         </tr>
                     </table>
                 </div>
 
                 <!-- KOTAK OTENTIKASI RESMI DOKUMEN ELEKTRONIK -->
-                <div style="border: 1px dashed #0284c7; padding: 4px 6px; border-radius: 4px; background-color: #f0f9ff; font-family: Arial, sans-serif;">
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <tr>
-                            <td style="width: 44px; vertical-align: middle; text-align: center; padding-right: 6px;">
-                                <img src="{{ $qrCodeDataUri }}" style="width: 40px; height: 40px; display: block; margin: 0 auto;" alt="QR Otentikasi">
-                            </td>
-                            <td style="vertical-align: middle; font-size: 6.2pt; line-height: 1.2; color: #0c4a6e;">
-                                <strong style="color: #0369a1; font-size: 6.8pt; display: block; margin-bottom: 1px;">DOKUMEN RESMI ELEKTRONIK SIKAP</strong>
-                                Dokumen ini sah diterbitkan secara elektronik melalui SIKAP FKP UNRI. Validitas dokumen dapat diverifikasi secara daring.<br>
-                                <span style="font-family: monospace; font-size: 5.6pt; color: #0284c7;">Kode: {{ substr($surat->qr_token, 0, 30) }}...</span>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
+                @if(!empty($isDisahkan) && isset($qrCodeDataUri))
+                    <div style="border: 1px dashed #0284c7; padding: 4px 6px; border-radius: 4px; background-color: #f0f9ff; font-family: Arial, sans-serif;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="width: 44px; vertical-align: middle; text-align: center; padding-right: 6px;">
+                                    <img src="{{ $qrCodeDataUri }}" style="width: 40px; height: 40px; display: block; margin: 0 auto;" alt="QR Otentikasi">
+                                </td>
+                                <td style="vertical-align: middle; font-size: 6.2pt; line-height: 1.2; color: #0c4a6e;">
+                                    <strong style="color: #0369a1; font-size: 6.8pt; display: block; margin-bottom: 1px;">DOKUMEN RESMI ELEKTRONIK SIKAP</strong>
+                                    Dokumen ini sah diterbitkan secara elektronik melalui SIKAP FKP UNRI. Validitas dokumen dapat diverifikasi secara daring.<br>
+                                    <span style="font-family: monospace; font-size: 5.6pt; color: #0284c7;">Kode: {{ substr($surat->qr_token, 0, 30) }}...</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                @else
+                    <div style="border: 1px dashed #e11d48; padding: 5px 8px; border-radius: 4px; background-color: #fff1f2; font-family: Arial, sans-serif;">
+                        <div style="font-size: 6.8pt; font-weight: bold; color: #be123c;">STATUS: DRAF SURAT KETERANGAN (BELUM DISAHKAN)</div>
+                        <div style="font-size: 5.8pt; color: #9f1239; line-height: 1.2; margin-top: 1px;">
+                            Surat ini masih dalam proses alur verifikasi berkas dan belum disahkan secara elektronik oleh Pimpinan Fakultas Keperawatan UNRI.
+                        </div>
+                    </div>
+                @endif
             </td>
 
             <!-- SISI KANAN: TANDA TANGAN PEJABAT -->
@@ -286,9 +311,19 @@
                     @else
                         {{ $surat->penandatangan_jabatan }},
                     @endif
-                    <div style="height: 48px;"></div>
-                    <strong style="text-decoration: underline;">{{ $surat->penandatangan_nama }}</strong><br>
-                    <span>NIP. {{ $surat->penandatangan_nip }}</span>
+                    @if(!empty($isDisahkan))
+                        <div style="height: 48px;"></div>
+                        <strong style="text-decoration: underline;">{{ $surat->penandatangan_nama }}</strong><br>
+                        <span>NIP. {{ $surat->penandatangan_nip }}</span>
+                    @else
+                        <div style="margin: 8px 0 6px 0;">
+                            <span style="display: inline-block; padding: 2px 6px; border: 1px dashed #e11d48; background-color: #fff1f2; color: #be123c; font-size: 7pt; font-weight: bold; border-radius: 3px;">
+                                [ DRAF - MENUNGGU PENGESAHAN ]
+                            </span>
+                        </div>
+                        <div style="color: #64748b; font-weight: bold; text-decoration: underline;">( {{ $surat->penandatangan_nama }} )</div>
+                        <div style="color: #64748b;">NIP. {{ $surat->penandatangan_nip }}</div>
+                    @endif
                 </div>
             </td>
         </tr>

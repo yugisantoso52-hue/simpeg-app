@@ -386,7 +386,13 @@
         </tr>
     </table>
 
-    @include('exports.pdf.partials.otentikasi_dokumen')
+    @if($isPejabatSigned)
+        @include('exports.pdf.partials.otentikasi_dokumen')
+    @else
+        <div style="border: 1px dashed #f59e0b; background-color: #fffbeb; padding: 4px 8px; margin-top: 6px; font-size: 7pt; color: #b45309; text-align: center; font-style: italic;">
+            [ DOKUMEN DRAF FORMULIR CUTI / BELUM DISETUJUI PEJABAT YANG BERWENANG - TTE AKAN TERBIT SETELAH PERMOHONAN CUTI DISETUJUI ]
+        </div>
+    @endif
 
 </body>
 </html>

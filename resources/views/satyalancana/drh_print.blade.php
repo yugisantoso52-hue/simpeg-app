@@ -450,7 +450,13 @@
     </div>
 
     {{-- OTENTIKASI DIGITAL SIKAP FKP UNRI (DOKUMEN RESMI ELEKTRONIK DENGAN QR CODE) --}}
-    @include('exports.pdf.partials.otentikasi_dokumen')
+    @if(!empty($sudahTtdWd2))
+        @include('exports.pdf.partials.otentikasi_dokumen')
+    @else
+        <div style="border: 1px dashed #f59e0b; background-color: #fffbeb; padding: 4px 8px; margin-top: 6px; font-size: 7pt; color: #b45309; text-align: center; font-style: italic;">
+            [ DOKUMEN DRAF DRH / BELUM DISAHKAN PIMPINAN - TTE AKAN TERBIT SETELAH PARAF KOORDINASI & DISETUJUI RESMI ]
+        </div>
+    @endif
 
 </body>
 </html>

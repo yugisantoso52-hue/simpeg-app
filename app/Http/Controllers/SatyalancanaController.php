@@ -164,13 +164,17 @@ class SatyalancanaController extends Controller
         }
         // 2. TAHAP PARAF 1: KA POKJA KEUANGAN & KEPEGAWAIAN
         elseif ($tahap === 'paraf_kapokja') {
+            if (!$usulan->verifikasi_admin_at && !$user->canManageSystem()) {
+                return back()->with('error', 'Usulan belum diverifikasi kelengkapan berkasnya oleh Admin Kepegawaian.');
+            }
+
             $dataPokja = [
                 'status'           => 'diparaf_kapokja',
                 'paraf_kapokja_at' => now(),
                 'paraf_kapokja_by' => $pejabatLogin?->id,
             ];
             if (!$usulan->verifikasi_admin_at) {
-                $dataPokja['verifikasi_admin_at'] = now()->subMinutes(10);
+                $dataPokja['verifikasi_admin_at'] = now();
                 $dataPokja['verifikasi_admin_by'] = $user->id;
             }
             $usulan->update($dataPokja);
@@ -178,18 +182,22 @@ class SatyalancanaController extends Controller
         }
         // 3. TAHAP PARAF 2: KEPALA BAGIAN UMUM
         elseif ($tahap === 'paraf_kabag') {
+            if (!$usulan->paraf_kapokja_at && !$user->canManageSystem()) {
+                return back()->with('error', 'Usulan harus diparaf terlebih dahulu oleh Ka Pokja Keuangan & Kepegawaian.');
+            }
+
             $dataKabag = [
                 'status'         => 'diparaf_kabag',
                 'paraf_kabag_at' => now(),
                 'paraf_kabag_by' => $pejabatLogin?->id,
             ];
             if (!$usulan->verifikasi_admin_at) {
-                $dataKabag['verifikasi_admin_at'] = now()->subMinutes(15);
+                $dataKabag['verifikasi_admin_at'] = now();
                 $dataKabag['verifikasi_admin_by'] = $user->id;
             }
             if (!$usulan->paraf_kapokja_at) {
                 $pokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
-                $dataKabag['paraf_kapokja_at'] = now()->subMinutes(5);
+                $dataKabag['paraf_kapokja_at'] = now();
                 $dataKabag['paraf_kapokja_by'] = $pokja?->id;
             }
             $usulan->update($dataKabag);
@@ -197,6 +205,10 @@ class SatyalancanaController extends Controller
         }
         // 4. TAHAP PENGESAHAN: TTE WAKIL DEKAN II
         elseif ($tahap === 'ttd_wd2' || $tahap === 'setujui') {
+            if ((!$usulan->paraf_kabag_at || !$usulan->paraf_kapokja_at) && !$user->canManageSystem()) {
+                return back()->with('error', 'Usulan belum lengkap diparaf berjenjang (Ka Pokja & Kabag Umum). Dokumen tidak dapat disahkan sebelum paraf koordinasi selesai.');
+            }
+
             $dataWd2 = [
                 'status'      => 'disetujui_wd2',
                 'ttd_wd2_at'  => now(),
@@ -204,17 +216,17 @@ class SatyalancanaController extends Controller
                 'catatan'     => $catatan ?? 'Telah ditandatangani dan disetujui resmi oleh Wakil Dekan Bidang Keuangan dan Umum.',
             ];
             if (!$usulan->verifikasi_admin_at) {
-                $dataWd2['verifikasi_admin_at'] = now()->subMinutes(20);
+                $dataWd2['verifikasi_admin_at'] = now();
                 $dataWd2['verifikasi_admin_by'] = $user->id;
             }
             if (!$usulan->paraf_kapokja_at) {
                 $pokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
-                $dataWd2['paraf_kapokja_at'] = now()->subMinutes(15);
+                $dataWd2['paraf_kapokja_at'] = now();
                 $dataWd2['paraf_kapokja_by'] = $pokja?->id;
             }
             if (!$usulan->paraf_kabag_at) {
                 $kabag = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
-                $dataWd2['paraf_kabag_at'] = now()->subMinutes(5);
+                $dataWd2['paraf_kabag_at'] = now();
                 $dataWd2['paraf_kabag_by'] = $kabag?->id;
             }
             $usulan->update($dataWd2);

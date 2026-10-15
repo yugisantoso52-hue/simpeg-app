@@ -334,40 +334,53 @@ class PengajuanKarirController extends Controller
                 'status'              => 'diverifikasi_kapokja',
                 'paraf_kapokja_at'    => now(),
                 'paraf_kapokja_by'    => $pejabatLogin?->id,
-                'catatan_verifikator' => $catatan ?? 'Telah diperiksa berkas administrasi dan sah oleh Ka Pokja Keu-Kepeg.',
+                'catatan_verifikator' => $catatan ?? 'Telah diperiksa kelengkapan berkas administrasi dan diverifikasi sah oleh Ka Pokja Keu-Kepeg.',
             ]);
             $msg = 'Paraf Ka Pokja Keuangan dan Kepegawaian berhasil dibubuhkan.';
         } elseif ($tahap === 'paraf_kabag') {
+            // Validasi SOP: Harus sudah diperiksa Ka Pokja terlebih dahulu
+            if (!$pengajuan->paraf_kapokja_at && !$user->hasRole('admin')) {
+                return back()->with('error', 'SOP Tata Naskah: Berkas harus diperiksa kelengkapannya dan diparaf terlebih dahulu oleh Ka Pokja Keu-Kepeg sebelum ditelaah oleh Kabag Umum.');
+            }
+
             $dataKabag = [
                 'status'              => 'diverifikasi_kabag',
                 'paraf_kabag_at'      => now(),
                 'paraf_kabag_by'      => $pejabatLogin?->id,
-                'catatan_verifikator' => $catatan ?? 'Telah diparaf dan diverifikasi kelengkapan berkas oleh Kepala Bagian Umum.',
+                'catatan_verifikator' => $catatan ?? 'Telah ditelaah format tata naskah dinas dan diparaf oleh Kepala Bagian Umum.',
             ];
-            if (!$pengajuan->paraf_kapokja_at) {
-                $pokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
-                $dataKabag['paraf_kapokja_at'] = now()->subMinutes(10);
-                $dataKabag['paraf_kapokja_by'] = $pokja?->id;
+
+            // Jika admin melakukan verifikasi langsung, catat waktu riil tanpa memanipulasi waktu mundur
+            if (!$pengajuan->paraf_kapokja_at && $user->hasRole('admin')) {
+                $dataKabag['paraf_kapokja_at'] = now();
+                $dataKabag['paraf_kapokja_by'] = $pejabatLogin?->id;
             }
+
             $pengajuan->update($dataKabag);
             $msg = 'Paraf Kepala Bagian Umum berhasil dibubuhkan.';
         } elseif ($tahap === 'paraf_wd2' || $tahap === 'ttd_wd2') {
+            // Validasi SOP: Harus sudah diparaf Kabag Umum
+            if (!$pengajuan->paraf_kabag_at && !$user->hasRole('admin')) {
+                return back()->with('error', 'SOP Tata Naskah: Naskah dinas harus melalui telaah paraf koordinasi Kepala Bagian Umum sebelum ditandatangani Wakil Dekan II.');
+            }
+
             $dataWd2 = [
                 'status'              => 'disetujui_wd2',
                 'paraf_wd2_at'        => now(),
                 'paraf_wd2_by'        => $pejabatLogin?->id,
                 'catatan_verifikator' => $catatan ?? 'Telah ditandatangani dan disetujui secara resmi oleh Wakil Dekan Bidang Keuangan dan Umum.',
             ];
-            if (!$pengajuan->paraf_kapokja_at) {
-                $pokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
-                $dataWd2['paraf_kapokja_at'] = now()->subMinutes(20);
-                $dataWd2['paraf_kapokja_by'] = $pokja?->id;
+
+            // Jika admin melakukan pengesahan langsung, catat riil
+            if (!$pengajuan->paraf_kapokja_at && $user->hasRole('admin')) {
+                $dataWd2['paraf_kapokja_at'] = now();
+                $dataWd2['paraf_kapokja_by'] = $pejabatLogin?->id;
             }
-            if (!$pengajuan->paraf_kabag_at) {
-                $kabag = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
-                $dataWd2['paraf_kabag_at'] = now()->subMinutes(10);
-                $dataWd2['paraf_kabag_by'] = $kabag?->id;
+            if (!$pengajuan->paraf_kabag_at && $user->hasRole('admin')) {
+                $dataWd2['paraf_kabag_at'] = now();
+                $dataWd2['paraf_kabag_by'] = $pejabatLogin?->id;
             }
+
             $pengajuan->update($dataWd2);
 
             // SINKRONISASI OTOMATIS: Eksekusi perubahan ke master data pegawai & riwayat

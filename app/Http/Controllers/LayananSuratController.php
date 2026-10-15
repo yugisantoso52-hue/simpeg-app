@@ -124,30 +124,124 @@ class LayananSuratController extends Controller
 
         $now = Carbon::now();
 
+        // Tentukan status awal berdasarkan inisiator permohonan
+        // Pegawai mandiri: wajib melalui antrean verifikasi ('diajukan')
+        // Admin / Pimpinan eksekutif: dapat langsung mengesahkan atau membuat draf
+        if ($isExecutiveOrAdmin && $request->filled('langsung_sahkan')) {
+            $statusAwal     = 'selesai';
+            $parafPokjaAt   = $now;
+            $parafPokjaBy   = $pejabatKaPokja?->id;
+            $parafKabagAt   = $now;
+            $parafKabagBy   = $pejabatKabag?->id;
+            $pesanSukses    = "Surat Keterangan Aktif Bekerja nomor {$nomorSurat} berhasil diterbitkan dan disahkan secara resmi.";
+        } else {
+            $statusAwal     = 'diajukan';
+            $parafPokjaAt   = null;
+            $parafPokjaBy   = null;
+            $parafKabagAt   = null;
+            $parafKabagBy   = null;
+            $pesanSukses    = "Permohonan Surat Keterangan Aktif Bekerja nomor {$nomorSurat} berhasil diajukan dan sedang menunggu tindakan verifikasi berkas oleh Ka Pokja Keuangan & Kepegawaian.";
+        }
+
         $surat = LayananSurat::create([
             'pegawai_id'            => $pegawai->id,
             'jenis_surat'           => 'Surat Keterangan Aktif Bekerja',
             'nomor_surat'           => $nomorSurat,
             'keperluan'             => $request->keperluan,
             'tanggal_surat'         => Carbon::today(),
-            'status'                => 'selesai',
+            'status'                => $statusAwal,
             'penandatangan_nama'    => $penandatanganNama,
             'penandatangan_nip'     => $penandatanganNip,
             'penandatangan_jabatan' => $penandatanganJabatan,
-            'paraf_kapokja_at'      => $now->copy()->subMinutes(12),
-            'paraf_kapokja_by'      => $pejabatKaPokja?->id,
-            'paraf_kabag_at'        => $now->copy()->subMinutes(5),
-            'paraf_kabag_by'        => $pejabatKabag?->id,
+            'paraf_kapokja_at'      => $parafPokjaAt,
+            'paraf_kapokja_by'      => $parafPokjaBy,
+            'paraf_kabag_at'        => $parafKabagAt,
+            'paraf_kabag_by'        => $parafKabagBy,
             'qr_token'              => $qrToken,
             'created_by'            => $user->id,
         ]);
 
-        return redirect()->route('layanan-surat.index')
-            ->with('success', "Surat Keterangan Aktif Bekerja dengan nomor {$nomorSurat} berhasil diterbitkan dan siap diunduh.");
+        return redirect()->route('layanan-surat.index')->with('success', $pesanSukses);
     }
 
     /**
-     * Cetak PDF Surat Keterangan Aktif Bekerja dengan QR Code & Stempel Digital
+     * Proses Verifikasi & Paraf Bertingkat Surat Keterangan (SOP 3 Tahap)
+     */
+    public function verifikasi(Request $request, int $id)
+    {
+        $user = Auth::user();
+        if (!$user->canAccessExecutiveKepegawaianMenus()) {
+            abort(403, 'Akses terbatas untuk Pengelola Kepegawaian dan Pimpinan.');
+        }
+
+        $surat = LayananSurat::findOrFail($id);
+        $tahap = $request->input('tahap');
+        $catatan = $request->input('catatan');
+        $pejabatLogin = $user->pegawai;
+
+        if ($tahap === 'paraf_kapokja') {
+            $surat->update([
+                'status'           => 'diparaf_kapokja',
+                'paraf_kapokja_at' => now(),
+                'paraf_kapokja_by' => $pejabatLogin?->id,
+                'catatan'          => $catatan ?? 'Telah diperiksa keaktifan pegawai dan kelayakan berkas oleh Ka Pokja Keu-Kepeg.',
+            ]);
+            $msg = 'Paraf 1 (Ka Pokja Keuangan & Kepegawaian) berhasil dibubuhkan.';
+        } elseif ($tahap === 'paraf_kabag') {
+            if (!$surat->paraf_kapokja_at && !$user->hasRole('admin')) {
+                return back()->with('error', 'SOP Tata Naskah: Berkas harus diperiksa keaktifannya dan diparaf terlebih dahulu oleh Ka Pokja Keu-Kepeg sebelum ditelaah Kabag Umum.');
+            }
+
+            $dataKabag = [
+                'status'         => 'diparaf_kabag',
+                'paraf_kabag_at' => now(),
+                'paraf_kabag_by' => $pejabatLogin?->id,
+                'catatan'        => $catatan ?? 'Telah ditelaah format naskah dinas dan diparaf oleh Kepala Bagian Umum.',
+            ];
+
+            if (!$surat->paraf_kapokja_at && $user->hasRole('admin')) {
+                $dataKabag['paraf_kapokja_at'] = now();
+                $dataKabag['paraf_kapokja_by'] = $pejabatLogin?->id;
+            }
+
+            $surat->update($dataKabag);
+            $msg = 'Paraf 2 (Kepala Bagian Umum) berhasil dibubuhkan.';
+        } elseif ($tahap === 'ttd_pimpinan') {
+            if (!$surat->paraf_kabag_at && !$user->hasRole('admin')) {
+                return back()->with('error', 'SOP Tata Naskah: Konsep surat harus melalui telaah paraf koordinasi Kepala Bagian Umum sebelum ditandatangani Pimpinan.');
+            }
+
+            $dataTtd = [
+                'status'  => 'selesai',
+                'catatan' => $catatan ?? 'Telah disetujui dan ditandatangani secara elektronik oleh Pimpinan.',
+            ];
+
+            if (!$surat->paraf_kapokja_at && $user->hasRole('admin')) {
+                $dataTtd['paraf_kapokja_at'] = now();
+                $dataTtd['paraf_kapokja_by'] = $pejabatLogin?->id;
+            }
+            if (!$surat->paraf_kabag_at && $user->hasRole('admin')) {
+                $dataTtd['paraf_kabag_at'] = now();
+                $dataTtd['paraf_kabag_by'] = $pejabatLogin?->id;
+            }
+
+            $surat->update($dataTtd);
+            $msg = 'Surat Keterangan Aktif Bekerja resmi disetujui dan ditandatangani secara elektronik oleh Pimpinan.';
+        } elseif ($tahap === 'tolak') {
+            $surat->update([
+                'status'  => 'ditolak',
+                'catatan' => $catatan ?? 'Permohonan surat ditolak atau dikembalikan untuk perbaikan.',
+            ]);
+            $msg = 'Permohonan surat keterangan berhasil ditolak / dikembalikan ke pegawai pemohon.';
+        } else {
+            return back()->with('error', 'Tahap verifikasi tidak dikenali.');
+        }
+
+        return back()->with('success', $msg);
+    }
+
+    /**
+     * Cetak PDF Surat Keterangan Aktif Bekerja dengan QR Code & Stempel Digital Faktual
      */
     public function cetakSuratAktif(int $id)
     {
@@ -167,22 +261,22 @@ class LayananSuratController extends Controller
         $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
         $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
 
+        // Kondisi Faktual Verifikasi & Pengesahan
+        $isDisahkan      = ($surat->status === 'selesai');
+        $sudahParafPokja = !empty($surat->paraf_kapokja_at);
+        $sudahParafKabag = !empty($surat->paraf_kabag_at);
+
         // QR Code Verifikasi Publik
         $verifyUrl     = route('verify.document', ['code' => $surat->qr_token]);
-        $qrCodeDataUri = QrCodeService::generateDataUri($verifyUrl);
+        $qrCodeDataUri = $isDisahkan ? QrCodeService::generateDataUri($verifyUrl) : null;
 
         // Mini QR Paraf Digital Tata Naskah (Kabag & Ka Pokja)
-        $qrPokjaUri = QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001'));
-        $qrKabagUri = QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002'));
+        $qrPokjaUri = $sudahParafPokja ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) : null;
+        $qrKabagUri = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) : null;
 
-        // Tanggal & Waktu Paraf Digital
-        $parafPokjaAt = $surat->paraf_kapokja_at 
-            ? $surat->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB'
-            : ($surat->created_at ? $surat->created_at->format('d/m/Y H:i') . ' WIB' : Carbon::parse($surat->tanggal_surat)->setTime(10, 15)->format('d/m/Y H:i') . ' WIB');
-
-        $parafKabagAt = $surat->paraf_kabag_at 
-            ? $surat->paraf_kabag_at->format('d/m/Y H:i') . ' WIB'
-            : ($surat->created_at ? $surat->created_at->addMinutes(7)->format('d/m/Y H:i') . ' WIB' : Carbon::parse($surat->tanggal_surat)->setTime(10, 25)->format('d/m/Y H:i') . ' WIB');
+        // Tanggal & Waktu Paraf Digital Faktual
+        $parafPokjaAt = $sudahParafPokja ? $surat->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB' : null;
+        $parafKabagAt = $sudahParafKabag ? $surat->paraf_kabag_at->format('d/m/Y H:i') . ' WIB' : null;
 
         $watermarkService = app(DocumentWatermarkService::class);
 
@@ -197,7 +291,10 @@ class LayananSuratController extends Controller
             'qrPokjaUri',
             'qrKabagUri',
             'parafPokjaAt',
-            'parafKabagAt'
+            'parafKabagAt',
+            'isDisahkan',
+            'sudahParafPokja',
+            'sudahParafKabag'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);

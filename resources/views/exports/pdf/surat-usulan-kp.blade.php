@@ -199,31 +199,47 @@
                     {{-- 1. Kepala Bagian Umum --}}
                     <tr style="border-bottom: 1px dashed #cbd5e1;">
                         <td style="width: 32px; vertical-align: middle; padding: 2px 4px 2px 0; text-align: center;">
-                            @if(isset($qrKabagUri))
+                            @if(!empty($sudahParafKabag) && isset($qrKabagUri))
                                 <img src="{{ $qrKabagUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
+                            @else
+                                <div style="font-size: 5.5pt; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 4px 1px; border-radius: 2px; line-height: 1.1;">Belum<br>Paraf</div>
                             @endif
                         </td>
                         <td style="vertical-align: middle; padding: 2px 0;">
                             <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">1. Kepala Bagian Umum</div>
                             <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKabag->nama ?? 'Bakhtiar' }}, S.Sos., M.Si</div>
-                            <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
-                                [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafKabagAt ?? '07/10/2026' }}
-                            </div>
+                            @if(!empty($sudahParafKabag))
+                                <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
+                                    [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafKabagAt }}
+                                </div>
+                            @else
+                                <div style="color: #b45309; font-weight: bold; font-size: 6.2pt;">
+                                    [ Menunggu Telaah Tata Naskah & Paraf Kabag ]
+                                </div>
+                            @endif
                         </td>
                     </tr>
                     {{-- 2. Ka Pokja Keu-Kepeg --}}
                     <tr>
                         <td style="width: 32px; vertical-align: middle; padding: 3px 4px 2px 0; text-align: center;">
-                            @if(isset($qrPokjaUri))
+                            @if(!empty($sudahParafPokja) && isset($qrPokjaUri))
                                 <img src="{{ $qrPokjaUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
+                            @else
+                                <div style="font-size: 5.5pt; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 4px 1px; border-radius: 2px; line-height: 1.1;">Belum<br>Paraf</div>
                             @endif
                         </td>
                         <td style="vertical-align: middle; padding: 3px 0;">
                             <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">2. Ka Pokja Keu-Kepeg</div>
                             <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina' }}, SE</div>
-                            <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
-                                [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafPokjaAt ?? '07/10/2026' }}
-                            </div>
+                            @if(!empty($sudahParafPokja))
+                                <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
+                                    [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafPokjaAt }}
+                                </div>
+                            @else
+                                <div style="color: #b45309; font-weight: bold; font-size: 6.2pt;">
+                                    [ Menunggu Verifikasi Berkas & Paraf Ka Pokja ]
+                                </div>
+                            @endif
                         </td>
                     </tr>
                 </table>
@@ -235,10 +251,20 @@
             <div style="font-size: 10pt; line-height: 1.25;">
                 a.n. Dekan Fakultas Keperawatan<br>
                 Wakil Dekan Bidang Keuangan dan Umum,<br>
-                {{-- Ruang untuk tanda tangan manual basah --}}
-                <div style="height: 44px;"></div>
-                <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep., Sp.Kep.M.B') }}</strong><br>
-                <span>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</span>
+                @if(!empty($isDisahkan))
+                    {{-- Ruang tanda tangan resmi --}}
+                    <div style="height: 44px;"></div>
+                    <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep., Sp.Kep.M.B') }}</strong><br>
+                    <span>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</span>
+                @else
+                    <div style="margin: 6px 0 4px 0;">
+                        <span style="display: inline-block; padding: 2px 6px; border: 1px dashed #e11d48; background-color: #fff1f2; color: #be123c; font-size: 6.8pt; font-weight: bold; border-radius: 3px;">
+                            [ DRAF - MENUNGGU PENGESAHAN ]
+                        </span>
+                    </div>
+                    <div style="color: #64748b; font-weight: bold; text-decoration: underline;">( {{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep., Sp.Kep.M.B') }} )</div>
+                    <div style="color: #64748b;">NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</div>
+                @endif
             </div>
         </td>
     </tr>

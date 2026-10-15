@@ -491,8 +491,8 @@
                                                     </form>
                                                 @endif
 
-                                                {{-- AKSI 2: PARAF 1 OLEH KA POKJA KEUANGAN & KEPEGAWAIAN --}}
-                                                @if(($isKaPokja || $isAdmin) && !$usulan->paraf_kapokja_at)
+                                                {{-- AKSI 2: PARAF 1 OLEH KA POKJA KEUANGAN & KEPEGAWAIAN (Menunggu Verif Admin) --}}
+                                                @if(($isKaPokja || $isAdmin) && $usulan->verifikasi_admin_at && !$usulan->paraf_kapokja_at)
                                                     <form method="POST" action="{{ route('satyalancana.verifikasi', $usulan->id) }}" onsubmit="return confirm('Bubuhkan Paraf 1 (Ka Pokja Keu-Kepeg)?')">
                                                         @csrf
                                                         <input type="hidden" name="tahap" value="paraf_kapokja">
@@ -502,8 +502,8 @@
                                                     </form>
                                                 @endif
 
-                                                {{-- AKSI 3: PARAF 2 OLEH KEPALA BAGIAN UMUM --}}
-                                                @if(($isKabag || $isAdmin) && !$usulan->paraf_kabag_at)
+                                                {{-- AKSI 3: PARAF 2 OLEH KEPALA BAGIAN UMUM (Menunggu Paraf Pokja) --}}
+                                                @if(($isKabag || $isAdmin) && $usulan->paraf_kapokja_at && !$usulan->paraf_kabag_at)
                                                     <form method="POST" action="{{ route('satyalancana.verifikasi', $usulan->id) }}" onsubmit="return confirm('Bubuhkan Paraf 2 (Kepala Bagian Umum)?')">
                                                         @csrf
                                                         <input type="hidden" name="tahap" value="paraf_kabag">
@@ -513,8 +513,8 @@
                                                     </form>
                                                 @endif
 
-                                                {{-- AKSI 4: PENGESAHAN TTE OLEH WAKIL DEKAN II --}}
-                                                @if(($isWd2 || $isAdmin) && !$usulan->ttd_wd2_at)
+                                                {{-- AKSI 4: PENGESAHAN TTE OLEH WAKIL DEKAN II (Menunggu Paraf Kabag) --}}
+                                                @if(($isWd2 || $isAdmin) && $usulan->paraf_kabag_at && !$usulan->ttd_wd2_at)
                                                     <form method="POST" action="{{ route('satyalancana.verifikasi', $usulan->id) }}" onsubmit="return confirm('Sahkan usulan secara resmi dengan TTE Wakil Dekan II?')">
                                                         @csrf
                                                         <input type="hidden" name="tahap" value="ttd_wd2">

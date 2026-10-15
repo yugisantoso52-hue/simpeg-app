@@ -30,15 +30,18 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
+                        @php
+                            $isSah = in_array($pengajuan->status, ['disetujui_wd2', 'disetujui_dekan', 'selesai']);
+                        @endphp
                         @if($pengajuan->jenis_pengajuan === 'KP')
                             <a href="{{ route('reports.kp.pdf', $pengajuan->id) }}" target="_blank"
-                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-md transition">
-                                <span>📄 Cetak Surat Usulan KP (PDF)</span>
+                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold {{ $isSah ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300' }} transition">
+                                <span>📄 Cetak Usulan KP {{ $isSah ? '(Resmi Sah)' : '(Konsep Draf)' }}</span>
                             </a>
                         @else
                             <a href="{{ route('reports.kgb.pdf', $pengajuan->pegawai_id) }}" target="_blank"
-                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 shadow-md transition">
-                                <span>📄 Cetak Surat Pemberitahuan KGB (PDF)</span>
+                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold {{ $isSah ? 'bg-amber-600 text-white hover:bg-amber-700 shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300' }} transition">
+                                <span>📄 Cetak SK KGB {{ $isSah ? '(Resmi Sah)' : '(Konsep Draf)' }}</span>
                             </a>
                         @endif
                     </div>
@@ -238,22 +241,34 @@
                             {{-- 1. Tombol Paraf Ka Pokja Keu-Kepeg --}}
                             @if(!$pengajuan->paraf_kapokja_at && ($isAdmin || $isKaPokja))
                                 <button type="submit" name="tahap" value="paraf_kapokja" class="px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-xs transition">
-                                    ✓ Bubuhkan Paraf Ka Pokja Keu-Kepeg
+                                    ✓ 1. Periksa Berkas & Bubuhkan Paraf Ka Pokja
                                 </button>
                             @endif
 
                             {{-- 2. Tombol Paraf Kabag Umum --}}
                             @if(!$pengajuan->paraf_kabag_at && ($isAdmin || $isKabag))
-                                <button type="submit" name="tahap" value="paraf_kabag" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition">
-                                    ✓ Bubuhkan Paraf Kabag Umum
-                                </button>
+                                @if($pengajuan->paraf_kapokja_at || $isAdmin)
+                                    <button type="submit" name="tahap" value="paraf_kabag" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition">
+                                        ✓ 2. Telaah Tata Naskah & Paraf Kabag Umum
+                                    </button>
+                                @else
+                                    <span class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none" title="Harus diparaf Ka Pokja terlebih dahulu">
+                                        ⏳ 2. Paraf Kabag (Menunggu Paraf Ka Pokja)
+                                    </span>
+                                @endif
                             @endif
 
                             {{-- 3. Tombol Tanda Tangan Wakil Dekan II --}}
                             @if(!$pengajuan->paraf_wd2_at && ($isAdmin || $isWd2))
-                                <button type="submit" name="tahap" value="paraf_wd2" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition">
-                                    🎖️ Setujui & Tanda Tangan Wakil Dekan II
-                                </button>
+                                @if($pengajuan->paraf_kabag_at || $isAdmin)
+                                    <button type="submit" name="tahap" value="paraf_wd2" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition">
+                                        🎖️ 3. Setujui & Tanda Tangan Resmi Wakil Dekan II
+                                    </button>
+                                @else
+                                    <span class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none" title="Harus ditelaah Kabag terlebih dahulu">
+                                        ⏳ 3. Tanda Tangan Pimpinan (Menunggu Paraf Kabag)
+                                    </span>
+                                @endif
                             @endif
 
                             {{-- Tombol Tolak / Kembalikan --}}

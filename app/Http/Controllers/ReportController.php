@@ -132,28 +132,33 @@ class ReportController extends Controller
             
         $dasarMkgTahun  = $mkgTahunLama;
 
-        // 6. Otentikasi Digital SIKAP FKP UNRI & Mini QR Paraf Digital
+        // 6. Otentikasi Digital SIKAP FKP UNRI & Mini QR Paraf Digital Faktual
         $watermarkService = app(\App\Services\DocumentWatermarkService::class);
         $verifyCode = $watermarkService->generateVerificationCode('SK Kenaikan Gaji Berkala', 'KGB/' . $pegawai->nip . '/' . date('Y'), $pegawai->nama_lengkap ?? $pegawai->nama);
         $verifyUrl  = route('verify.document', ['code' => $verifyCode]);
 
-        $parafPokjaAt = $pengajuan?->paraf_kapokja_at 
-            ? $pengajuan->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB'
-            : ($pengajuan?->created_at ? $pengajuan->created_at->format('d/m/Y H:i') . ' WIB' : '07/10/2026 14:51 WIB');
-            
-        $parafKabagAt = $pengajuan?->paraf_kabag_at 
-            ? $pengajuan->paraf_kabag_at->format('d/m/Y H:i') . ' WIB'
-            : ($pengajuan?->created_at ? $pengajuan->created_at->addMinutes(10)->format('d/m/Y H:i') . ' WIB' : '07/10/2026 15:01 WIB');
+        // Status Faktual Verifikasi & Paraf Berjenjang
+        $isDisahkan      = $pengajuan && in_array($pengajuan->status, ['disetujui_wd2', 'disetujui_dekan', 'selesai']);
+        $sudahParafPokja = (bool) ($pengajuan && $pengajuan->paraf_kapokja_at);
+        $sudahParafKabag = (bool) ($pengajuan && $pengajuan->paraf_kabag_at);
 
-        $qrPokjaUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001'));
-        $qrKabagUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002'));
-        $qrCodeDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl);
+        $parafPokjaAt = $sudahParafPokja ? $pengajuan->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB' : null;
+        $parafKabagAt = $sudahParafKabag ? $pengajuan->paraf_kabag_at->format('d/m/Y H:i') . ' WIB' : null;
+
+        $qrPokjaUri = $sudahParafPokja 
+            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) 
+            : null;
+        $qrKabagUri = $sudahParafKabag 
+            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) 
+            : null;
+        $qrCodeDataUri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl) : null;
 
         $pdf = Pdf::loadView('exports.pdf.sk-kgb', compact(
             'kgb', 'pegawai', 'verifyUrl', 'verifyCode', 'qrCodeDataUri',
             'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja', 'isPppk',
             'tahunSurat', 'tanggalSurat', 'dasarSkTanggal', 'dasarSkNomor', 'dasarSkTmt', 'dasarMkgTahun',
-            'pengajuan', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri'
+            'pengajuan', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri',
+            'isDisahkan', 'sudahParafPokja', 'sudahParafKabag'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);
@@ -186,9 +191,10 @@ class ReportController extends Controller
                 'golonganLama'     => $pegawai->golongan,
                 'golonganTujuan'   => $targetGolongan,
                 'tmt_lama'         => $pegawai->tmt_pangkat_terakhir,
-                'paraf_kapokja_at' => now()->subMinutes(20),
-                'paraf_kabag_at'   => now()->subMinutes(10),
-                'paraf_wd2_at'     => now(),
+                'status'           => 'draft',
+                'paraf_kapokja_at' => null,
+                'paraf_kabag_at'   => null,
+                'paraf_wd2_at'     => null,
             ];
         }
 
@@ -209,21 +215,26 @@ class ReportController extends Controller
         $verifyCode = $verifyCodeKp;
         $verifyUrl  = route('verify.document', ['code' => $verifyCodeKp]);
 
-        $parafPokjaAt = $pengajuan?->paraf_kapokja_at 
-            ? $pengajuan->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB'
-            : ($pengajuan?->created_at ? $pengajuan->created_at->format('d/m/Y H:i') . ' WIB' : '07/10/2026 14:51 WIB');
-            
-        $parafKabagAt = $pengajuan?->paraf_kabag_at 
-            ? $pengajuan->paraf_kabag_at->format('d/m/Y H:i') . ' WIB'
-            : ($pengajuan?->created_at ? $pengajuan->created_at->addMinutes(10)->format('d/m/Y H:i') . ' WIB' : '07/10/2026 15:01 WIB');
+        // Status Faktual Verifikasi & Paraf Berjenjang
+        $isDisahkan      = $pengajuan && in_array($pengajuan->status ?? '', ['disetujui_wd2', 'disetujui_dekan', 'selesai']);
+        $sudahParafPokja = (bool) ($pengajuan && !empty($pengajuan->paraf_kapokja_at));
+        $sudahParafKabag = (bool) ($pengajuan && !empty($pengajuan->paraf_kabag_at));
 
-        $qrPokjaUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001'));
-        $qrKabagUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002'));
-        $qrCodeDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl);
+        $parafPokjaAt = $sudahParafPokja ? Carbon::parse($pengajuan->paraf_kapokja_at)->format('d/m/Y H:i') . ' WIB' : null;
+        $parafKabagAt = $sudahParafKabag ? Carbon::parse($pengajuan->paraf_kabag_at)->format('d/m/Y H:i') . ' WIB' : null;
+
+        $qrPokjaUri = $sudahParafPokja 
+            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) 
+            : null;
+        $qrKabagUri = $sudahParafKabag 
+            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) 
+            : null;
+        $qrCodeDataUri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl) : null;
 
         $pdf = Pdf::loadView('exports.pdf.surat-usulan-kp', compact(
             'pengajuan', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja',
-            'verifyUrl', 'verifyCode', 'qrCodeDataUri', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri'
+            'verifyUrl', 'verifyCode', 'qrCodeDataUri', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri',
+            'isDisahkan', 'sudahParafPokja', 'sudahParafKabag'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);

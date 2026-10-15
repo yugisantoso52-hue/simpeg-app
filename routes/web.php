@@ -103,6 +103,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::prefix('layanan-surat')->name('layanan-surat.')->group(function () {
         Route::get('/', [\App\Http\Controllers\LayananSuratController::class, 'index'])->name('index');
         Route::post('/surat-aktif', [\App\Http\Controllers\LayananSuratController::class, 'storeSuratAktif'])->name('surat-aktif.store');
+        Route::post('/surat-aktif/{id}/verifikasi', [\App\Http\Controllers\LayananSuratController::class, 'verifikasi'])->name('surat-aktif.verifikasi');
         Route::get('/surat-aktif/{id}/cetak', [\App\Http\Controllers\LayananSuratController::class, 'cetakSuratAktif'])->name('surat-aktif.cetak');
     });
 
