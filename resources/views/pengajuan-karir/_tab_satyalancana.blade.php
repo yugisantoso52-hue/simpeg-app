@@ -18,10 +18,12 @@
                    class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition">
                     <span>📄 Syarat Pengusulan</span>
                 </a>
-                <a href="{{ route('satyalancana.index') }}" 
-                   class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 transition">
-                    <span>↗️ Buka Modul Satyalancana Lengkap</span>
-                </a>
+                @if($isExecutive ?? false)
+                    <a href="{{ route('satyalancana.index') }}" 
+                       class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 transition">
+                        <span>↗️ Buka Modul Satyalancana Lengkap</span>
+                    </a>
+                @endif
             </div>
         </div>
     </div>
@@ -139,9 +141,11 @@
                                             @endif
                                         @endif
 
-                                        <a href="{{ route('satyalancana.index') }}" class="text-[10px] text-slate-500 hover:text-slate-800 underline">
-                                            Detail Selengkapnya
-                                        </a>
+                                        @if($isExecutive ?? false)
+                                            <a href="{{ route('satyalancana.index') }}" class="text-[10px] text-slate-500 hover:text-slate-800 underline">
+                                                Detail Selengkapnya
+                                            </a>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

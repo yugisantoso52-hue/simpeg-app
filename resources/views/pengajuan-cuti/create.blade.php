@@ -55,7 +55,7 @@
                     @csrf
 
                     {{-- Jika Admin: Bisa memilih pegawai --}}
-                    @if(Auth::user()->hasRole('admin') && !$isPegawaiOnly)
+                    @if(Auth::user()->hasRole('admin'))
                         <div>
                             <label for="pegawai_id" class="block text-sm font-semibold text-gray-700 mb-1">
                                 Pilih Pegawai yang Mengajukan Cuti <span class="text-red-500">*</span>
@@ -75,12 +75,12 @@
                         <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between">
                             <div>
                                 <div class="text-xs text-gray-500 uppercase font-semibold">Nama Pemohon Cuti</div>
-                                <div class="text-base font-bold text-gray-900">{{ $pegawai->nama_lengkap ?? $pegawai->nama }}</div>
-                                <div class="text-xs text-gray-500 font-mono">NIP. {{ $pegawai->nip ?? '-' }}</div>
+                                <div class="text-base font-bold text-gray-900">{{ optional($pegawai)->nama_lengkap ?? optional($pegawai)->nama ?? Auth::user()->name }}</div>
+                                <div class="text-xs text-gray-500 font-mono">NIP. {{ optional($pegawai)->nip ?? '-' }}</div>
                             </div>
                             <div class="text-right">
                                 <div class="text-xs text-gray-500 uppercase font-semibold">Sisa Kuota Cuti Tahunan</div>
-                                <div class="text-xl font-extrabold text-emerald-600">{{ $pegawai->sisa_cuti_tahunan }} Hari Kerja</div>
+                                <div class="text-xl font-extrabold text-emerald-600">{{ optional($pegawai)->sisa_cuti_tahunan ?? 12 }} Hari Kerja</div>
                             </div>
                         </div>
                     @endif

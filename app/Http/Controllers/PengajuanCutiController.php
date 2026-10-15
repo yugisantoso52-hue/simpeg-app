@@ -55,11 +55,12 @@ class PengajuanCutiController extends Controller
     public function create(Request $request)
     {
         $user = $request->user();
-        $isPegawaiOnly = $user->hasRole('pegawai') && !$user->hasRole(['admin', 'pimpinan']);
-        $pegawai = $isPegawaiOnly ? $user->pegawai : null;
-        $pegawaiList = $user->hasRole('admin') ? $this->service->pegawaiList() : collect();
+        $isAdmin = $user->hasRole('admin');
+        $isPegawaiOnly = !$isAdmin;
+        $pegawai = $user->pegawai ?? ($user->pegawai_id ? \App\Models\Pegawai::find($user->pegawai_id) : null);
+        $pegawaiList = $isAdmin ? $this->service->pegawaiList() : collect();
 
-        if ($isPegawaiOnly && !$pegawai) {
+        if (!$isAdmin && !$pegawai) {
             return redirect()->route('dashboard')->with('error', 'Akun Anda belum terhubung dengan data pegawai.');
         }
 
@@ -71,7 +72,7 @@ class PengajuanCutiController extends Controller
         $user = $request->user();
         $pegawaiId = $user->hasRole('admin') && $request->filled('pegawai_id')
             ? (int)$request->get('pegawai_id')
-            : (int)$user->pegawai_id;
+            : (int)($user->pegawai_id ?? $user->pegawai?->id);
 
         if (!$pegawaiId) {
             return redirect()->back()->with('error', 'Data pegawai tidak ditemukan.');

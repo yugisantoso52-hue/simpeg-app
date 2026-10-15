@@ -48,8 +48,8 @@ class PegawaiPolicy
             return true;
         }
 
-        // 2. Pegawai biasa DIIZINKAN mengedit data pribadinya sendiri
-        return $user->hasRole('pegawai') && $user->pegawai_id === $pegawai->id;
+        // 2. Pegawai/Pimpinan DIIZINKAN mengedit data pribadinya sendiri
+        return $user->pegawai_id !== null && (int)$user->pegawai_id === (int)$pegawai->id;
     }
 
     /**

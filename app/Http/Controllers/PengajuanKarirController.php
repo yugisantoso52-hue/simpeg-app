@@ -52,10 +52,18 @@ class PengajuanKarirController extends Controller
         $pengajuans = $query->latest()->paginate(15);
         $userPegawai = $user->pegawai;
 
+        $pegawaiId = $user->pegawai_id ?? $user->pegawai?->id;
+
         // Badge counters untuk notifikasi usulan yang memerlukan verifikasi
-        $countKpPending = PengajuanKarir::where('jenis_pengajuan', 'KP')->whereNotIn('status', ['disetujui_dekan', 'disetujui_wd2', 'ditolak'])->count();
-        $countKgbPending = PengajuanKarir::where('jenis_pengajuan', 'KGB')->whereNotIn('status', ['disetujui_dekan', 'disetujui_wd2', 'ditolak'])->count();
-        $countSatyalancanaPending = UsulanSatyalancana::whereNotIn('status', ['disetujui_wd2', 'ditolak'])->count();
+        if ($isExecutive && $request->query('scope') !== 'saya') {
+            $countKpPending = PengajuanKarir::where('jenis_pengajuan', 'KP')->whereNotIn('status', ['disetujui_dekan', 'disetujui_wd2', 'ditolak'])->count();
+            $countKgbPending = PengajuanKarir::where('jenis_pengajuan', 'KGB')->whereNotIn('status', ['disetujui_dekan', 'disetujui_wd2', 'ditolak'])->count();
+            $countSatyalancanaPending = UsulanSatyalancana::whereNotIn('status', ['disetujui_wd2', 'ditolak'])->count();
+        } else {
+            $countKpPending = PengajuanKarir::where('pegawai_id', $pegawaiId)->where('jenis_pengajuan', 'KP')->whereNotIn('status', ['disetujui_dekan', 'disetujui_wd2', 'ditolak'])->count();
+            $countKgbPending = PengajuanKarir::where('pegawai_id', $pegawaiId)->where('jenis_pengajuan', 'KGB')->whereNotIn('status', ['disetujui_dekan', 'disetujui_wd2', 'ditolak'])->count();
+            $countSatyalancanaPending = UsulanSatyalancana::where('pegawai_id', $pegawaiId)->whereNotIn('status', ['disetujui_wd2', 'ditolak'])->count();
+        }
 
         // Data Usulan & Nominasi Satyalancana (jika tab aktif atau executive)
         $layakSatyalancana = [];
@@ -67,13 +75,19 @@ class PengajuanKarirController extends Controller
                 ->get()
                 ->keyBy('pegawai_id');
 
-            $allPegawaiSatyalancana = Pegawai::with([
+            $pegawaiQuery = Pegawai::with([
                 'unitKerja', 'jabatan', 'golongan',
                 'riwayatSkp' => fn($q) => $q->orderBy('tahun', 'desc'),
                 'riwayatPangkat' => fn($q) => $q->orderBy('tmt', 'desc'),
                 'riwayatJabatan' => fn($q) => $q->orderBy('tmt_jabatan', 'desc'),
                 'riwayatPenghargaan' => fn($q) => $q->orderBy('tanggal_terima', 'desc'),
-            ])->where('status_pegawai', 'Aktif')->get();
+            ])->where('status_pegawai', 'Aktif');
+
+            if (!$isExecutive || $request->query('scope') === 'saya') {
+                $pegawaiQuery->where('id', $pegawaiId);
+            }
+
+            $allPegawaiSatyalancana = $pegawaiQuery->get();
 
             foreach ($allPegawaiSatyalancana as $p) {
                 $kat = $satyalancanaService->cekKelayakanSatyalancana($p);
@@ -84,11 +98,17 @@ class PengajuanKarirController extends Controller
                 }
             }
 
-            $daftarUsulanSatyalancana = UsulanSatyalancana::with([
+            $usulanQuery = UsulanSatyalancana::with([
                 'pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan',
                 'pegawai.riwayatSkp', 'pegawai.riwayatPangkat.golongan', 'pegawai.riwayatJabatan.jabatan', 'pegawai.riwayatPenghargaan',
                 'diajukanOleh', 'verifikasiAdminBy', 'parafKabagBy', 'parafKaPokjaBy', 'ttdWd2By'
-            ])->orderByDesc('id')->paginate(15, ['*'], 'sl_page');
+            ]);
+
+            if (!$isExecutive || $request->query('scope') === 'saya') {
+                $usulanQuery->where('pegawai_id', $pegawaiId);
+            }
+
+            $daftarUsulanSatyalancana = $usulanQuery->orderByDesc('id')->paginate(15, ['*'], 'sl_page');
         }
 
         // Data Radar Jatuh Tempo (Monitoring KP & KGB)

@@ -89,10 +89,29 @@
             </div>
         </div>
     @else
-        <x-responsive-nav-link :href="route('presensi.index')" :active="request()->routeIs('presensi.*')" class="flex items-center gap-2.5 rounded-xl font-bold">
-            <x-icon name="clock" class="w-4 h-4 text-blue-600" />
-            <span>Presensi Pegawai</span>
-        </x-responsive-nav-link>
+        <div class="rounded-xl border border-slate-200/80 bg-white overflow-hidden transition">
+            <button @click="openSection = openSection === 'presensi' ? '' : 'presensi'" 
+                    type="button" 
+                    class="w-full flex items-center justify-between px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                <span class="flex items-center gap-2">
+                    <x-icon name="clock" class="w-4 h-4 text-blue-600" />
+                    <span>Presensi Pegawai</span>
+                </span>
+                <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': openSection === 'presensi'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div x-show="openSection === 'presensi'" x-transition class="px-2 pb-2 space-y-0.5 bg-slate-50/60 border-t border-slate-100">
+                <x-responsive-nav-link :href="route('presensi.index')" :active="request()->routeIs('presensi.index')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="clock" class="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Presensi Saya</span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('presensi.history')" :active="request()->routeIs('presensi.history')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="history" class="w-3.5 h-3.5 text-slate-500" />
+                    <span>Riwayat Presensi Saya</span>
+                </x-responsive-nav-link>
+            </div>
+        </div>
     @endif
 
     {{-- 5. LOGBOOK KINERJA (ACCORDION) --}}
@@ -125,10 +144,29 @@
             </div>
         </div>
     @else
-        <x-responsive-nav-link :href="route('logbook.index')" :active="request()->routeIs('logbook.*')" class="flex items-center gap-2.5 rounded-xl font-bold">
-            <x-icon name="book-open" class="w-4 h-4 text-violet-600" />
-            <span>Logbook Kinerja</span>
-        </x-responsive-nav-link>
+        <div class="rounded-xl border border-slate-200/80 bg-white overflow-hidden transition">
+            <button @click="openSection = openSection === 'logbook' ? '' : 'logbook'" 
+                    type="button" 
+                    class="w-full flex items-center justify-between px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                <span class="flex items-center gap-2">
+                    <x-icon name="book-open" class="w-4 h-4 text-violet-600" />
+                    <span>Logbook Kinerja</span>
+                </span>
+                <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': openSection === 'logbook'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div x-show="openSection === 'logbook'" x-transition class="px-2 pb-2 space-y-0.5 bg-slate-50/60 border-t border-slate-100">
+                <x-responsive-nav-link :href="route('logbook.index')" :active="request()->routeIs('logbook.index')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="clipboard-list" class="w-3.5 h-3.5 text-blue-600" />
+                    <span>Logbook Kinerja Saya</span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('logbook.create')" :active="request()->routeIs('logbook.create')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="plus" class="w-3.5 h-3.5 text-emerald-600" />
+                    <span>+ Catat Aktivitas Baru</span>
+                </x-responsive-nav-link>
+            </div>
+        </div>
     @endif
 
     {{-- 6. E-CUTI (ACCORDION) --}}
@@ -161,10 +199,29 @@
             </div>
         </div>
     @else
-        <x-responsive-nav-link :href="route('pengajuan-cuti.index')" :active="request()->routeIs('pengajuan-cuti.*')" class="flex items-center gap-2.5 rounded-xl font-bold">
-            <x-icon name="calendar-off" class="w-4 h-4 text-amber-600" />
-            <span>E-Cuti</span>
-        </x-responsive-nav-link>
+        <div class="rounded-xl border border-slate-200/80 bg-white overflow-hidden transition">
+            <button @click="openSection = openSection === 'cuti' ? '' : 'cuti'" 
+                    type="button" 
+                    class="w-full flex items-center justify-between px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                <span class="flex items-center gap-2">
+                    <x-icon name="calendar-off" class="w-4 h-4 text-amber-600" />
+                    <span>E-Cuti</span>
+                </span>
+                <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': openSection === 'cuti'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div x-show="openSection === 'cuti'" x-transition class="px-2 pb-2 space-y-0.5 bg-slate-50/60 border-t border-slate-100">
+                <x-responsive-nav-link :href="route('pengajuan-cuti.index')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="calendar-off" class="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Permohonan Cuti Saya</span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('pengajuan-cuti.create')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="plus" class="w-3.5 h-3.5 text-blue-600" />
+                    <span>+ Buat Permohonan Cuti Baru</span>
+                </x-responsive-nav-link>
+            </div>
+        </div>
     @endif
 
     {{-- 6b. LAYANAN E-SURAT MANDIRI --}}

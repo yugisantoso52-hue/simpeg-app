@@ -271,6 +271,11 @@ class SatyalancanaController extends Controller
      */
     public function cetakDrh(Pegawai $pegawai)
     {
+        $user = Auth::user();
+        if (!$user->canAccessExecutiveKepegawaianMenus() && (int)$user->pegawai_id !== (int)$pegawai->id) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mengunduh DRH pegawai ini.');
+        }
+
         $pegawai->load([
             'unitKerja',
             'jabatan',

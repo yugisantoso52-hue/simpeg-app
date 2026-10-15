@@ -76,11 +76,28 @@
         </x-slot>
     </x-dropdown>
 @else
-    <a href="{{ route('presensi.index') }}" 
-       class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('presensi.*') ? 'bg-blue-50 text-blue-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-        <x-icon name="clock" class="w-4 h-4 {{ request()->routeIs('presensi.*') ? 'text-blue-600' : 'text-slate-500' }}" />
-        <span>Presensi Pegawai</span>
-    </a>
+    <x-dropdown align="left" width="w-56">
+        <x-slot name="trigger">
+            <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('presensi.*') ? 'bg-blue-50 text-blue-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                <x-icon name="clock" class="w-4 h-4 {{ request()->routeIs('presensi.*') ? 'text-blue-600' : 'text-slate-500' }}" />
+                <span>Presensi Pegawai</span>
+                <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
+            </button>
+        </x-slot>
+        <x-slot name="content">
+            <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
+                Presensi Mandiri
+            </div>
+            <x-dropdown-link :href="route('presensi.index')" class="flex items-center gap-2 {{ request()->routeIs('presensi.index') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="clock" class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Presensi Saya</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('presensi.history')" class="flex items-center gap-2 {{ request()->routeIs('presensi.history') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="history" class="w-4 h-4 text-slate-500 shrink-0" />
+                <span>Riwayat Presensi Saya</span>
+            </x-dropdown-link>
+        </x-slot>
+    </x-dropdown>
 @endif
 
 {{-- ============================================================== --}}
@@ -119,11 +136,28 @@
         </x-slot>
     </x-dropdown>
 @else
-    <a href="{{ route('logbook.index') }}" 
-       class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('logbook.*') ? 'bg-violet-50 text-violet-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-        <x-icon name="book-open" class="w-4 h-4 {{ request()->routeIs('logbook.*') ? 'text-violet-600' : 'text-slate-500' }}" />
-        <span>Logbook Kinerja</span>
-    </a>
+    <x-dropdown align="left" width="w-56">
+        <x-slot name="trigger">
+            <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('logbook.*') ? 'bg-violet-50 text-violet-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                <x-icon name="book-open" class="w-4 h-4 {{ request()->routeIs('logbook.*') ? 'text-violet-600' : 'text-slate-500' }}" />
+                <span>Logbook Kinerja</span>
+                <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
+            </button>
+        </x-slot>
+        <x-slot name="content">
+            <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
+                Kinerja Mandiri
+            </div>
+            <x-dropdown-link :href="route('logbook.index')" class="flex items-center gap-2 {{ request()->routeIs('logbook.index') ? 'bg-violet-50 text-violet-700 font-semibold' : '' }}">
+                <x-icon name="clipboard-list" class="w-4 h-4 text-blue-600 shrink-0" />
+                <span>Logbook Kinerja Saya</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('logbook.create')" class="flex items-center gap-2 {{ request()->routeIs('logbook.create') ? 'bg-violet-50 text-violet-700 font-semibold' : '' }}">
+                <x-icon name="plus" class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>+ Catat Aktivitas Baru</span>
+            </x-dropdown-link>
+        </x-slot>
+    </x-dropdown>
 @endif
 
 {{-- ============================================================== --}}
@@ -162,11 +196,28 @@
         </x-slot>
     </x-dropdown>
 @else
-    <a href="{{ route('pengajuan-cuti.index') }}" 
-       class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('pengajuan-cuti.*') ? 'bg-amber-50 text-amber-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-        <x-icon name="calendar-off" class="w-4 h-4 {{ request()->routeIs('pengajuan-cuti.*') ? 'text-amber-600' : 'text-slate-500' }}" />
-        <span>E-Cuti</span>
-    </a>
+    <x-dropdown align="left" width="w-56">
+        <x-slot name="trigger">
+            <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('pengajuan-cuti.*') ? 'bg-amber-50 text-amber-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                <x-icon name="calendar-off" class="w-4 h-4 {{ request()->routeIs('pengajuan-cuti.*') ? 'text-amber-600' : 'text-slate-500' }}" />
+                <span>E-Cuti</span>
+                <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
+            </button>
+        </x-slot>
+        <x-slot name="content">
+            <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
+                Layanan Cuti Mandiri
+            </div>
+            <x-dropdown-link :href="route('pengajuan-cuti.index')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-cuti.index') ? 'bg-amber-50 text-amber-700 font-semibold' : '' }}">
+                <x-icon name="calendar-off" class="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Permohonan Cuti Saya</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('pengajuan-cuti.create')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-cuti.create') ? 'bg-amber-50 text-amber-700 font-semibold' : '' }}">
+                <x-icon name="plus" class="w-4 h-4 text-blue-600 shrink-0" />
+                <span>+ Buat Permohonan Cuti Baru</span>
+            </x-dropdown-link>
+        </x-slot>
+    </x-dropdown>
 @endif
 
 {{-- ============================================================== --}}

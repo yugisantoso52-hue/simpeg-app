@@ -120,9 +120,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     });
 
     // ======================================================================
-    // ROUTE EDIT PEGAWAI & CRUD RIWAYAT MANDIRI (ADMIN & PEGAWAI)
+    // ROUTE EDIT PEGAWAI & CRUD RIWAYAT MANDIRI (ADMIN, PIMPINAN & PEGAWAI)
     // ======================================================================
-    Route::middleware(['role:admin,pegawai'])->group(function () {
+    Route::middleware(['role:admin,pimpinan,pegawai'])->group(function () {
         Route::get('/pegawai/{pegawai}/edit', [PegawaiController::class, 'edit'])->name('pegawai.edit');
         Route::put('/pegawai/{pegawai}', [PegawaiController::class, 'update'])->name('pegawai.update');
 
@@ -197,6 +197,10 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/pengajuan-karir/{id}', [\App\Http\Controllers\PengajuanKarirController::class, 'show'])->name('pengajuan-karir.show');
         Route::get('/reports/kgb/{id}/pdf', [ReportController::class, 'exportKgbPdf'])->name('reports.kgb.pdf');
         Route::get('/reports/kp/{id}/pdf', [ReportController::class, 'exportUsulanKpPdf'])->name('reports.kp.pdf');
+
+        /* Unduh Berkas Persyaratan & Cetak DRH Satyalancana Karya Satya */
+        Route::get('/satyalancana/download-syarat', [SatyalancanaController::class, 'downloadSyarat'])->name('satyalancana.download-syarat');
+        Route::get('/satyalancana/{pegawai}/cetak-drh', [SatyalancanaController::class, 'cetakDrh'])->name('satyalancana.cetak-drh');
     });
 
     // ======================================================================
@@ -252,9 +256,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/satyalancana', [SatyalancanaController::class, 'index'])->name('satyalancana.index');
         Route::post('/satyalancana/{pegawai}/ajukan', [SatyalancanaController::class, 'ajukan'])->name('satyalancana.ajukan');
         Route::post('/satyalancana/{id}/verifikasi', [SatyalancanaController::class, 'verifikasi'])->name('satyalancana.verifikasi');
-        Route::get('/satyalancana/{pegawai}/cetak-drh', [SatyalancanaController::class, 'cetakDrh'])->name('satyalancana.cetak-drh');
         Route::get('/satyalancana/cetak-surat-pengantar', [SatyalancanaController::class, 'cetakSuratPengantar'])->name('satyalancana.cetak-surat-pengantar');
-        Route::get('/satyalancana/download-syarat', [SatyalancanaController::class, 'downloadSyarat'])->name('satyalancana.download-syarat');
         Route::get('/tugas-belajar', [TugasBelajarController::class, 'index'])->name('tugas-belajar.index');
         Route::get('/mutasi-pegawai', [MutasiPegawaiController::class, 'index'])->name('mutasi-pegawai.index');
 
