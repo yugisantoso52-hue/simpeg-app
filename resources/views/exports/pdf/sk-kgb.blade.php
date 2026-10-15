@@ -261,13 +261,13 @@
             </div>
         </td>
 
-        {{-- Sisi Kanan: Tanda Tangan Manual Wakil Dekan II (Tanpa 'Ditetapkan di...') --}}
+        {{-- Sisi Kanan: Tanda Tangan Mandat Wakil Dekan II (Sesuai UU 30/2014 & PermenPAN-RB 1/2023) --}}
         <td style="width: 47%; text-align: left; vertical-align: top; padding-left: 8px;">
             <div style="font-size: 9.5pt; line-height: 1.25;">
-                Wakil Dekan Bidang Keuangan dan Umum<br>
-                Fakultas Keperawatan Universitas Riau<br>
+                a.n. Dekan Fakultas Keperawatan<br>
+                Wakil Dekan Bidang Keuangan dan Umum,<br>
                 {{-- Ruang tanda tangan manual fisik basah --}}
-                <div style="height: 48px;"></div>
+                <div style="height: 44px;"></div>
                 <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep., Sp.Kep.M.B') }}</strong><br>
                 <span>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</span>
             </div>

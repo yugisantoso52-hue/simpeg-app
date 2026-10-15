@@ -341,8 +341,8 @@
             {{-- SISI KANAN: TANDA TANGAN WAKIL DEKAN II --}}
             <td style="width: 48%; text-align: left; vertical-align: top; padding-left: 8px;">
                 <div style="font-size: 9.5pt; line-height: 1.25;">
-                    Wakil Dekan,<br>
-                    Bidang Keuangan dan Umum,
+                    a.n. Dekan Fakultas Keperawatan<br>
+                    Wakil Dekan Bidang Keuangan dan Umum,
                     
                     {{-- QR Code TTE Pimpinan --}}
                     <div style="text-align: left; margin: 4px 0 4px 0; min-height: 48px;">

@@ -350,8 +350,13 @@
             </td>
             {{-- VII: Jabatan atas → TTE / spasi ttd → nama → NIP → Status+No.SK pojok bawah kiri --}}
             <td style="vertical-align: top; padding: 5px 6px;">
-                {{-- Jabatan di atas (rata tengah) --}}
-                <div style="text-align: center; font-weight: normal; margin-bottom: 0;">{{ $pybmcJabatan }}</div>
+                {{-- Jabatan di atas (rata tengah) dengan formula mandat jika didelegasikan ke Wakil Dekan --}}
+                <div style="text-align: center; font-weight: normal; margin-bottom: 0; line-height: 1.2;">
+                    @if(str_contains(strtolower($pybmcJabatan ?? ''), 'wakil dekan'))
+                        a.n. Dekan Fakultas Keperawatan<br>
+                    @endif
+                    {{ $pybmcJabatan }}
+                </div>
                 @if($isPejabatSigned && $qrPejabatDataUri)
                     {{-- TTE Digital Signature (Opsi A) --}}
                     <div style="text-align: center; margin: 3px auto 4px auto;">

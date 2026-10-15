@@ -106,6 +106,10 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/surat-aktif/{id}/cetak', [\App\Http\Controllers\LayananSuratController::class, 'cetakSuratAktif'])->name('surat-aktif.cetak');
     });
 
+    /* Panduan & Landasan Regulasi Tata Naskah Dinas & Paraf Digital SIKAP */
+    Route::get('/regulasi-tata-naskah', [\App\Http\Controllers\RegulasiTataNaskahController::class, 'index'])->name('regulasi-tata-naskah.index');
+    Route::get('/regulasi-tata-naskah/pdf', [\App\Http\Controllers\RegulasiTataNaskahController::class, 'exportPdf'])->name('regulasi-tata-naskah.pdf');
+
     // ======================================================================
     // ROUTE PEGAWAI BIASA (Akses Data Diri Sendiri)
     // ======================================================================
