@@ -47,7 +47,7 @@
                     <form method="POST" action="{{ route('layanan-surat.surat-aktif.store') }}" class="space-y-4">
                         @csrf
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                                     Pegawai Pemohon
@@ -69,10 +69,26 @@
 
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                                    Nomor Surat <span class="text-xs font-normal text-slate-500">(Isi Manual)</span>
+                                </label>
+                                <div class="flex rounded-lg shadow-sm">
+                                    <input type="text" name="nomor_surat_manual" 
+                                           value="{{ old('nomor_surat_manual', $nextNomorPrefix ?? 'B/0001') }}"
+                                           placeholder="Contoh: B/0001"
+                                           class="flex-1 min-w-0 block w-full px-3 py-2 text-sm font-mono rounded-none rounded-l-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500">
+                                    <span class="inline-flex items-center px-2.5 rounded-r-lg border border-l-0 border-slate-300 bg-slate-100 text-slate-600 text-xs font-mono font-semibold select-none">
+                                        /UN19.5.1.1.10/KP/{{ date('Y') }}
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 mt-1">Format: <em>(isi manual)/UN19.5.1.1.10/KP/{{ date('Y') }}</em></p>
+                            </div>
+
+                            <div class="md:col-span-2 lg:col-span-1">
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                                     Keperluan Surat <span class="text-red-500">*</span>
                                 </label>
                                 <input type="text" name="keperluan" required
-                                       placeholder="Contoh: Pengajuan KPR Bank / Pembuatan Paspor / Persyaratan Beasiswa"
+                                       placeholder="Contoh: Pengajuan KPR Bank / Persyaratan Beasiswa"
                                        class="w-full text-sm rounded-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500">
                                 <p class="text-[11px] text-slate-400 mt-1">Tuliskan instansi atau tujuan penggunaan surat secara spesifik.</p>
                             </div>

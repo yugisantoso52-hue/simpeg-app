@@ -25,17 +25,33 @@ class LayananSurat extends Model
         'penandatangan_nip',
         'penandatangan_jabatan',
         'qr_token',
+        'paraf_kabag_at',
+        'paraf_kabag_by',
+        'paraf_kapokja_at',
+        'paraf_kapokja_by',
         'catatan',
         'created_by',
     ];
 
     protected $casts = [
-        'tanggal_surat' => 'date',
+        'tanggal_surat'     => 'date',
+        'paraf_kabag_at'   => 'datetime',
+        'paraf_kapokja_at' => 'datetime',
     ];
 
     public function pegawai(): BelongsTo
     {
         return $this->belongsTo(Pegawai::class, 'pegawai_id');
+    }
+
+    public function kabag(): BelongsTo
+    {
+        return $this->belongsTo(Pegawai::class, 'paraf_kabag_by');
+    }
+
+    public function kaPokja(): BelongsTo
+    {
+        return $this->belongsTo(Pegawai::class, 'paraf_kapokja_by');
     }
 
     public function creator(): BelongsTo
