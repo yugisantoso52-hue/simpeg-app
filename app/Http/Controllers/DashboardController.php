@@ -197,15 +197,40 @@ class DashboardController extends Controller
 
             // 🎯 Ringkasan Eksekutif Manajemen Talenta ASN (PermenPAN-RB No. 3/2020)
             $currentYear = (int) $now->year;
+            $talentCacheKey = "talent_summary_{$currentYear}";
             try {
-                $talentScoringService = app(TalentScoringService::class);
-                if (!TalentMapping::where('tahun', $currentYear)->exists()) {
-                    \App\Jobs\BatchCalculateTalentJob::dispatch($currentYear);
+                $cachedTalent = Cache::get($talentCacheKey);
+                $isIncomplete = false;
+                if (is_array($cachedTalent)) {
+                    foreach ($cachedTalent['boxes'] ?? [] as $box) {
+                        $boxItems = $box['items'] ?? null;
+                        if (is_object($boxItems) && get_class($boxItems) === '__PHP_Incomplete_Class') {
+                            $isIncomplete = true;
+                            break;
+                        }
+                    }
                 }
-                $data['talentSummary'] = Cache::remember("talent_summary_{$currentYear}", 600, fn() => $talentScoringService->getNineBoxDistribution($currentYear));
+                if ($isIncomplete) {
+                    Cache::forget($talentCacheKey);
+                    $cachedTalent = null;
+                }
+
+                $talentScoringService = app(TalentScoringService::class);
+                if (!$cachedTalent) {
+                    if (!TalentMapping::where('tahun', $currentYear)->exists()) {
+                        try {
+                            \App\Jobs\BatchCalculateTalentJob::dispatch($currentYear);
+                        } catch (\Throwable $e) {
+                            \Illuminate\Support\Facades\Log::warning('Dispatch BatchCalculateTalentJob error: ' . $e->getMessage());
+                        }
+                    }
+                    $cachedTalent = Cache::remember($talentCacheKey, 600, fn() => $talentScoringService->getNineBoxDistribution($currentYear));
+                }
+                $data['talentSummary'] = $cachedTalent;
                 $data['totalSuccessionPlans'] = Cache::remember('total_succession_plans', 600, fn() => SuccessionPlan::count());
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning('Dashboard talent summary error: ' . $e->getMessage());
+                Cache::forget($talentCacheKey);
                 $data['talentSummary'] = [
                     'tahun'            => $currentYear,
                     'total'            => 0,

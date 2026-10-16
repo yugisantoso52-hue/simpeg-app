@@ -479,7 +479,34 @@ class TalentScoringService
 
         $distribution = [];
         for ($i = 1; $i <= 9; $i++) {
-            $items = $allMappings->where('kuadran_box', $i)->values();
+            $filtered = $allMappings->where('kuadran_box', $i)->values();
+            $items = $filtered->map(function ($m) {
+                return (object) [
+                    'id'                  => $m->id,
+                    'pegawai_id'          => $m->pegawai_id,
+                    'kuadran_box'         => (int) $m->kuadran_box,
+                    'box_name'            => $m->box_name,
+                    'sumbu_kinerja_nilai' => (float) ($m->sumbu_kinerja_nilai ?? 0),
+                    'sumbu_potensi_nilai' => (float) ($m->sumbu_potensi_nilai ?? 0),
+                    'is_suksesi_eligible' => (bool) $m->is_suksesi_eligible,
+                    'pegawai'             => $m->pegawai ? (object) [
+                        'id'           => $m->pegawai->id,
+                        'nama'         => $m->pegawai->nama ?? '-',
+                        'nama_lengkap' => $m->pegawai->nama_lengkap ?? $m->pegawai->nama ?? '-',
+                        'nip'          => $m->pegawai->nip ?? '-',
+                        'foto_url'     => $m->pegawai->foto_url ?? null,
+                        'unit_kerja'   => $m->pegawai->unitKerja ? (object) [
+                            'id'        => $m->pegawai->unitKerja->id,
+                            'nama_unit' => $m->pegawai->unitKerja->nama_unit ?? '-',
+                        ] : null,
+                        'jabatan'      => $m->pegawai->jabatan ? (object) [
+                            'id'           => $m->pegawai->jabatan->id,
+                            'nama_jabatan' => $m->pegawai->jabatan->nama_jabatan ?? 'Pegawai',
+                        ] : null,
+                    ] : null,
+                ];
+            });
+
             $distribution[$i] = [
                 'box'   => $i,
                 'count' => $items->count(),

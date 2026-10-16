@@ -1799,11 +1799,15 @@
 
                         // Ambil representasi kandidat unggulan Kotak 9 & 8 untuk preview
                         $topTalents = collect();
-                        if (isset($tBoxes[9]['items'])) {
-                            $topTalents = $topTalents->merge($tBoxes[9]['items']);
-                        }
-                        if (isset($tBoxes[8]['items'])) {
-                            $topTalents = $topTalents->merge($tBoxes[8]['items']);
+                        foreach ([9, 8] as $boxNum) {
+                            $boxItems = $tBoxes[$boxNum]['items'] ?? null;
+                            if (is_iterable($boxItems) && !(is_object($boxItems) && get_class($boxItems) === '__PHP_Incomplete_Class')) {
+                                foreach ($boxItems as $item) {
+                                    if (is_object($item) && isset($item->pegawai_id)) {
+                                        $topTalents->push($item);
+                                    }
+                                }
+                            }
                         }
                         $topTalentsPreview = $topTalents->take(4);
                     @endphp
@@ -2036,6 +2040,7 @@
                                     @if($topTalentsPreview->count() > 0)
                                         <div class="space-y-2.5">
                                             @foreach($topTalentsPreview as $talent)
+                                                @if(is_object($talent) && isset($talent->pegawai_id))
                                                 <a href="{{ route('manajemen-talenta.show', $talent->pegawai_id) }}" class="p-2.5 rounded-xl bg-white hover:bg-indigo-50/50 border border-slate-200 hover:border-indigo-300 transition flex items-center justify-between group shadow-2xs">
                                                     <div class="flex items-center gap-2.5 min-w-0">
                                                         <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
@@ -2052,13 +2057,14 @@
                                                     </div>
                                                     <div class="text-right shrink-0 ml-2">
                                                         <span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                                                            K{{ $talent->kuadran_box }}
+                                                            K{{ $talent->kuadran_box ?? '-' }}
                                                         </span>
                                                         <div class="text-[9px] text-slate-500 font-mono mt-0.5">
-                                                            K:{{ number_format($talent->sumbu_kinerja_nilai, 0) }} P:{{ number_format($talent->sumbu_potensi_nilai, 0) }}
+                                                            K:{{ number_format($talent->sumbu_kinerja_nilai ?? 0, 0) }} P:{{ number_format($talent->sumbu_potensi_nilai ?? 0, 0) }}
                                                         </div>
                                                     </div>
                                                 </a>
+                                                @endif
                                             @endforeach
                                         </div>
                                     @else
