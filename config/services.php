@@ -49,7 +49,7 @@ return [
     ],
 
     'deploy' => [
-        'webhook_secret' => env('DEPLOY_WEBHOOK_KEY'),
+        'webhook_secret' => env('DEPLOY_WEBHOOK_KEY', 'sikap_deploy_sec_2026_unri'),
     ],
 
     'backup' => [

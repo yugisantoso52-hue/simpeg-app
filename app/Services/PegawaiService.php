@@ -2,20 +2,19 @@
 
 namespace App\Services;
 
+use App\Actions\Pegawai\HandleDokumenPegawaiAction;
+use App\Actions\Pegawai\SyncAkunUserPegawaiAction;
+use App\Actions\Pegawai\SyncRiwayatPegawaiAction;
+use App\Actions\Pegawai\UpsertDataDiriPegawaiAction;
 use App\Models\Pegawai;
 use App\Models\RiwayatJabatan;
 use App\Models\RiwayatPangkat;
 use App\Models\RiwayatPendidikan;
 use App\Models\RiwayatDiklat;
-use App\Models\RiwayatStrSip;
-use App\Models\RiwayatSkp;
-use App\Models\RiwayatPenghargaan;
 use App\Models\User;
-use App\Models\Role;
 use App\Repositories\Contracts\PegawaiRepositoryInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -23,11 +22,24 @@ use Carbon\Carbon;
 class PegawaiService
 {
     protected PegawaiRepositoryInterface $pegawaiRepository;
+    protected HandleDokumenPegawaiAction $dokumenAction;
+    protected UpsertDataDiriPegawaiAction $upsertAction;
+    protected SyncAkunUserPegawaiAction $userAction;
+    protected SyncRiwayatPegawaiAction $riwayatAction;
 
-    public function __construct(PegawaiRepositoryInterface $pegawaiRepository)
-    {
+    public function __construct(
+        PegawaiRepositoryInterface $pegawaiRepository,
+        ?HandleDokumenPegawaiAction $dokumenAction = null,
+        ?UpsertDataDiriPegawaiAction $upsertAction = null,
+        ?SyncAkunUserPegawaiAction $userAction = null,
+        ?SyncRiwayatPegawaiAction $riwayatAction = null
+    ) {
         $this->pegawaiRepository = $pegawaiRepository;
-    }   
+        $this->dokumenAction   = $dokumenAction ?? app(HandleDokumenPegawaiAction::class);
+        $this->upsertAction    = $upsertAction ?? app(UpsertDataDiriPegawaiAction::class);
+        $this->userAction      = $userAction ?? app(SyncAkunUserPegawaiAction::class);
+        $this->riwayatAction   = $riwayatAction ?? app(SyncRiwayatPegawaiAction::class);
+    }
 
     /**
      * Upload foto pegawai ke storage arsip hierarkis
@@ -84,41 +96,7 @@ class PegawaiService
      */
     private function generateSatyalancana($tmtPertama): array
     {
-        if (blank($tmtPertama)) {
-            return [
-                'terakhir' => null,
-                'berikutnya' => null
-            ];
-        }
-
-        $start = Carbon::parse($tmtPertama);
-        $masaKerja = $start->diffInYears(now());
-
-        if ($masaKerja < 10) {
-            return [
-                'terakhir' => '-',
-                'berikutnya' => $start->copy()->addYears(10)->format('Y-m-d')
-            ];
-        }
-
-        if ($masaKerja < 20) {
-            return [
-                'terakhir' => 'Perunggu',
-                'berikutnya' => $start->copy()->addYears(20)->format('Y-m-d')
-            ];
-        }
-
-        if ($masaKerja < 30) {
-            return [
-                'terakhir' => 'Perak',
-                'berikutnya' => $start->copy()->addYears(30)->format('Y-m-d')
-            ];
-        }
-
-        return [
-            'terakhir' => 'Emas',
-            'berikutnya' => null
-        ];
+        return $this->upsertAction->generateSatyalancana($tmtPertama);
     }
 
     public function search(?string $search, ?string $filter = null)
@@ -157,284 +135,32 @@ class PegawaiService
     }
 
     /**
-     * Membuat data pegawai baru beserta akun user login, riwayat awal, dan berkas SK
+     * Membuat data pegawai baru beserta akun user login, riwayat awal, dan berkas SK (Atomic Transaction)
      */
     public function createPegawai(array $data, array $files = []): Pegawai
     {
-        if (!empty($data['nip'])) {
-            $data['nip'] = preg_replace('/[^0-9]/', '', $data['nip']);
-        }
         return DB::transaction(function () use ($data, $files) {
-            if (!empty($files['foto'])) {
-                $data['foto'] = $this->uploadFoto($files['foto'], $data);
-            }
+            // 1. Proses upload dokumen utama
+            $docPaths = $this->dokumenAction->execute($files);
+            $data = array_merge($data, $docPaths);
 
-            if (!empty($files['file_sk_pertama'])) {
-                $data['file_sk_pertama'] = $this->uploadSK($files['file_sk_pertama'], $data, 'sk_pertama');
-            }
-            if (!empty($files['file_sk_pangkat_terakhir'])) {
-                $data['file_sk_pangkat_terakhir'] = $this->uploadSK($files['file_sk_pangkat_terakhir'], $data, 'sk_pangkat');
-            }
-            if (!empty($files['file_sk_kgb_terakhir'])) {
-                $data['file_sk_kgb_terakhir'] = $this->uploadSK($files['file_sk_kgb_terakhir'], $data, 'sk_kgb');
-            }
-            if (!empty($files['file_karpeg'])) {
-                $data['file_karpeg'] = $this->uploadSK($files['file_karpeg'], $data, 'karpeg');
-            }
-            if (!empty($files['file_pak'])) {
-                $data['file_pak'] = $this->uploadSK($files['file_pak'], $data, 'pak');
-            }
-            if (!empty($files['file_str'])) {
-                $data['file_str'] = $this->uploadSK($files['file_str'], $data, 'str_sip', 'STR');
-            }
-            if (!empty($files['file_sip'])) {
-                $data['file_sip'] = $this->uploadSK($files['file_sip'], $data, 'str_sip', 'SIP');
-            }
+            // 2. Simpan profil data diri pegawai
+            $pegawai = $this->upsertAction->execute($data);
 
-            $data['kgb_berikutnya'] = $this->generateKGB($data['tmt_kgb_terakhir'] ?? null);
-            $data['kp_berikutnya'] = $this->generateKP($data['tmt_pangkat_terakhir'] ?? null);
-
-            $satyalancana = $this->generateSatyalancana($data['tmt_sk_pertama'] ?? null);
-            $data['satyalancana_terakhir'] = $satyalancana['terakhir'];
-            $data['satyalancana_berikutnya'] = $satyalancana['berikutnya'];
-
-            $data['jumlah_anak'] = $data['jumlah_anak'] ?? 0;
-            $data['status_pegawai'] = $data['status_pegawai'] ?? 'Aktif';
-
-            // 1. Simpan data pegawai utama
-            $pegawai = $this->pegawaiRepository->create($this->filterPegawaiColumns($data));
-
-            // Otomatisasi Sinkronisasi Berkas Utama ke Google Drive SIKAP-ARSIP
-            if (!empty($files['file_sk_pertama'])) {
-                $this->syncFileToDrive($pegawai, $files['file_sk_pertama'], 'SK CPNS', '02_RIWAYAT_SK');
-            }
-            if (!empty($files['file_sk_pangkat_terakhir'])) {
-                $this->syncFileToDrive($pegawai, $files['file_sk_pangkat_terakhir'], 'SK PANGKAT', '02_RIWAYAT_SK');
-            }
-            if (!empty($files['file_sk_kgb_terakhir'])) {
-                $this->syncFileToDrive($pegawai, $files['file_sk_kgb_terakhir'], 'SK KGB', '02_RIWAYAT_SK');
-            }
-            if (!empty($files['file_karpeg'])) {
-                $this->syncFileToDrive($pegawai, $files['file_karpeg'], 'KARPEG', '01_DOKUMEN_UTAMA');
-            }
-            if (!empty($files['file_pak'])) {
-                $this->syncFileToDrive($pegawai, $files['file_pak'], 'PAK', '04_KINERJA_PENILAIAN');
-            }
-            if (!empty($files['file_str'])) {
-                $this->syncFileToDrive($pegawai, $files['file_str'], 'STR', '01_DOKUMEN_UTAMA');
-            }
-            if (!empty($files['file_sip'])) {
-                $this->syncFileToDrive($pegawai, $files['file_sip'], 'SIP', '01_DOKUMEN_UTAMA');
-            }
-
-            // Sinkronisasi Data STR & SIP ke Riwayat Terkait jika diisi
-            if (!empty($pegawai->nomor_str)) {
-                RiwayatStrSip::updateOrCreate(
-                    ['pegawai_id' => $pegawai->id, 'jenis_dokumen' => 'STR'],
-                    [
-                        'nomor_registrasi' => $pegawai->nomor_str,
-                        'nama_dokumen'     => 'Surat Tanda Registrasi (STR)',
-                        'tanggal_berakhir' => $pegawai->tanggal_kadaluarsa_str,
-                        'status'           => 'aktif',
-                        'file_dokumen'     => $pegawai->file_str,
-                        'keterangan'       => 'Tersinkronisasi otomatis dari profil pegawai',
-                    ]
-                );
-            }
-            if (!empty($pegawai->nomor_sip)) {
-                RiwayatStrSip::updateOrCreate(
-                    ['pegawai_id' => $pegawai->id, 'jenis_dokumen' => 'SIP'],
-                    [
-                        'nomor_registrasi' => $pegawai->nomor_sip,
-                        'nama_dokumen'     => 'Surat Izin Praktik (SIP)',
-                        'tanggal_berakhir' => $pegawai->tanggal_kadaluarsa_sip,
-                        'status'           => 'aktif',
-                        'file_dokumen'     => $pegawai->file_sip,
-                        'keterangan'       => 'Tersinkronisasi otomatis dari profil pegawai',
-                    ]
-                );
-            }
-
-            // 2. OTOMATISASI: Buat Akun User Login untuk Pegawai Baru (NIP Tanpa Spasi)
-            $rolePegawai = Role::where('name', 'pegawai')->first();
-            if ($rolePegawai) {
-                $nipClean = preg_replace('/[^0-9]/', '', $pegawai->nip ?? '');
-                $identifier = !empty($nipClean) ? $nipClean : 'pegawai_' . $pegawai->id;
-                $emailLogin = $identifier . '@staff.unri.ac.id';
-
-                $passwordDefault = 'Password';
-
-                User::create([
-                    'name'                 => $pegawai->nama,
-                    'email'                => $emailLogin,
-                    'password'             => Hash::make($passwordDefault), // Password default awal pegawai: Password
-                    'role_id'              => $rolePegawai->id,
-                    'pegawai_id'           => $pegawai->id,
-                    'must_change_password' => true,
-                ]);
-            }
-
-            // 3. Simpan Riwayat Pendidikan
-            if (isset($data['riwayat_pendidikan']) && is_array($data['riwayat_pendidikan'])) {
-                foreach ($data['riwayat_pendidikan'] as $index => $row) {
-                    if (empty($row['jenjang']) && empty($row['institusi'])) {
-                        continue;
-                    }
-                    $fileIjazah = null;
-                    if (isset($files['riwayat_pendidikan'][$index]['ijazah'])) {
-                        $fileIjazah = PegawaiStorageService::store($files['riwayat_pendidikan'][$index]['ijazah'], $pegawai, 'ijazah', $row['jenjang'] ?? 'ijazah');
-                        $this->syncFileToDrive($pegawai, $files['riwayat_pendidikan'][$index]['ijazah'], 'IJAZAH ' . strtoupper($row['jenjang'] ?? 'S1'), '03_PENDIDIKAN_DIKLAT');
-                    }
-                    $pegawai->riwayatPendidikan()->create([
-                        'jenjang'     => $row['jenjang'] ?? 'S1',
-                        'institusi'   => $row['institusi'] ?? 'Universitas / Sekolah',
-                        'fakultas'    => $row['fakultas'] ?? null,
-                        'jurusan'     => $row['jurusan'] ?? null,
-                        'tahun_lulus' => !empty($row['tahun_lulus']) ? (int)$row['tahun_lulus'] : null,
-                        'ijazah'      => $fileIjazah,
-                    ]);
+            // 3. Auto-sync file dokumen ke Drive setelah pegawai ID terbentuk
+            foreach ($files as $field => $file) {
+                if ($file instanceof UploadedFile) {
+                    $this->dokumenAction->syncFileToDrive($pegawai, $file, strtoupper($field));
                 }
             }
 
-            // 4. Simpan Riwayat Diklat
-            if (isset($data['riwayat_diklat']) && is_array($data['riwayat_diklat'])) {
-                foreach ($data['riwayat_diklat'] as $index => $row) {
-                    if (empty($row['nama_diklat'])) {
-                        continue;
-                    }
-                    $fileSertifikat = null;
-                    if (isset($files['riwayat_diklat'][$index]['file_sertifikat'])) {
-                        $fileSertifikat = PegawaiStorageService::store($files['riwayat_diklat'][$index]['file_sertifikat'], $pegawai, 'diklat', $row['nama_diklat'] ?? 'diklat');
-                        $this->syncFileToDrive($pegawai, $files['riwayat_diklat'][$index]['file_sertifikat'], 'SERTIFIKAT DIKLAT', '03_PENDIDIKAN_DIKLAT');
-                    }
-                    $tanggalMulai   = !empty($row['tanggal_mulai']) ? $row['tanggal_mulai'] : date('Y-m-d');
-                    $tanggalSelesai = !empty($row['tanggal_selesai']) ? $row['tanggal_selesai'] : $tanggalMulai;
+            // 4. Buat akun login user pegawai baru
+            $this->userAction->execute($pegawai, null, true);
 
-                    $pegawai->riwayatDiklat()->create([
-                        'nama_diklat'      => $row['nama_diklat'],
-                        'jenis_diklat'     => $row['jenis_diklat'] ?? null,
-                        'penyelenggara'    => $row['penyelenggara'] ?? null,
-                        'nomor_sertifikat' => $row['nomor_sertifikat'] ?? null,
-                        'tanggal_mulai'    => $tanggalMulai,
-                        'tanggal_selesai'  => $tanggalSelesai,
-                        'status'           => $row['status'] ?? 'Aktif',
-                        'keterangan'       => $row['keterangan'] ?? null,
-                        'file_sertifikat'  => $fileSertifikat,
-                    ]);
-                }
-            }
+            // 5. Simpan seluruh riwayat awal (Pendidikan, Diklat, Jabatan, Pangkat, SKP, Satyalancana)
+            $this->riwayatAction->execute($pegawai, $data, $files, false);
 
-            // 5. Simpan Riwayat Jabatan
-            if (isset($data['riwayat_jabatan']) && is_array($data['riwayat_jabatan'])) {
-                $activeIndices = [];
-                foreach ($data['riwayat_jabatan'] as $index => $row) {
-                    if (!empty($row['jabatan_id']) && !empty($row['unit_kerja_id']) && in_array(strtolower($row['status'] ?? ''), ['aktif'])) {
-                        $activeIndices[] = $index;
-                    }
-                }
-                $lastActiveIndex = !empty($activeIndices) ? end($activeIndices) : null;
-
-                foreach ($data['riwayat_jabatan'] as $index => $row) {
-                    if (empty($row['jabatan_id']) || empty($row['unit_kerja_id'])) {
-                        continue;
-                    }
-                    $fileSk = null;
-                    if (isset($files['riwayat_jabatan'][$index]['file_sk'])) {
-                        $fileSk = PegawaiStorageService::store($files['riwayat_jabatan'][$index]['file_sk'], $pegawai, 'sk_jabatan');
-                        $this->syncFileToDrive($pegawai, $files['riwayat_jabatan'][$index]['file_sk'], 'SK JABATAN', '02_RIWAYAT_SK');
-                    }
-                    $status = ($lastActiveIndex !== null && $index === $lastActiveIndex) ? 'aktif' : 'nonaktif';
-                    $pegawai->riwayatJabatan()->create([
-                        'jabatan_id'    => $row['jabatan_id'],
-                        'unit_kerja_id' => $row['unit_kerja_id'],
-                        'tmt_jabatan'   => !empty($row['tmt_jabatan']) ? $row['tmt_jabatan'] : now(),
-                        'nomor_sk'      => $row['nomor_sk'] ?? null,
-                        'tanggal_sk'    => $row['tanggal_sk'] ?? null,
-                        'status'        => $status,
-                        'file_sk'       => $fileSk,
-                        'keterangan'    => $row['keterangan'] ?? 'Input dari form tambah pegawai',
-                    ]);
-                }
-            }
-
-            // 6. Simpan Riwayat Pangkat
-            if (isset($data['riwayat_pangkat']) && is_array($data['riwayat_pangkat'])) {
-                $activeIndices = [];
-                foreach ($data['riwayat_pangkat'] as $index => $row) {
-                    if (!empty($row['golongan_id']) && in_array(strtolower($row['status'] ?? ''), ['aktif'])) {
-                        $activeIndices[] = $index;
-                    }
-                }
-                $lastActiveIndex = !empty($activeIndices) ? end($activeIndices) : null;
-
-                foreach ($data['riwayat_pangkat'] as $index => $row) {
-                    if (empty($row['golongan_id'])) {
-                        continue;
-                    }
-                    $fileSk = null;
-                    if (isset($files['riwayat_pangkat'][$index]['file_sk'])) {
-                        $fileSk = PegawaiStorageService::store($files['riwayat_pangkat'][$index]['file_sk'], $pegawai, 'sk_pangkat');
-                        $this->syncFileToDrive($pegawai, $files['riwayat_pangkat'][$index]['file_sk'], 'SK PANGKAT', '02_RIWAYAT_SK');
-                    }
-                    $status = ($lastActiveIndex !== null && $index === $lastActiveIndex) ? 'aktif' : 'nonaktif';
-                    $pegawai->riwayatPangkat()->create([
-                        'golongan_id' => $row['golongan_id'],
-                        'tmt'         => !empty($row['tmt']) ? $row['tmt'] : now(),
-                        'nomor_sk'    => $row['nomor_sk'] ?? null,
-                        'tanggal_sk'  => $row['tanggal_sk'] ?? null,
-                        'status'      => $status,
-                        'file_sk'     => $fileSk,
-                        'keterangan'  => $row['keterangan'] ?? 'Input dari form tambah pegawai',
-                    ]);
-                }
-            }
-
-            // 7. Simpan Riwayat SKP 2 Tahun Lalu (Kinerja & Syarat Satyalancana/KP)
-            if (isset($data['riwayat_skp']) && is_array($data['riwayat_skp'])) {
-                foreach ($data['riwayat_skp'] as $index => $row) {
-                    if (empty($row['predikat_kinerja']) && empty($row['pejabat_penilai']) && !isset($files['riwayat_skp'][$index]['file_evaluasi_skp'])) {
-                        continue;
-                    }
-                    $tahunSkp = !empty($row['tahun']) ? (int)$row['tahun'] : ((int)date('Y') - ($index + 1));
-                    $fileEvaluasi = null;
-                    if (isset($files['riwayat_skp'][$index]['file_evaluasi_skp'])) {
-                        $fileEvaluasi = PegawaiStorageService::store($files['riwayat_skp'][$index]['file_evaluasi_skp'], $pegawai, 'skp', 'skp_' . $tahunSkp);
-                        $this->syncFileToDrive($pegawai, $files['riwayat_skp'][$index]['file_evaluasi_skp'], 'EVALUASI SKP ' . $tahunSkp, '08_SKP');
-                    }
-                    $pegawai->riwayatSkp()->create([
-                        'tahun'            => $tahunSkp,
-                        'predikat_kinerja' => $row['predikat_kinerja'] ?? null,
-                        'pejabat_penilai'  => $row['pejabat_penilai'] ?? null,
-                        'file_evaluasi_skp'=> $fileEvaluasi,
-                        'keterangan'       => 'Input otomatis dari formulir pegawai',
-                    ]);
-                }
-            }
-
-            // 8. Simpan Piagam Satyalancana Terdahulu (Jika Ada)
-            if (isset($data['piagam_satyalancana']) && is_array($data['piagam_satyalancana']) && !empty($data['piagam_satyalancana']['nama_penghargaan'])) {
-                $piagamData = $data['piagam_satyalancana'];
-                $filePiagam = null;
-                if (isset($files['piagam_satyalancana']['file_sk'])) {
-                    $filePiagam = PegawaiStorageService::store($files['piagam_satyalancana']['file_sk'], $pegawai, 'penghargaan', 'piagam_satyalancana');
-                    $this->syncFileToDrive($pegawai, $files['piagam_satyalancana']['file_sk'], 'PIAGAM ' . strtoupper($piagamData['nama_penghargaan']), '16_PENGHARGAAN');
-                }
-                $pegawai->riwayatPenghargaan()->create([
-                    'nama_penghargaan'  => $piagamData['nama_penghargaan'],
-                    'jenis_penghargaan' => 'Satyalancana',
-                    'instansi_pemberi'  => $piagamData['instansi_pemberi'] ?? 'Presiden Republik Indonesia',
-                    'tanggal_terima'    => !empty($piagamData['tanggal_sk']) ? $piagamData['tanggal_sk'] : null,
-                    'nomor_sk'          => $piagamData['nomor_sk'] ?? null,
-                    'file_sk'           => $filePiagam,
-                    'keterangan'        => 'Tercatat dari profil awal kepegawaian',
-                ]);
-
-                if (empty($pegawai->satyalancana_terakhir)) {
-                    $pegawai->update(['satyalancana_terakhir' => $piagamData['nama_penghargaan']]);
-                }
-            }
-
-            // 9. Sinkronisasikan data ke pegawai utama
+            // 6. Sinkronisasi data induk dari riwayat aktif
             $this->syncPegawaiFromHistories($pegawai);
 
             return $pegawai;
@@ -442,437 +168,28 @@ class PegawaiService
     }
 
     /**
-     * Memperbarui data pegawai, berkas SK, dan menyinkronkan seluruh riwayat terkait
+     * Memperbarui data pegawai, berkas SK, dan menyinkronkan seluruh riwayat terkait (Atomic Transaction)
      */
     public function updatePegawai(int|string $id, array $data, array $files = []): Pegawai
     {
-        if (!empty($data['nip'])) {
-            $data['nip'] = preg_replace('/[^0-9]/', '', $data['nip']);
-        }
         return DB::transaction(function () use ($id, $data, $files) {
             $pegawai = $this->pegawaiRepository->findOrFail($id);
             $oldNip = $pegawai->nip;
 
-            if (!empty($files['foto'])) {
-                $this->deleteFoto($pegawai->foto);
-                $data['foto'] = $this->uploadFoto($files['foto'], $pegawai);
-            } else {
-                unset($data['foto']);
-            }
+            // 1. Proses upload dan perbarui dokumen utama (hapus berkas lama)
+            $docPaths = $this->dokumenAction->execute($files, $pegawai);
+            $data = array_merge($data, $docPaths);
 
-            if (!empty($files['file_sk_pertama'])) {
-                $this->deleteSK($pegawai->file_sk_pertama);
-                $data['file_sk_pertama'] = $this->uploadSK($files['file_sk_pertama'], $pegawai, 'sk_pertama');
-            } else {
-                unset($data['file_sk_pertama']);
-            }
+            // 2. Update data diri utama pegawai
+            $pegawaiUpdated = $this->upsertAction->execute($data, $pegawai);
 
-            if (!empty($files['file_sk_pangkat_terakhir'])) {
-                $this->deleteSK($pegawai->file_sk_pangkat_terakhir);
-                $data['file_sk_pangkat_terakhir'] = $this->uploadSK($files['file_sk_pangkat_terakhir'], $pegawai, 'sk_pangkat');
-            } else {
-                unset($data['file_sk_pangkat_terakhir']);
-            }
+            // 3. Sinkronisasikan akun user login (NIP, Nama, Email)
+            $this->userAction->execute($pegawaiUpdated, $oldNip, false);
 
-            if (!empty($files['file_sk_kgb_terakhir'])) {
-                $this->deleteSK($pegawai->file_sk_kgb_terakhir);
-                $data['file_sk_kgb_terakhir'] = $this->uploadSK($files['file_sk_kgb_terakhir'], $pegawai, 'sk_kgb');
-            } else {
-                unset($data['file_sk_kgb_terakhir']);
-            }
+            // 4. Sinkronisasikan seluruh riwayat terkait
+            $this->riwayatAction->execute($pegawaiUpdated, $data, $files, true);
 
-            if (!empty($files['file_karpeg'])) {
-                $this->deleteSK($pegawai->file_karpeg);
-                $data['file_karpeg'] = $this->uploadSK($files['file_karpeg'], $pegawai, 'karpeg');
-            } else {
-                unset($data['file_karpeg']);
-            }
-
-            if (!empty($files['file_pak'])) {
-                $this->deleteSK($pegawai->file_pak);
-                $data['file_pak'] = $this->uploadSK($files['file_pak'], $pegawai, 'pak');
-            } else {
-                unset($data['file_pak']);
-            }
-
-            if (!empty($files['file_str'])) {
-                $this->deleteSK($pegawai->file_str);
-                $data['file_str'] = $this->uploadSK($files['file_str'], $pegawai, 'str_sip', 'STR');
-            } else {
-                unset($data['file_str']);
-            }
-
-            if (!empty($files['file_sip'])) {
-                $this->deleteSK($pegawai->file_sip);
-                $data['file_sip'] = $this->uploadSK($files['file_sip'], $pegawai, 'str_sip', 'SIP');
-            } else {
-                unset($data['file_sip']);
-            }
-
-            $data['kgb_berikutnya'] = $this->generateKGB($data['tmt_kgb_terakhir'] ?? null);
-            $data['kp_berikutnya'] = $this->generateKP($data['tmt_pangkat_terakhir'] ?? null);
-
-            $satyalancana = $this->generateSatyalancana($data['tmt_sk_pertama'] ?? null);
-            $data['satyalancana_terakhir'] = $satyalancana['terakhir'];
-            $data['satyalancana_berikutnya'] = $satyalancana['berikutnya'];
-
-            // Update tabel pegawai utama
-            $pegawaiUpdated = $this->pegawaiRepository->update($pegawai->id, $this->filterPegawaiColumns($data));
-
-            // Otomatisasi Sinkronisasi Berkas Terunggah ke Google Drive SIKAP-ARSIP saat edit data
-            if (!empty($files['file_sk_pertama'])) {
-                $this->syncFileToDrive($pegawaiUpdated, $files['file_sk_pertama'], 'SK CPNS', '02_RIWAYAT_SK');
-            }
-            if (!empty($files['file_sk_pangkat_terakhir'])) {
-                $this->syncFileToDrive($pegawaiUpdated, $files['file_sk_pangkat_terakhir'], 'SK PANGKAT', '02_RIWAYAT_SK');
-            }
-            if (!empty($files['file_sk_kgb_terakhir'])) {
-                $this->syncFileToDrive($pegawaiUpdated, $files['file_sk_kgb_terakhir'], 'SK KGB', '02_RIWAYAT_SK');
-            }
-            if (!empty($files['file_karpeg'])) {
-                $this->syncFileToDrive($pegawaiUpdated, $files['file_karpeg'], 'KARPEG', '01_DOKUMEN_UTAMA');
-            }
-            if (!empty($files['file_pak'])) {
-                $this->syncFileToDrive($pegawaiUpdated, $files['file_pak'], 'PAK', '04_KINERJA_PENILAIAN');
-            }
-            if (!empty($files['file_str'])) {
-                $this->syncFileToDrive($pegawaiUpdated, $files['file_str'], 'STR', '01_DOKUMEN_UTAMA');
-            }
-            if (!empty($files['file_sip'])) {
-                $this->syncFileToDrive($pegawaiUpdated, $files['file_sip'], 'SIP', '01_DOKUMEN_UTAMA');
-            }
-
-            // Sinkronisasi Data STR & SIP ke Riwayat Terkait jika diisi
-            if (!empty($pegawaiUpdated->nomor_str)) {
-                RiwayatStrSip::updateOrCreate(
-                    ['pegawai_id' => $pegawaiUpdated->id, 'jenis_dokumen' => 'STR'],
-                    [
-                        'nomor_registrasi' => $pegawaiUpdated->nomor_str,
-                        'nama_dokumen'     => 'Surat Tanda Registrasi (STR)',
-                        'tanggal_berakhir' => $pegawaiUpdated->tanggal_kadaluarsa_str,
-                        'status'           => 'aktif',
-                        'file_dokumen'     => $pegawaiUpdated->file_str,
-                        'keterangan'       => 'Tersinkronisasi otomatis dari profil pegawai',
-                    ]
-                );
-            }
-            if (!empty($pegawaiUpdated->nomor_sip)) {
-                RiwayatStrSip::updateOrCreate(
-                    ['pegawai_id' => $pegawaiUpdated->id, 'jenis_dokumen' => 'SIP'],
-                    [
-                        'nomor_registrasi' => $pegawaiUpdated->nomor_sip,
-                        'nama_dokumen'     => 'Surat Izin Praktik (SIP)',
-                        'tanggal_berakhir' => $pegawaiUpdated->tanggal_kadaluarsa_sip,
-                        'status'           => 'aktif',
-                        'file_dokumen'     => $pegawaiUpdated->file_sip,
-                        'keterangan'       => 'Tersinkronisasi otomatis dari profil pegawai',
-                    ]
-                );
-            }
-
-            if ($oldNip !== $pegawaiUpdated->nip) {
-                $user = User::where('pegawai_id', $pegawaiUpdated->id)->first();
-                if ($user) {
-                    $user->email = $pegawaiUpdated->nip . '@staff.unri.ac.id';
-                    $user->save();
-                }
-            }
-
-            // Catat log perubahan data (timestamp dan identitas pengubah)
-            $changes = $pegawaiUpdated->getChanges();
-            if (!empty($changes)) {
-                $user = auth()->user();
-                $modifier = $user ? "User ID {$user->id} ({$user->name})" : "System/Console";
-                Log::info(sprintf(
-                    "Audit Pegawai: Pegawai ID %s (%s) diubah oleh %s.",
-                    $pegawaiUpdated->id,
-                    $pegawaiUpdated->nama,
-                    $modifier
-                ), ['changes' => $changes]);
-            }
-
-            // Synchronize User table name and email if user exists
-            if ($pegawaiUser = User::where('pegawai_id', $pegawaiUpdated->id)->first()) {
-                $pegawaiUser->update([
-                    'name'  => $pegawaiUpdated->nama,
-                    'email' => $pegawaiUpdated->email ?: $pegawaiUser->email,
-                ]);
-            }
-
-            // 1. UPDATE / SIMPAN RIWAYAT PENDIDIKAN
-            $existingPendidikanIds = $pegawai->riwayatPendidikan()->pluck('id')->toArray();
-            $incomingPendidikan = $data['riwayat_pendidikan'] ?? [];
-            $incomingPendidikanIds = collect($incomingPendidikan)->pluck('id')->filter()->toArray();
-            $pegawai->riwayatPendidikan()->whereIn('id', array_diff($existingPendidikanIds, $incomingPendidikanIds))->delete();
-            foreach ($incomingPendidikan as $index => $row) {
-                if (empty($row['jenjang']) && empty($row['institusi'])) {
-                    continue;
-                }
-                $fileIjazah = null;
-                if (isset($files['riwayat_pendidikan'][$index]['ijazah'])) {
-                    if (!empty($row['id'])) {
-                        $oldPend = $pegawai->riwayatPendidikan()->where('id', $row['id'])->first();
-                        if ($oldPend?->ijazah) {
-                            PegawaiStorageService::delete($oldPend->ijazah);
-                        }
-                    }
-                    $fileIjazah = PegawaiStorageService::store($files['riwayat_pendidikan'][$index]['ijazah'], $pegawaiUpdated, 'ijazah', $row['jenjang'] ?? 'ijazah');
-                    $this->syncFileToDrive($pegawaiUpdated, $files['riwayat_pendidikan'][$index]['ijazah'], 'IJAZAH ' . strtoupper($row['jenjang'] ?? 'S1'), '03_PENDIDIKAN_DIKLAT');
-                }
-                
-                $payload = [
-                    'jenjang'     => $row['jenjang'] ?? 'S1',
-                    'institusi'   => $row['institusi'] ?? 'Universitas / Sekolah',
-                    'fakultas'    => $row['fakultas'] ?? null,
-                    'jurusan'     => $row['jurusan'] ?? null,
-                    'tahun_lulus' => !empty($row['tahun_lulus']) ? (int)$row['tahun_lulus'] : null,
-                ];
-                if ($fileIjazah) {
-                    $payload['ijazah'] = $fileIjazah;
-                }
-
-                if (!empty($row['id'])) {
-                    $pegawai->riwayatPendidikan()->where('id', $row['id'])->update($payload);
-                } else {
-                    $pegawai->riwayatPendidikan()->create($payload);
-                }
-            }
-
-            // 2. UPDATE / SIMPAN RIWAYAT DIKLAT
-            $existingDiklatIds = $pegawai->riwayatDiklat()->pluck('id')->toArray();
-            $incomingDiklat = $data['riwayat_diklat'] ?? [];
-            $incomingDiklatIds = collect($incomingDiklat)->pluck('id')->filter()->toArray();
-            $pegawai->riwayatDiklat()->whereIn('id', array_diff($existingDiklatIds, $incomingDiklatIds))->delete();
-            foreach ($incomingDiklat as $index => $row) {
-                if (empty($row['nama_diklat'])) {
-                    continue;
-                }
-                $fileSertifikat = null;
-                if (isset($files['riwayat_diklat'][$index]['file_sertifikat'])) {
-                    if (!empty($row['id'])) {
-                        $oldDiklat = $pegawai->riwayatDiklat()->where('id', $row['id'])->first();
-                        if ($oldDiklat?->file_sertifikat) {
-                            PegawaiStorageService::delete($oldDiklat->file_sertifikat);
-                        }
-                    }
-                    $fileSertifikat = PegawaiStorageService::store($files['riwayat_diklat'][$index]['file_sertifikat'], $pegawaiUpdated, 'diklat', $row['nama_diklat'] ?? 'diklat');
-                    $this->syncFileToDrive($pegawaiUpdated, $files['riwayat_diklat'][$index]['file_sertifikat'], 'SERTIFIKAT DIKLAT', '03_PENDIDIKAN_DIKLAT');
-                }
-                $tanggalMulai   = !empty($row['tanggal_mulai']) ? $row['tanggal_mulai'] : date('Y-m-d');
-                $tanggalSelesai = !empty($row['tanggal_selesai']) ? $row['tanggal_selesai'] : $tanggalMulai;
-
-                $payload = [
-                    'nama_diklat'      => $row['nama_diklat'],
-                    'jenis_diklat'     => $row['jenis_diklat'] ?? null,
-                    'penyelenggara'    => $row['penyelenggara'] ?? null,
-                    'nomor_sertifikat' => $row['nomor_sertifikat'] ?? null,
-                    'tanggal_mulai'    => $tanggalMulai,
-                    'tanggal_selesai'  => $tanggalSelesai,
-                    'status'           => $row['status'] ?? 'Aktif',
-                    'keterangan'       => $row['keterangan'] ?? null,
-                ];
-                if ($fileSertifikat) {
-                    $payload['file_sertifikat'] = $fileSertifikat;
-                }
-
-                if (!empty($row['id'])) {
-                    $pegawai->riwayatDiklat()->where('id', $row['id'])->update($payload);
-                } else {
-                    $pegawai->riwayatDiklat()->create($payload);
-                }
-            }
-
-            // 3. UPDATE / SIMPAN RIWAYAT JABATAN
-            $existingJabatanIds = $pegawai->riwayatJabatan()->pluck('id')->toArray();
-            $incomingJabatan = $data['riwayat_jabatan'] ?? [];
-            $incomingJabatanIds = collect($incomingJabatan)->pluck('id')->filter()->toArray();
-            $pegawai->riwayatJabatan()->whereIn('id', array_diff($existingJabatanIds, $incomingJabatanIds))->delete();
-            
-            $activeJabatanIndices = [];
-            foreach ($incomingJabatan as $index => $row) {
-                if (!empty($row['jabatan_id']) && !empty($row['unit_kerja_id']) && in_array(strtolower($row['status'] ?? ''), ['aktif'])) {
-                    $activeJabatanIndices[] = $index;
-                }
-            }
-            $lastActiveJabatanIndex = !empty($activeJabatanIndices) ? end($activeJabatanIndices) : null;
-
-            foreach ($incomingJabatan as $index => $row) {
-                if (empty($row['jabatan_id']) || empty($row['unit_kerja_id'])) {
-                    continue;
-                }
-                $fileSk = null;
-                if (isset($files['riwayat_jabatan'][$index]['file_sk'])) {
-                    if (!empty($row['id'])) {
-                        $oldJab = $pegawai->riwayatJabatan()->where('id', $row['id'])->first();
-                        if ($oldJab?->file_sk) {
-                            PegawaiStorageService::delete($oldJab->file_sk);
-                        }
-                    }
-                    $fileSk = PegawaiStorageService::store($files['riwayat_jabatan'][$index]['file_sk'], $pegawaiUpdated, 'sk_jabatan');
-                    $this->syncFileToDrive($pegawaiUpdated, $files['riwayat_jabatan'][$index]['file_sk'], 'SK JABATAN', '02_RIWAYAT_SK');
-                }
-
-                $status = ($lastActiveJabatanIndex !== null && $index === $lastActiveJabatanIndex) ? 'aktif' : 'nonaktif';
-
-                $payload = [
-                    'jabatan_id'    => $row['jabatan_id'],
-                    'unit_kerja_id' => $row['unit_kerja_id'],
-                    'tmt_jabatan'   => !empty($row['tmt_jabatan']) ? $row['tmt_jabatan'] : now(),
-                    'nomor_sk'      => $row['nomor_sk'] ?? null,
-                    'tanggal_sk'    => $row['tanggal_sk'] ?? null,
-                    'status'        => $status,
-                    'keterangan'    => $row['keterangan'] ?? 'Update dari form edit pegawai',
-                ];
-                if ($fileSk) {
-                    $payload['file_sk'] = $fileSk;
-                }
-
-                if (!empty($row['id'])) {
-                    $pegawai->riwayatJabatan()->where('id', $row['id'])->update($payload);
-                } else {
-                    $pegawai->riwayatJabatan()->create($payload);
-                }
-            }
-
-            // 4. UPDATE / SIMPAN RIWAYAT PANGKAT
-            $existingPangkatIds = $pegawai->riwayatPangkat()->pluck('id')->toArray();
-            $incomingPangkat = $data['riwayat_pangkat'] ?? [];
-            $incomingPangkatIds = collect($incomingPangkat)->pluck('id')->filter()->toArray();
-            $pegawai->riwayatPangkat()->whereIn('id', array_diff($existingPangkatIds, $incomingPangkatIds))->delete();
-
-            $activePangkatIndices = [];
-            foreach ($incomingPangkat as $index => $row) {
-                if (!empty($row['golongan_id']) && in_array(strtolower($row['status'] ?? ''), ['aktif'])) {
-                    $activePangkatIndices[] = $index;
-                }
-            }
-            $lastActivePangkatIndex = !empty($activePangkatIndices) ? end($activePangkatIndices) : null;
-
-            foreach ($incomingPangkat as $index => $row) {
-                if (empty($row['golongan_id'])) {
-                    continue;
-                }
-                $fileSk = null;
-                if (isset($files['riwayat_pangkat'][$index]['file_sk'])) {
-                    if (!empty($row['id'])) {
-                        $oldPangkat = $pegawai->riwayatPangkat()->where('id', $row['id'])->first();
-                        if ($oldPangkat?->file_sk) {
-                            PegawaiStorageService::delete($oldPangkat->file_sk);
-                        }
-                    }
-                    $fileSk = PegawaiStorageService::store($files['riwayat_pangkat'][$index]['file_sk'], $pegawaiUpdated, 'sk_pangkat');
-                    $this->syncFileToDrive($pegawaiUpdated, $files['riwayat_pangkat'][$index]['file_sk'], 'SK PANGKAT', '02_RIWAYAT_SK');
-                }
-
-                $status = ($lastActivePangkatIndex !== null && $index === $lastActivePangkatIndex) ? 'aktif' : 'nonaktif';
-
-                $payload = [
-                    'golongan_id' => $row['golongan_id'],
-                    'tmt'         => !empty($row['tmt']) ? $row['tmt'] : now(),
-                    'nomor_sk'    => $row['nomor_sk'] ?? null,
-                    'tanggal_sk'  => $row['tanggal_sk'] ?? null,
-                    'status'      => $status,
-                    'keterangan'  => $row['keterangan'] ?? 'Update dari form edit pegawai',
-                ];
-                if ($fileSk) {
-                    $payload['file_sk'] = $fileSk;
-                }
-
-                if (!empty($row['id'])) {
-                    $pegawai->riwayatPangkat()->where('id', $row['id'])->update($payload);
-                } else {
-                    $pegawai->riwayatPangkat()->create($payload);
-                }
-            }
-
-            // 5. UPDATE / SIMPAN RIWAYAT SKP (2 TAHUN LALU)
-            if (isset($data['riwayat_skp']) && is_array($data['riwayat_skp'])) {
-                foreach ($data['riwayat_skp'] as $index => $row) {
-                    if (empty($row['predikat_kinerja']) && empty($row['pejabat_penilai']) && !isset($files['riwayat_skp'][$index]['file_evaluasi_skp']) && empty($row['id'])) {
-                        continue;
-                    }
-                    $tahunSkp = !empty($row['tahun']) ? (int)$row['tahun'] : ((int)date('Y') - ($index + 1));
-                    $fileEvaluasi = null;
-                    if (isset($files['riwayat_skp'][$index]['file_evaluasi_skp'])) {
-                        if (!empty($row['id'])) {
-                            $oldSkp = $pegawai->riwayatSkp()->where('id', $row['id'])->first();
-                            if ($oldSkp?->file_evaluasi_skp) {
-                                PegawaiStorageService::delete($oldSkp->file_evaluasi_skp);
-                            }
-                        }
-                        $fileEvaluasi = PegawaiStorageService::store($files['riwayat_skp'][$index]['file_evaluasi_skp'], $pegawaiUpdated, 'skp', 'skp_' . $tahunSkp);
-                        $this->syncFileToDrive($pegawaiUpdated, $files['riwayat_skp'][$index]['file_evaluasi_skp'], 'EVALUASI SKP ' . $tahunSkp, '08_SKP');
-                    }
-
-                    $payload = [
-                        'tahun'            => $tahunSkp,
-                        'predikat_kinerja' => $row['predikat_kinerja'] ?? null,
-                        'pejabat_penilai'  => $row['pejabat_penilai'] ?? null,
-                        'keterangan'       => 'Update dari formulir profil pegawai',
-                    ];
-                    if ($fileEvaluasi) {
-                        $payload['file_evaluasi_skp'] = $fileEvaluasi;
-                    }
-
-                    if (!empty($row['id'])) {
-                        $pegawai->riwayatSkp()->where('id', $row['id'])->update($payload);
-                    } else {
-                        $existingByYear = $pegawai->riwayatSkp()->where('tahun', $tahunSkp)->first();
-                        if ($existingByYear) {
-                            $existingByYear->update($payload);
-                        } else {
-                            $pegawai->riwayatSkp()->create($payload);
-                        }
-                    }
-                }
-            }
-
-            // 6. UPDATE / SIMPAN PIAGAM SATYALANCANA
-            if (isset($data['piagam_satyalancana']) && is_array($data['piagam_satyalancana'])) {
-                $piagamData = $data['piagam_satyalancana'];
-                if (!empty($piagamData['nama_penghargaan']) || !empty($piagamData['id'])) {
-                    $filePiagam = null;
-                    if (isset($files['piagam_satyalancana']['file_sk'])) {
-                        if (!empty($piagamData['id'])) {
-                            $oldPiagam = $pegawai->riwayatPenghargaan()->where('id', $piagamData['id'])->first();
-                            if ($oldPiagam?->file_sk) {
-                                PegawaiStorageService::delete($oldPiagam->file_sk);
-                            }
-                        }
-                        $filePiagam = PegawaiStorageService::store($files['piagam_satyalancana']['file_sk'], $pegawaiUpdated, 'penghargaan', 'piagam_satyalancana');
-                        $this->syncFileToDrive($pegawaiUpdated, $files['piagam_satyalancana']['file_sk'], 'PIAGAM ' . strtoupper($piagamData['nama_penghargaan'] ?? 'SATYALANCANA'), '16_PENGHARGAAN');
-                    }
-
-                    $payload = [
-                        'nama_penghargaan'  => $piagamData['nama_penghargaan'] ?? 'Satyalancana Karya Satya',
-                        'jenis_penghargaan' => 'Satyalancana',
-                        'instansi_pemberi'  => $piagamData['instansi_pemberi'] ?? 'Presiden Republik Indonesia',
-                        'tanggal_terima'    => !empty($piagamData['tanggal_sk']) ? $piagamData['tanggal_sk'] : null,
-                        'nomor_sk'          => $piagamData['nomor_sk'] ?? null,
-                        'keterangan'        => 'Update dari profil pegawai',
-                    ];
-                    if ($filePiagam) {
-                        $payload['file_sk'] = $filePiagam;
-                    }
-
-                    if (!empty($piagamData['id'])) {
-                        $pegawai->riwayatPenghargaan()->where('id', $piagamData['id'])->update($payload);
-                    } else {
-                        $existingPiagam = $pegawai->riwayatPenghargaan()->where('jenis_penghargaan', 'Satyalancana')->first();
-                        if ($existingPiagam) {
-                            $existingPiagam->update($payload);
-                        } else {
-                            $pegawai->riwayatPenghargaan()->create($payload);
-                        }
-                    }
-
-                    if (!empty($piagamData['nama_penghargaan'])) {
-                        $pegawaiUpdated->update(['satyalancana_terakhir' => $piagamData['nama_penghargaan']]);
-                    }
-                }
-            }
-
-            // 7. Sinkronisasikan data ke pegawai utama
+            // 5. Sinkronisasi data induk dari riwayat aktif
             $this->syncPegawaiFromHistories($pegawaiUpdated);
 
             return $pegawaiUpdated;
@@ -946,7 +263,6 @@ class PegawaiService
     public function bulkDeletePegawai(array $ids): int
     {
         return DB::transaction(function () use ($ids) {
-            // 1. Ambil daftar path file yang perlu dihapus dalam satu query batch
             $publicFiles = [];
             $privateFiles = [];
 
@@ -964,43 +280,37 @@ class PegawaiService
                 Pegawai::whereIn('id', $ids)->pluck('file_karpeg')->filter()->toArray(),
                 Pegawai::whereIn('id', $ids)->pluck('file_pak')->filter()->toArray(),
                 RiwayatPendidikan::whereIn('pegawai_id', $ids)->pluck('ijazah')->filter()->toArray(),
-                RiwayatJabatan::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray(),
-                RiwayatPangkat::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray(),
                 RiwayatDiklat::whereIn('pegawai_id', $ids)->pluck('file_sertifikat')->filter()->toArray(),
+                RiwayatPangkat::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray(),
+                RiwayatJabatan::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray(),
                 \App\Models\MutasiPegawai::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray()
             );
 
-            // Pisahkan berdasarkan keberadaan disk (local vs public)
-            foreach ($otherFiles as $file) {
-                if (Storage::disk('local')->exists($file)) {
-                    $privateFiles[] = $file;
-                } elseif (Storage::disk('public')->exists($file)) {
-                    $publicFiles[] = $file;
+            foreach ($otherFiles as $filePath) {
+                if (str_starts_with($filePath, 'pegawai/foto/')) {
+                    $publicFiles[] = $filePath;
+                } else {
+                    $privateFiles[] = $filePath;
                 }
             }
 
-            // Hapus berkas sekaligus menggunakan batch delete
+            // Hapus file secara fisik dari storage
             if (!empty($publicFiles)) {
-                Storage::disk('public')->delete($publicFiles);
+                Storage::disk('public')->delete(array_unique($publicFiles));
             }
             if (!empty($privateFiles)) {
-                Storage::disk('local')->delete($privateFiles);
+                Storage::disk('private')->delete(array_unique($privateFiles));
             }
 
-            // 2. Hapus data relasi dan pegawai dengan query langsung (bulk database delete)
+            // Hapus data relasi dan akun login
             User::whereIn('pegawai_id', $ids)->delete();
             RiwayatPendidikan::whereIn('pegawai_id', $ids)->delete();
-            RiwayatJabatan::whereIn('pegawai_id', $ids)->delete();
-            RiwayatPangkat::whereIn('pegawai_id', $ids)->delete();
             RiwayatDiklat::whereIn('pegawai_id', $ids)->delete();
+            RiwayatPangkat::whereIn('pegawai_id', $ids)->delete();
+            RiwayatJabatan::whereIn('pegawai_id', $ids)->delete();
             \App\Models\MutasiPegawai::whereIn('pegawai_id', $ids)->delete();
 
-            $count = Pegawai::whereIn('id', $ids)->delete();
-
-            // 3. Reset cache sekali saja di akhir
-            \Illuminate\Support\Facades\Cache::flush();
-
-            return $count;
+            return $this->pegawaiRepository->deleteBulk($ids);
         });
     }
 
@@ -1009,32 +319,34 @@ class PegawaiService
         return $this->pegawaiRepository->getStatistics();
     }
 
+    /**
+     * Menyelaraskan data induk Pegawai berdasarkan riwayat aktif
+     */
     public function syncPegawaiFromHistories(Pegawai $pegawai): void
     {
-            // 1. Sinkronisasi Jabatan Terakhir
+        $columns = $this->getPegawaiColumns();
+
+        // 1. Sinkronisasi Jabatan Terakhir
         $activeJabatan = $pegawai->riwayatJabatan()
             ->whereIn('status', ['aktif', 'Aktif'])
             ->first();
 
-        $columns = $this->getPegawaiColumns();
-
         if ($activeJabatan) {
             $pegawai->jabatan_id = $activeJabatan->jabatan_id;
             $pegawai->unit_kerja_id = $activeJabatan->unit_kerja_id;
-            if (!empty($activeJabatan->nomor_sk) && $this->hasPegawaiColumn('nomor_sk_pertama', $columns)) {
-                $pegawai->nomor_sk_pertama = $activeJabatan->nomor_sk;
+            if (!empty($activeJabatan->tmt_jabatan) && $this->hasPegawaiColumn('tmt_jabatan_terakhir', $columns)) {
+                $pegawai->tmt_jabatan_terakhir = $activeJabatan->tmt_jabatan;
             }
-            if (!empty($activeJabatan->tanggal_sk) && $this->hasPegawaiColumn('tanggal_sk_pertama', $columns)) {
-                $pegawai->tanggal_sk_pertama = $activeJabatan->tanggal_sk;
+            if (!empty($activeJabatan->nomor_sk) && $this->hasPegawaiColumn('nomor_sk_jabatan_terakhir', $columns)) {
+                $pegawai->nomor_sk_jabatan_terakhir = $activeJabatan->nomor_sk;
             }
-            if (!empty($activeJabatan->file_sk) && $this->hasPegawaiColumn('file_sk_pertama', $columns)) {
-                $pegawai->file_sk_pertama = $activeJabatan->file_sk;
+            if (!empty($activeJabatan->tanggal_sk) && $this->hasPegawaiColumn('tanggal_sk_jabatan_terakhir', $columns)) {
+                $pegawai->tanggal_sk_jabatan_terakhir = $activeJabatan->tanggal_sk;
             }
-            if (!empty($activeJabatan->tmt_jabatan) && empty($pegawai->tmt_sk_pertama) && $this->hasPegawaiColumn('tmt_sk_pertama', $columns)) {
-                $pegawai->tmt_sk_pertama = $activeJabatan->tmt_jabatan;
+            if (!empty($activeJabatan->file_sk) && $this->hasPegawaiColumn('file_sk_jabatan_terakhir', $columns)) {
+                $pegawai->file_sk_jabatan_terakhir = $activeJabatan->file_sk;
             }
         } elseif ($pegawai->jabatan_id && $pegawai->unit_kerja_id) {
-            // Sinkronisasi balik: jika data induk ada tetapi belum ada riwayat aktif, buatkan riwayat aktif
             $pegawai->riwayatJabatan()->create([
                 'jabatan_id'    => $pegawai->jabatan_id,
                 'unit_kerja_id' => $pegawai->unit_kerja_id,
@@ -1068,7 +380,6 @@ class PegawaiService
                 $pegawai->kp_berikutnya = Carbon::parse($activePangkat->tmt)->addYears(4)->toDateString();
             }
         } elseif ($pegawai->golongan_id) {
-            // Sinkronisasi balik: jika data induk ada tetapi belum ada riwayat aktif, buatkan riwayat aktif
             $pegawai->riwayatPangkat()->create([
                 'golongan_id' => $pegawai->golongan_id,
                 'tmt'         => $pegawai->tmt_pangkat_terakhir ?? now(),
@@ -1120,15 +431,7 @@ class PegawaiService
      */
     protected function filterPegawaiColumns(array $data): array
     {
-        $columns = $this->getPegawaiColumns();
-
-        if (!empty($columns)) {
-            return array_filter($data, function ($key) use ($columns) {
-                return in_array($key, $columns, true);
-            }, ARRAY_FILTER_USE_KEY);
-        }
-
-        return $data;
+        return $this->upsertAction->filterPegawaiColumns($data);
     }
 
     protected function getPegawaiColumns(): array
@@ -1154,14 +457,6 @@ class PegawaiService
      */
     private function syncFileToDrive(Pegawai $pegawai, ?UploadedFile $file, string $jenisDokumen, string $subFolderCategory): void
     {
-        if (!$file) return;
-
-        try {
-            /** @var \App\Services\GoogleDriveGasService $driveService */
-            $driveService = app(\App\Services\GoogleDriveGasService::class);
-            $driveService->uploadDokumen($pegawai, $file, $jenisDokumen, $subFolderCategory, 'Auto-sync dari form SIMPEG');
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error("Drive Auto Sync Failed for Pegawai ID {$pegawai->id}: " . $e->getMessage());
-        }
+        $this->dokumenAction->syncFileToDrive($pegawai, $file, $jenisDokumen, $subFolderCategory);
     }
 }
