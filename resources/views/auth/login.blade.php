@@ -5,17 +5,45 @@
             openExecutiveModal: false,
             verifyCode: ''
          }" 
-         class="min-h-screen w-full flex flex-col lg:flex-row bg-slate-50 text-slate-800 antialiased selection:bg-[#007a3d] selection:text-white">
+         class="min-h-screen w-full flex flex-col lg:flex-row text-slate-800 antialiased selection:bg-[#0b3b7c] selection:text-white">
 
         <!-- ======================================================== -->
         <!-- SISI KIRI: BRANDING, VISUAL & SECURITY SHOWCASE (DESKTOP) -->
         <!-- ======================================================== -->
-        <div class="hidden lg:flex lg:w-7/12 xl:w-3/5 bg-gradient-to-br from-[#002f17] via-[#005a2b] to-[#007a3d] text-white p-8 xl:p-14 relative flex-col justify-between overflow-hidden shadow-2xl">
+        <div class="hidden lg:flex lg:w-7/12 xl:w-3/5 bg-gradient-to-br from-[#051c42] via-[#092d64] to-[#0c3c7c] text-white p-8 xl:p-14 relative flex-col justify-between overflow-hidden shadow-2xl">
             
-            <!-- Ornamen Latar Belakang (Grid & Glow Circles) -->
-            <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(rgba(255,255,255,0.3) 1px, transparent 1px); background-size: 24px 24px;"></div>
-            <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-emerald-400/20 blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-emerald-300/15 blur-3xl pointer-events-none"></div>
+            <!-- Ornamen Tekstur & Glow Latar Belakang -->
+            <div class="absolute inset-0 opacity-15 pointer-events-none bg-cover bg-center" style="background-image: url('{{ asset('images/bg-marble.jpg') }}'); filter: invert(1) contrast(1.4);"></div>
+            <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-400/20 blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-amber-400/15 blur-3xl pointer-events-none"></div>
+
+            <!-- Bingkai Linework Geometris Emas Mewah (Vector Art Deco / Regal Certificate) -->
+            <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-40 z-0" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 1000 1000">
+                <defs>
+                    <linearGradient id="goldLineworkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#fcedc0" />
+                        <stop offset="35%" stop-color="#d4af37" />
+                        <stop offset="70%" stop-color="#aa771c" />
+                        <stop offset="100%" stop-color="#fcedc0" />
+                    </linearGradient>
+                </defs>
+                <!-- Bingkai luar bersudut miring (chamfered) -->
+                <polygon points="35,20 965,20 980,35 980,965 965,980 35,980 20,965 20,35" fill="none" stroke="url(#goldLineworkGrad)" stroke-width="1.6"/>
+                <!-- Garis paralel dalam -->
+                <polygon points="45,30 955,30 970,45 970,955 955,970 45,970 30,955 30,45" fill="none" stroke="url(#goldLineworkGrad)" stroke-width="0.8" stroke-dasharray="8 4"/>
+                
+                <!-- Garis diagonal sudut khas desain geometris mewah -->
+                <line x1="20" y1="35" x2="160" y2="175" stroke="url(#goldLineworkGrad)" stroke-width="1.2"/>
+                <line x1="980" y1="35" x2="840" y2="175" stroke="url(#goldLineworkGrad)" stroke-width="1.2"/>
+                <line x1="20" y1="965" x2="160" y2="825" stroke="url(#goldLineworkGrad)" stroke-width="1.2"/>
+                <line x1="980" y1="965" x2="840" y2="825" stroke="url(#goldLineworkGrad)" stroke-width="1.2"/>
+
+                <!-- Aksen diamond / intan di setiap sudut -->
+                <polygon points="90,90 105,75 120,90 105,105" fill="none" stroke="url(#goldLineworkGrad)" stroke-width="1"/>
+                <polygon points="910,90 925,75 910,90 895,105" fill="none" stroke="url(#goldLineworkGrad)" stroke-width="1"/>
+                <polygon points="90,910 105,895 120,910 105,925" fill="none" stroke="url(#goldLineworkGrad)" stroke-width="1"/>
+                <polygon points="910,910 925,895 910,910 895,925" fill="none" stroke="url(#goldLineworkGrad)" stroke-width="1"/>
+            </svg>
 
             <!-- 1. Header Instansi -->
             <div class="relative z-10">
@@ -24,13 +52,13 @@
                         <img src="{{ asset('logo-unri.png') }}" alt="Logo UNRI" class="h-16 w-auto object-contain drop-shadow-md">
                     </a>
                     <div class="leading-tight notranslate" translate="no">
-                        <p class="text-[11px] font-semibold tracking-widest text-emerald-200 uppercase">
+                        <p class="text-[11px] font-semibold tracking-widest text-[#a6c8f5] uppercase">
                             KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI
                         </p>
                         <h2 class="text-base font-extrabold tracking-wide uppercase text-white mt-0.5">
                             UNIVERSITAS RIAU
                         </h2>
-                        <h3 class="text-xs font-bold tracking-wider uppercase text-emerald-300">
+                        <h3 class="text-xs sm:text-sm font-bold tracking-wider uppercase text-[#e2bb69]">
                             FAKULTAS KEPERAWATAN
                         </h3>
                     </div>
@@ -40,62 +68,60 @@
             <!-- 2. Hero Headline & Informasi Utama -->
             <div class="relative z-10 my-auto py-8">
                 <!-- Badge Kategori -->
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold text-emerald-200 uppercase tracking-wider mb-4 shadow-xs">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Sistem Informasi Kepegawaian (SIKAP)
+                <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#072450]/80 border border-[#d4af37]/50 text-xs font-semibold text-[#f1c97a] uppercase tracking-wider mb-5 shadow-xs">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                    SISTEM INFORMASI KEPEGAWAIAN (SIKAP)
                 </div>
 
-                <h1 class="text-3xl xl:text-4xl 2xl:text-5xl font-black text-white leading-tight tracking-tight">
+                <h1 class="text-3xl xl:text-4xl 2xl:text-5xl font-extrabold text-white leading-tight tracking-tight font-serif">
                     Platform Terpadu Manajemen SDM & Kinerja ASN
                 </h1>
 
-                <p class="mt-4 text-emerald-100/90 text-sm xl:text-base leading-relaxed max-w-2xl font-light">
+                <p class="mt-4 text-blue-100/90 text-sm xl:text-base leading-relaxed max-w-2xl font-light">
                     Mewujudkan tata kelola kepegawaian Fakultas Keperawatan Universitas Riau yang transparan, akuntabel, dan berbasis digital untuk seluruh Dosen dan Tenaga Kependidikan.
                 </p>
 
-                <!-- Box Peringatan Keamanan & Pembaruan (Inspirasi BKN ASN Digital) -->
-                <div class="mt-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-lg max-w-2xl text-left">
-                    <div class="flex items-center gap-2.5 text-amber-300 font-bold text-xs uppercase tracking-wider mb-2.5">
-                        <svg class="w-4 h-4 fill-current text-amber-300 shrink-0" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                        </svg>
-                        Keamanan Akun & Fitur Resmi SIKAP
+                <!-- Box Peringatan Keamanan & Pembaruan -->
+                <div class="mt-8 bg-[#061e47]/70 backdrop-blur-md border border-[#d4af37]/45 rounded-2xl p-5 shadow-xl max-w-2xl text-left">
+                    <div class="flex items-center gap-2.5 text-amber-300 font-bold text-xs uppercase tracking-wider mb-3">
+                        <span class="text-sm">⚠️</span>
+                        KEAMANAN AKUN & FITUR RESMI SIKAP
                     </div>
-                    <ul class="space-y-2 text-xs text-emerald-50/95 leading-relaxed">
+                    <ul class="space-y-2 text-xs text-blue-50/95 leading-relaxed">
                         <li class="flex items-start gap-2">
-                            <span class="text-emerald-300 font-bold">•</span>
+                            <span class="text-[#e2bb69] font-bold">•</span>
                             <div>
-                                <span><strong>Jaga Kerahasiaan Akun:</strong> Jangan bagikan NIP dan kata sandi Anda kepada pihak lain yang tidak berwenang.</span>
+                                <span><strong>Jaga Kerahasiaan Akun:</strong> Jangan bagikan NIP dan kata sandi Anda kepada pihak yang tidak berwenang.</span>
                                 <span class="block mt-0.5 text-amber-200 font-medium">Segera ganti Password login pertama Anda.</span>
                             </div>
                         </li>
                         <li class="flex items-start gap-2">
-                            <span class="text-emerald-300 font-bold">•</span>
-                            <span><strong>Watermark & Tanda Tangan Digital:</strong> Seluruh berkas SK dan Formulir Cuti yang diunduh kini otomatis dilindungi tanda tangan digital terverifikasi.</span>
+                            <span class="text-[#e2bb69] font-bold">•</span>
+                            <span><strong>Watermark & Tanda Tangan Digital:</strong> Seluruh kelola SK dan Formulir Cuti yang diunduh kini otomatis dilindungi tanda tangan digital terverifikasi.</span>
                         </li>
                         <li class="flex items-start gap-2">
-                            <span class="text-emerald-300 font-bold">•</span>
+                            <span class="text-[#e2bb69] font-bold">•</span>
                             <span><strong>Dukungan PWA & Offline:</strong> Aplikasi dapat diinstal ke layar utama HP Anda dengan fitur penyimpanan draf logbook saat tanpa internet.</span>
                         </li>
                     </ul>
                 </div>
 
                 <!-- Tautan Cepat Layanan Publik -->
-                <div class="mt-6 flex flex-wrap items-center gap-3">
+                <div class="mt-7 flex flex-wrap items-center gap-3">
                     <button type="button"
                             @click="openExecutiveModal = true"
-                            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition shadow-md cursor-pointer">
-                        <span>🎯</span>
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#dca34d] via-[#e5b869] to-[#c49335] text-slate-950 text-xs font-bold shadow-md hover:brightness-110 transition cursor-pointer">
+                        <span>🎨</span>
                         <span>Paparan Eksekutif &amp; Ringkasan SIKAP</span>
                     </button>
                     <button type="button"
                             @click="openVerifyModal = true"
-                            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/25 text-xs font-semibold text-white transition shadow-xs cursor-pointer">
-                        <span>🔍</span>
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0a2754]/80 hover:bg-[#0f346e] border border-[#d4af37]/60 text-xs font-semibold text-white transition shadow-xs cursor-pointer">
+                        <span>🛡️</span>
                         <span>Verifikasi Dokumen SK Publik</span>
                     </button>
                     <a href="http://keperawatan.unri.ac.id" target="_blank"
-                       class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/25 text-xs font-semibold text-white transition shadow-xs">
+                       class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0a2754]/80 hover:bg-[#0f346e] border border-[#d4af37]/60 text-xs font-semibold text-white transition shadow-xs">
                         <span>🌐</span>
                         <span>Portal Resmi FKP UNRI</span>
                     </a>
@@ -103,59 +129,69 @@
             </div>
 
             <!-- 3. Footer Kiri -->
-            <div class="relative z-10 pt-4 border-t border-white/15 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-emerald-200/80 gap-2">
+            <div class="relative z-10 pt-4 border-t border-white/15 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-blue-200/80 gap-2">
                 <div>
                     <span>&copy; {{ date('Y') }} Fakultas Keperawatan Universitas Riau</span>
-                    <span class="block text-[11px] text-emerald-200/75 mt-0.5">Pengembang Sistem: Rahmad Hidayat Majlan, S.T. (RHM)</span>
+                    <span class="block text-[11px] text-blue-200/70 mt-0.5">Pengembang Sistem: Rahmad Hidayat Majlan, S.T. (RHM)</span>
                 </div>
-                <span class="text-right text-[11px]">Kampus Bina Widya Gedung HSC Km. 12,5 Pekanbaru</span>
+                <span class="text-right text-[11px] text-blue-200/75">Kampus Bina Widya Gedung HSC Km.12,5 Pekanbaru</span>
             </div>
         </div>
 
         <!-- ======================================================== -->
-        <!-- SISI KANAN: FORMULIR LOGIN CEPAT & MODERN               -->
+        <!-- SISI KANAN: FORMULIR LOGIN CALACATTA MARBLE             -->
         <!-- ======================================================== -->
-        <div class="w-full lg:w-5/12 xl:w-2/5 flex flex-col justify-between p-6 sm:p-10 xl:p-14 bg-white relative z-10 min-h-screen lg:min-h-0">
+        <div class="w-full lg:w-5/12 xl:w-2/5 flex flex-col justify-between p-6 sm:p-10 xl:p-12 relative z-10 min-h-screen lg:min-h-0 bg-cover bg-center"
+             style="background-image: url('{{ asset('images/bg-marble.jpg') }}');">
             
-            <!-- Mobile Header (Hanya Muncul di Tablet & HP) -->
-            <div class="flex lg:hidden flex-col items-center text-center pb-6 border-b border-slate-100">
+            <!-- Lapisan Translusen Halus untuk Memastikan Kontras Teks Maksimal -->
+            <div class="absolute inset-0 bg-white/20 backdrop-blur-[0.5px] pointer-events-none"></div>
+
+            <!-- Ornamen Sudut Kristal Biru-Emas (Khusus Tampilan Mobile di Pojok Atas) -->
+            <img src="{{ asset('images/facet-top-left-trans.png') }}" alt="" class="lg:hidden absolute top-0 left-0 w-24 sm:w-32 md:w-36 pointer-events-none z-0">
+            <img src="{{ asset('images/facet-top-right-trans.png') }}" alt="" class="lg:hidden absolute top-0 right-0 w-24 sm:w-32 md:w-36 pointer-events-none z-0">
+
+            <!-- Mobile Header (Muncul Ketika Layar Browser Dikecilkan / Mobile Screen) -->
+            <div class="flex lg:hidden flex-col items-center text-center pt-2 pb-5 relative z-10">
                 <a href="/" class="shrink-0 transition transform hover:scale-105 duration-200">
-                    <img src="{{ asset('logo-unri.png') }}" alt="Logo UNRI" class="h-14 w-auto object-contain">
+                    <img src="{{ asset('logo-unri.png') }}" alt="Logo UNRI" class="h-16 w-auto object-contain drop-shadow-md mx-auto mb-2">
                 </a>
-                <div class="mt-2.5 notranslate" translate="no">
-                    <p class="text-[10px] sm:text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                <div class="notranslate" translate="no">
+                    <p class="text-[9px] sm:text-[10px] font-bold text-slate-700 tracking-wider uppercase">
                         KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI
                     </p>
-                    <h2 class="text-sm sm:text-base font-extrabold tracking-wide uppercase text-[#007a3d] mt-0.5">
+                    <h2 class="text-sm sm:text-base font-black tracking-wide uppercase text-[#0b3b7c] mt-0.5">
                         UNIVERSITAS RIAU
                     </h2>
-                    <h3 class="text-xs sm:text-sm font-bold tracking-wider uppercase text-slate-700 mt-0.5">
+                    <h3 class="text-xs sm:text-sm font-bold tracking-wider uppercase text-slate-800 mt-0.5">
                         FAKULTAS KEPERAWATAN
                     </h3>
-                    <h1 class="text-sm sm:text-base font-black text-slate-900 tracking-tight mt-1.5">
+                    <h1 class="text-sm sm:text-base font-black text-[#0b3b7c] tracking-tight mt-1.5">
                         Sistem Informasi Kepegawaian (SIKAP)
                     </h1>
                     <div class="mt-2.5">
                         <button type="button"
                                 @click="openExecutiveModal = true"
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 text-[11px] font-bold transition shadow-2xs">
-                            <span>🎯</span>
+                                class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#dca34d] via-[#e5b869] to-[#c49335] text-slate-950 text-xs font-bold shadow-md hover:brightness-110 transition cursor-pointer">
+                            <span>🎨</span>
                             <span>Paparan Eksekutif &amp; Ringkasan SIKAP</span>
                         </button>
                     </div>
                 </div>
+                <!-- Garis Pemisah Elegan Mobile -->
+                <div class="w-full max-w-sm mx-auto h-[1px] bg-gradient-to-r from-transparent via-slate-300 to-transparent mt-5 mb-1"></div>
             </div>
 
             <!-- Bagian Tengah: Kartu Formulir Login -->
-            <div class="my-auto py-4 max-w-md w-full mx-auto">
-                <div class="mb-8">
-                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-[#007a3d] text-[11px] font-bold uppercase tracking-wider mb-2">
-                        <span>🔐</span> Portal Akses Pegawai
+            <div class="my-auto py-2 max-w-md w-full mx-auto relative z-10">
+                <div class="mb-7">
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#fdfaf2]/95 border border-[#c59b27]/80 text-[#5c4314] text-[11px] font-bold uppercase tracking-wider mb-2.5 shadow-xs">
+                        <span>🔒</span> PORTAL AKSES PEGAWAI
                     </div>
-                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                        Selamat Datang
+                    <h2 class="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
+                        <span class="text-slate-900">Selamat </span><span class="text-[#b8860b]">Datang</span>
                     </h2>
-                    <p class="text-slate-500 text-xs sm:text-sm mt-1">
+                    <p class="text-slate-600 text-xs sm:text-sm mt-1 leading-relaxed">
                         Silakan masukkan identitas NIP atau Username untuk mengakses sistem kepegawaian Anda.
                     </p>
                 </div>
@@ -167,13 +203,13 @@
                 <form method="POST" action="{{ route('login') }}" class="space-y-4">
                     @csrf
 
-                    <!-- Field NIP / Username -->
+                    <!-- Field NIP / Username (Input Pill Berbingkai Emas Mewah) -->
                     <div>
-                        <label for="login" class="block font-bold text-xs text-slate-700 uppercase tracking-wider mb-1.5">
+                        <label for="login" class="block font-bold text-xs text-slate-800 uppercase tracking-wider mb-1.5">
                             NIP / USERNAME
                         </label>
-                        <div class="relative rounded-xl shadow-2xs">
-                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <div class="relative rounded-full shadow-xs border-2 border-[#a3824c] bg-white/95 focus-within:border-[#0b3b7c] focus-within:ring-2 focus-within:ring-[#0b3b7c]/20 transition-all">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
@@ -183,7 +219,7 @@
                                    name="login"
                                    value="{{ old('login') }}"
                                    placeholder="Contoh: 198501012010121001"
-                                   class="block w-full pl-10 pr-3 py-2.5 text-sm bg-slate-50 hover:bg-white focus:bg-white rounded-xl border border-slate-300 focus:border-[#007a3d] focus:ring-2 focus:ring-[#007a3d]/20 transition-all font-medium text-slate-800"
+                                   class="block w-full pl-11 pr-4 py-3 text-sm bg-transparent rounded-full focus:outline-none font-medium text-slate-800 placeholder-slate-400"
                                    required
                                    autofocus
                                    autocomplete="username" />
@@ -191,13 +227,13 @@
                         <x-input-error :messages="$errors->get('login')" class="mt-1" />
                     </div>
 
-                    <!-- Field Password dengan Toggle Show/Hide -->
+                    <!-- Field Password (Input Pill Berbingkai Emas Mewah dengan Toggle Show/Hide) -->
                     <div>
-                        <label for="password" class="block font-bold text-xs text-slate-700 uppercase tracking-wider mb-1.5">
+                        <label for="password" class="block font-bold text-xs text-slate-800 uppercase tracking-wider mb-1.5">
                             KATA SANDI
                         </label>
-                        <div class="relative rounded-xl shadow-2xs">
-                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <div class="relative rounded-full shadow-xs border-2 border-[#a3824c] bg-white/95 focus-within:border-[#0b3b7c] focus-within:ring-2 focus-within:ring-[#0b3b7c]/20 transition-all">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
@@ -206,14 +242,14 @@
                                    :type="showPassword ? 'text' : 'password'"
                                    name="password"
                                    placeholder="Masukkan kata sandi akun Anda"
-                                   class="block w-full pl-10 pr-10 py-2.5 text-sm bg-slate-50 hover:bg-white focus:bg-white rounded-xl border border-slate-300 focus:border-[#007a3d] focus:ring-2 focus:ring-[#007a3d]/20 transition-all font-medium text-slate-800"
+                                   class="block w-full pl-11 pr-11 py-3 text-sm bg-transparent rounded-full focus:outline-none font-medium text-slate-800 placeholder-slate-400"
                                    required
                                    autocomplete="current-password" />
 
                             <!-- Tombol Show/Hide Password -->
                             <button type="button"
                                     @click="showPassword = !showPassword"
-                                    class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+                                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
                                     title="Tampilkan / Sembunyikan Kata Sandi">
                                 <svg x-show="!showPassword" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -227,64 +263,63 @@
                         <x-input-error :messages="$errors->get('password')" class="mt-1" />
                     </div>
 
-                    <!-- Petunjuk Akun Baru -->
-                    <div class="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl text-emerald-900 text-xs leading-relaxed flex items-start gap-2.5">
-                        <span class="text-emerald-700 font-bold select-none text-sm">💡</span>
-                        <div class="text-[11px] text-slate-700">
-                            <strong class="text-emerald-900 font-bold">Login Pertama Kali:</strong> Masukkan 18 digit NIP Anda dan kata sandi default <span class="font-mono font-bold text-emerald-800 bg-emerald-100 px-1 py-0.5 rounded">Password</span>.
+                    <!-- Petunjuk Akun Baru (Box Bernuansa Soft Blue & Gold) -->
+                    <div class="p-3 bg-gradient-to-r from-[#dbeafe]/90 via-[#f0f9ff]/85 to-[#fef3c7]/90 border border-[#c59b27]/70 rounded-2xl text-slate-800 text-xs leading-relaxed flex items-center gap-2.5 shadow-xs">
+                        <span class="text-base select-none shrink-0">🔑</span>
+                        <div class="text-[11px] text-slate-800 leading-normal">
+                            <strong class="text-slate-900 font-bold">Login Pertama Kali:</strong> Masukkan 18 digit NIP Anda dan kata sandi default <span class="bg-[#bfdbfe] text-[#1e3a8a] font-bold px-2 py-0.5 rounded-md font-mono text-[11px] border border-[#93c5fd]">Password.</span>
                         </div>
                     </div>
 
                     <!-- Ingat Saya & Lupa Sandi -->
                     <div class="flex items-center justify-between pt-1">
                         <label for="remember_me" class="inline-flex items-center cursor-pointer select-none">
-                            <input id="remember_me" type="checkbox" class="w-4 h-4 rounded border-slate-300 text-[#007a3d] focus:ring-[#007a3d] cursor-pointer" name="remember">
-                            <span class="ms-2 text-xs text-slate-600 font-medium">{{ __('Ingat saya') }}</span>
+                            <input id="remember_me" type="checkbox" class="w-4 h-4 rounded border-slate-400 text-[#0b3b7c] focus:ring-[#0b3b7c] cursor-pointer" name="remember">
+                            <span class="ms-2 text-xs text-slate-700 font-medium">{{ __('Ingat saya') }}</span>
                         </label>
 
                         @if (Route::has('password.request'))
-                            <a class="text-xs font-semibold text-[#007a3d] hover:text-[#005a2b] hover:underline focus:outline-none" href="{{ route('password.request') }}">
+                            <a class="text-xs font-semibold text-slate-600 hover:text-[#0b3b7c] hover:underline focus:outline-none" href="{{ route('password.request') }}">
                                 {{ __('Lupa password?') }}
                             </a>
                         @endif
                     </div>
 
-                    <!-- Tombol Log In -->
+                    <!-- Tombol Masuk ke SIKAP (Pill Mewah Gradasi Royal Blue & Glow Emas) -->
                     <div class="pt-2">
-                        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#007a3d] hover:bg-[#006030] active:bg-[#004d26] border border-transparent rounded-xl font-bold text-sm text-white uppercase tracking-wider shadow-md hover:shadow-lg transition-all duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007a3d]">
+                        <button type="submit" 
+                                class="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-full bg-gradient-to-r from-[#0d4588] via-[#09356d] to-[#062551] hover:from-[#1152a0] hover:to-[#082d62] text-white font-extrabold text-sm uppercase tracking-wider border border-[#e2bb69]/60 shadow-[0_4px_18px_rgba(8,41,89,0.45),0_0_12px_rgba(212,175,55,0.3)] hover:shadow-[0_6px_22px_rgba(8,41,89,0.55),0_0_16px_rgba(212,175,55,0.45)] transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0b3b7c]">
                             <span>MASUK KE SIKAP</span>
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                            </svg>
+                            <span class="text-base font-bold">&rarr;</span>
                         </button>
                     </div>
                 </form>
 
                 <!-- Layanan Cepat untuk Layar Mobile -->
-                <div class="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-2.5 lg:hidden">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 text-center">Layanan Publik</span>
-                    <div class="flex items-center justify-center gap-3">
-                        <button type="button" @click="openVerifyModal = true" class="text-xs font-semibold text-[#007a3d] hover:underline">
-                            🔍 Cek SK Publik
+                <div class="mt-8 pt-5 border-t border-slate-300/80 flex flex-col gap-2.5 lg:hidden text-center">
+                    <span class="text-[11px] font-extrabold uppercase tracking-widest text-slate-600">LAYANAN PUBLIK</span>
+                    <div class="flex items-center justify-center gap-3 text-xs font-semibold text-slate-800">
+                        <button type="button" @click="openVerifyModal = true" class="hover:text-[#0b3b7c] flex items-center gap-1.5 cursor-pointer">
+                            <span>🔍</span> Cek SK Publik
                         </button>
-                        <span class="text-slate-300">•</span>
-                        <a href="http://keperawatan.unri.ac.id" target="_blank" class="text-xs font-semibold text-slate-600 hover:underline">
-                            🌐 Web Fakultas
+                        <span class="text-slate-400">•</span>
+                        <a href="http://keperawatan.unri.ac.id" target="_blank" class="hover:text-[#0b3b7c] flex items-center gap-1.5">
+                            <span>🌐</span> Web Fakultas
                         </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Bagian Bawah Form -->
-            <div class="pt-6 border-t border-slate-100 flex flex-col gap-2 text-[11px] text-slate-400">
-                <div class="flex items-center justify-between">
+            <!-- Bagian Bawah Form (Footer Status & Info Pengembang) -->
+            <div class="pt-6 border-t border-slate-300/80 flex flex-col gap-2 text-[11px] text-slate-600 relative z-10">
+                <div class="flex items-center justify-between font-medium">
                     <span class="flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs"></span>
                         Server SIKAP Online
                     </span>
                     <span>Enkripsi TLS/SSL 256-Bit</span>
                 </div>
-                <div class="text-left text-slate-400 pt-1 border-t border-slate-50">
+                <div class="text-left text-slate-500 pt-1 border-t border-slate-200/60 font-normal">
                     Pengembang: Rahmad Hidayat Majlan, S.T. (RHM)
                 </div>
             </div>
@@ -311,7 +346,7 @@
                 <div class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-2xl rounded-2xl border border-slate-100 sm:align-middle relative z-10">
                     <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                         <div class="flex items-center gap-2.5">
-                            <div class="w-9 h-9 rounded-xl bg-emerald-50 text-[#007a3d] flex items-center justify-center font-bold text-lg">
+                            <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#0b3b7c] flex items-center justify-center font-bold text-lg">
                                 🔍
                             </div>
                             <div>
@@ -333,7 +368,7 @@
                         <input type="text" 
                                x-model="verifyCode"
                                placeholder="Contoh: SK-KGB-2026-XXXX atau hash unik" 
-                               class="w-full px-3.5 py-2.5 text-sm bg-slate-50 rounded-xl border border-slate-300 focus:border-[#007a3d] focus:ring-2 focus:ring-[#007a3d]/20 font-mono text-slate-800"
+                               class="w-full px-3.5 py-2.5 text-sm bg-slate-50 rounded-xl border border-slate-300 focus:border-[#0b3b7c] focus:ring-2 focus:ring-[#0b3b7c]/20 font-mono text-slate-800"
                                @keydown.enter="if(verifyCode.trim()){ window.location.href = '/verifikasi-dokumen/' + encodeURIComponent(verifyCode.trim()); }">
                         <p class="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
                             Masukkan kode tanda tangan elektronik yang tertera pada bagian bawah lembar dokumen SK/KGB atau pindai QR Code dokumen tersebut.
@@ -348,7 +383,7 @@
                         </button>
                         <button type="button"
                                 @click="if(verifyCode.trim()){ window.location.href = '/verifikasi-dokumen/' + encodeURIComponent(verifyCode.trim()); }"
-                                class="px-4 py-2 text-xs font-bold text-white bg-[#007a3d] hover:bg-[#006030] rounded-xl shadow-xs transition cursor-pointer">
+                                class="px-4 py-2 text-xs font-bold text-white bg-[#0b3b7c] hover:bg-[#082d62] rounded-xl shadow-xs transition cursor-pointer">
                             Periksa Dokumen →
                         </button>
                     </div>
@@ -377,7 +412,7 @@
                 <div class="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-2xl rounded-2xl border border-slate-100 sm:align-middle relative z-10 space-y-4">
                     <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-[#007a3d] flex items-center justify-center font-bold text-xl">
+                            <div class="w-10 h-10 rounded-xl bg-blue-100 text-[#0b3b7c] flex items-center justify-center font-bold text-xl">
                                 🎯
                             </div>
                             <div>
@@ -393,11 +428,11 @@
                     </div>
 
                     <div class="space-y-3">
-                        <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 leading-relaxed">
-                            <strong class="text-[#007a3d] block font-bold mb-1 flex items-center gap-1.5">
+                        <div class="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-950 leading-relaxed">
+                            <strong class="text-[#0b3b7c] block font-bold mb-1 flex items-center gap-1.5">
                                 <span>🏛️</span> Mengapa Fakultas Butuh Aplikasi SIKAP?
                             </strong>
-                            Selama ini data kepegawaian dikelola manual (berkas fisik &amp; Excel terpisah). Meskipun sudah ada sistem yang dibuat oleh Universitas, <strong>SIKAP hadir sebagai sistem mandiri fakultas sekaligus penopang darurat (Back-up) disaat sistem milik Universitas mengalami kendala teknis (seperti kendala sebelumnya)</strong>, sehingga layanan presensi dan tata kelola SDM di Fakultas Keperawatan tetap berjalan stabil tanpa terhenti.
+                            Selama ini data kepegawaian dikelola manual (berkas fisik &amp; Excel terpisah). Meskipun sudah ada sistem yang dibuat oleh Universitas, <strong>SIKAP hadir sebagai sistem mandiri fakultas sekaligus penopang darurat (Back-up) disaat sistem milik Universitas mengalami kendala teknis</strong>, sehingga layanan presensi dan tata kelola SDM di Fakultas Keperawatan tetap berjalan stabil tanpa terhenti.
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
@@ -432,7 +467,7 @@
                     </div>
 
                     <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 flex items-center gap-2">
-                        <x-icon name="info" class="w-4 h-4 text-amber-700 shrink-0" />
+                        <span class="text-amber-700 font-bold shrink-0">ℹ️</span>
                         <span><strong>Akses Lengkap:</strong> Silakan login menggunakan akun <strong>Pimpinan (Dekan/Wadek)</strong> atau <strong>Administrator</strong> untuk melihat statistik live, peta interaktif, dan seluruh fitur operasional.</span>
                     </div>
 
@@ -444,7 +479,7 @@
                         </button>
                         <button type="button" 
                                 @click="openExecutiveModal = false; setTimeout(() => document.getElementById('login')?.focus(), 100);"
-                                class="px-4 py-2 text-xs font-bold text-white bg-[#007a3d] hover:bg-[#006030] rounded-xl shadow-xs transition">
+                                class="px-4 py-2 text-xs font-bold text-white bg-[#0b3b7c] hover:bg-[#082d62] rounded-xl shadow-xs transition cursor-pointer">
                             Login ke Dashboard &rarr;
                         </button>
                     </div>
