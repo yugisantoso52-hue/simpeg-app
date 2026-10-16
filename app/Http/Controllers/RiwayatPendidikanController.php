@@ -35,6 +35,11 @@ class RiwayatPendidikanController extends Controller
 
     public function create()
     {
+        $user = auth()->user();
+        if (!$user->hasRole('admin') && (!$user->hasRole('pegawai') || !$user->pegawai_id)) {
+            abort(403, 'Anda tidak memiliki hak untuk menambah data riwayat pendidikan.');
+        }
+
         $pegawai = Pegawai::orderBy('nama')->get();
 
         return view('riwayat-pendidikan.create', compact('pegawai'));
@@ -42,6 +47,11 @@ class RiwayatPendidikanController extends Controller
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+        if (!$user->hasRole('admin') && (!$user->hasRole('pegawai') || !$user->pegawai_id)) {
+            abort(403, 'Anda tidak memiliki hak untuk menambah data riwayat pendidikan.');
+        }
+
         $request->validate([
             'pegawai_id'  => 'required',
             'jenjang'     => 'required',

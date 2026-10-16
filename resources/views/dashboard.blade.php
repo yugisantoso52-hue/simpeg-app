@@ -1754,7 +1754,7 @@
                             <div>
                                 <h4 class="font-semibold text-sky-900 flex justify-between items-center mb-2.5">
                                     <div>
-                                        <span class="text-xs font-bold uppercase tracking-wider">STR & SIP (Ners)</span>
+                                        <span class="text-xs font-bold uppercase tracking-wider">STR & SIP (Ners/Klinis)</span>
                                         <span class="block text-[10px] text-sky-700 font-semibold">6 Bulan ke Depan</span>
                                     </div>
                                     <span class="bg-sky-200/90 text-sky-950 text-xs px-2 py-0.5 rounded-full font-bold border border-sky-300/60">{{ is_countable($reminder['str_sip'] ?? null) ? count($reminder['str_sip']) : 0 }}</span>

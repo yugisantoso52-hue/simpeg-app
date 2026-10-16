@@ -261,9 +261,12 @@ class PengajuanKarirController extends Controller
             'file_pendukung'
         ];
 
+        $defaultDisk = config('filesystems.default', 'local');
+        $uploadDisk  = in_array($defaultDisk, ['supabase', 's3', 'r2']) ? $defaultDisk : 'local';
+
         foreach ($uploadFields as $field) {
             if ($request->hasFile($field)) {
-                $path = $request->file($field)->store('pengajuan_karir/' . strtolower($request->jenis_pengajuan), 'public');
+                $path = $request->file($field)->store('pengajuan_karir/' . strtolower($request->jenis_pengajuan), $uploadDisk);
                 $data[$field] = $path;
             }
         }

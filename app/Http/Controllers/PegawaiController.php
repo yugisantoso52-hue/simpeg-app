@@ -137,21 +137,15 @@ class PegawaiController extends Controller
             "Menambahkan pegawai baru: " . ($request->input('nama') ?? 'Pegawai Baru')
         );
 
-        $kategori = strtolower((string)$request->get('kategori', ''));
-        $jenisPegawai = strtoupper((string)$request->get('jenis_pegawai', ''));
-
-        if ($kategori === 'dosen' || $jenisPegawai === 'DOSEN') {
-            return redirect()
-                ->route('kepegawaian.dosen.index')
-                ->with('success', 'Data Dosen berhasil ditambahkan.');
-        } elseif ($kategori === 'tendik' || in_array($jenisPegawai, ['PNS', 'PPPK'])) {
-            return redirect()
-                ->route('kepegawaian.tendik.index')
-                ->with('success', 'Data Tenaga Kependidikan berhasil ditambahkan.');
-        } elseif ($kategori === 'phl' || in_array($jenisPegawai, ['PHL', 'HONORER'])) {
-            return redirect()
-                ->route('kepegawaian.phl.index')
-                ->with('success', 'Data PHL / Kontrak berhasil ditambahkan.');
+        if ($request->filled('kategori')) {
+            $kategori = strtolower((string)$request->get('kategori'));
+            if ($kategori === 'dosen') {
+                return redirect()->route('kepegawaian.dosen.index')->with('success', 'Data Dosen berhasil ditambahkan.');
+            } elseif ($kategori === 'tendik') {
+                return redirect()->route('kepegawaian.tendik.index')->with('success', 'Data Tenaga Kependidikan berhasil ditambahkan.');
+            } elseif ($kategori === 'phl') {
+                return redirect()->route('kepegawaian.phl.index')->with('success', 'Data PHL / Kontrak berhasil ditambahkan.');
+            }
         }
 
         return redirect()
@@ -219,21 +213,15 @@ class PegawaiController extends Controller
                 ->with('success', 'Data profil pribadi Anda berhasil diperbarui.');
         }
 
-        $kategori = strtolower((string)$request->get('kategori', $pegawai->kategori_kepegawaian ?? ''));
-        $jenisPegawai = strtoupper((string)$request->get('jenis_pegawai', $pegawai->jenis_pegawai ?? ''));
-
-        if ($kategori === 'dosen' || $jenisPegawai === 'DOSEN') {
-            return redirect()
-                ->route('kepegawaian.dosen.index')
-                ->with('success', 'Data Dosen berhasil diperbarui.');
-        } elseif ($kategori === 'tendik' || in_array($jenisPegawai, ['PNS', 'PPPK'])) {
-            return redirect()
-                ->route('kepegawaian.tendik.index')
-                ->with('success', 'Data Tenaga Kependidikan berhasil diperbarui.');
-        } elseif ($kategori === 'phl' || in_array($jenisPegawai, ['PHL', 'HONORER'])) {
-            return redirect()
-                ->route('kepegawaian.phl.index')
-                ->with('success', 'Data PHL / Kontrak berhasil diperbarui.');
+        if ($request->filled('kategori')) {
+            $kategori = strtolower((string)$request->get('kategori'));
+            if ($kategori === 'dosen') {
+                return redirect()->route('kepegawaian.dosen.index')->with('success', 'Data Dosen berhasil diperbarui.');
+            } elseif ($kategori === 'tendik') {
+                return redirect()->route('kepegawaian.tendik.index')->with('success', 'Data Tenaga Kependidikan berhasil diperbarui.');
+            } elseif ($kategori === 'phl') {
+                return redirect()->route('kepegawaian.phl.index')->with('success', 'Data PHL / Kontrak berhasil diperbarui.');
+            }
         }
 
         return redirect()

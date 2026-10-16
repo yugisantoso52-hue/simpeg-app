@@ -8,7 +8,22 @@ class UpdateRiwayatPangkatRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->hasRole('admin')) {
+            return true;
+        }
+
+        if ($user->hasRole('pegawai') && $user->pegawai_id) {
+            $id = $this->route('riwayat_pangkat') ?? $this->route('id');
+            $riwayat = \App\Models\RiwayatPangkat::find($id);
+            return $riwayat && (int) $riwayat->pegawai_id === (int) $user->pegawai_id;
+        }
+
+        return false;
     }
 
     public function rules(): array

@@ -34,13 +34,18 @@ class RiwayatJabatanController extends Controller
      * Form tambah
      */
     public function create()
-{
-    return view('riwayat-jabatan.create', [
-        'pegawai'    => $this->service->pegawai(),
-        'jabatan'    => $this->service->jabatan(),
-        'unit_kerja' => $this->service->unitKerja(),
-    ]);
-}
+    {
+        $user = auth()->user();
+        if (!$user->hasRole('admin') && (!$user->hasRole('pegawai') || !$user->pegawai_id)) {
+            abort(403, 'Anda tidak memiliki hak untuk menambah data riwayat jabatan.');
+        }
+
+        return view('riwayat-jabatan.create', [
+            'pegawai'    => $this->service->pegawai(),
+            'jabatan'    => $this->service->jabatan(),
+            'unit_kerja' => $this->service->unitKerja(),
+        ]);
+    }
 
     /**
      * Simpan
@@ -57,6 +62,12 @@ class RiwayatJabatanController extends Controller
             $request->file('file_sk')
         );
 
+        if (auth()->user()->hasRole('admin')) {
+            return redirect()
+                ->route('riwayat-jabatan.index')
+                ->with('success', 'Riwayat Jabatan berhasil disimpan.');
+        }
+
         $targetPegawaiId = $data['pegawai_id'] ?? auth()->user()->pegawai_id;
 
         return redirect()
@@ -67,18 +78,18 @@ class RiwayatJabatanController extends Controller
     /**
      * Form edit
      */
-   public function edit($id)
-{
-    $existing = $this->service->find($id);
-    $this->authorizeOwnerOrAdmin($existing);
+    public function edit($id)
+    {
+        $existing = $this->service->find($id);
+        $this->authorizeOwnerOrAdmin($existing);
 
-    return view('riwayat-jabatan.edit', [
-        'data'        => $existing,
-        'pegawai'     => $this->service->pegawai(),
-        'jabatan'     => $this->service->jabatan(),
-        'unit_kerja'  => $this->service->unitKerja(),
-    ]);
-}
+        return view('riwayat-jabatan.edit', [
+            'data'        => $existing,
+            'pegawai'     => $this->service->pegawai(),
+            'jabatan'     => $this->service->jabatan(),
+            'unit_kerja'  => $this->service->unitKerja(),
+        ]);
+    }
 
     /**
      * Update
@@ -97,6 +108,12 @@ class RiwayatJabatanController extends Controller
             $request->file('file_sk')
         );
 
+        if (auth()->user()->hasRole('admin')) {
+            return redirect()
+                ->route('riwayat-jabatan.index')
+                ->with('success', 'Riwayat Jabatan berhasil diperbarui.');
+        }
+
         return redirect()
             ->route('pegawai.show', $pegawaiId)
             ->with('success', 'Riwayat Jabatan berhasil diperbarui.');
@@ -112,6 +129,12 @@ class RiwayatJabatanController extends Controller
         $pegawaiId = $existing->pegawai_id ?? auth()->user()->pegawai_id;
 
         $this->service->delete($id);
+
+        if (auth()->user()->hasRole('admin')) {
+            return redirect()
+                ->route('riwayat-jabatan.index')
+                ->with('success', 'Riwayat Jabatan berhasil dihapus.');
+        }
 
         return redirect()
             ->route('pegawai.show', $pegawaiId)

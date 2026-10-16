@@ -8,7 +8,8 @@ class StoreRiwayatPangkatRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+        return (bool) ($user && ($user->hasRole('admin') || ($user->hasRole('pegawai') && $user->pegawai_id)));
     }
 
     public function rules(): array

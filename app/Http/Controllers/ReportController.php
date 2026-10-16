@@ -462,6 +462,17 @@ class ReportController extends Controller
         $penghargaan = \App\Models\RiwayatPenghargaan::where('file_sk', $cleanPath)->first();
         if ($penghargaan) return $penghargaan->pegawai_id;
 
+        $karir = \App\Models\PengajuanKarir::where('file_sk_terakhir', $cleanPath)
+            ->orWhere('file_sk_pangkat_terakhir', $cleanPath)
+            ->orWhere('file_sk_kgb_terakhir', $cleanPath)
+            ->orWhere('file_skp_1', $cleanPath)
+            ->orWhere('file_skp_2', $cleanPath)
+            ->orWhere('file_karpeg', $cleanPath)
+            ->orWhere('file_pak', $cleanPath)
+            ->orWhere('file_pendukung', $cleanPath)
+            ->first();
+        if ($karir) return $karir->pegawai_id;
+
         return null;
     }
 }

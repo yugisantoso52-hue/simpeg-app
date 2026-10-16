@@ -11,7 +11,8 @@ class UpdateRiwayatJabatanRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+        return $user && ($user->hasRole('admin') || ($user->hasRole('pegawai') && $user->pegawai_id));
     }
 
     /**

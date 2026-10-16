@@ -157,14 +157,14 @@ class DukExport implements FromCollection, WithMapping, WithHeadings, ShouldAuto
         // ==========================================
         $this->headerRows[] = $currentRow;
         $rows->push(['REKAPITULASI TOTAL DUK PEGAWAI', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-        $rows->push(['1. Dosen PNS (Tenaga Pendidik PNS)', count($this->dosenPnsList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-        $rows->push(['2. Dosen PPPK (Tenaga Pendidik PPPK)', count($this->dosenPppkList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-        $rows->push(['3. Tendik PNS (Tenaga Kependidikan PNS)', count($this->tendikPnsList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-        $rows->push(['4. Tendik PPPK (Tenaga Kependidikan PPPK)', count($this->tendikPppkList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
-        $rows->push(['5. PHL & Tenaga Kontrak', count($this->phlList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['', '1. Dosen PNS (Tenaga Pendidik PNS)', count($this->dosenPnsList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['', '2. Dosen PPPK (Tenaga Pendidik PPPK)', count($this->dosenPppkList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['', '3. Tendik PNS (Tenaga Kependidikan PNS)', count($this->tendikPnsList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['', '4. Tendik PPPK (Tenaga Kependidikan PPPK)', count($this->tendikPppkList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['', '5. PHL & Tenaga Kontrak', count($this->phlList) . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '']);
         
         $totalKeseluruhan = count($this->dosenPnsList) + count($this->dosenPppkList) + count($this->tendikPnsList) + count($this->tendikPppkList) + count($this->phlList);
-        $rows->push(['TOTAL KESELURUHAN PEGAWAI', $totalKeseluruhan . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $rows->push(['', 'TOTAL KESELURUHAN PEGAWAI', $totalKeseluruhan . ' Orang', '', '', '', '', '', '', '', '', '', '', '', '', '']);
 
         return $rows;
     }

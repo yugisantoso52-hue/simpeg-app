@@ -8,7 +8,7 @@ class StoreTugasBelajarRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->hasRole(['admin', 'pegawai']);
+        return $this->user()?->hasRole('admin') ?? false;
     }
 
     public function rules(): array

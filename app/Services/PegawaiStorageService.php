@@ -128,9 +128,15 @@ class PegawaiStorageService
         // 7. Susun Jalur Lengkap (Path)
         $targetDirectory = "{$klasifikasi}/{$status}/{$folderPegawai}/{$subfolder}";
 
-        // 8. Tentukan Disk Penyimpanan
+        // 8. Tentukan Disk Penyimpanan (Foto di public disk, dokumen sensitif di local/private disk)
         $defaultDisk = config('filesystems.default', 'local');
-        $uploadDisk  = in_array($defaultDisk, ['supabase', 's3', 'r2']) ? $defaultDisk : 'public';
+        $isCloud = in_array($defaultDisk, ['supabase', 's3', 'r2']);
+
+        if ($cleanCategory === 'foto') {
+            $uploadDisk = $isCloud ? $defaultDisk : 'public';
+        } else {
+            $uploadDisk = $isCloud ? $defaultDisk : 'local';
+        }
 
         // Simpan file
         $storedPath = $file->storeAs($targetDirectory, $filename, $uploadDisk);

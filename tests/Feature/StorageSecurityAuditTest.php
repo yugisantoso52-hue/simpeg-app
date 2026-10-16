@@ -172,7 +172,7 @@ class StorageSecurityAuditTest extends TestCase
     {
         Storage::fake('local');
 
-        $hugeFile = UploadedFile::fake()->create('huge_document.pdf', 3000, 'application/pdf');
+        $hugeFile = UploadedFile::fake()->create('huge_document.pdf', 12000, 'application/pdf');
 
         $response = $this->actingAs($this->adminUser)
             ->post('/pegawai', [

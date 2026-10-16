@@ -219,8 +219,8 @@ class User extends Authenticatable
      */
     public function canAccessExecutiveKepegawaianMenus(): bool
     {
-        // 1. Admin selalu punya akses penuh
-        if ($this->hasRole('admin')) {
+        // 1. Admin dan Pimpinan selalu punya akses penuh
+        if ($this->hasRole('admin') || $this->hasRole('pimpinan')) {
             return true;
         }
 

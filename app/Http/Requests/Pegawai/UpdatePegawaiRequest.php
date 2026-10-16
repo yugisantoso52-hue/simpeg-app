@@ -9,7 +9,15 @@ class UpdatePegawaiRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $pegawai = $this->route('pegawai');
+        if ($pegawai) {
+            $pegawaiModel = is_object($pegawai) ? $pegawai : \App\Models\Pegawai::find($pegawai);
+            if ($pegawaiModel) {
+                return $this->user()?->can('update', $pegawaiModel) ?? false;
+            }
+        }
+
+        return $this->user()?->hasRole('admin') ?? false;
     }
 
     protected function prepareForValidation(): void

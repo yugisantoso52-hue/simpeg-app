@@ -14,8 +14,7 @@ trait AuthorizesRiwayatOwner
             abort(401);
         }
 
-        if ($user->hasRole(['admin', 'super-admin', 'Super Admin', 'Administrator']) || 
-            (method_exists($user, 'canAccessExecutiveKepegawaianMenus') && $user->canAccessExecutiveKepegawaianMenus())) {
+        if ($user->hasRole(['admin', 'super-admin', 'Super Admin', 'Administrator'])) {
             return;
         }
 

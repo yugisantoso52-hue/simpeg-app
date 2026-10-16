@@ -112,7 +112,7 @@ class GoogleDriveGasService
         ]);
 
         // 2. Jika URL WebApp GAS dikonfigurasi, lakukan sync ke Google Drive via Shutdown Function / FastCGI Finish Request
-        if (!empty($this->webAppUrl) && filter_var($this->webAppUrl, FILTER_VALIDATE_URL)) {
+        if (!app()->environment('testing') && !app()->runningUnitTests() && !empty($this->webAppUrl) && filter_var($this->webAppUrl, FILTER_VALIDATE_URL)) {
             $webAppUrl    = $this->webAppUrl;
             $apiKey       = $this->apiKey;
             $rootFolderId = $this->rootFolderId;
@@ -159,12 +159,18 @@ class GoogleDriveGasService
                             'sync_error'  => 'HTTP Response Error: ' . $response->status(),
                         ]);
                     }
-                } catch (\Exception $e) {
-                    Log::error('GAS Upload Failed for Arsip ID ' . $arsip->id . ': ' . $e->getMessage());
-                    $arsip->update([
-                        'status_sync' => 'FAILED',
-                        'sync_error'  => $e->getMessage(),
-                    ]);
+                } catch (\Throwable $e) {
+                    if (app()->bound('log')) {
+                        try {
+                            Log::error('GAS Upload Failed for Arsip ID ' . $arsip->id . ': ' . $e->getMessage());
+                        } catch (\Throwable $ignored) {}
+                    }
+                    try {
+                        $arsip->update([
+                            'status_sync' => 'FAILED',
+                            'sync_error'  => $e->getMessage(),
+                        ]);
+                    } catch (\Throwable $ignored) {}
                 }
             });
         }

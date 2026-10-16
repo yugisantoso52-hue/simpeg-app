@@ -33,6 +33,8 @@ interface BaseRepositoryInterface
 
     public function delete(int|string $id): bool;
 
+    public function deleteBulk(array $ids): int;
+
     public function deleteWhere(array $conditions): int;
 
     public function count(): int;

@@ -37,6 +37,19 @@
 </head>
     <!-- KOP INSTANSI RESMI UNRI -->
     @php
+        if (!isset($dosenPnsList)) {
+            $list = isset($pegawais) ? collect($pegawais) : collect();
+            $dosenPnsList = $list->filter(fn($p) => ($p->kategori_kepegawaian ?? '') === 'Dosen' || str_contains($p->jenis_pegawai ?? '', 'Dosen'));
+            $dosenPppkList = collect();
+            $tendikPnsList = $list->filter(fn($p) => ($p->kategori_kepegawaian ?? '') === 'Tendik' || str_contains($p->jenis_pegawai ?? '', 'Tendik'));
+            $tendikPppkList = collect();
+            $phlList = $list->filter(fn($p) => ($p->kategori_kepegawaian ?? '') === 'PHL' || str_contains($p->jenis_pegawai ?? '', 'PHL'));
+        }
+        $dosenPnsList = $dosenPnsList ?? collect();
+        $dosenPppkList = $dosenPppkList ?? collect();
+        $tendikPnsList = $tendikPnsList ?? collect();
+        $tendikPppkList = $tendikPppkList ?? collect();
+        $phlList = $phlList ?? collect();
         $candidatePaths = [
             public_path('images/logo-unri-bw.png'),
             public_path('images/logo-unri-bw.jpg'),

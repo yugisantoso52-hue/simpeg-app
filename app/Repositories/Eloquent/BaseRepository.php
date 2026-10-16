@@ -93,6 +93,13 @@ abstract class BaseRepository implements BaseRepositoryInterface
         return (bool) $this->findOrFail($id)->delete();
     }
 
+    public function deleteBulk(array $ids): int
+    {
+        return $this->model
+            ->whereIn($this->model->getKeyName(), $ids)
+            ->delete();
+    }
+
     public function deleteWhere(array $conditions): int
     {
         return $this->model

@@ -158,11 +158,13 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::resource('golongan', GolonganController::class)->parameters(['golongan' => 'golongan']);
         Route::resource('jenis-jabatan', JenisJabatanController::class)->parameters(['jenis-jabatan' => 'jenis_jabatan']);
 
-        // Mutasi Pegawai (Create, Store, Edit, Update, Destroy Khusus Admin)
-        Route::resource('mutasi-pegawai', MutasiPegawaiController::class)->parameters(['mutasi-pegawai' => 'mutasi_pegawai'])->except(['index', 'show']);
+        // Mutasi Pegawai (Khusus Admin)
+        Route::resource('mutasi-pegawai', MutasiPegawaiController::class)->parameters(['mutasi-pegawai' => 'mutasi_pegawai'])->except(['show']);
 
-        // KGB & KP (Proses Transaksi Khusus Admin)
+        // KGB & KP (Khusus Admin)
+        Route::get('/kgb', [KgbController::class, 'index'])->name('kgb.index');
         Route::post('/kgb/proses/{id}', [KgbController::class, 'proses'])->name('kgb.proses');
+        Route::get('/kenaikan-pangkat', [KpController::class, 'index'])->name('kp.index');
         Route::post('/kenaikan-pangkat/proses/{id}', [KpController::class, 'proses'])->name('kp.proses');
 
         // Impor & Template
@@ -264,15 +266,12 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/reports/duk/excel', [PegawaiController::class, 'exportDukExcel'])->name('reports.duk.excel');
 
         /* Modul Karir & Monitoring Kepegawaian */
-        Route::get('/kgb', [KgbController::class, 'index'])->name('kgb.index');
-        Route::get('/kenaikan-pangkat', [KpController::class, 'index'])->name('kp.index');
         Route::get('/satyalancana', [SatyalancanaController::class, 'index'])->name('satyalancana.index');
         Route::post('/satyalancana/{pegawai}/ajukan', [SatyalancanaController::class, 'ajukan'])->name('satyalancana.ajukan');
         Route::post('/satyalancana/{id}/verifikasi', [SatyalancanaController::class, 'verifikasi'])->name('satyalancana.verifikasi');
         Route::post('/satyalancana/{id}/update-nomor', [SatyalancanaController::class, 'updateNomorSurat'])->name('satyalancana.update-nomor');
         Route::get('/satyalancana/cetak-surat-pengantar', [SatyalancanaController::class, 'cetakSuratPengantar'])->name('satyalancana.cetak-surat-pengantar');
         Route::get('/tugas-belajar', [TugasBelajarController::class, 'index'])->name('tugas-belajar.index');
-        Route::get('/mutasi-pegawai', [MutasiPegawaiController::class, 'index'])->name('mutasi-pegawai.index');
 
         /* Read-Only Riwayat List */
         Route::get('/riwayat-pendidikan', [RiwayatPendidikanController::class, 'index'])->name('riwayat-pendidikan.index');

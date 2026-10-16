@@ -33,6 +33,11 @@ class RiwayatPangkatController extends Controller
 
     public function create()
     {
+        $user = auth()->user();
+        if (!$user->hasRole('admin') && (!$user->hasRole('pegawai') || !$user->pegawai_id)) {
+            abort(403, 'Anda tidak memiliki hak untuk menambah data riwayat pangkat.');
+        }
+
         return view('riwayat-pangkat.create', [
             'pegawai'  => $this->service->pegawai(),
             'golongan' => $this->service->golongan(),
@@ -50,6 +55,12 @@ class RiwayatPangkatController extends Controller
             $data,
             $request->file('file_sk')
         );
+
+        if (auth()->user()->hasRole('admin')) {
+            return redirect()
+                ->route('riwayat-pangkat.index')
+                ->with('success', 'Riwayat pangkat berhasil disimpan.');
+        }
 
         $targetPegawaiId = $data['pegawai_id'] ?? auth()->user()->pegawai_id;
 
@@ -82,6 +93,12 @@ class RiwayatPangkatController extends Controller
             $request->file('file_sk')
         );
 
+        if (auth()->user()->hasRole('admin')) {
+            return redirect()
+                ->route('riwayat-pangkat.index')
+                ->with('success', 'Riwayat pangkat berhasil diperbarui.');
+        }
+
         return redirect()
             ->route('pegawai.show', $pegawaiId)
             ->with('success', 'Riwayat pangkat berhasil diperbarui.');
@@ -94,6 +111,12 @@ class RiwayatPangkatController extends Controller
         $pegawaiId = $existing->pegawai_id ?? auth()->user()->pegawai_id;
 
         $this->service->delete($id);
+
+        if (auth()->user()->hasRole('admin')) {
+            return redirect()
+                ->route('riwayat-pangkat.index')
+                ->with('success', 'Riwayat pangkat berhasil dihapus.');
+        }
 
         return redirect()
             ->route('pegawai.show', $pegawaiId)

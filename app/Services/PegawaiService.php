@@ -334,17 +334,37 @@ class PegawaiService
         if ($activeJabatan) {
             $pegawai->jabatan_id = $activeJabatan->jabatan_id;
             $pegawai->unit_kerja_id = $activeJabatan->unit_kerja_id;
-            if (!empty($activeJabatan->tmt_jabatan) && $this->hasPegawaiColumn('tmt_jabatan_terakhir', $columns)) {
-                $pegawai->tmt_jabatan_terakhir = $activeJabatan->tmt_jabatan;
+            if (!empty($activeJabatan->tmt_jabatan)) {
+                if ($this->hasPegawaiColumn('tmt_jabatan_terakhir', $columns)) {
+                    $pegawai->tmt_jabatan_terakhir = $activeJabatan->tmt_jabatan;
+                }
+                if ($this->hasPegawaiColumn('tmt_sk_pertama', $columns)) {
+                    $pegawai->tmt_sk_pertama = $activeJabatan->tmt_jabatan;
+                }
             }
-            if (!empty($activeJabatan->nomor_sk) && $this->hasPegawaiColumn('nomor_sk_jabatan_terakhir', $columns)) {
-                $pegawai->nomor_sk_jabatan_terakhir = $activeJabatan->nomor_sk;
+            if (!empty($activeJabatan->nomor_sk)) {
+                if ($this->hasPegawaiColumn('nomor_sk_jabatan_terakhir', $columns)) {
+                    $pegawai->nomor_sk_jabatan_terakhir = $activeJabatan->nomor_sk;
+                }
+                if ($this->hasPegawaiColumn('nomor_sk_pertama', $columns)) {
+                    $pegawai->nomor_sk_pertama = $activeJabatan->nomor_sk;
+                }
             }
-            if (!empty($activeJabatan->tanggal_sk) && $this->hasPegawaiColumn('tanggal_sk_jabatan_terakhir', $columns)) {
-                $pegawai->tanggal_sk_jabatan_terakhir = $activeJabatan->tanggal_sk;
+            if (!empty($activeJabatan->tanggal_sk)) {
+                if ($this->hasPegawaiColumn('tanggal_sk_jabatan_terakhir', $columns)) {
+                    $pegawai->tanggal_sk_jabatan_terakhir = $activeJabatan->tanggal_sk;
+                }
+                if ($this->hasPegawaiColumn('tanggal_sk_pertama', $columns)) {
+                    $pegawai->tanggal_sk_pertama = $activeJabatan->tanggal_sk;
+                }
             }
-            if (!empty($activeJabatan->file_sk) && $this->hasPegawaiColumn('file_sk_jabatan_terakhir', $columns)) {
-                $pegawai->file_sk_jabatan_terakhir = $activeJabatan->file_sk;
+            if (!empty($activeJabatan->file_sk)) {
+                if ($this->hasPegawaiColumn('file_sk_jabatan_terakhir', $columns)) {
+                    $pegawai->file_sk_jabatan_terakhir = $activeJabatan->file_sk;
+                }
+                if ($this->hasPegawaiColumn('file_sk_pertama', $columns)) {
+                    $pegawai->file_sk_pertama = $activeJabatan->file_sk;
+                }
             }
         } elseif ($pegawai->jabatan_id && $pegawai->unit_kerja_id) {
             $pegawai->riwayatJabatan()->create([
