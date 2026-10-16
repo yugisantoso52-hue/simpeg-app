@@ -123,16 +123,13 @@ class PengajuanCutiController extends Controller
         $validated = $request->validated();
         $tahunSurat = date('Y');
 
+        $nomorSuratService = app(\App\Services\NomorSuratService::class);
         if ($request->filled('nomor_surat_input')) {
             $nomorInput = trim((string)$request->input('nomor_surat_input'));
-            $validated['nomor_surat'] = str_contains($nomorInput, '/UN19') 
-                ? $nomorInput 
-                : $nomorInput . '/UN19.5.1.1.10/KP/' . $tahunSurat;
+            $validated['nomor_surat'] = $nomorSuratService->formatCuti($nomorInput, (int) $tahunSurat);
         } elseif ($request->filled('nomor_surat')) {
             $nomorRaw = trim((string)$request->input('nomor_surat'));
-            $validated['nomor_surat'] = str_contains($nomorRaw, '/UN19') 
-                ? $nomorRaw 
-                : $nomorRaw . '/UN19.5.1.1.10/KP/' . $tahunSurat;
+            $validated['nomor_surat'] = $nomorSuratService->formatCuti($nomorRaw, (int) $tahunSurat);
         }
 
         $this->service->approve($id, $validated, (int)$request->user()->id);
@@ -169,9 +166,7 @@ class PengajuanCutiController extends Controller
         $tahunSurat = $cuti->created_at ? $cuti->created_at->format('Y') : date('Y');
 
         if ($nomorInput !== '') {
-            $nomorSuratFormatted = str_contains($nomorInput, '/UN19') 
-                ? $nomorInput 
-                : $nomorInput . '/UN19.5.1.1.10/KP/' . $tahunSurat;
+            $nomorSuratFormatted = app(\App\Services\NomorSuratService::class)->formatCuti($nomorInput, (int) $tahunSurat);
         } else {
             $nomorSuratFormatted = null;
         }
@@ -216,22 +211,19 @@ class PengajuanCutiController extends Controller
             ? trim((string) $request->input('nomor_surat_input', $request->input('nomor_surat', '')))
             : '';
 
+        $nomorSuratService = app(\App\Services\NomorSuratService::class);
         if ($nomorInput !== '') {
-            $nomorSuratFormatted = str_contains($nomorInput, '/UN19') 
-                ? $nomorInput 
-                : $nomorInput . '/UN19.5.1.1.10/KP/' . $tahunSurat;
+            $nomorSuratFormatted = $nomorSuratService->formatCuti($nomorInput, (int) $tahunSurat);
 
             // Simpan ke database jika belum tersimpan dan user adalah admin/pimpinan
             if (empty($cuti->nomor_surat) && $isAdminOrExecutive) {
                 $cuti->update(['nomor_surat' => $nomorSuratFormatted]);
             }
         } elseif (!empty($cuti->nomor_surat)) {
-            $nomorSuratFormatted = str_contains($cuti->nomor_surat, '/UN19') 
-                ? $cuti->nomor_surat 
-                : $cuti->nomor_surat . '/UN19.5.1.1.10/KP/' . $tahunSurat;
+            $nomorSuratFormatted = $nomorSuratService->formatCuti($cuti->nomor_surat, (int) $tahunSurat);
         } else {
             // Default template jika belum diisi manual oleh Admin
-            $nomorSuratFormatted = '............/UN19.5.1.1.10/KP/' . $tahunSurat;
+            $nomorSuratFormatted = $nomorSuratService->formatCuti('', (int) $tahunSurat);
         }
 
         $watermarkService = app(\App\Services\DocumentWatermarkService::class);

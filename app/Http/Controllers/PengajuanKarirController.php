@@ -11,6 +11,8 @@ use App\Services\KpService;
 use App\Services\KgbService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
@@ -329,127 +331,137 @@ class PengajuanKarirController extends Controller
 
         $pejabatLogin = $user->pegawai ?? Pegawai::where('nama', 'like', '%' . $user->name . '%')->first();
 
-        if ($tahap === 'verifikasi_admin') {
-            $updateData = [
-                'status'              => 'diverifikasi_admin',
-                'verifikasi_admin_at' => now(),
-                'verifikasi_admin_by' => $user->id,
-                'catatan_verifikator' => $catatan ?? 'Telah diverifikasi kelengkapan berkas usulan karir (SK terakhir, SKP, dll) oleh Admin Kepegawaian.',
-            ];
+        DB::beginTransaction();
+        try {
+            if ($tahap === 'verifikasi_admin') {
+                $updateData = [
+                    'status'              => 'diverifikasi_admin',
+                    'verifikasi_admin_at' => now(),
+                    'verifikasi_admin_by' => $user->id,
+                    'catatan_verifikator' => $catatan ?? 'Telah diverifikasi kelengkapan berkas usulan karir (SK terakhir, SKP, dll) oleh Admin Kepegawaian.',
+                ];
 
-            if ($request->filled('nomor_surat_input')) {
-                $nomorInput = trim((string) $request->input('nomor_surat_input'));
-                $tahun = $pengajuan->tahun_periode ?: ($pengajuan->created_at ? $pengajuan->created_at->format('Y') : date('Y'));
-                if ($pengajuan->jenis_pengajuan === 'KP') {
-                    $updateData['nomor_surat'] = str_contains($nomorInput, '/UN19') 
-                        ? $nomorInput 
-                        : 'B/' . ltrim($nomorInput, 'B/') . '/UN19.5.1.1.10/KP/' . $tahun;
-                } else {
-                    $updateData['nomor_surat'] = str_contains($nomorInput, '/UN19') 
-                        ? $nomorInput 
-                        : $nomorInput . '/UN19.5.1.1.10/KP/' . $tahun;
+                if ($request->filled('nomor_surat_input')) {
+                    $nomorInput = trim((string) $request->input('nomor_surat_input'));
+                    $tahun = $pengajuan->tahun_periode ?: ($pengajuan->created_at ? $pengajuan->created_at->format('Y') : date('Y'));
+                    $isKp = ($pengajuan->jenis_pengajuan === 'KP');
+                    $updateData['nomor_surat'] = app(\App\Services\NomorSuratService::class)->formatKarir($nomorInput, (int) $tahun, $isKp);
                 }
+
+                $pengajuan->update($updateData);
+                $msg = '1. Verifikasi Screening Berkas & Penomoran oleh Admin Kepegawaian berhasil.';
+            } elseif ($tahap === 'paraf_kapokja') {
+                if (!$pengajuan->verifikasi_admin_at && !$user->canManageSystem()) {
+                    DB::rollBack();
+                    return back()->with('error', 'SOP Tata Naskah: Berkas usulan harus diperiksa kelengkapannya (Admin Screening Berkas) terlebih dahulu sebelum diparaf Ka Pokja.');
+                }
+
+                $dataPokja = [
+                    'status'              => 'diverifikasi_kapokja',
+                    'paraf_kapokja_at'    => now(),
+                    'paraf_kapokja_by'    => $pejabatLogin?->id,
+                    'catatan_verifikator' => $catatan ?? 'Telah diperiksa kelengkapan berkas administrasi dan diverifikasi sah oleh Ka Pokja Keu-Kepeg.',
+                ];
+                if (!$pengajuan->verifikasi_admin_at) {
+                    $dataPokja['verifikasi_admin_at'] = now();
+                    $dataPokja['verifikasi_admin_by'] = $user->id;
+                }
+
+                $pengajuan->update($dataPokja);
+                $msg = '2. Paraf Ka Pokja Keuangan dan Kepegawaian berhasil dibubuhkan.';
+            } elseif ($tahap === 'paraf_kabag') {
+                // Validasi SOP: Harus sudah diperiksa Ka Pokja terlebih dahulu
+                if (!$pengajuan->paraf_kapokja_at && !$user->canManageSystem()) {
+                    DB::rollBack();
+                    return back()->with('error', 'SOP Tata Naskah: Berkas harus diperiksa kelengkapannya dan diparaf terlebih dahulu oleh Ka Pokja Keu-Kepeg sebelum ditelaah oleh Kabag Umum.');
+                }
+
+                $dataKabag = [
+                    'status'              => 'diverifikasi_kabag',
+                    'paraf_kabag_at'      => now(),
+                    'paraf_kabag_by'      => $pejabatLogin?->id,
+                    'catatan_verifikator' => $catatan ?? 'Telah ditelaah format tata naskah dinas dan diparaf oleh Kepala Bagian Umum.',
+                ];
+
+                if (!$pengajuan->verifikasi_admin_at) {
+                    $dataKabag['verifikasi_admin_at'] = now();
+                    $dataKabag['verifikasi_admin_by'] = $user->id;
+                }
+                if (!$pengajuan->paraf_kapokja_at) {
+                    $dataKabag['paraf_kapokja_at'] = now();
+                    $dataKabag['paraf_kapokja_by'] = $pejabatLogin?->id;
+                }
+
+                $pengajuan->update($dataKabag);
+                $msg = '3. Paraf Kepala Bagian Umum berhasil dibubuhkan.';
+            } elseif ($tahap === 'paraf_wd2' || $tahap === 'ttd_wd2') {
+                // Validasi SOP: Harus sudah diparaf Kabag Umum
+                if (!$pengajuan->paraf_kabag_at && !$user->canManageSystem()) {
+                    DB::rollBack();
+                    return back()->with('error', 'SOP Tata Naskah: Naskah dinas harus melalui telaah paraf koordinasi Kepala Bagian Umum sebelum ditandatangani Wakil Dekan II.');
+                }
+
+                $dataWd2 = [
+                    'status'              => 'disetujui_wd2',
+                    'paraf_wd2_at'        => now(),
+                    'paraf_wd2_by'        => $pejabatLogin?->id,
+                    'catatan_verifikator' => $catatan ?? 'Telah ditandatangani dan disetujui secara resmi oleh Wakil Dekan Bidang Keuangan dan Umum.',
+                ];
+
+                if (!$pengajuan->verifikasi_admin_at) {
+                    $dataWd2['verifikasi_admin_at'] = now();
+                    $dataWd2['verifikasi_admin_by'] = $user->id;
+                }
+                if (!$pengajuan->paraf_kapokja_at) {
+                    $dataWd2['paraf_kapokja_at'] = now();
+                    $dataWd2['paraf_kapokja_by'] = $pejabatLogin?->id;
+                }
+                if (!$pengajuan->paraf_kabag_at) {
+                    $dataWd2['paraf_kabag_at'] = now();
+                    $dataWd2['paraf_kabag_by'] = $pejabatLogin?->id;
+                }
+
+                $pengajuan->update($dataWd2);
+
+                // SINKRONISASI OTOMATIS: Eksekusi perubahan ke master data pegawai & riwayat
+                $this->sinkronisasiKeMasterPegawai($pengajuan);
+
+                $msg = '4. Pengajuan resmi ditandatangani dan disetujui oleh Wakil Dekan Bidang Keuangan dan Umum, serta disinkronkan ke master data kepegawaian.';
+            } elseif ($tahap === 'ttd_dekan') {
+                $pengajuan->update([
+                    'status'              => 'disetujui_dekan',
+                    'ttd_dekan_at'        => now(),
+                    'ttd_dekan_by'        => $pejabatLogin?->id,
+                    'catatan_verifikator' => $catatan ?? 'Disetujui secara resmi oleh Dekan Fakultas Keperawatan.',
+                ]);
+
+                // SINKRONISASI OTOMATIS: Eksekusi perubahan ke master data pegawai & riwayat
+                $this->sinkronisasiKeMasterPegawai($pengajuan);
+
+                $msg = 'Pengajuan resmi disetujui oleh Dekan dan data induk pegawai telah diperbarui.';
+            } elseif ($tahap === 'tolak') {
+                $pengajuan->update([
+                    'status'              => 'ditolak',
+                    'catatan_verifikator' => $catatan ?? 'Berkas dikembalikan untuk diperbaiki.',
+                ]);
+                $msg = 'Pengajuan ditolak / dikembalikan ke pegawai.';
+            } else {
+                DB::rollBack();
+                return back()->with('error', 'Tahap verifikasi tidak dikenali.');
             }
 
-            $pengajuan->update($updateData);
-            $msg = '1. Verifikasi Screening Berkas & Penomoran oleh Admin Kepegawaian berhasil.';
-        } elseif ($tahap === 'paraf_kapokja') {
-            if (!$pengajuan->verifikasi_admin_at && !$user->canManageSystem()) {
-                return back()->with('error', 'SOP Tata Naskah: Berkas usulan harus diperiksa kelengkapannya (Admin Screening Berkas) terlebih dahulu sebelum diparaf Ka Pokja.');
-            }
-
-            $dataPokja = [
-                'status'              => 'diverifikasi_kapokja',
-                'paraf_kapokja_at'    => now(),
-                'paraf_kapokja_by'    => $pejabatLogin?->id,
-                'catatan_verifikator' => $catatan ?? 'Telah diperiksa kelengkapan berkas administrasi dan diverifikasi sah oleh Ka Pokja Keu-Kepeg.',
-            ];
-            if (!$pengajuan->verifikasi_admin_at) {
-                $dataPokja['verifikasi_admin_at'] = now();
-                $dataPokja['verifikasi_admin_by'] = $user->id;
-            }
-
-            $pengajuan->update($dataPokja);
-            $msg = '2. Paraf Ka Pokja Keuangan dan Kepegawaian berhasil dibubuhkan.';
-        } elseif ($tahap === 'paraf_kabag') {
-            // Validasi SOP: Harus sudah diperiksa Ka Pokja terlebih dahulu
-            if (!$pengajuan->paraf_kapokja_at && !$user->canManageSystem()) {
-                return back()->with('error', 'SOP Tata Naskah: Berkas harus diperiksa kelengkapannya dan diparaf terlebih dahulu oleh Ka Pokja Keu-Kepeg sebelum ditelaah oleh Kabag Umum.');
-            }
-
-            $dataKabag = [
-                'status'              => 'diverifikasi_kabag',
-                'paraf_kabag_at'      => now(),
-                'paraf_kabag_by'      => $pejabatLogin?->id,
-                'catatan_verifikator' => $catatan ?? 'Telah ditelaah format tata naskah dinas dan diparaf oleh Kepala Bagian Umum.',
-            ];
-
-            if (!$pengajuan->verifikasi_admin_at) {
-                $dataKabag['verifikasi_admin_at'] = now();
-                $dataKabag['verifikasi_admin_by'] = $user->id;
-            }
-            if (!$pengajuan->paraf_kapokja_at) {
-                $dataKabag['paraf_kapokja_at'] = now();
-                $dataKabag['paraf_kapokja_by'] = $pejabatLogin?->id;
-            }
-
-            $pengajuan->update($dataKabag);
-            $msg = '3. Paraf Kepala Bagian Umum berhasil dibubuhkan.';
-        } elseif ($tahap === 'paraf_wd2' || $tahap === 'ttd_wd2') {
-            // Validasi SOP: Harus sudah diparaf Kabag Umum
-            if (!$pengajuan->paraf_kabag_at && !$user->canManageSystem()) {
-                return back()->with('error', 'SOP Tata Naskah: Naskah dinas harus melalui telaah paraf koordinasi Kepala Bagian Umum sebelum ditandatangani Wakil Dekan II.');
-            }
-
-            $dataWd2 = [
-                'status'              => 'disetujui_wd2',
-                'paraf_wd2_at'        => now(),
-                'paraf_wd2_by'        => $pejabatLogin?->id,
-                'catatan_verifikator' => $catatan ?? 'Telah ditandatangani dan disetujui secara resmi oleh Wakil Dekan Bidang Keuangan dan Umum.',
-            ];
-
-            if (!$pengajuan->verifikasi_admin_at) {
-                $dataWd2['verifikasi_admin_at'] = now();
-                $dataWd2['verifikasi_admin_by'] = $user->id;
-            }
-            if (!$pengajuan->paraf_kapokja_at) {
-                $dataWd2['paraf_kapokja_at'] = now();
-                $dataWd2['paraf_kapokja_by'] = $pejabatLogin?->id;
-            }
-            if (!$pengajuan->paraf_kabag_at) {
-                $dataWd2['paraf_kabag_at'] = now();
-                $dataWd2['paraf_kabag_by'] = $pejabatLogin?->id;
-            }
-
-            $pengajuan->update($dataWd2);
-
-            // SINKRONISASI OTOMATIS: Eksekusi perubahan ke master data pegawai & riwayat
-            $this->sinkronisasiKeMasterPegawai($pengajuan);
-
-            $msg = '4. Pengajuan resmi ditandatangani dan disetujui oleh Wakil Dekan Bidang Keuangan dan Umum, serta disinkronkan ke master data kepegawaian.';
-        } elseif ($tahap === 'ttd_dekan') {
-            $pengajuan->update([
-                'status'              => 'disetujui_dekan',
-                'ttd_dekan_at'        => now(),
-                'ttd_dekan_by'        => $pejabatLogin?->id,
-                'catatan_verifikator' => $catatan ?? 'Disetujui secara resmi oleh Dekan Fakultas Keperawatan.',
+            DB::commit();
+            return back()->with('success', $msg);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error("Gagal verifikasi pengajuan karir ID {$pengajuan->id}: " . $e->getMessage(), [
+                'pengajuan_id' => $pengajuan->id,
+                'tahap'        => $tahap,
+                'trace'        => $e->getTraceAsString(),
             ]);
 
-            // SINKRONISASI OTOMATIS: Eksekusi perubahan ke master data pegawai & riwayat
-            $this->sinkronisasiKeMasterPegawai($pengajuan);
-
-            $msg = 'Pengajuan resmi disetujui oleh Dekan dan data induk pegawai telah diperbarui.';
-        } elseif ($tahap === 'tolak') {
-            $pengajuan->update([
-                'status'              => 'ditolak',
-                'catatan_verifikator' => $catatan ?? 'Berkas dikembalikan untuk diperbaiki.',
-            ]);
-            $msg = 'Pengajuan ditolak / dikembalikan ke pegawai.';
-        } else {
-            return back()->with('error', 'Tahap verifikasi tidak dikenali.');
+            return back()->with('error', 'Terjadi kesalahan saat memproses verifikasi pengajuan karir: ' . $e->getMessage());
         }
-
-        return back()->with('success', $msg);
     }
 
     /**
@@ -457,46 +469,42 @@ class PengajuanKarirController extends Controller
      */
     private function sinkronisasiKeMasterPegawai(PengajuanKarir $pengajuan): void
     {
-        try {
-            $pegawai = $pengajuan->pegawai;
-            if (!$pegawai) return;
+        $pegawai = $pengajuan->pegawai;
+        if (!$pegawai) return;
 
-            if ($pengajuan->jenis_pengajuan === 'KP' && $pengajuan->golongan_tujuan_id) {
-                $tahun = $pengajuan->tahun_periode ?? date('Y');
-                $bulanMap = [
-                    'Februari' => '02-01',
-                    'April'    => '04-01',
-                    'Juni'     => '06-01',
-                    'Agustus'  => '08-01',
-                    'Oktober'  => '10-01',
-                    'Desember' => '12-01',
-                ];
-                $bulanTmt = $bulanMap[$pengajuan->periode_kp] ?? '04-01';
-                $tmtPangkatBaru = "{$tahun}-{$bulanTmt}";
+        if ($pengajuan->jenis_pengajuan === 'KP' && $pengajuan->golongan_tujuan_id) {
+            $tahun = $pengajuan->tahun_periode ?? date('Y');
+            $bulanMap = [
+                'Februari' => '02-01',
+                'April'    => '04-01',
+                'Juni'     => '06-01',
+                'Agustus'  => '08-01',
+                'Oktober'  => '10-01',
+                'Desember' => '12-01',
+            ];
+            $bulanTmt = $bulanMap[$pengajuan->periode_kp] ?? '04-01';
+            $tmtPangkatBaru = "{$tahun}-{$bulanTmt}";
 
-                app(KpService::class)->prosesKp($pegawai, [
-                    'golongan_baru_id' => $pengajuan->golongan_tujuan_id,
-                    'tmt_pangkat_baru' => $tmtPangkatBaru,
-                ]);
+            app(KpService::class)->prosesKp($pegawai, [
+                'golongan_baru_id' => $pengajuan->golongan_tujuan_id,
+                'tmt_pangkat_baru' => $tmtPangkatBaru,
+            ]);
 
-                if ($pengajuan->file_sk_pangkat_terakhir || $pengajuan->file_sk_terakhir) {
-                    $fileSk = $pengajuan->file_sk_pangkat_terakhir ?? $pengajuan->file_sk_terakhir;
-                    $pegawai->update(['file_sk_pangkat_terakhir' => $fileSk]);
-                }
-            } elseif ($pengajuan->jenis_pengajuan === 'KGB' && $pengajuan->tmt_baru) {
-                $tmtKgb = is_string($pengajuan->tmt_baru) ? $pengajuan->tmt_baru : $pengajuan->tmt_baru->format('Y-m-d');
-                app(KgbService::class)->prosesKgb($pegawai, [
-                    'tmt_kgb_baru'    => $tmtKgb,
-                    'gaji_pokok_baru' => $pengajuan->gaji_pokok_baru,
-                ]);
-
-                if ($pengajuan->file_sk_kgb_terakhir || $pengajuan->file_sk_terakhir) {
-                    $fileSk = $pengajuan->file_sk_kgb_terakhir ?? $pengajuan->file_sk_terakhir;
-                    $pegawai->update(['file_sk_kgb_terakhir' => $fileSk]);
-                }
+            if ($pengajuan->file_sk_pangkat_terakhir || $pengajuan->file_sk_terakhir) {
+                $fileSk = $pengajuan->file_sk_pangkat_terakhir ?? $pengajuan->file_sk_terakhir;
+                $pegawai->update(['file_sk_pangkat_terakhir' => $fileSk]);
             }
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error("Gagal sinkronisasi pengajuan karir ID {$pengajuan->id}: " . $e->getMessage());
+        } elseif ($pengajuan->jenis_pengajuan === 'KGB' && $pengajuan->tmt_baru) {
+            $tmtKgb = is_string($pengajuan->tmt_baru) ? $pengajuan->tmt_baru : $pengajuan->tmt_baru->format('Y-m-d');
+            app(KgbService::class)->prosesKgb($pegawai, [
+                'tmt_kgb_baru'    => $tmtKgb,
+                'gaji_pokok_baru' => $pengajuan->gaji_pokok_baru,
+            ]);
+
+            if ($pengajuan->file_sk_kgb_terakhir || $pengajuan->file_sk_terakhir) {
+                $fileSk = $pengajuan->file_sk_kgb_terakhir ?? $pengajuan->file_sk_terakhir;
+                $pegawai->update(['file_sk_kgb_terakhir' => $fileSk]);
+            }
         }
     }
 
@@ -515,15 +523,8 @@ class PengajuanKarirController extends Controller
         $tahun = $pengajuan->tahun_periode ?: ($pengajuan->created_at ? $pengajuan->created_at->format('Y') : date('Y'));
 
         if ($nomorInput !== '') {
-            if ($pengajuan->jenis_pengajuan === 'KP') {
-                $nomorSuratFormatted = str_contains($nomorInput, '/UN19') 
-                    ? $nomorInput 
-                    : 'B/' . ltrim($nomorInput, 'B/') . '/UN19.5.1.1.10/KP/' . $tahun;
-            } else {
-                $nomorSuratFormatted = str_contains($nomorInput, '/UN19') 
-                    ? $nomorInput 
-                    : $nomorInput . '/UN19.5.1.1.10/KP/' . $tahun;
-            }
+            $isKp = ($pengajuan->jenis_pengajuan === 'KP');
+            $nomorSuratFormatted = app(\App\Services\NomorSuratService::class)->formatKarir($nomorInput, (int) $tahun, $isKp);
         } else {
             $nomorSuratFormatted = null;
         }

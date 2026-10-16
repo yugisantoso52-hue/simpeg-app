@@ -302,15 +302,25 @@ class Pegawai extends Model
     public function getSisaCutiTahunanAttribute(): int
     {
         $currentYear = now()->year;
-        $cutiTerpakai = $this->pengajuanCuti()
-            ->where('jenis_cuti', 'Cuti Tahunan')
-            ->whereIn('status', [
-                'Disetujui',
-                'Menunggu Persetujuan',
-                'Disetujui Atasan (Menunggu PYBMC)'
-            ])
-            ->whereYear('tanggal_mulai', $currentYear)
-            ->sum('jumlah_hari');
+        $validStatuses = [
+            'Disetujui',
+            'Menunggu Persetujuan',
+            'Disetujui Atasan (Menunggu PYBMC)',
+            'Disetujui Atasan (Menunggu Keputusan Akhir)'
+        ];
+
+        if ($this->relationLoaded('pengajuanCuti')) {
+            $cutiTerpakai = $this->pengajuanCuti
+                ->where('jenis_cuti', 'Cuti Tahunan')
+                ->filter(fn($c) => in_array($c->status, $validStatuses, true) && \Carbon\Carbon::parse($c->tanggal_mulai)->year === $currentYear)
+                ->sum('jumlah_hari');
+        } else {
+            $cutiTerpakai = $this->pengajuanCuti()
+                ->where('jenis_cuti', 'Cuti Tahunan')
+                ->whereIn('status', $validStatuses)
+                ->whereYear('tanggal_mulai', $currentYear)
+                ->sum('jumlah_hari');
+        }
 
         return max(0, 12 - (int)$cutiTerpakai);
     }
@@ -806,5 +816,100 @@ class Pegawai extends Model
                 'label'        => 'PAK (Penilaian Angka Kredit)',
             ],
         ];
+    }
+
+    /**
+     * Local Scope: Pengurutan Daftar Urut Kepangkatan (DUK) Standar BKN
+     * Urutan: Golongan Tertinggi -> TMT Pangkat Terlama -> Tanggal Lahir Tertua (Usia Paling Senior)
+     */
+    public function scopeOrderByDuk(Builder $query): Builder
+    {
+        return $query->leftJoin('golongan', 'pegawai.golongan_id', '=', 'golongan.id')
+            ->orderByDesc('golongan.urutan')
+            ->orderBy('pegawai.tmt_pangkat_terakhir')
+            ->orderBy('pegawai.tanggal_lahir')
+            ->select('pegawai.*');
+    }
+
+    /**
+     * Helper sentral: Urutkan Collection Pegawai sesuai kriteria DUK
+     */
+    public static function sortDukCollection(\Illuminate\Support\Collection $collection): \Illuminate\Support\Collection
+    {
+        return $collection->sort(function ($a, $b) {
+            $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
+            $golB = $b->golongan->urutan ?? $b->golongan_id ?? 0;
+            if ($golA !== $golB) return $golB <=> $golA;
+
+            $tmtPangkatA = $a->tmt_pangkat_terakhir ? $a->tmt_pangkat_terakhir->timestamp : 0;
+            $tmtPangkatB = $b->tmt_pangkat_terakhir ? $b->tmt_pangkat_terakhir->timestamp : 0;
+            if ($tmtPangkatA !== $tmtPangkatB) return $tmtPangkatA <=> $tmtPangkatB;
+
+            $tglLahirA = $a->tanggal_lahir ? $a->tanggal_lahir->timestamp : 0;
+            $tglLahirB = $b->tanggal_lahir ? $b->tanggal_lahir->timestamp : 0;
+            return $tglLahirA <=> $tglLahirB;
+        })->values();
+    }
+
+    /**
+     * Accessor: Hitung Batas Usia Pensiun (BUP) Pegawai sesuai Ketentuan BKN / UU ASN
+     *
+     * 70 Tahun: Guru Besar / Profesor, Peneliti/Perekayasa Ahli Utama
+     * 65 Tahun: Dosen / Lektor Kepala / Asisten Ahli, Pejabat Fungsional Ahli Utama
+     * 60 Tahun: Pejabat Pimpinan Tinggi (JPT), Fungsional Ahli Madya, Guru
+     * 58 Tahun: Tenaga Kependidikan / Pelaksana / Ahli Pertama / Ahli Muda / Keterampilan
+     */
+    public function getBupAttribute(): int
+    {
+        if (!empty($this->batas_usia_pensiun)) {
+            return (int) $this->batas_usia_pensiun;
+        }
+
+        $namaJabatan = is_object($this->jabatan) 
+            ? ($this->jabatan->nama_jabatan ?? '') 
+            : (string)($this->jabatan ?? '');
+        $jabatan = strtolower($namaJabatan);
+        $jenisJabatan = strtolower((string)($this->jenis_jabatan ?? ''));
+        $jenisPegawai = strtolower((string)($this->jenis_pegawai ?? ''));
+
+        // BUP 70 Tahun
+        if (str_contains($jabatan, 'profesor') || str_contains($jabatan, 'guru besar') || 
+            str_contains($jabatan, 'peneliti ahli utama') || str_contains($jabatan, 'perekayasa ahli utama')) {
+            return 70;
+        }
+
+        // BUP 65 Tahun
+        if (str_contains($jabatan, 'dosen') || str_contains($jabatan, 'lektor') || 
+            str_contains($jabatan, 'asisten ahli') || str_contains($jabatan, 'ahli utama') || 
+            $jenisPegawai === 'dosen') {
+            return 65;
+        }
+
+        // BUP 60 Tahun
+        if (str_contains($jabatan, 'guru') || str_contains($jabatan, 'ahli madya') || 
+            str_contains($jabatan, 'kepala bagian') || str_contains($jabatan, 'kabag') ||
+            str_contains($jabatan, 'fungsional madya') ||
+            str_contains($jenisJabatan, 'pimpinan tinggi') || str_contains($jenisJabatan, 'jpt')) {
+            return 60;
+        }
+
+        // Default: BUP 58 Tahun (Administrasi, Ahli Pertama, Ahli Muda, Keterampilan)
+        return 58;
+    }
+
+    /**
+     * Accessor: Dapatkan Tanggal Pensiun Resmi Faktual
+     */
+    public function getTanggalPensiunCalculatedAttribute(): ?\Carbon\Carbon
+    {
+        if ($this->tanggal_pensiun) {
+            return \Carbon\Carbon::parse($this->tanggal_pensiun);
+        }
+
+        if ($this->tanggal_lahir) {
+            return \Carbon\Carbon::parse($this->tanggal_lahir)->addYears($this->bup);
+        }
+
+        return null;
     }
 }

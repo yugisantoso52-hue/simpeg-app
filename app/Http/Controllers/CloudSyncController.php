@@ -17,19 +17,6 @@ class CloudSyncController extends Controller
     public function pullFromWeb(Request $request)
     {
         return abort(403, 'SYSTEM HALTED: Fitur sinkronisasi lama dinonaktifkan demi keamanan data. Sistem sinkronisasi baru sedang dikembangkan.');
-
-        try {
-            $exitCode = Artisan::call('simpeg:pull-cloud');
-            $output = Artisan::output();
-
-            if ($exitCode === 0) {
-                return redirect()->route('dashboard')->with('success', 'Alhamdulillah! Sinkronisasi Data dari Cloud Railway (29 Pegawai) berhasil diperbarui ke Localhost.');
-            } else {
-                return redirect()->back()->with('error', 'Gagal menyinkronkan data: ' . $output);
-            }
-        } catch (\Throwable $e) {
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-        }
     }
     /**
      * Secret token validation for secure data synchronization

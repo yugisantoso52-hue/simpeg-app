@@ -27,16 +27,10 @@ class CekPensiunHarian extends Command
         foreach ($paraPegawai as $pegawai) {
             if (!$pegawai->tanggal_lahir && !$pegawai->tanggal_pensiun) continue;
 
-            $bup = $pegawai->batas_usia_pensiun ?: $this->hitungBup($pegawai);
+            $bup = $pegawai->bup;
+            $tglPensiun = $pegawai->tanggal_pensiun_calculated;
 
-            // Gunakan tanggal_pensiun yang sudah tersimpan di database atau kalkulasi
-            if ($pegawai->tanggal_pensiun) {
-                $tglPensiun = Carbon::parse($pegawai->tanggal_pensiun);
-            } elseif ($pegawai->tanggal_lahir) {
-                $tglPensiun = Carbon::parse($pegawai->tanggal_lahir)->addYears($bup);
-            } else {
-                continue;
-            }
+            if (!$tglPensiun) continue;
 
             // Cek jika TGL PENSIUN masuk dalam rentang HARI INI s/d 1 TAHUN KE DEPAN
             if ($tglPensiun->between($hariIni, $batasH1Tahun)) {
@@ -51,9 +45,13 @@ class CekPensiunHarian extends Command
 
         if ($pensiunPegawai->isNotEmpty()) {
             $admins = User::whereHas('role', function ($q) {
-                $q->whereIn('name', ['admin', 'hrd', 'superadmin', 'pimpinan']);
+                $q->whereIn('name', ['admin', 'hrd', 'superadmin', 'pimpinan', 'kepegawaian']);
             })->get();
-            if ($admins->isEmpty()) $admins = User::all();
+            if ($admins->isEmpty()) {
+                $admins = User::whereHas('roles', function ($q) {
+                    $q->whereIn('name', ['admin', 'hrd', 'superadmin', 'pimpinan', 'kepegawaian']);
+                })->get();
+            }
 
             foreach ($admins as $admin) {
                 if (class_exists(PensiunDueDateNotification::class)) {
@@ -66,37 +64,5 @@ class CekPensiunHarian extends Command
         }
 
         return Command::SUCCESS;
-    }
-
-    /**
-     * Menentukan Batas Usia Pensiun (BUP) sesuai Ketentuan BKN
-     */
-    private function hitungBup($pegawai)
-    {
-        $namaJabatan = is_object($pegawai->jabatan) 
-            ? ($pegawai->jabatan->nama_jabatan ?? '') 
-            : (string)($pegawai->jabatan ?? '');
-        $jabatan = strtolower($namaJabatan);
-        $jenisJabatan = strtolower((string)($pegawai->jenis_jabatan ?? ''));
-
-        // BUP 70 Tahun
-        if (str_contains($jabatan, 'profesor') || str_contains($jabatan, 'guru besar') || 
-            str_contains($jabatan, 'peneliti ahli utama') || str_contains($jabatan, 'perekayasa ahli utama')) {
-            return 70;
-        }
-
-        // BUP 65 Tahun
-        if (str_contains($jabatan, 'dosen') || str_contains($jabatan, 'ahli utama')) {
-            return 65;
-        }
-
-        // BUP 60 Tahun
-        if (str_contains($jabatan, 'guru') || str_contains($jabatan, 'ahli madya') || 
-            str_contains($jenisJabatan, 'pimpinan tinggi') || str_contains($jenisJabatan, 'jpt')) {
-            return 60;
-        }
-
-        // Default: BUP 58 Tahun (Administrasi, Ahli Pertama, Ahli Muda, Keterampilan)
-        return 58;
     }
 }

@@ -208,10 +208,11 @@ class LogbookManageController extends Controller
             $signerName  = $signerPegawai->nama_lengkap ?? $signerPegawai->nama;
             $signerNip   = $signerPegawai->nip ?? '-';
         } else {
-            $dekan = app(\App\Services\ApprovalHierarchyService::class)->findPegawaiByJabatan(['Dekan', 'Wakil Dekan I']);
-            $signerTitle = $dekan?->jabatan?->nama_jabatan ?? 'Dekan Fakultas Keperawatan';
-            $signerName  = $dekan ? ($dekan->nama_lengkap ?? $dekan->nama) : 'Prof. Dr. Wan Nishfa Dewi, S.Kp., M.Ng., Ph.D';
-            $signerNip   = $dekan?->nip ?? '197508222001122001';
+            $pejabatService = app(\App\Services\PejabatService::class);
+            $dekanData = $pejabatService->getDekan();
+            $signerTitle = $dekanData['jabatan'];
+            $signerName  = $dekanData['nama'];
+            $signerNip   = $dekanData['nip'];
         }
 
         $pdf = Pdf::loadView('admin.logbook.rekap-pdf', compact('logbooks', 'unitKerja', 'month', 'year', 'namaBulan', 'status', 'signerTitle', 'signerName', 'signerNip'))

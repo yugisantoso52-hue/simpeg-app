@@ -78,31 +78,15 @@ class PegawaiController extends Controller
             return (str_contains($jenis, 'PPPK') || $asn === 'PPPK' || strlen($cleanNip) === 21);
         };
 
-        $sortDuk = function($collection) {
-            return $collection->sort(function($a, $b) {
-                $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
-                $golB = $b->golongan->urutan ?? $b->golongan_id ?? 0;
-                if ($golA !== $golB) return $golB <=> $golA;
-
-                $tmtPangkatA = $a->tmt_pangkat_terakhir ? $a->tmt_pangkat_terakhir->timestamp : 0;
-                $tmtPangkatB = $b->tmt_pangkat_terakhir ? $b->tmt_pangkat_terakhir->timestamp : 0;
-                if ($tmtPangkatA !== $tmtPangkatB) return $tmtPangkatA <=> $tmtPangkatB;
-
-                $tglLahirA = $a->tanggal_lahir ? $a->tanggal_lahir->timestamp : 0;
-                $tglLahirB = $b->tanggal_lahir ? $b->tanggal_lahir->timestamp : 0;
-                return $tglLahirA <=> $tglLahirB;
-            })->values();
-        };
-
         $dosenList = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'Dosen');
         $tendikList = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'Tendik');
         $phlListRaw = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'PHL');
 
-        $dosenPnsList   = $sortDuk($dosenList->filter($isPns));
-        $dosenPppkList  = $sortDuk($dosenList->filter($isPppk));
-        $tendikPnsList  = $sortDuk($tendikList->filter($isPns));
-        $tendikPppkList = $sortDuk($tendikList->filter($isPppk));
-        $phlList        = $sortDuk($phlListRaw);
+        $dosenPnsList   = Pegawai::sortDukCollection($dosenList->filter($isPns));
+        $dosenPppkList  = Pegawai::sortDukCollection($dosenList->filter($isPppk));
+        $tendikPnsList  = Pegawai::sortDukCollection($tendikList->filter($isPns));
+        $tendikPppkList = Pegawai::sortDukCollection($tendikList->filter($isPppk));
+        $phlList        = Pegawai::sortDukCollection($phlListRaw);
 
         $statistics = [
             'dosen_pns'   => count($dosenPnsList),
@@ -332,8 +316,11 @@ class PegawaiController extends Controller
                 });
             });
             
-            // Clean up cache once at the end
-            Cache::flush();
+            // Clean up cache secara spesifik agar tidak menghapus session / cache sistem lainnya
+            Cache::forget('dashboard_faculty_completeness');
+            Cache::forget('dashboard_abk_summary');
+            Cache::forget('dashboard_workflow_stats');
+            Cache::forget('total_succession_plans');
 
             return redirect()->route('pegawai.index')->with('success', 'Data pegawai berhasil diimpor secara masal!');
         } catch (\Exception $e) {
@@ -372,31 +359,15 @@ class PegawaiController extends Controller
             return (str_contains($jenis, 'PPPK') || $asn === 'PPPK' || strlen($cleanNip) === 21);
         };
 
-        $sortDuk = function($collection) {
-            return $collection->sort(function($a, $b) {
-                $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
-                $golB = $b->golongan->urutan ?? $b->golongan_id ?? 0;
-                if ($golA !== $golB) return $golB <=> $golA;
-
-                $tmtPangkatA = $a->tmt_pangkat_terakhir ? $a->tmt_pangkat_terakhir->timestamp : 0;
-                $tmtPangkatB = $b->tmt_pangkat_terakhir ? $b->tmt_pangkat_terakhir->timestamp : 0;
-                if ($tmtPangkatA !== $tmtPangkatB) return $tmtPangkatA <=> $tmtPangkatB;
-
-                $tglLahirA = $a->tanggal_lahir ? $a->tanggal_lahir->timestamp : 0;
-                $tglLahirB = $b->tanggal_lahir ? $b->tanggal_lahir->timestamp : 0;
-                return $tglLahirA <=> $tglLahirB;
-            })->values();
-        };
-
         $dosenList = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'Dosen');
         $tendikList = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'Tendik');
         $phlListRaw = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'PHL');
 
-        $dosenPnsList   = $sortDuk($dosenList->filter($isPns));
-        $dosenPppkList  = $sortDuk($dosenList->filter($isPppk));
-        $tendikPnsList  = $sortDuk($tendikList->filter($isPns));
-        $tendikPppkList = $sortDuk($tendikList->filter($isPppk));
-        $phlList        = $sortDuk($phlListRaw);
+        $dosenPnsList   = Pegawai::sortDukCollection($dosenList->filter($isPns));
+        $dosenPppkList  = Pegawai::sortDukCollection($dosenList->filter($isPppk));
+        $tendikPnsList  = Pegawai::sortDukCollection($tendikList->filter($isPns));
+        $tendikPppkList = Pegawai::sortDukCollection($tendikList->filter($isPppk));
+        $phlList        = Pegawai::sortDukCollection($phlListRaw);
 
         $pdf = Pdf::loadView('exports.pdf.duk', compact('dosenPnsList', 'dosenPppkList', 'tendikPnsList', 'tendikPppkList', 'phlList'))
             ->setPaper('a4', 'landscape');

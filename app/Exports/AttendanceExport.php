@@ -3,7 +3,8 @@
 namespace App\Exports;
 
 use App\Models\Attendance;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -12,7 +13,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 
-class AttendanceExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
+class AttendanceExport implements FromQuery, WithChunkReading, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
 {
     protected array $filters;
     protected int $rowNumber = 0;
@@ -22,7 +23,7 @@ class AttendanceExport implements FromCollection, WithHeadings, WithMapping, Sho
         $this->filters = $filters;
     }
 
-    public function collection()
+    public function query()
     {
         $query = Attendance::with(['user.pegawai.unitKerja', 'user.pegawai.jabatan'])
             ->latest('attendance_date')
@@ -75,7 +76,12 @@ class AttendanceExport implements FromCollection, WithHeadings, WithMapping, Sho
             });
         }
 
-        return $query->get();
+        return $query;
+    }
+
+    public function chunkSize(): int
+    {
+        return 500;
     }
 
     public function headings(): array

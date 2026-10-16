@@ -143,22 +143,10 @@ class AbkController extends Controller
             $pegawaiPensiunList = [];
 
             foreach ($pegawais as $peg) {
-                // Tentukan Batas Usia Pensiun (BUP)
-                $bup = 58; // Default Tendik Pelaksana
-                $namaJabatan = strtolower($peg->jabatan?->nama_jabatan ?? '');
-                $jenisJabatan = strtolower($peg->jenis_pegawai ?? '');
+                $bup = $peg->bup;
+                $tglPensiun = $peg->tanggal_pensiun_calculated;
 
-                if (str_contains($namaJabatan, 'guru besar') || str_contains($namaJabatan, 'profesor')) {
-                    $bup = 70;
-                } elseif (str_contains($namaJabatan, 'dosen') || str_contains($namaJabatan, 'lektor') || str_contains($namaJabatan, 'asisten ahli') || $jenisJabatan === 'dosen') {
-                    $bup = 65;
-                } elseif (str_contains($namaJabatan, 'kepala bagian') || str_contains($namaJabatan, 'kabag') || str_contains($namaJabatan, 'fungsional madya')) {
-                    $bup = 60;
-                }
-
-                if ($peg->tanggal_lahir) {
-                    $tglLahir = Carbon::parse($peg->tanggal_lahir);
-                    $tglPensiun = $tglLahir->copy()->addYears($bup);
+                if ($tglPensiun) {
                     $sisaBulan = $now->diffInMonths($tglPensiun, false);
 
                     if ($sisaBulan <= 12 && $sisaBulan >= -6) {

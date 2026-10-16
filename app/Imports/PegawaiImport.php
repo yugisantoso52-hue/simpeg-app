@@ -5,10 +5,12 @@ namespace App\Imports;
 use App\Models\Pegawai;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 
-class PegawaiImport implements ToModel, WithHeadingRow, WithValidation
+class PegawaiImport implements ToModel, WithHeadingRow, WithValidation, WithBatchInserts, WithChunkReading
 {
     private function parseDate($value): ?string
     {
@@ -119,5 +121,15 @@ class PegawaiImport implements ToModel, WithHeadingRow, WithValidation
         return [
             'nip' => 'required|unique:pegawai,nip',
         ];
+    }
+
+    public function batchSize(): int
+    {
+        return 250;
+    }
+
+    public function chunkSize(): int
+    {
+        return 500;
     }
 }

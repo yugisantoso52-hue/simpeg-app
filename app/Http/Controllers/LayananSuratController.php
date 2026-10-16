@@ -71,24 +71,18 @@ class LayananSuratController extends Controller
             return back()->with('error', 'Profil data kepegawaian Anda belum terhubung. Hubungi Admin Kepegawaian.');
         }
 
-        // Format Nomor Surat: (isi manual)/UN19.5.1.1.10/KP/{tahun}
+        // Format Nomor Surat terpusat via NomorSuratService
         $tahunSurat = date('Y');
-        $suffixStandard = "/UN19.5.1.1.10/KP/{$tahunSurat}";
+        $nomorSuratService = app(\App\Services\NomorSuratService::class);
 
         if ($isExecutiveOrAdmin && $request->filled('nomor_surat_manual')) {
-            $inputNomor = trim($request->nomor_surat_manual);
-            if (str_contains($inputNomor, '/UN19.')) {
-                $nomorSurat = $inputNomor;
-            } else {
-                $inputNomor = rtrim($inputNomor, '/');
-                $nomorSurat = $inputNomor . $suffixStandard;
-            }
+            $nomorSurat = $nomorSuratService->formatSuratAktif($request->nomor_surat_manual, (int) $tahunSurat);
         } else {
             // Pengajuan mandiri oleh pegawai: nomor urut draft instansi (ditetapkan & disahkan Admin saat verifikasi)
             $nomorUrut = LayananSurat::whereYear('tanggal_surat', $tahunSurat)
                 ->orWhereYear('created_at', $tahunSurat)
                 ->count() + 1;
-            $nomorSurat = 'B/' . str_pad($nomorUrut, 4, '0', STR_PAD_LEFT) . $suffixStandard;
+            $nomorSurat = $nomorSuratService->formatDraft($nomorUrut, 'KP', (int) $tahunSurat, true);
         }
 
         // Cek duplikasi nomor surat jika diinput manual oleh Admin
@@ -96,22 +90,28 @@ class LayananSuratController extends Controller
             return back()->with('error', "Nomor surat {$nomorSurat} sudah pernah digunakan. Silakan tentukan nomor urut manual yang berbeda.")->withInput();
         }
 
-        // Pejabat Dekan & Wakil Dekan II FKP UNRI
-        $pejabatDekan   = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
-        $pejabatWd2     = Pegawai::where('nama', 'like', '%Safri%')->first();
-        $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
-        $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
+        // Resolusi Pejabat Penandatangan Dinamis via PejabatService
+        $pejabatService = app(\App\Services\PejabatService::class);
+        $dekanData      = $pejabatService->getDekan();
+        $wadek2Data     = $pejabatService->getWadek2();
+        $kabagData      = $pejabatService->getKabag();
+        $kapokjaData    = $pejabatService->getKaPokja();
+
+        $pejabatDekan   = $dekanData['pegawai'];
+        $pejabatWd2     = $wadek2Data['pegawai'];
+        $pejabatKabag   = $kabagData['pegawai'];
+        $pejabatKaPokja = $kapokjaData['pegawai'];
 
         $rolePenandatangan = $request->input('penandatangan_role', 'dekan');
 
         if ($rolePenandatangan === 'wadek2') {
-            $penandatanganNama    = $pejabatWd2 ? ($pejabatWd2->nama_lengkap ?? $pejabatWd2->nama) : 'Dr. Safri, M.Kep, Sp.Kep.M.B';
-            $penandatanganNip     = $pejabatWd2 ? $pejabatWd2->nip : '198509092014041001';
-            $penandatanganJabatan = 'Wakil Dekan Bidang Keuangan dan Umum';
+            $penandatanganNama    = $wadek2Data['nama'];
+            $penandatanganNip     = $wadek2Data['nip'];
+            $penandatanganJabatan = $wadek2Data['jabatan'];
         } else {
-            $penandatanganNama    = $pejabatDekan ? ($pejabatDekan->nama_lengkap ?? $pejabatDekan->nama) : 'Prof. Wan Nishfa Dewi, S.Kp, MNg, PhD';
-            $penandatanganNip     = $pejabatDekan ? $pejabatDekan->nip : '197508222001122001';
-            $penandatanganJabatan = 'Dekan Fakultas Keperawatan';
+            $penandatanganNama    = $dekanData['nama'];
+            $penandatanganNip     = $dekanData['nip'];
+            $penandatanganJabatan = $dekanData['jabatan'];
         }
 
         // Token Kriptografis Keaslian Dokumen
@@ -295,9 +295,14 @@ class LayananSuratController extends Controller
         }
 
         $pegawai        = $surat->pegawai;
-        $pejabatDekan   = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
-        $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
-        $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
+        $pejabatService = app(\App\Services\PejabatService::class);
+        $dekanData      = $pejabatService->getDekan();
+        $kabagData      = $pejabatService->getKabag();
+        $kapokjaData    = $pejabatService->getKaPokja();
+
+        $pejabatDekan   = $dekanData['pegawai'];
+        $pejabatKabag   = $kabagData['pegawai'];
+        $pejabatKaPokja = $kapokjaData['pegawai'];
 
         // Kondisi Faktual Verifikasi & Pengesahan
         $isDisahkan      = ($surat->status === 'selesai');
@@ -309,8 +314,8 @@ class LayananSuratController extends Controller
         $qrCodeDataUri = $isDisahkan ? QrCodeService::generateDataUri($verifyUrl) : null;
 
         // Mini QR Paraf Digital Tata Naskah (Kabag & Ka Pokja)
-        $qrPokjaUri = $sudahParafPokja ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) : null;
-        $qrKabagUri = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) : null;
+        $qrPokjaUri = $sudahParafPokja ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . $kapokjaData['nip']) : null;
+        $qrKabagUri = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . $kabagData['nip']) : null;
 
         // Tanggal & Waktu Paraf Digital Faktual
         $parafPokjaAt = $sudahParafPokja ? $surat->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB' : null;

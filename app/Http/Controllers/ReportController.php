@@ -16,16 +16,16 @@ class ReportController extends Controller
      */
     public function exportDukPdf(Request $request)
     {
-        $query = Pegawai::with(['unitKerja', 'jabatan', 'golongan']);
+        $query = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])
+            ->where('status_pegawai', 'Aktif')
+            ->orderByDuk();
 
         if ($request->filled('unit_kerja_id')) {
-            $query->where('unit_kerja_id', $request->unit_kerja_id);
+            $query->where('pegawai.unit_kerja_id', $request->unit_kerja_id);
         }
 
-        // Fetch dan urutkan data pegawai berdasarkan hierarki golongan
-        $pegawais = $query->get()->sortByDesc(function ($p) {
-            return $p->golongan->nama_golongan ?? '';
-        });
+        // Fetch dan urutkan data pegawai menggunakan scope DUK standar BKN
+        $pegawais = $query->get();
 
         $pdf = Pdf::loadView('exports.pdf.duk', compact('pegawais'))
             ->setPaper('a4', 'landscape');
@@ -110,11 +110,17 @@ class ReportController extends Controller
             'tmt_kgb_baru'        => $tmtKgbBaru,
         ];
 
-        // 4. Pejabat Penandatangan & Paraf Digital
-        $pejabatDekan   = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
-        $pejabatWd2     = Pegawai::where('nama', 'like', '%Safri%')->first();
-        $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
-        $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
+        // 4. Pejabat Penandatangan & Paraf Digital Dinamis
+        $pejabatService = app(\App\Services\PejabatService::class);
+        $dekanData      = $pejabatService->getDekan();
+        $wadek2Data     = $pejabatService->getWadek2();
+        $kabagData      = $pejabatService->getKabag();
+        $kapokjaData    = $pejabatService->getKaPokja();
+
+        $pejabatDekan   = $dekanData['pegawai'];
+        $pejabatWd2     = $wadek2Data['pegawai'];
+        $pejabatKabag   = $kabagData['pegawai'];
+        $pejabatKaPokja = $kapokjaData['pegawai'];
 
         // 5. Data Dasar SK Terakhir (Poin a s.d. e)
         $tahunSurat     = date('Y');
@@ -124,7 +130,7 @@ class ReportController extends Controller
             : ($pegawai->tanggal_sk_pangkat_terakhir ? \Carbon\Carbon::parse($pegawai->tanggal_sk_pangkat_terakhir)->translatedFormat('d F Y') : '4 Juni 2024');
         
         $dasarSkNomor   = $pegawai->nomor_sk_kgb_terakhir 
-            ?? ($pegawai->nomor_sk_pangkat_terakhir ?? '827/UN19.5.1.1.10/KP/2024');
+            ?? ($pegawai->nomor_sk_pangkat_terakhir ?? app(\App\Services\NomorSuratService::class)->format('827', 'KP', 2024));
         
         $dasarSkTmt     = $tmtDasar 
             ? \Carbon\Carbon::parse($tmtDasar)->translatedFormat('d F Y') 
@@ -146,16 +152,16 @@ class ReportController extends Controller
         $parafKabagAt = $sudahParafKabag ? $pengajuan->paraf_kabag_at->format('d/m/Y H:i') . ' WIB' : null;
 
         $qrPokjaUri = $sudahParafPokja 
-            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) 
+            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . $kapokjaData['nip']) 
             : null;
         $qrKabagUri = $sudahParafKabag 
-            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) 
+            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . $kabagData['nip']) 
             : null;
         $qrCodeDataUri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl) : null;
 
         $nomorSuratFormatted = !empty($pengajuan?->nomor_surat) 
             ? $pengajuan->nomor_surat 
-            : '............/UN19.5.1.1.10/KP/' . ($tahunSurat ?? date('Y'));
+            : app(\App\Services\NomorSuratService::class)->formatKarir('', (int) ($tahunSurat ?? date('Y')), false);
 
         $pdf = Pdf::loadView('exports.pdf.sk-kgb', compact(
             'kgb', 'pegawai', 'verifyUrl', 'verifyCode', 'qrCodeDataUri',
@@ -209,10 +215,17 @@ class ReportController extends Controller
             abort(403, 'Anda tidak memiliki hak akses untuk mencetak dokumen pegawai lain.');
         }
 
-        $pejabatDekan   = Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
-        $pejabatWd2     = Pegawai::where('nama', 'like', '%Safri%')->first();
-        $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
-        $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
+        // Pejabat Penandatangan Dinamis via PejabatService
+        $pejabatService = app(\App\Services\PejabatService::class);
+        $dekanData      = $pejabatService->getDekan();
+        $wadek2Data     = $pejabatService->getWadek2();
+        $kabagData      = $pejabatService->getKabag();
+        $kapokjaData    = $pejabatService->getKaPokja();
+
+        $pejabatDekan   = $dekanData['pegawai'];
+        $pejabatWd2     = $wadek2Data['pegawai'];
+        $pejabatKabag   = $kabagData['pegawai'];
+        $pejabatKaPokja = $kapokjaData['pegawai'];
 
         $watermarkService = app(\App\Services\DocumentWatermarkService::class);
         $verifyCodeKp = $watermarkService->generateVerificationCode('Surat Usulan Kenaikan Pangkat', 'KP/' . $pengajuan->pegawai->nip . '/' . date('Y'), $pengajuan->pegawai->nama_lengkap ?? $pengajuan->pegawai->nama);
@@ -228,16 +241,16 @@ class ReportController extends Controller
         $parafKabagAt = $sudahParafKabag ? Carbon::parse($pengajuan->paraf_kabag_at)->format('d/m/Y H:i') . ' WIB' : null;
 
         $qrPokjaUri = $sudahParafPokja 
-            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) 
+            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . $kapokjaData['nip']) 
             : null;
         $qrKabagUri = $sudahParafKabag 
-            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) 
+            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . $kabagData['nip']) 
             : null;
         $qrCodeDataUri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl) : null;
 
         $nomorSuratFormatted = !empty($pengajuan->nomor_surat)
             ? $pengajuan->nomor_surat
-            : 'B/............/UN19.5.1.1.10/KP/' . ($pengajuan->tahun_periode ?? date('Y'));
+            : app(\App\Services\NomorSuratService::class)->formatKarir('', (int) ($pengajuan->tahun_periode ?? date('Y')), true);
 
         $pdf = Pdf::loadView('exports.pdf.surat-usulan-kp', compact(
             'pengajuan', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja',

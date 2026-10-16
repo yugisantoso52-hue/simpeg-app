@@ -17,6 +17,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class PegawaiService
@@ -582,16 +583,12 @@ class PegawaiService
             if (!empty($changes)) {
                 $user = auth()->user();
                 $modifier = $user ? "User ID {$user->id} ({$user->name})" : "System/Console";
-                $logFilePath = storage_path('logs/audit_pegawai.log');
-                $logMessage = sprintf(
-                    "[%s] Pegawai ID %s (%s) diubah oleh %s. Perubahan: %s\n",
-                    now()->toDateTimeString(),
+                Log::info(sprintf(
+                    "Audit Pegawai: Pegawai ID %s (%s) diubah oleh %s.",
                     $pegawaiUpdated->id,
                     $pegawaiUpdated->nama,
-                    $modifier,
-                    json_encode($changes, JSON_UNESCAPED_UNICODE)
-                );
-                @file_put_contents($logFilePath, $logMessage, FILE_APPEND);
+                    $modifier
+                ), ['changes' => $changes]);
             }
 
             // Synchronize User table name and email if user exists

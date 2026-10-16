@@ -34,8 +34,18 @@ class CekKgbHarian extends Command
             $count = $paraPegawai->count();
             $this->info("Ditemukan {$count} pegawai yang masuk periode KGB. Mengirim notifikasi...");
 
-            // Kirim notifikasi ke semua user terdaftar di tabel users secara aman
-            $users = User::all();
+            // Kirim notifikasi ke user terkait (pegawai ybs) dan pengelola kepegawaian
+            $adminUsers = User::whereHas('role', function ($q) {
+                $q->whereIn('name', ['admin', 'pimpinan', 'kepegawaian', 'superadmin', 'hrd']);
+            })->get();
+            if ($adminUsers->isEmpty()) {
+                $adminUsers = User::whereHas('roles', function ($q) {
+                    $q->whereIn('name', ['admin', 'pimpinan', 'kepegawaian', 'superadmin', 'hrd']);
+                })->get();
+            }
+
+            $pegawaiUsers = User::whereIn('pegawai_id', $paraPegawai->pluck('id'))->get();
+            $users = $adminUsers->merge($pegawaiUsers)->unique('id');
 
             foreach ($users as $user) {
                 if (class_exists(KgbDueDateNotification::class)) {
@@ -43,8 +53,8 @@ class CekKgbHarian extends Command
                 }
             }
 
-            $this->info("✅ Notifikasi KGB berhasil dikirimkan ke {$users->count()} pengguna.");
-            Log::info("SIMPEG: Notifikasi KGB harian berhasil diproses untuk {$count} pegawai.");
+            $this->info("✅ Notifikasi KGB berhasil dikirimkan ke {$users->count()} pengguna relevan.");
+            Log::info("SIMPEG: Notifikasi KGB harian berhasil diproses untuk {$count} pegawai ke {$users->count()} penerima.");
 
         } catch (\Exception $e) {
             $this->error("❌ Terjadi kesalahan pada CekKgbHarian: " . $e->getMessage());

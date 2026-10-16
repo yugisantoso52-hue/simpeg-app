@@ -1220,22 +1220,30 @@ class ApprovalHierarchyService
         ];
     }
 
+    protected static array $memoizedJabatanPegawai = [];
+
     /**
-     * Helper cari Pegawai berdasarkan list nama jabatan
+     * Helper cari Pegawai berdasarkan list nama jabatan (dengan in-memory memoization)
      */
     public function findPegawaiByJabatan(array $jabatanNames): ?Pegawai
     {
+        $cacheKey = implode('|', $jabatanNames);
+        if (array_key_exists($cacheKey, self::$memoizedJabatanPegawai)) {
+            return self::$memoizedJabatanPegawai[$cacheKey];
+        }
+
         foreach ($jabatanNames as $name) {
-            $pegawai = Pegawai::whereHas('jabatan', function ($q) use ($name) {
-                $q->where('nama_jabatan', 'like', "%{$name}%");
-            })->first();
+            $pegawai = Pegawai::with(['jabatan', 'unitKerja'])
+                ->whereHas('jabatan', function ($q) use ($name) {
+                    $q->where('nama_jabatan', 'like', "%{$name}%");
+                })->first();
 
             if ($pegawai) {
-                return $pegawai;
+                return self::$memoizedJabatanPegawai[$cacheKey] = $pegawai;
             }
         }
 
-        return null;
+        return self::$memoizedJabatanPegawai[$cacheKey] = null;
     }
 
     /**

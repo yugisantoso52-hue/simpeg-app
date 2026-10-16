@@ -65,27 +65,11 @@ class DukExport implements FromCollection, WithMapping, WithHeadings, ShouldAuto
             $phlQuery->where($filterSearch);
         }
 
-        $sortDuk = function($collection) {
-            return $collection->sort(function($a, $b) {
-                $golA = $a->golongan->urutan ?? $a->golongan_id ?? 0;
-                $golB = $b->golongan->urutan ?? $b->golongan_id ?? 0;
-                if ($golA !== $golB) return $golB <=> $golA;
-
-                $tmtPangkatA = $a->tmt_pangkat_terakhir ? $a->tmt_pangkat_terakhir->timestamp : 0;
-                $tmtPangkatB = $b->tmt_pangkat_terakhir ? $b->tmt_pangkat_terakhir->timestamp : 0;
-                if ($tmtPangkatA !== $tmtPangkatB) return $tmtPangkatA <=> $tmtPangkatB;
-
-                $tglLahirA = $a->tanggal_lahir ? $a->tanggal_lahir->timestamp : 0;
-                $tglLahirB = $b->tanggal_lahir ? $b->tanggal_lahir->timestamp : 0;
-                return $tglLahirA <=> $tglLahirB;
-            })->values();
-        };
-
-        $this->dosenPnsList   = $sortDuk($dosenPnsQuery->get());
-        $this->dosenPppkList  = $sortDuk($dosenPppkQuery->get());
-        $this->tendikPnsList  = $sortDuk($tendikPnsQuery->get());
-        $this->tendikPppkList = $sortDuk($tendikPppkQuery->get());
-        $this->phlList        = $sortDuk($phlQuery->get());
+        $this->dosenPnsList   = Pegawai::sortDukCollection($dosenPnsQuery->get());
+        $this->dosenPppkList  = Pegawai::sortDukCollection($dosenPppkQuery->get());
+        $this->tendikPnsList  = Pegawai::sortDukCollection($tendikPnsQuery->get());
+        $this->tendikPppkList = Pegawai::sortDukCollection($tendikPppkQuery->get());
+        $this->phlList        = Pegawai::sortDukCollection($phlQuery->get());
     }
 
     public function collection()

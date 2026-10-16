@@ -4,7 +4,8 @@ namespace App\Exports;
 
 use App\Models\Logbook;
 use Carbon\Carbon;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -14,7 +15,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class LogbookExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
+class LogbookExport implements FromQuery, WithChunkReading, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
 {
     protected ?int $pegawaiId;
     protected ?int $month;
@@ -34,7 +35,7 @@ class LogbookExport implements FromCollection, WithHeadings, WithMapping, Should
         $this->bawahanIds = $bawahanIds;
     }
 
-    public function collection()
+    public function query()
     {
         $query = Logbook::with(['pegawai.unitKerja', 'pegawai.jabatan', 'verifikator'])
             ->whereYear('tanggal', $this->year)
@@ -58,7 +59,12 @@ class LogbookExport implements FromCollection, WithHeadings, WithMapping, Should
             $query->where('status', $this->status);
         }
 
-        return $query->orderBy('tanggal', 'asc')->orderBy('jam_mulai', 'asc')->get();
+        return $query->orderBy('tanggal', 'asc')->orderBy('jam_mulai', 'asc');
+    }
+
+    public function chunkSize(): int
+    {
+        return 500;
     }
 
     public function headings(): array

@@ -164,9 +164,7 @@ class SatyalancanaController extends Controller
             if ($request->filled('nomor_surat_input')) {
                 $nomorInput = trim((string) $request->input('nomor_surat_input'));
                 $tahun = $usulan->tahun_usulan ?: date('Y');
-                $updateData['nomor_surat_usulan'] = str_contains($nomorInput, '/UN19') 
-                    ? $nomorInput 
-                    : $nomorInput . '/UN19.5.1.1.10/KP/' . $tahun;
+                $updateData['nomor_surat_usulan'] = app(\App\Services\NomorSuratService::class)->formatSatyalancana($nomorInput, (int) $tahun);
             }
 
             $usulan->update($updateData);
@@ -230,12 +228,12 @@ class SatyalancanaController extends Controller
                 $dataWd2['verifikasi_admin_by'] = $user->id;
             }
             if (!$usulan->paraf_kapokja_at) {
-                $pokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
+                $pokja = app(\App\Services\PejabatService::class)->getKaPokjaPegawai();
                 $dataWd2['paraf_kapokja_at'] = now();
                 $dataWd2['paraf_kapokja_by'] = $pokja?->id;
             }
             if (!$usulan->paraf_kabag_at) {
-                $kabag = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
+                $kabag = app(\App\Services\PejabatService::class)->getKabagPegawai();
                 $dataWd2['paraf_kabag_at'] = now();
                 $dataWd2['paraf_kabag_by'] = $kabag?->id;
             }
@@ -311,10 +309,11 @@ class SatyalancanaController extends Controller
 
         $kategori = $this->satyalancanaService->cekKelayakanSatyalancana($pegawai) ?? '10 Tahun';
         
-        // Pejabat Dekan, WD2, Ka Pokja, dan Kabag Umum
-        $pejabatWd2     = Pegawai::where('nama', 'like', '%Safri%')->first() ?? Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
-        $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
-        $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
+        // Pejabat Dekan, WD2, Ka Pokja, dan Kabag Umum dinamis
+        $pejabatService = app(\App\Services\PejabatService::class);
+        $pejabatWd2     = $pejabatService->getWadek2Pegawai() ?? $pejabatService->getDekanPegawai();
+        $pejabatKaPokja = $pejabatService->getKaPokjaPegawai();
+        $pejabatKabag   = $pejabatService->getKabagPegawai();
 
         // Cari data usulan untuk waktu paraf faktual jika ada
         $usulan = UsulanSatyalancana::where('pegawai_id', $pegawai->id)
@@ -382,16 +381,14 @@ class SatyalancanaController extends Controller
         $nomorSuratInput = $isExecutiveOrAdmin ? trim((string) $request->input('nomor_surat_input', '')) : '';
 
         if ($nomorSuratInput !== '') {
-            $nomorSurat = str_contains($nomorSuratInput, '/UN19') 
-                ? $nomorSuratInput 
-                : $nomorSuratInput . '/UN19.5.1.1.10/KP/' . date('Y');
+            $nomorSurat = app(\App\Services\NomorSuratService::class)->formatSatyalancana($nomorSuratInput, (int) date('Y'));
         } else {
             // Ambil nomor surat yang sudah ditetapkan Admin pada usulan tahun berjalan
             $existingNomor = UsulanSatyalancana::where('tahun_usulan', date('Y'))
                 ->whereNotNull('nomor_surat_usulan')
                 ->where('nomor_surat_usulan', 'like', '%/UN19%')
                 ->value('nomor_surat_usulan');
-            $nomorSurat = $existingNomor ?? $request->input('nomor_surat', '2422/UN19.5.1.1.10/KP/' . date('Y'));
+            $nomorSurat = $existingNomor ?? app(\App\Services\NomorSuratService::class)->formatSatyalancana($request->input('nomor_surat', '2422'), (int) date('Y'));
         }
 
         $tanggalSuratInput = $request->input('tanggal_surat');
@@ -431,9 +428,10 @@ class SatyalancanaController extends Controller
             }
         }
 
-        $pejabatWd2     = Pegawai::where('nama', 'like', '%Safri%')->first() ?? Pegawai::where('nama', 'like', '%Wan Nishfa Dewi%')->first();
-        $pejabatKaPokja = Pegawai::where('nama', 'like', '%Dolli Vita%')->first();
-        $pejabatKabag   = Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
+        $pejabatService = app(\App\Services\PejabatService::class);
+        $pejabatWd2     = $pejabatService->getWadek2Pegawai() ?? $pejabatService->getDekanPegawai();
+        $pejabatKaPokja = $pejabatService->getKaPokjaPegawai();
+        $pejabatKabag   = $pejabatService->getKabagPegawai();
 
         // Hitung status kolektif dari usulan yang ada
         // Minimal ada usulan yang telah diverifikasi/diparaf
@@ -505,9 +503,7 @@ class SatyalancanaController extends Controller
         $tahun = $usulan->tahun_usulan ?: date('Y');
 
         if ($nomorInput !== '') {
-            $nomorSuratFormatted = str_contains($nomorInput, '/UN19') 
-                ? $nomorInput 
-                : $nomorInput . '/UN19.5.1.1.10/KP/' . $tahun;
+            $nomorSuratFormatted = app(\App\Services\NomorSuratService::class)->formatSatyalancana($nomorInput, (int) $tahun);
         } else {
             $nomorSuratFormatted = null;
         }
