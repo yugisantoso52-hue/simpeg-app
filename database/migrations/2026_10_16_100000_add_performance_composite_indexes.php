@@ -23,7 +23,7 @@ return new class extends Migration
 
         $this->addIndexSafely('pengajuan_cuti', ['pegawai_id', 'jenis_cuti', 'status'], 'idx_cuti_pegawai_status');
 
-        $this->addIndexSafely('talent_mappings', ['tahun', 'kuadran'], 'idx_tm_tahun_kuadran');
+        $this->addIndexSafely('talent_mappings', ['tahun', 'kuadran_box'], 'idx_tm_tahun_kuadran');
     }
 
     /**
