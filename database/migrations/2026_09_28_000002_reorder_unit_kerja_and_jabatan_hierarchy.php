@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -14,78 +15,78 @@ return new class extends Migration
         // 1. DATA MASTER UNIT KERJA TERURUT HIERARKI TERTINGGI KE TERENDAH
         $unitKerjas = [
             [
-                'kode_unit'  => 'UK-001',
-                'nama_unit'  => 'Dekanat / Pimpinan Fakultas',
+                'kode_unit' => 'UK-001',
+                'nama_unit' => 'Dekanat / Pimpinan Fakultas',
                 'keterangan' => 'Unsur Pimpinan Fakultas Keperawatan UNRI (Dekan & para Wadek)',
             ],
             [
-                'kode_unit'  => 'UK-002',
-                'nama_unit'  => 'Senat Fakultas',
+                'kode_unit' => 'UK-002',
+                'nama_unit' => 'Senat Fakultas',
                 'keterangan' => 'Unsur Pertimbangan Normatif dan Perwakilan Fakultas',
             ],
             [
-                'kode_unit'  => 'UK-003',
-                'nama_unit'  => 'Satuan Penjamin Mutu (SPMF) & GPM',
+                'kode_unit' => 'UK-003',
+                'nama_unit' => 'Satuan Penjamin Mutu (SPMF) & GPM',
                 'keterangan' => 'Unsur Penjaminan Mutu Fakultas & Prodi (GPM S1, S2, Ners)',
             ],
             [
-                'kode_unit'  => 'UK-004',
-                'nama_unit'  => 'Jurusan Keperawatan',
+                'kode_unit' => 'UK-004',
+                'nama_unit' => 'Jurusan Keperawatan',
                 'keterangan' => 'Unit Pengelola Jurusan Induk Keperawatan Fakultas Keperawatan',
             ],
             [
-                'kode_unit'  => 'UK-005',
-                'nama_unit'  => 'Jurusan Preklinik Keperawatan',
+                'kode_unit' => 'UK-005',
+                'nama_unit' => 'Jurusan Preklinik Keperawatan',
                 'keterangan' => 'Jurusan Preklinik Keperawatan Fakultas Keperawatan',
             ],
             [
-                'kode_unit'  => 'UK-006',
-                'nama_unit'  => 'Jurusan Klinik dan Komunitas',
+                'kode_unit' => 'UK-006',
+                'nama_unit' => 'Jurusan Klinik dan Komunitas',
                 'keterangan' => 'Jurusan Klinik dan Komunitas Fakultas Keperawatan',
             ],
             [
-                'kode_unit'  => 'UK-007',
-                'nama_unit'  => 'Program Studi S2 Keperawatan',
+                'kode_unit' => 'UK-007',
+                'nama_unit' => 'Program Studi S2 Keperawatan',
                 'keterangan' => 'Program Studi Magister Keperawatan (S2)',
             ],
             [
-                'kode_unit'  => 'UK-008',
-                'nama_unit'  => 'Program Studi Profesi Ners',
+                'kode_unit' => 'UK-008',
+                'nama_unit' => 'Program Studi Profesi Ners',
                 'keterangan' => 'Program Studi Pendidikan Profesi Ners',
             ],
             [
-                'kode_unit'  => 'UK-009',
-                'nama_unit'  => 'Program Studi S1 Keperawatan',
+                'kode_unit' => 'UK-009',
+                'nama_unit' => 'Program Studi S1 Keperawatan',
                 'keterangan' => 'Program Studi Sarjana Keperawatan (S1)',
             ],
             [
-                'kode_unit'  => 'UK-010',
-                'nama_unit'  => 'Bagian Umum',
+                'kode_unit' => 'UK-010',
+                'nama_unit' => 'Bagian Umum',
                 'keterangan' => 'Bagian Tata Usaha & Administrasi Umum Fakultas Keperawatan',
             ],
             [
-                'kode_unit'  => 'UK-011',
-                'nama_unit'  => 'Pokja Akademik dan Kemahasiswaan',
+                'kode_unit' => 'UK-011',
+                'nama_unit' => 'Pokja Akademik dan Kemahasiswaan',
                 'keterangan' => 'Kelompok Kerja Bidang Akademik dan Kemahasiswaan',
             ],
             [
-                'kode_unit'  => 'UK-012',
-                'nama_unit'  => 'Pokja Keuangan dan Kepepegawaian',
+                'kode_unit' => 'UK-012',
+                'nama_unit' => 'Pokja Keuangan dan Kepepegawaian',
                 'keterangan' => 'Kelompok Kerja Keuangan dan Kepepegawaian',
             ],
             [
-                'kode_unit'  => 'UK-013',
-                'nama_unit'  => 'Pokja Umum Sarana Akademik',
+                'kode_unit' => 'UK-013',
+                'nama_unit' => 'Pokja Umum Sarana Akademik',
                 'keterangan' => 'Kelompok Kerja Umum Sarana Akademik',
             ],
             [
-                'kode_unit'  => 'UK-014',
-                'nama_unit'  => 'Laboratorium Keperawatan',
+                'kode_unit' => 'UK-014',
+                'nama_unit' => 'Laboratorium Keperawatan',
                 'keterangan' => 'Unit Pelaksana Teknis Laboratorium Keperawatan (9 Ruang Lab)',
             ],
             [
-                'kode_unit'  => 'UK-015',
-                'nama_unit'  => 'Unit-Unit Fungsional',
+                'kode_unit' => 'UK-015',
+                'nama_unit' => 'Unit-Unit Fungsional',
                 'keterangan' => 'Unit Etik, CBT, NEDU, P2M, Kerjasama, Konseling, Humas, PPID',
             ],
         ];
@@ -96,220 +97,220 @@ return new class extends Migration
             [
                 'kode_jabatan' => 'JB-001',
                 'nama_jabatan' => 'Dekan',
-                'keterangan'   => 'Pimpinan Tertinggi Fakultas Keperawatan UNRI',
+                'keterangan' => 'Pimpinan Tertinggi Fakultas Keperawatan UNRI',
             ],
             [
                 'kode_jabatan' => 'JB-002',
                 'nama_jabatan' => 'Wakil Dekan I (Bid. Akademik)',
-                'keterangan'   => 'Wakil Dekan Bidang Akademik (WD I)',
+                'keterangan' => 'Wakil Dekan Bidang Akademik (WD I)',
             ],
             [
                 'kode_jabatan' => 'JB-003',
                 'nama_jabatan' => 'Wakil Dekan II (Bid. Keuangan dan Umum)',
-                'keterangan'   => 'Wakil Dekan Bidang Keuangan dan Umum (WD II)',
+                'keterangan' => 'Wakil Dekan Bidang Keuangan dan Umum (WD II)',
             ],
             [
                 'kode_jabatan' => 'JB-004',
                 'nama_jabatan' => 'Wakil Dekan III (Bid. Kemahasiswaan, Alumni dan Kerjasama)',
-                'keterangan'   => 'Wakil Dekan Bidang Kemahasiswaan, Alumni dan Kerjasama (WD III)',
+                'keterangan' => 'Wakil Dekan Bidang Kemahasiswaan, Alumni dan Kerjasama (WD III)',
             ],
 
             // --- 2. UNSUR SENAT & PENJAMINAN MUTU ---
             [
                 'kode_jabatan' => 'JB-005',
                 'nama_jabatan' => 'Ketua Senat Fakultas',
-                'keterangan'   => 'Ketua Senat Fakultas Keperawatan UNRI',
+                'keterangan' => 'Ketua Senat Fakultas Keperawatan UNRI',
             ],
             [
                 'kode_jabatan' => 'JB-006',
                 'nama_jabatan' => 'Sekretaris Senat Fakultas',
-                'keterangan'   => 'Sekretaris Senat Fakultas Keperawatan UNRI',
+                'keterangan' => 'Sekretaris Senat Fakultas Keperawatan UNRI',
             ],
             [
                 'kode_jabatan' => 'JB-007',
                 'nama_jabatan' => 'Kepala SPMF / GPM',
-                'keterangan'   => 'Penanggung Jawab Penjaminan Mutu Fakultas (SPMF) & GPM',
+                'keterangan' => 'Penanggung Jawab Penjaminan Mutu Fakultas (SPMF) & GPM',
             ],
 
             // --- 3. UNSUR JURUSAN KEPERAWATAN (KAJUR INDUK & BIDANG) ---
             [
                 'kode_jabatan' => 'JB-008',
                 'nama_jabatan' => 'Ketua Jurusan (Kajur)',
-                'keterangan'   => 'Ketua Jurusan Keperawatan (Membawahi Prodi & Jurusan Bidang)',
+                'keterangan' => 'Ketua Jurusan Keperawatan (Membawahi Prodi & Jurusan Bidang)',
             ],
             [
                 'kode_jabatan' => 'JB-009',
                 'nama_jabatan' => 'Sekretaris Jurusan',
-                'keterangan'   => 'Sekretaris Jurusan Keperawatan',
+                'keterangan' => 'Sekretaris Jurusan Keperawatan',
             ],
             [
                 'kode_jabatan' => 'JB-010',
                 'nama_jabatan' => 'Ketua Jurusan Preklinik Keperawatan',
-                'keterangan'   => 'Ketua Jurusan Preklinik Keperawatan',
+                'keterangan' => 'Ketua Jurusan Preklinik Keperawatan',
             ],
             [
                 'kode_jabatan' => 'JB-011',
                 'nama_jabatan' => 'Sekretaris Jurusan Preklinik Keperawatan',
-                'keterangan'   => 'Sekretaris Jurusan Preklinik Keperawatan',
+                'keterangan' => 'Sekretaris Jurusan Preklinik Keperawatan',
             ],
             [
                 'kode_jabatan' => 'JB-012',
                 'nama_jabatan' => 'Ketua Jurusan Klinik dan Komunitas',
-                'keterangan'   => 'Ketua Jurusan Klinik dan Komunitas',
+                'keterangan' => 'Ketua Jurusan Klinik dan Komunitas',
             ],
             [
                 'kode_jabatan' => 'JB-013',
                 'nama_jabatan' => 'Sekretaris Jurusan Klinik dan Komunitas',
-                'keterangan'   => 'Sekretaris Jurusan Klinik dan Komunitas',
+                'keterangan' => 'Sekretaris Jurusan Klinik dan Komunitas',
             ],
 
             // --- 4. KOORDINATOR PROGRAM STUDI & KJFD ---
             [
                 'kode_jabatan' => 'JB-014',
                 'nama_jabatan' => 'Koordinator Prodi S2 Keperawatan',
-                'keterangan'   => 'Koordinator Program Studi Magister (S2) Keperawatan',
+                'keterangan' => 'Koordinator Program Studi Magister (S2) Keperawatan',
             ],
             [
                 'kode_jabatan' => 'JB-015',
                 'nama_jabatan' => 'Koordinator Prodi S1 Keperawatan',
-                'keterangan'   => 'Koordinator Program Studi Sarjana (S1) Keperawatan',
+                'keterangan' => 'Koordinator Program Studi Sarjana (S1) Keperawatan',
             ],
             [
                 'kode_jabatan' => 'JB-016',
                 'nama_jabatan' => 'Koordinator Prodi Ners',
-                'keterangan'   => 'Koordinator Program Studi Pendidikan Profesi Ners',
+                'keterangan' => 'Koordinator Program Studi Pendidikan Profesi Ners',
             ],
             [
                 'kode_jabatan' => 'JB-017',
                 'nama_jabatan' => 'Ketua Kelompok Jabatan Fungsional Dosen (KJFD)',
-                'keterangan'   => 'Ketua Kelompok Jabatan Fungsional Dosen',
+                'keterangan' => 'Ketua Kelompok Jabatan Fungsional Dosen',
             ],
 
             // --- 5. TATA USAHA, LABORATORIUM & UNIT FUNGSIONAL ---
             [
                 'kode_jabatan' => 'JB-018',
                 'nama_jabatan' => 'Kepala Bagian Umum',
-                'keterangan'   => 'Kepala Bagian Umum / Kabag TU Fakultas Keperawatan',
+                'keterangan' => 'Kepala Bagian Umum / Kabag TU Fakultas Keperawatan',
             ],
             [
                 'kode_jabatan' => 'JB-019',
                 'nama_jabatan' => 'Kepala UPT Laboratorium Keperawatan',
-                'keterangan'   => 'Kepala Laboratorium Keperawatan Fakultas',
+                'keterangan' => 'Kepala Laboratorium Keperawatan Fakultas',
             ],
             [
                 'kode_jabatan' => 'JB-020',
                 'nama_jabatan' => 'Kepala Unit Fungsional',
-                'keterangan'   => 'Kepala Unit Etik / CBT / NEDU / P2M / Konseling / Humas / PPID',
+                'keterangan' => 'Kepala Unit Etik / CBT / NEDU / P2M / Konseling / Humas / PPID',
             ],
 
             // --- 6. KEPALA POKJA (KELOMPOK KERJA) ---
             [
                 'kode_jabatan' => 'JB-021',
                 'nama_jabatan' => 'Ka Pokja Akademik',
-                'keterangan'   => 'Kepala Pokja Akademik dan Kemahasiswaan',
+                'keterangan' => 'Kepala Pokja Akademik dan Kemahasiswaan',
             ],
             [
                 'kode_jabatan' => 'JB-022',
                 'nama_jabatan' => 'Ka Pokja Keu-Kepeg',
-                'keterangan'   => 'Kepala Pokja Keuangan dan Kepepegawaian',
+                'keterangan' => 'Kepala Pokja Keuangan dan Kepepegawaian',
             ],
             [
                 'kode_jabatan' => 'JB-023',
                 'nama_jabatan' => 'Ka Pokja Umum Sarana Akademik',
-                'keterangan'   => 'Kepala Pokja Umum Sarana Akademik',
+                'keterangan' => 'Kepala Pokja Umum Sarana Akademik',
             ],
 
             // --- 7. JABATAN FUNGSIONAL DOSEN ---
             [
                 'kode_jabatan' => 'JB-024',
                 'nama_jabatan' => 'Guru Besar',
-                'keterangan'   => 'Jabatan Fungsional Dosen — Guru Besar / Profesor',
+                'keterangan' => 'Jabatan Fungsional Dosen — Guru Besar / Profesor',
             ],
             [
                 'kode_jabatan' => 'JB-025',
                 'nama_jabatan' => 'Lektor Kepala',
-                'keterangan'   => 'Jabatan Fungsional Dosen — Lektor Kepala',
+                'keterangan' => 'Jabatan Fungsional Dosen — Lektor Kepala',
             ],
             [
                 'kode_jabatan' => 'JB-026',
                 'nama_jabatan' => 'Lektor',
-                'keterangan'   => 'Jabatan Fungsional Dosen — Lektor',
+                'keterangan' => 'Jabatan Fungsional Dosen — Lektor',
             ],
             [
                 'kode_jabatan' => 'JB-027',
                 'nama_jabatan' => 'Asisten Ahli',
-                'keterangan'   => 'Jabatan Fungsional Dosen — Asisten Ahli',
+                'keterangan' => 'Jabatan Fungsional Dosen — Asisten Ahli',
             ],
             [
                 'kode_jabatan' => 'JB-028',
                 'nama_jabatan' => 'Dosen S2 Keperawatan',
-                'keterangan'   => 'Dosen Fungsional Prodi Magister (S2) Keperawatan',
+                'keterangan' => 'Dosen Fungsional Prodi Magister (S2) Keperawatan',
             ],
             [
                 'kode_jabatan' => 'JB-029',
                 'nama_jabatan' => 'Dosen S1 Keperawatan',
-                'keterangan'   => 'Dosen Fungsional Prodi Sarjana (S1) Keperawatan',
+                'keterangan' => 'Dosen Fungsional Prodi Sarjana (S1) Keperawatan',
             ],
             [
                 'kode_jabatan' => 'JB-030',
                 'nama_jabatan' => 'Dosen Profesi Ners',
-                'keterangan'   => 'Dosen Fungsional Prodi Profesi Ners',
+                'keterangan' => 'Dosen Fungsional Prodi Profesi Ners',
             ],
 
             // --- 8. FUNGSIONAL TENDIK & LABORAN ---
             [
                 'kode_jabatan' => 'JB-031',
                 'nama_jabatan' => 'Pranata Laboratorium Pendidikan (PLP / Laboran)',
-                'keterangan'   => 'Jabatan Fungsional PLP / Laboran Lab Keperawatan',
+                'keterangan' => 'Jabatan Fungsional PLP / Laboran Lab Keperawatan',
             ],
             [
                 'kode_jabatan' => 'JB-032',
                 'nama_jabatan' => 'Pustakawan',
-                'keterangan'   => 'Jabatan Fungsional Pustakawan Perpustakaan Fakultas',
+                'keterangan' => 'Jabatan Fungsional Pustakawan Perpustakaan Fakultas',
             ],
 
             // --- 9. STAF PELAKSANA POKJA ---
             [
                 'kode_jabatan' => 'JB-033',
                 'nama_jabatan' => 'Staff Pokja Akademik dan Kemahasiswaan',
-                'keterangan'   => 'Staf Pelaksana Pokja Akademik dan Kemahasiswaan',
+                'keterangan' => 'Staf Pelaksana Pokja Akademik dan Kemahasiswaan',
             ],
             [
                 'kode_jabatan' => 'JB-034',
                 'nama_jabatan' => 'Staff Pokja Keu & Kepeg',
-                'keterangan'   => 'Staf Pelaksana Pokja Keuangan dan Kepepegawaian',
+                'keterangan' => 'Staf Pelaksana Pokja Keuangan dan Kepepegawaian',
             ],
             [
                 'kode_jabatan' => 'JB-035',
                 'nama_jabatan' => 'Staff Pokja Umum Sarana Akademik',
-                'keterangan'   => 'Staf Pelaksana Pokja Umum Sarana Akademik',
+                'keterangan' => 'Staf Pelaksana Pokja Umum Sarana Akademik',
             ],
 
             // --- 10. TENAGA PELAKSANA ADMINISTRASI & TEKNIS ---
             [
                 'kode_jabatan' => 'JB-036',
                 'nama_jabatan' => 'Pengolah Data dan Informasi',
-                'keterangan'   => 'Pelaksana Pengolah Data & Sistem Informasi',
+                'keterangan' => 'Pelaksana Pengolah Data & Sistem Informasi',
             ],
             [
                 'kode_jabatan' => 'JB-037',
                 'nama_jabatan' => 'Pengadministrasi Perkantoran',
-                'keterangan'   => 'Pelaksana Layanan Administrasi Perkantoran',
+                'keterangan' => 'Pelaksana Layanan Administrasi Perkantoran',
             ],
             [
                 'kode_jabatan' => 'JB-038',
                 'nama_jabatan' => 'Penata Layanan Operasional',
-                'keterangan'   => 'Pelaksana Penata Layanan Operasional',
+                'keterangan' => 'Pelaksana Penata Layanan Operasional',
             ],
             [
                 'kode_jabatan' => 'JB-039',
                 'nama_jabatan' => 'Operator Layanan Operasional',
-                'keterangan'   => 'Pelaksana Operator Layanan Operasional',
+                'keterangan' => 'Pelaksana Operator Layanan Operasional',
             ],
             [
                 'kode_jabatan' => 'JB-040',
                 'nama_jabatan' => 'PHL / PPNPN',
-                'keterangan'   => 'Pegawai Harian Lepas / Tenaga Kontrak Non-ASN',
+                'keterangan' => 'Pegawai Harian Lepas / Tenaga Kontrak Non-ASN',
             ],
         ];
 
@@ -322,7 +323,7 @@ return new class extends Migration
         $oldJbMap = DB::table('jabatan')->pluck('nama_jabatan', 'id')->toArray();
 
         // Matikan Foreign Key Checks
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schema::disableForeignKeyConstraints();
 
         // Kosongkan tabel Unit Kerja dan Jabatan
         DB::table('unit_kerja')->truncate();
@@ -332,8 +333,8 @@ return new class extends Migration
         $newUkNameToId = [];
         foreach ($unitKerjas as $uk) {
             $id = DB::table('unit_kerja')->insertGetId([
-                'kode_unit'  => $uk['kode_unit'],
-                'nama_unit'  => $uk['nama_unit'],
+                'kode_unit' => $uk['kode_unit'],
+                'nama_unit' => $uk['nama_unit'],
                 'keterangan' => $uk['keterangan'],
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -347,9 +348,9 @@ return new class extends Migration
             $id = DB::table('jabatan')->insertGetId([
                 'kode_jabatan' => $jb['kode_jabatan'],
                 'nama_jabatan' => $jb['nama_jabatan'],
-                'keterangan'   => $jb['keterangan'],
-                'created_at'   => now(),
-                'updated_at'   => now(),
+                'keterangan' => $jb['keterangan'],
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
             $newJbNameToId[$jb['nama_jabatan']] = $id;
         }
@@ -379,7 +380,7 @@ return new class extends Migration
         }
 
         // Aktifkan kembali Foreign Key Checks
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::enableForeignKeyConstraints();
     }
 
     /**
