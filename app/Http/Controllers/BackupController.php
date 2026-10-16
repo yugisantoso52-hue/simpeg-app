@@ -66,11 +66,11 @@ class BackupController extends Controller
         $connection = config('database.default');
         $config = config("database.connections.{$connection}");
 
-        $database = $config['database'] ?? env('DB_DATABASE', 'laravel');
-        $username = $config['username'] ?? env('DB_USERNAME', 'root');
-        $password = $config['password'] ?? env('DB_PASSWORD', '');
-        $host     = $config['host'] ?? env('DB_HOST', '127.0.0.1');
-        $port     = $config['port'] ?? env('DB_PORT', '3306');
+        $database = $config['database'] ?? config('database.connections.mysql.database', 'laravel');
+        $username = $config['username'] ?? config('database.connections.mysql.username', 'root');
+        $password = $config['password'] ?? config('database.connections.mysql.password', '');
+        $host     = $config['host'] ?? config('database.connections.mysql.host', '127.0.0.1');
+        $port     = $config['port'] ?? config('database.connections.mysql.port', '3306');
 
         $backupDir = storage_path('app/backups');
         if (!File::isDirectory($backupDir)) {
@@ -121,18 +121,25 @@ class BackupController extends Controller
     public function restore(Request $request)
     {
         $request->validate([
-            'backup_file' => ['required', 'file', 'max:102400'], // Maksimal 100MB
+            'backup_file' => ['required', 'file', 'max:102400', 'mimes:sql,txt'], // Maksimal 100MB, hanya .sql
         ], [
             'backup_file.required' => 'Silakan pilih file backup .sql yang ingin direstore.',
             'backup_file.file' => 'File yang diunggah tidak valid.',
             'backup_file.max' => 'Ukuran file backup tidak boleh melebihi 100MB.',
+            'backup_file.mimes' => 'File backup harus berformat .sql atau .txt.',
         ]);
 
         $file = $request->file('backup_file');
         $extension = strtolower($file->getClientOriginalExtension());
+        $filename = basename($file->getClientOriginalName());
 
         if ($extension !== 'sql') {
             return redirect()->route('backup.index')->with('error', 'File yang diunggah wajib memiliki ekstensi .sql');
+        }
+
+        // Sanitasi: Validasi nama file untuk mencegah path traversal
+        if (!preg_match('/^[a-zA-Z0-9_\-\.]+\.sql$/', $filename)) {
+            return redirect()->route('backup.index')->with('error', 'Nama file backup mengandung karakter tidak valid.');
         }
 
         set_time_limit(600);
@@ -288,11 +295,10 @@ class BackupController extends Controller
      */
     protected function findMysqldumpPath(): ?string
     {
-        // 1. Cek dari .env jika didefinisikan
-        if ($envPath = env('MYSQLDUMP_PATH')) {
-            if (File::exists($envPath)) {
-                return $envPath;
-            }
+        // 1. Cek dari konfigurasi jika didefinisikan
+        $configPath = config('services.backup.mysqldump_path');
+        if ($configPath && File::exists($configPath)) {
+            return $configPath;
         }
 
         // 2. Cek lokasi Laragon di Windows

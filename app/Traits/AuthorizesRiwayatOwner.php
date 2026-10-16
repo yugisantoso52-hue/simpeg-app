@@ -14,7 +14,8 @@ trait AuthorizesRiwayatOwner
             abort(401);
         }
 
-        if ($user->hasRole('admin')) {
+        if ($user->hasRole(['admin', 'super-admin', 'Super Admin', 'Administrator']) || 
+            (method_exists($user, 'canAccessExecutiveKepegawaianMenus') && $user->canAccessExecutiveKepegawaianMenus())) {
             return;
         }
 
@@ -25,8 +26,10 @@ trait AuthorizesRiwayatOwner
             $recordPegawaiId = $existing['pegawai_id'] ?? null;
         }
 
-        if (!$recordPegawaiId || (int)$user->pegawai_id !== (int)$recordPegawaiId) {
-            abort(403, 'Anda tidak memiliki hak akses untuk mengubah atau menghapus data riwayat milik pegawai lain.');
+        $userPegawaiId = $user->pegawai_id ?? $user->pegawai?->id;
+
+        if (!$recordPegawaiId || (int)$userPegawaiId !== (int)$recordPegawaiId) {
+            abort(403, 'Anda tidak memiliki hak akses untuk melihat, mengubah, atau menghapus data riwayat milik pegawai lain.');
         }
     }
 }

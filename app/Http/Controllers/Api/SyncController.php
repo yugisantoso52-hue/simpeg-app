@@ -27,7 +27,7 @@ class SyncController extends Controller
     public function receive(Request $request)
     {
         // Verifikasi Kunci Rahasia Sinkronisasi
-        $secretKey = env('SYNC_SECRET_KEY');
+        $secretKey = config('services.sync.secret_key');
         if (empty($secretKey) || !hash_equals((string)$secretKey, (string)$request->header('X-Sync-Secret'))) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
@@ -67,14 +67,18 @@ class SyncController extends Controller
                     $payload['sync_uuid'] = $validated['sync_uuid'];
                     $payload['last_synced_at'] = now();
 
+                    $modelInstance = new $modelClass;
+                    $allowedFields = array_merge($modelInstance->getFillable(), ['sync_uuid', 'last_synced_at']);
+                    $filteredPayload = array_intersect_key($payload, array_flip($allowedFields));
+
                     if ($existing) {
-                        $existing->forceFill($payload)->save();
+                        $existing->fill($filteredPayload)->save();
                     } else {
-                        if ($validated['table_name'] === 'users' && empty($payload['password'])) {
-                            $payload['password'] = \Illuminate\Support\Facades\Hash::make('password');
+                        if ($validated['table_name'] === 'users' && empty($filteredPayload['password'])) {
+                            $filteredPayload['password'] = \Illuminate\Support\Facades\Hash::make('password');
                         }
                         $instance = new $modelClass;
-                        $instance->forceFill($payload)->save();
+                        $instance->fill($filteredPayload)->save();
                     }
                 }
             });
@@ -92,7 +96,7 @@ class SyncController extends Controller
     public function changes(Request $request)
     {
         // Verifikasi Kunci Rahasia Sinkronisasi
-        $secretKey = env('SYNC_SECRET_KEY');
+        $secretKey = config('services.sync.secret_key');
         if (empty($secretKey) || !hash_equals((string)$secretKey, (string)$request->header('X-Sync-Secret'))) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }

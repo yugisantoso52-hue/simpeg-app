@@ -37,7 +37,7 @@ trait RecordsSyncOutbox
 
     protected static function recordToOutbox($model, $action)
     {
-        if (!config('services.sync.outbox_enabled', env('SYNC_OUTBOX_ENABLED', false))) {
+        if (!config('services.sync.outbox_enabled', false)) {
             return;
         }
 

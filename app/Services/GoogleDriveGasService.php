@@ -17,9 +17,9 @@ class GoogleDriveGasService
 
     public function __construct()
     {
-        $this->webAppUrl   = config('services.gas_drive.web_app_url') ?? env('GAS_DRIVE_WEBAPP_URL', '');
-        $this->apiKey      = config('services.gas_drive.api_key') ?? env('GAS_DRIVE_API_KEY', 'SIKAP_UNRI_SECURE_KEY_2026');
-        $this->rootFolderId = config('services.gas_drive.root_folder_id') ?? env('GAS_DRIVE_ROOT_FOLDER_ID', '1Q1pGfeA2brd3KPmErFNiRnzwGnjw0gex');
+        $this->webAppUrl    = config('services.gas_drive.web_app_url', '');
+        $this->apiKey       = config('services.gas_drive.api_key', '');
+        $this->rootFolderId = config('services.gas_drive.root_folder_id', '');
     }
 
     /**

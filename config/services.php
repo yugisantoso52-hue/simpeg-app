@@ -37,14 +37,23 @@ return [
 
     'gas_drive' => [
         'web_app_url'    => env('GAS_DRIVE_WEBAPP_URL'),
-        'api_key'        => env('GAS_DRIVE_API_KEY', 'SIKAP_UNRI_SECURE_KEY_2026'),
-        'root_folder_id' => env('GAS_DRIVE_ROOT_FOLDER_ID', '1Q1pGfeA2brd3KPmErFNiRnzwGnjw0gex'),
+        'api_key'        => env('GAS_DRIVE_API_KEY'),
+        'root_folder_id' => env('GAS_DRIVE_ROOT_FOLDER_ID'),
     ],
 
     'sync' => [
         'outbox_enabled' => env('SYNC_OUTBOX_ENABLED', false),
         'secret_key'     => env('SYNC_SECRET_KEY'),
-        'online_url'     => env('ONLINE_SYNC_URL', 'http://localhost/api/v1/sync/receive'),
+        'token'          => env('SYNC_TOKEN'),
+        'online_url'     => env('ONLINE_SYNC_URL'),
+    ],
+
+    'deploy' => [
+        'webhook_secret' => env('DEPLOY_WEBHOOK_KEY'),
+    ],
+
+    'backup' => [
+        'mysqldump_path' => env('MYSQLDUMP_PATH'),
     ],
 
 ];

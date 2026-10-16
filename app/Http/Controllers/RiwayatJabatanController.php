@@ -123,6 +123,8 @@ class RiwayatJabatanController extends Controller
      */
     public function showByPegawai(int $pegawaiId)
     {
+        $this->authorizeOwnerOrAdmin(['pegawai_id' => $pegawaiId]);
+
         $data = $this->service->getByPegawai($pegawaiId);
 
         return view(

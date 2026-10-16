@@ -10,114 +10,60 @@ use Illuminate\Support\Facades\File;
 class DeployWebhookController extends Controller
 {
     /**
-     * Webhook Endpoint untuk Auto-Deploy 100% Otomatis (Pure PHP Engine)
+     * Webhook Endpoint untuk Auto-Deploy (Secured with HMAC-SHA256)
+     *
+     * Accepts GitHub-style webhook payloads with X-Hub-Signature-256 header.
+     * The patch_file mechanism has been removed for security (RCE risk).
      */
     public function handle(Request $request)
     {
-        $inputKey = $request->query('key') ?? $request->header('X-Deploy-Key') ?? $request->input('key');
-        $expectedKey = env('DEPLOY_WEBHOOK_KEY', 'sikap_deploy_sec_2026_unri');
+        $secret = config('services.deploy.webhook_secret');
 
-        if (empty($inputKey) || !hash_equals((string)$expectedKey, (string)$inputKey)) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'Akses ditolak. Token deploy tidak valid.'
-            ], 401);
+        // If no webhook secret is configured, reject all requests
+        if (empty($secret)) {
+            Log::warning('Deploy webhook called but DEPLOY_WEBHOOK_KEY is not configured.');
+            abort(403, 'Webhook secret is not configured on this server.');
+        }
+
+        // Verify HMAC-SHA256 signature from X-Hub-Signature-256 header
+        $signature = $request->header('X-Hub-Signature-256');
+        if (empty($signature)) {
+            abort(403, 'Missing X-Hub-Signature-256 header.');
+        }
+
+        $computedSignature = 'sha256=' . hash_hmac('sha256', $request->getContent(), $secret);
+        if (!hash_equals($computedSignature, $signature)) {
+            Log::warning('Deploy webhook signature mismatch.', [
+                'ip' => $request->ip(),
+            ]);
+            abort(403, 'Invalid webhook signature.');
         }
 
         set_time_limit(300);
         ini_set('memory_limit', '512M');
 
-        // Mode Diagnostik Cepat (Tanpa re-download zip jika diagnose=1)
-        if ($request->query('diagnose') == '1') {
-            try {
-                $anjabs = \App\Models\AnalisisJabatan::with(['jabatan', 'unitKerja'])->get();
-                $tablesStatus = [
-                    'talent_assessments' => \Illuminate\Support\Facades\Schema::hasTable('talent_assessments'),
-                    'talent_mappings' => \Illuminate\Support\Facades\Schema::hasTable('talent_mappings'),
-                    'succession_plans' => \Illuminate\Support\Facades\Schema::hasTable('succession_plans'),
-                ];
-
-                return response()->json([
-                    'status' => 'diagnose',
-                    'tables' => $tablesStatus,
-                    'anjabs_count' => $anjabs->count(),
-                    'total_bezetting' => $anjabs->sum('bezetting'),
-                    'total_kebutuhan' => $anjabs->sum('formasi_pembulatan'),
-                    'ideal_count' => $anjabs->filter(fn($a) => $a->selisih_formasi == 0)->count(),
-                    'defisit_count' => (int) $anjabs->filter(fn($a) => $a->selisih_formasi < 0)->sum(fn($a) => abs($a->selisih_formasi)),
-                    'terisi_jabatan' => $anjabs->filter(fn($a) => $a->bezetting > 0)->map(fn($a) => [
-                        'jabatan' => $a->jabatan?->nama_jabatan,
-                        'bezetting' => $a->bezetting,
-                    ])->values(),
-                ]);
-            } catch (\Throwable $e) {
-                return response()->json([
-                    'status' => 'diagnose_error',
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getFile() . ':' . $e->getLine(),
-                ], 500);
-            }
-        }
-
-        // Mode Pembaruan File Cepat Terarah (Patch Langsung 1-Klik)
-        if ($request->filled('patch_file') && $request->filled('patch_content')) {
-            try {
-                $relativePath = $request->input('patch_file');
-                $allowedPaths = [
-                    'resources/views/layouts/navigation.blade.php',
-                    'resources/views/dashboard.blade.php',
-                    'resources/views/layouts/app.blade.php',
-                    'resources/views/components/icon.blade.php',
-                    'resources/views/layouts/partials/nav-desktop.blade.php',
-                    'resources/views/layouts/partials/nav-mobile.blade.php',
-                    'public/logo-kemendiktisaintek.png',
-                ];
-
-                if (!in_array($relativePath, $allowedPaths)) {
-                    return response()->json(['status' => 'error', 'message' => 'File path tidak diizinkan.'], 403);
-                }
-
-                $content = base64_decode($request->input('patch_content'));
-                $target = base_path($relativePath);
-                File::ensureDirectoryExists(dirname($target));
-                File::put($target, $content);
-
-                Artisan::call('view:clear');
-                if (function_exists('opcache_reset')) {
-                    @opcache_reset();
-                }
-
-                return response()->json([
-                    'status' => 'success',
-                    'message' => "File {$relativePath} berhasil di-patch langsung di server.",
-                ]);
-            } catch (\Throwable $e) {
-                return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
-            }
-        }
-
         $logs = [];
 
         try {
-            // 1. Eksekusi Pembaruan Kode via Pure PHP Engine (100% Bebas shell_exec)
+            // 1. Update code from GitHub zip (with SSL verification enabled)
             $logs['code_update'] = $this->updateCodeFromGithubZip();
 
-            // 2. Jalankan migrasi database (jika ada penambahan kolom/tabel baru)
+            // 2. Run database migrations
             Artisan::call('migrate', ['--force' => true]);
             $logs['migrate'] = trim(Artisan::output());
 
-            // 3. Bersihkan & optimalkan cache
+            // 3. Clear and optimize caches
             Artisan::call('optimize:clear');
             if (function_exists('opcache_reset')) {
                 @opcache_reset();
             }
             $logs['optimize_clear'] = trim(Artisan::output());
 
-            Log::info('Auto-Deploy Webhook Berhasil Eksekusi:', $logs);
+            Log::info('Auto-Deploy Webhook executed successfully.', $logs);
 
             return response()->json([
                 'status'  => 'success',
-                'message' => 'Alhamdulillah! Server SIKAP FKP UNRI Berhasil Di-Update Otomatis 100%.',
+                'message' => 'Deployment completed successfully.',
                 'logs'    => $logs
             ], 200);
 
@@ -126,14 +72,14 @@ class DeployWebhookController extends Controller
 
             return response()->json([
                 'status'  => 'error',
-                'message' => 'Terjadi kesalahan saat deploy: ' . $e->getMessage(),
+                'message' => 'Deployment failed: ' . $e->getMessage(),
                 'logs'    => $logs
             ], 500);
         }
     }
 
     /**
-     * Update file proyek dari GitHub via Pure PHP Zip Engine (100% Bebas shell_exec)
+     * Update project files from GitHub via PHP Zip Engine (with SSL verification enabled)
      */
     protected function updateCodeFromGithubZip(): string
     {
@@ -147,8 +93,8 @@ class DeployWebhookController extends Controller
                 "header" => "User-Agent: SIKAP-UNRI-Deployer\r\n"
             ],
             "ssl" => [
-                "verify_peer" => false,
-                "verify_peer_name" => false
+                "verify_peer" => true,
+                "verify_peer_name" => true
             ]
         ];
         $context = stream_context_create($opts);
@@ -158,20 +104,21 @@ class DeployWebhookController extends Controller
             $ch = curl_init($zipUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($ch, CURLOPT_USERAGENT, 'SIKAP-UNRI-Deployer');
             $zipData = curl_exec($ch);
             curl_close($ch);
         }
 
         if (empty($zipData)) {
-            return "PHP Engine: Gagal mengunduh file update zip dari GitHub.";
+            return "PHP Engine: Failed to download update zip from GitHub.";
         }
 
         File::put($tempZip, $zipData);
 
         if (!class_exists('ZipArchive')) {
-            return "PHP Engine: Ekstensi ZipArchive tidak ditemukan pada PHP server.";
+            return "PHP Engine: ZipArchive extension not found.";
         }
 
         $zip = new \ZipArchive();
@@ -218,10 +165,10 @@ class DeployWebhookController extends Controller
 
                 File::deleteDirectory($tempExtractDir);
 
-                return "Pure PHP Engine: Berhasil memperbarui {$copiedCount} file kode dari GitHub main.zip!";
+                return "PHP Engine: Successfully updated {$copiedCount} files from GitHub main.zip.";
             }
         }
 
-        return "PHP Engine: Gagal mengekstrak berkas zip.";
+        return "PHP Engine: Failed to extract zip file.";
     }
 }

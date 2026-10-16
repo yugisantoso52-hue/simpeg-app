@@ -78,8 +78,13 @@ class PengajuanCutiController extends Controller
             return redirect()->back()->with('error', 'Data pegawai tidak ditemukan.');
         }
 
+        $validated = $request->safe()->except([
+            'status', 'approved_by', 'approved_at', 'pertimbangan_atasan',
+            'pybmc_id', 'atasan_langsung_id', 'catatan_pimpinan', 'catatan_atasan_langsung'
+        ]);
+
         $this->service->create(
-            $request->validated(),
+            $validated,
             $pegawaiId,
             $request->file('file_lampiran')
         );
@@ -178,8 +183,13 @@ class PengajuanCutiController extends Controller
             ->with('success', 'Nomor surat cuti berhasil disimpan oleh Admin: ' . ($nomorSuratFormatted ?? '(Dikosongkan)'));
     }
 
-    public function destroy(int $id)
+    public function destroy(int $id, Request $request)
     {
+        $user = $request->user();
+        if (!$user || !$user->hasRole('admin')) {
+            abort(403, 'Hanya Administrator yang memiliki wewenang untuk menghapus pengajuan cuti.');
+        }
+
         $this->service->delete($id);
 
         return redirect()

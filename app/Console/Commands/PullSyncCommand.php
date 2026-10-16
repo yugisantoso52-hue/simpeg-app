@@ -30,9 +30,9 @@ class PullSyncCommand extends Command
 
     public function handle()
     {
-        $baseUrl = env('ONLINE_SYNC_URL', 'http://localhost/api/v1/sync/receive');
+        $baseUrl = config('services.sync.online_url', 'http://localhost/api/v1/sync/receive');
         $changesUrl = str_replace('/receive', '/changes', $baseUrl);
-        $secretKey = env('SYNC_SECRET_KEY', 'default_secret_key_123!');
+        $secretKey = config('services.sync.secret_key');
 
         $stateFile = storage_path('app/sync_pull_state.json');
         $lastSyncTime = null;
@@ -106,15 +106,19 @@ class PullSyncCommand extends Command
 
                         $row['last_synced_at'] = now();
 
+                        $modelInstance = new $modelClass;
+                        $allowedFields = array_merge($modelInstance->getFillable(), ['sync_uuid', 'last_synced_at']);
+                        $filteredRow = array_intersect_key($row, array_flip($allowedFields));
+
                         if ($existing) {
-                            $existing->forceFill($row)->save();
+                            $existing->fill($filteredRow)->save();
                             $totalUpdated++;
                         } else {
-                            if ($tableName === 'users' && empty($row['password'])) {
-                                $row['password'] = \Illuminate\Support\Facades\Hash::make('password');
+                            if ($tableName === 'users' && empty($filteredRow['password'])) {
+                                $filteredRow['password'] = \Illuminate\Support\Facades\Hash::make('password');
                             }
                             $instance = new $modelClass;
-                            $instance->forceFill($row)->save();
+                            $instance->fill($filteredRow)->save();
                             $totalInserted++;
                         }
                     }

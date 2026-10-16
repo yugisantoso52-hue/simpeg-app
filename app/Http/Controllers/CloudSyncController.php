@@ -37,7 +37,7 @@ class CloudSyncController extends Controller
     protected function validateToken(Request $request): bool
     {
         $token = $request->query('key') ?? $request->header('X-Sync-Key');
-        $configuredKey = env('SYNC_TOKEN') ?: config('app.key');
+        $configuredKey = config('services.sync.token');
 
         if (empty($configuredKey) || empty($token)) {
             return false;
