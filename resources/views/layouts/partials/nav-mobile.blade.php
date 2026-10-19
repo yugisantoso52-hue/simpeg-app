@@ -261,10 +261,36 @@
             </svg>
         </button>
         <div x-show="openSection === 'tata-naskah'" x-transition class="px-2 pb-2 space-y-0.5 bg-slate-50/60 border-t border-slate-100">
-            <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Layanan Cuti ASN</div>
+            {{-- MEJA PENGESAHAN BERJENJANG --}}
+            @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+                <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                    <span>Meja Pengesahan Berjenjang</span>
+                    <span class="text-[9px] font-extrabold text-indigo-700 bg-indigo-100 px-1.5 py-0.2 rounded">SOP 4 Tahap</span>
+                </div>
+                <x-responsive-nav-link :href="route('dashboard') . '#section-action-center'" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="shield-check" class="w-3.5 h-3.5 text-amber-600" />
+                    <span>Executive Action Center</span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('layanan-surat.index')" :active="request()->routeIs('layanan-surat.*')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="file-text" class="w-3.5 h-3.5 text-blue-600" />
+                    <span>E-Surat Keterangan Aktif</span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('pengajuan-karir.index')" :active="request()->routeIs('pengajuan-karir.*')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="award" class="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Usulan Karir KP, KGB & Satya</span>
+                </x-responsive-nav-link>
+            @else
+                <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Layanan Persuratan Mandiri</div>
+                <x-responsive-nav-link :href="route('layanan-surat.index')" :active="request()->routeIs('layanan-surat.*')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="file-text" class="w-3.5 h-3.5 text-blue-600" />
+                    <span>E-Surat Keterangan Aktif Bekerja</span>
+                </x-responsive-nav-link>
+            @endif
+
+            <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Layanan Cuti ASN (PerBKN 7/2022)</div>
             @if(Auth::user()->isAtasan() || Auth::user()->hasRole('admin'))
                 <x-responsive-nav-link :href="route('pengajuan-cuti.index')" :active="request()->routeIs('pengajuan-cuti.index') && !request()->has('mine')" class="flex items-center gap-2 text-xs rounded-lg">
-                    <x-icon name="file-text" class="w-3.5 h-3.5 text-amber-600" />
+                    <x-icon name="clipboard-check" class="w-3.5 h-3.5 text-amber-600" />
                     <span>{{ Auth::user()->hasRole('admin') ? 'Monitoring Seluruh Cuti' : 'Persetujuan Cuti Bawahan' }}</span>
                 </x-responsive-nav-link>
             @endif
@@ -275,12 +301,6 @@
             <x-responsive-nav-link :href="route('pengajuan-cuti.create')" :active="request()->routeIs('pengajuan-cuti.create')" class="flex items-center gap-2 text-xs rounded-lg">
                 <x-icon name="plus" class="w-3.5 h-3.5 text-blue-600" />
                 <span>+ Buat Permohonan Cuti Baru</span>
-            </x-responsive-nav-link>
-
-            <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Layanan Persuratan</div>
-            <x-responsive-nav-link :href="route('layanan-surat.index')" :active="request()->routeIs('layanan-surat.*')" class="flex items-center gap-2 text-xs rounded-lg">
-                <x-icon name="file-text" class="w-3.5 h-3.5 text-blue-600" />
-                <span>E-Surat Keterangan Aktif Bekerja</span>
             </x-responsive-nav-link>
 
             <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tata Naskah & SOP</div>

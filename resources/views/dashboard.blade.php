@@ -1073,7 +1073,7 @@
                 @endif
 
                 {{-- 🏛️ EXECUTIVE ACTION CENTER: MEJA VERIFIKASI & PENGESAHAN TATA NASKAH (URUTAN 4 TAHAP BERJENJANG) --}}
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-5 sm:p-6 mb-6">
+                <div id="section-action-center" class="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-5 sm:p-6 mb-6 scroll-mt-20">
                     <div class="flex flex-col md:flex-row md:items-center justify-between pb-4 mb-5 border-b border-slate-100 gap-3">
                         <div class="flex items-center gap-3">
                             <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-slate-900 via-indigo-900 to-blue-900 text-white flex items-center justify-center text-xl shadow-xs shrink-0">
@@ -1114,6 +1114,16 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         
                         {{-- 1. TAHAP 1: SCREENING ADMIN & NOMOR SURAT --}}
+                        @php
+                            $targetStage1 = route('layanan-surat.index');
+                            if (($workflowStats['admin_screening_karir'] ?? 0) > 0) {
+                                $targetStage1 = route('pengajuan-karir.index');
+                            } elseif (($workflowStats['admin_screening_satya'] ?? 0) > 0) {
+                                $targetStage1 = route('satyalancana.index');
+                            } elseif (($workflowStats['admin_screening_cuti'] ?? 0) > 0) {
+                                $targetStage1 = route('pengajuan-cuti.index');
+                            }
+                        @endphp
                         <div class="p-4 rounded-xl border {{ $isAdmin ? 'border-amber-400 bg-amber-50/70 shadow-sm ring-1 ring-amber-300' : 'border-slate-200 bg-slate-50/60' }} flex flex-col justify-between transition hover:shadow-md">
                             <div>
                                 <div class="flex items-center justify-between mb-2">
@@ -1130,32 +1140,46 @@
                                     <span class="text-xs font-bold text-amber-800">Berkas Menunggu</span>
                                 </div>
                                 <div class="text-[11px] text-slate-600 mt-2 space-y-1">
-                                    <div class="flex items-center justify-between">
-                                        <span>E-Surat Aktif:</span>
-                                        <strong class="font-mono text-slate-800">{{ $workflowStats['admin_screening_surat'] ?? 0 }}</strong>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span>Usulan KP &amp; KGB:</span>
-                                        <strong class="font-mono text-slate-800">{{ $workflowStats['admin_screening_karir'] ?? 0 }}</strong>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span>Satyalancana:</span>
-                                        <strong class="font-mono text-slate-800">{{ $workflowStats['admin_screening_satya'] ?? 0 }}</strong>
-                                    </div>
-                                    <div class="flex items-center justify-between pt-1 border-t border-amber-200/50 text-amber-900 font-semibold">
+                                    <a href="{{ route('layanan-surat.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-amber-100/80 transition group" title="Buka Meja E-Surat Aktif Bekerja">
+                                        <span class="group-hover:text-amber-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>📄</span> E-Surat Aktif:
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-amber-900">{{ $workflowStats['admin_screening_surat'] ?? 0 }}</strong>
+                                    </a>
+                                    <a href="{{ route('pengajuan-karir.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-amber-100/80 transition group" title="Buka Meja Usulan KP & KGB">
+                                        <span class="group-hover:text-amber-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>🎖️</span> Usulan KP &amp; KGB:
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-amber-900">{{ $workflowStats['admin_screening_karir'] ?? 0 }}</strong>
+                                    </a>
+                                    <a href="{{ route('satyalancana.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-amber-100/80 transition group" title="Buka Meja Usulan Satyalancana">
+                                        <span class="group-hover:text-amber-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>🏅</span> Satyalancana:
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-amber-900">{{ $workflowStats['admin_screening_satya'] ?? 0 }}</strong>
+                                    </a>
+                                    <div class="flex items-center justify-between pt-1 border-t border-amber-200/50 text-amber-900 font-semibold px-1.5 py-0.5">
                                         <span>Perlu Penomoran Surat:</span>
                                         <strong class="font-mono text-amber-950 font-bold">{{ $workflowStats['admin_nomor_total'] ?? 0 }}</strong>
                                     </div>
                                 </div>
                             </div>
                             <div class="mt-3 pt-2.5 border-t border-slate-200/80">
-                                <a href="{{ route('layanan-surat.index') }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isAdmin ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
+                                <a href="{{ $targetStage1 }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isAdmin ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
                                     Buka Meja Screening &rarr;
                                 </a>
                             </div>
                         </div>
 
                         {{-- 2. TAHAP 2: PARAF KA POKJA KEU-KEPEG --}}
+                        @php
+                            $targetStage2 = route('layanan-surat.index');
+                            if (($workflowStats['pokja_pending_satya'] ?? 0) > 0) {
+                                $targetStage2 = route('satyalancana.index');
+                            } elseif (($workflowStats['pokja_pending_karir'] ?? 0) > 0) {
+                                $targetStage2 = route('pengajuan-karir.index');
+                            }
+                        @endphp
                         <div class="p-4 rounded-xl border {{ $isPokja ? 'border-sky-400 bg-sky-50/70 shadow-sm ring-1 ring-sky-300' : 'border-slate-200 bg-slate-50/60' }} flex flex-col justify-between transition hover:shadow-md">
                             <div>
                                 <div class="flex items-center justify-between mb-2">
@@ -1172,31 +1196,45 @@
                                     <span class="text-xs font-bold text-sky-800">Menunggu Paraf</span>
                                 </div>
                                 <div class="text-[11px] text-slate-600 mt-2 space-y-1">
-                                    <div class="flex items-center justify-between">
-                                        <span>E-Surat Mandiri:</span>
-                                        <strong class="font-mono text-slate-800">{{ $workflowStats['pokja_pending_surat'] ?? 0 }}</strong>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span>Usulan KP &amp; KGB:</span>
-                                        <strong class="font-mono text-slate-800">{{ $workflowStats['pokja_pending_karir'] ?? 0 }}</strong>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span>Satyalancana:</span>
-                                        <strong class="font-mono text-slate-800">{{ $workflowStats['pokja_pending_satya'] ?? 0 }}</strong>
-                                    </div>
+                                    <a href="{{ route('layanan-surat.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-sky-100/80 transition group" title="Buka Paraf E-Surat Mandiri">
+                                        <span class="group-hover:text-sky-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>📄</span> E-Surat Mandiri:
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-sky-900">{{ $workflowStats['pokja_pending_surat'] ?? 0 }}</strong>
+                                    </a>
+                                    <a href="{{ route('pengajuan-karir.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-sky-100/80 transition group" title="Buka Paraf Usulan KP & KGB">
+                                        <span class="group-hover:text-sky-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>🎖️</span> Usulan KP &amp; KGB:
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-sky-900">{{ $workflowStats['pokja_pending_karir'] ?? 0 }}</strong>
+                                    </a>
+                                    <a href="{{ route('satyalancana.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-sky-100/80 transition group" title="Buka Paraf Satyalancana">
+                                        <span class="group-hover:text-sky-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>🏅</span> Satyalancana:
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-sky-900">{{ $workflowStats['pokja_pending_satya'] ?? 0 }}</strong>
+                                    </a>
                                     <p class="text-[10px] text-sky-700 italic pt-1 border-t border-sky-200/50">
                                         Pemeriksaan keaktifan dinas &amp; kelayakan berkas.
                                     </p>
                                 </div>
                             </div>
                             <div class="mt-3 pt-2.5 border-t border-slate-200/80">
-                                <a href="{{ route('layanan-surat.index') }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isPokja ? 'bg-sky-600 hover:bg-sky-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
+                                <a href="{{ $targetStage2 }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isPokja ? 'bg-sky-600 hover:bg-sky-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
                                     Paraf Koordinasi Pokja &rarr;
                                 </a>
                             </div>
                         </div>
 
                         {{-- 3. TAHAP 3: TELAAH & PARAF KABAG UMUM --}}
+                        @php
+                            $targetStage3 = route('layanan-surat.index');
+                            if (($workflowStats['kabag_pending_satya'] ?? 0) > 0) {
+                                $targetStage3 = route('satyalancana.index');
+                            } elseif (($workflowStats['kabag_pending_karir'] ?? 0) > 0) {
+                                $targetStage3 = route('pengajuan-karir.index');
+                            }
+                        @endphp
                         <div class="p-4 rounded-xl border {{ $isKabag ? 'border-purple-400 bg-purple-50/70 shadow-sm ring-1 ring-purple-300' : 'border-slate-200 bg-slate-50/60' }} flex flex-col justify-between transition hover:shadow-md">
                             <div>
                                 <div class="flex items-center justify-between mb-2">
@@ -1213,31 +1251,47 @@
                                     <span class="text-xs font-bold text-purple-800">Menunggu Telaah</span>
                                 </div>
                                 <div class="text-[11px] text-slate-600 mt-2 space-y-1">
-                                    <div class="flex items-center justify-between">
-                                        <span>E-Surat Mandiri:</span>
-                                        <strong class="font-mono text-slate-800">{{ $workflowStats['kabag_pending_surat'] ?? 0 }}</strong>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span>Usulan KP &amp; KGB:</span>
-                                        <strong class="font-mono text-slate-800">{{ $workflowStats['kabag_pending_karir'] ?? 0 }}</strong>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span>Satyalancana:</span>
-                                        <strong class="font-mono text-slate-800">{{ $workflowStats['kabag_pending_satya'] ?? 0 }}</strong>
-                                    </div>
+                                    <a href="{{ route('layanan-surat.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-purple-100/80 transition group" title="Buka Telaah E-Surat Mandiri">
+                                        <span class="group-hover:text-purple-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>📄</span> E-Surat Mandiri:
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-purple-900">{{ $workflowStats['kabag_pending_surat'] ?? 0 }}</strong>
+                                    </a>
+                                    <a href="{{ route('pengajuan-karir.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-purple-100/80 transition group" title="Buka Telaah Usulan KP & KGB">
+                                        <span class="group-hover:text-purple-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>🎖️</span> Usulan KP &amp; KGB:
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-purple-900">{{ $workflowStats['kabag_pending_karir'] ?? 0 }}</strong>
+                                    </a>
+                                    <a href="{{ route('satyalancana.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-purple-100/80 transition group" title="Buka Telaah Satyalancana">
+                                        <span class="group-hover:text-purple-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>🏅</span> Satyalancana:
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-purple-900">{{ $workflowStats['kabag_pending_satya'] ?? 0 }}</strong>
+                                    </a>
                                     <p class="text-[10px] text-purple-700 italic pt-1 border-t border-purple-200/50">
                                         Telaah format tata naskah &amp; paraf dinas.
                                     </p>
                                 </div>
                             </div>
                             <div class="mt-3 pt-2.5 border-t border-slate-200/80">
-                                <a href="{{ route('layanan-surat.index') }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isKabag ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
+                                <a href="{{ $targetStage3 }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isKabag ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
                                     Telaah Tata Naskah &rarr;
                                 </a>
                             </div>
                         </div>
 
                         {{-- 4. TAHAP 4: TTE PIMPINAN (WD II / DEKAN) --}}
+                        @php
+                            $targetStage4 = route('layanan-surat.index');
+                            if (($pendingCutiCount ?? 0) > 0) {
+                                $targetStage4 = route('pengajuan-cuti.index');
+                            } elseif (($workflowStats['wd2_pending_total'] ?? 0) > 0) {
+                                $targetStage4 = route('pengajuan-karir.index');
+                            } elseif (($workflowStats['dekan_pending_total'] ?? 0) > 0) {
+                                $targetStage4 = route('layanan-surat.index');
+                            }
+                        @endphp
                         <div class="p-4 rounded-xl border {{ ($isWadek2 || $isDekan) ? 'border-emerald-400 bg-emerald-50/70 shadow-sm ring-1 ring-emerald-300' : 'border-slate-200 bg-slate-50/60' }} flex flex-col justify-between transition hover:shadow-md">
                             <div>
                                 <div class="flex items-center justify-between mb-2">
@@ -1250,29 +1304,35 @@
                                     @endif
                                 </div>
                                 <div class="mt-2 flex items-baseline gap-2">
-                                    <span class="text-3xl font-black text-slate-900">{{ ($workflowStats['wd2_pending_total'] ?? 0) + ($workflowStats['dekan_pending_total'] ?? 0) }}</span>
+                                    <span class="text-3xl font-black text-slate-900">{{ ($workflowStats['wd2_pending_total'] ?? 0) + ($workflowStats['dekan_pending_total'] ?? 0) + ($pendingCutiCount ?? 0) }}</span>
                                     <span class="text-xs font-bold text-emerald-800">Siap Sah TTE</span>
                                 </div>
                                 <div class="text-[11px] text-slate-600 mt-2 space-y-1">
-                                    <div class="flex items-center justify-between">
-                                        <span>TTE WD II (Umum &amp; Keu):</span>
-                                        <strong class="font-mono text-slate-800">{{ $workflowStats['wd2_pending_total'] ?? 0 }}</strong>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span>TTE Dekan Fakultas:</span>
-                                        <strong class="font-mono text-slate-800">{{ $workflowStats['dekan_pending_total'] ?? 0 }}</strong>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span>Keputusan Cuti PYBMC:</span>
-                                        <strong class="font-mono text-slate-800">{{ $pendingCutiCount ?? 0 }}</strong>
-                                    </div>
+                                    <a href="{{ route('pengajuan-karir.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-emerald-100/80 transition group" title="Buka Pengesahan TTE Usulan Karir WD II">
+                                        <span class="group-hover:text-emerald-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>💼</span> TTE WD II (Usulan):
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-emerald-900">{{ $workflowStats['wd2_pending_total'] ?? 0 }}</strong>
+                                    </a>
+                                    <a href="{{ route('layanan-surat.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-emerald-100/80 transition group" title="Buka Pengesahan TTE Dekan">
+                                        <span class="group-hover:text-emerald-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>🎓</span> TTE Dekan (Surat):
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-emerald-900">{{ $workflowStats['dekan_pending_total'] ?? 0 }}</strong>
+                                    </a>
+                                    <a href="{{ route('pengajuan-cuti.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-emerald-100/80 transition group" title="Buka Keputusan Cuti PYBMC">
+                                        <span class="group-hover:text-emerald-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>🏖️</span> Keputusan Cuti PYBMC:
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-emerald-900">{{ $pendingCutiCount ?? 0 }}</strong>
+                                    </a>
                                     <p class="text-[10px] text-emerald-700 italic pt-1 border-t border-emerald-200/50">
                                         Penandatanganan elektronik resmi bersertifikat.
                                     </p>
                                 </div>
                             </div>
                             <div class="mt-3 pt-2.5 border-t border-slate-200/80">
-                                <a href="{{ route('layanan-surat.index') }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ ($isWadek2 || $isDekan) ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
+                                <a href="{{ $targetStage4 }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ ($isWadek2 || $isDekan) ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
                                     Meja Pengesahan TTE &rarr;
                                 </a>
                             </div>

@@ -253,22 +253,53 @@
 {{-- ============================================================== --}}
 {{-- 7. TATA NASKAH & E-LAYANAN (Cuti, Surat, & Regulasi SOP)       --}}
 {{-- ============================================================== --}}
-<x-dropdown align="left" width="w-68">
+<x-dropdown align="left" width="w-72">
     <x-slot name="trigger">
-        <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('pengajuan-cuti.*', 'layanan-surat.*', 'regulasi-tata-naskah.*') ? 'bg-purple-50 text-purple-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-            <x-icon name="file-text" class="w-4 h-4 {{ request()->routeIs('pengajuan-cuti.*', 'layanan-surat.*', 'regulasi-tata-naskah.*') ? 'text-purple-600' : 'text-slate-500' }}" />
+        <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('pengajuan-cuti.*', 'layanan-surat.*', 'regulasi-tata-naskah.*', 'pengajuan-karir.*') ? 'bg-purple-50 text-purple-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+            <x-icon name="file-text" class="w-4 h-4 {{ request()->routeIs('pengajuan-cuti.*', 'layanan-surat.*', 'regulasi-tata-naskah.*', 'pengajuan-karir.*') ? 'text-purple-600' : 'text-slate-500' }}" />
             <span>Tata Naskah & E-Layanan</span>
             <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
         </button>
     </x-slot>
     <x-slot name="content">
+        {{-- MEJA PENGESAHAN BERJENJANG (SOP 4 TAHAP) --}}
+        @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+            <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
+                <span>Meja Pengesahan Berjenjang</span>
+                <span class="text-[9px] font-extrabold text-indigo-700 bg-indigo-100 px-1.5 py-0.2 rounded">SOP 4 Tahap</span>
+            </div>
+            <x-dropdown-link :href="route('dashboard') . '#section-action-center'" class="flex items-center gap-2">
+                <x-icon name="shield-check" class="w-4 h-4 text-amber-600 shrink-0" />
+                <span>Executive Action Center</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('layanan-surat.index')" class="flex items-center gap-2 {{ request()->routeIs('layanan-surat.*') ? 'bg-purple-50 text-purple-700 font-semibold' : '' }}">
+                <x-icon name="file-text" class="w-4 h-4 text-blue-600 shrink-0" />
+                <span>E-Surat Keterangan Aktif</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('pengajuan-karir.index')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') ? 'bg-purple-50 text-purple-700 font-semibold' : '' }}">
+                <x-icon name="award" class="w-4 h-4 text-indigo-600 shrink-0" />
+                <span>Usulan Karir KP, KGB & Satya</span>
+            </x-dropdown-link>
+            <div class="border-t border-slate-100 my-1"></div>
+        @else
+            {{-- LAYANAN E-SURAT KETERANGAN UNTUK PEGAWAI --}}
+            <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
+                Layanan Surat Mandiri
+            </div>
+            <x-dropdown-link :href="route('layanan-surat.index')" class="flex items-center gap-2 {{ request()->routeIs('layanan-surat.*') ? 'bg-purple-50 text-purple-700 font-semibold' : '' }}">
+                <x-icon name="file-text" class="w-4 h-4 text-blue-600 shrink-0" />
+                <span>E-Surat Keterangan Aktif</span>
+            </x-dropdown-link>
+            <div class="border-t border-slate-100 my-1"></div>
+        @endif
+
         {{-- LAYANAN E-CUTI --}}
         <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
-            Layanan Cuti ASN
+            Layanan Cuti ASN (PerBKN 7/2022)
         </div>
         @if(Auth::user()->isAtasan() || Auth::user()->hasRole('admin'))
             <x-dropdown-link :href="route('pengajuan-cuti.index')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-cuti.index') && !request()->has('mine') ? 'bg-amber-50 text-amber-700 font-semibold' : '' }}">
-                <x-icon name="file-text" class="w-4 h-4 text-amber-600 shrink-0" />
+                <x-icon name="clipboard-check" class="w-4 h-4 text-amber-600 shrink-0" />
                 <span>{{ Auth::user()->hasRole('admin') ? 'Monitoring Seluruh Cuti' : 'Persetujuan Cuti Bawahan' }}</span>
             </x-dropdown-link>
         @endif
@@ -281,20 +312,10 @@
             <span>+ Buat Permohonan Cuti Baru</span>
         </x-dropdown-link>
 
-        {{-- LAYANAN E-SURAT KETERANGAN --}}
-        <div class="border-t border-slate-100 my-1"></div>
-        <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
-            Layanan Surat Keterangan
-        </div>
-        <x-dropdown-link :href="route('layanan-surat.index')" class="flex items-center gap-2 {{ request()->routeIs('layanan-surat.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-            <x-icon name="file-text" class="w-4 h-4 text-blue-600 shrink-0" />
-            <span>E-Surat Keterangan Aktif</span>
-        </x-dropdown-link>
-
         {{-- REGULASI & TATA NASKAH --}}
         <div class="border-t border-slate-100 my-1"></div>
         <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
-            Tata Naskah & Dasar Hukum
+            Pedoman & Dasar Hukum
         </div>
         <x-dropdown-link :href="route('regulasi-tata-naskah.index')" class="flex items-center gap-2 {{ request()->routeIs('regulasi-tata-naskah.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
             <x-icon name="scale" class="w-4 h-4 text-indigo-600 shrink-0" />
