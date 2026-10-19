@@ -430,7 +430,7 @@
                                             <div class="flex items-center gap-2 shrink-0">
                                                 <span class="text-[11px] text-slate-400 font-mono">{{ \Carbon\Carbon::parse($cuti->tanggal_mulai)->format('d-m-Y') }} s.d {{ \Carbon\Carbon::parse($cuti->tanggal_selesai)->format('d-m-Y') }}</span>
                                                 @if($cuti->status === 'Disetujui')
-                                                    <a href="{{ route('pengajuan-cuti.print', $cuti->id) }}" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-2xs">
+                                                    <a href="{{ route('pengajuan-cuti.cetak-pdf', $cuti->id) }}" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-2xs">
                                                         <span>🖨️</span> Cetak Formulir BKN
                                                     </a>
                                                 @endif

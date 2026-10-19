@@ -201,6 +201,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'show'])->name('pengajuan-cuti.show');
         Route::post('/pengajuan-cuti/{id}/cancel', [PengajuanCutiController::class, 'cancel'])->name('pengajuan-cuti.cancel');
         Route::get('/pengajuan-cuti/{id}/cetak-pdf', [PengajuanCutiController::class, 'cetakFormPdf'])->name('pengajuan-cuti.cetak-pdf');
+        Route::get('/pengajuan-cuti/{id}/print', [PengajuanCutiController::class, 'cetakFormPdf'])->name('pengajuan-cuti.print');
 
         /* Modul Pengajuan Karir (KGB & KP Mandiri Pegawai) */
         Route::get('/pengajuan-karir', [\App\Http\Controllers\PengajuanKarirController::class, 'index'])->name('pengajuan-karir.index');
