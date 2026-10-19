@@ -1,0 +1,11 @@
+{
+    "schema_version": 2,
+    "commit": "851e50c9769326d5805991762d0cfac50b81adbb",
+    "indexed_at": "2026-10-19T02:03:19Z",
+    "project": "C-laragon-www-simpeg",
+    "nodes": 4202,
+    "edges": 14390,
+    "original_size": 12451840,
+    "compressed_size": 2412485,
+    "compression_level": 9
+}
