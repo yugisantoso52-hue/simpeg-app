@@ -1,12 +1,12 @@
 {
     "schema_version": 2,
-    "commit": "a5d4327ac6490e1fb6298887d626c41392a92520",
-    "indexed_at": "2026-10-19T02:48:37Z",
+    "commit": "ecb04d2d9e5d24a5ab716cf7426f80c8d15fb117",
+    "indexed_at": "2026-10-19T02:48:59Z",
     "project": "C-laragon-www-simpeg",
     "nodes": 4207,
     "edges": 14395,
-    "original_size": 12517376,
-    "compressed_size": 2416965,
+    "original_size": 12451840,
+    "compressed_size": 2414777,
     "compression_level": 9,
     "reconcile_basis": "git-clean-head"
 }
