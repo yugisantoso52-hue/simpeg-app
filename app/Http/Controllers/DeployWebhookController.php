@@ -108,42 +108,58 @@ class DeployWebhookController extends Controller
      */
     protected function updateCodeFromGithubZip(): string
     {
-        $zipUrl = 'https://github.com/yugisantoso52-hue/simpeg-app/archive/refs/heads/main.zip';
+        $zipUrl = 'https://codeload.github.com/yugisantoso52-hue/simpeg-app/zip/refs/heads/main';
         $tempZip = storage_path('app/temp_deploy_main.zip');
         $tempExtractDir = storage_path('app/temp_deploy_extract');
 
-        $opts = [
-            "http" => [
-                "method" => "GET",
-                "header" => "User-Agent: SIKAP-UNRI-Deployer\r\n"
-            ],
-            "ssl" => [
-                "verify_peer" => true,
-                "verify_peer_name" => true
-            ]
-        ];
-        $context = stream_context_create($opts);
+        $curlError = null;
+        $zipData = null;
 
-        $zipData = @file_get_contents($zipUrl, false, $context);
-        if (!$zipData && function_exists('curl_init')) {
+        // 1. Coba download via cURL terlebih dahulu (lebih reliable di Linux container)
+        if (function_exists('curl_init')) {
             $ch = curl_init($zipUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 180);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
             curl_setopt($ch, CURLOPT_USERAGENT, 'SIKAP-UNRI-Deployer');
             $zipData = curl_exec($ch);
+            if (curl_errno($ch)) {
+                $curlError = 'cURL Error (' . curl_errno($ch) . '): ' . curl_error($ch);
+            }
             curl_close($ch);
         }
 
+        // 2. Fallback via file_get_contents
         if (empty($zipData)) {
-            return "PHP Engine: Failed to download update zip from GitHub.";
+            $opts = [
+                "http" => [
+                    "method"          => "GET",
+                    "header"          => "User-Agent: SIKAP-UNRI-Deployer\r\n",
+                    "follow_location" => 1,
+                    "max_redirects"   => 5,
+                    "timeout"         => 180,
+                ],
+                "ssl" => [
+                    "verify_peer"      => false,
+                    "verify_peer_name" => false,
+                ]
+            ];
+            $context = stream_context_create($opts);
+            $zipData = @file_get_contents($zipUrl, false, $context);
+        }
+
+        if (empty($zipData)) {
+            return "PHP Engine GAGAL: Tidak dapat mengunduh zip dari GitHub. " . ($curlError ?? 'Koneksi jaringan internet/firewall ke GitHub terblokir.');
         }
 
         File::put($tempZip, $zipData);
 
         if (!class_exists('ZipArchive')) {
-            return "PHP Engine: ZipArchive extension not found.";
+            return "PHP Engine GAGAL: Ekstensi ZipArchive (php-zip) tidak terpasang di container PHP server ini.";
         }
 
         $zip = new \ZipArchive();
