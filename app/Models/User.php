@@ -178,7 +178,8 @@ class User extends Authenticatable
         $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
         if (!$pegawai || !$pegawai->jabatan) return false;
         $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
-        return (str_contains($jabatan, 'WADEK II') || str_contains($jabatan, 'WAKIL DEKAN II') || str_contains($jabatan, 'WD II') || str_contains($jabatan, 'WD 2') || str_contains($jabatan, 'BIDANG UMUM') || str_contains($jabatan, 'KEUANGAN'));
+        $isWakilDekan = str_contains($jabatan, 'WADEK') || str_contains($jabatan, 'WAKIL DEKAN') || str_contains($jabatan, 'WD ') || str_contains($jabatan, 'WD2') || str_contains($jabatan, 'WDII');
+        return $isWakilDekan && (str_contains($jabatan, 'II') || str_contains($jabatan, '2') || str_contains($jabatan, 'KEUANGAN') || str_contains($jabatan, 'BIDANG UMUM'));
     }
 
     /**
