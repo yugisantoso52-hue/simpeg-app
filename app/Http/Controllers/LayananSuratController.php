@@ -321,6 +321,14 @@ class LayananSuratController extends Controller
         $parafPokjaAt = $sudahParafPokja ? $surat->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB' : null;
         $parafKabagAt = $sudahParafKabag ? $surat->paraf_kabag_at->format('d/m/Y H:i') . ' WIB' : null;
 
+        // Tanggal & QR Code TTE Pimpinan Faktual
+        $disahkanAt = $isDisahkan 
+            ? ($surat->updated_at ? $surat->updated_at->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') 
+            : null;
+        $qrTtePimpinanUri = $isDisahkan 
+            ? QrCodeService::generateDataUri($verifyUrl . '&tte=pimpinan&nip=' . ($surat->penandatangan_nip ?? '')) 
+            : null;
+
         $watermarkService = app(DocumentWatermarkService::class);
 
         $pdf = Pdf::loadView('layanan-surat.surat_aktif_print', compact(
@@ -333,6 +341,8 @@ class LayananSuratController extends Controller
             'qrCodeDataUri',
             'qrPokjaUri',
             'qrKabagUri',
+            'qrTtePimpinanUri',
+            'disahkanAt',
             'parafPokjaAt',
             'parafKabagAt',
             'isDisahkan',

@@ -363,13 +363,25 @@
                         {{ $surat->penandatangan_jabatan }},
                     @endif
                     @if(!empty($isDisahkan))
-                        <div style="height: 48px;"></div>
+                        <div style="text-align: left; margin: 4px 0 4px 0;">
+                            @if(!empty($qrTtePimpinanUri))
+                                <img src="{{ $qrTtePimpinanUri }}" style="width: 48px; height: 48px; display: inline-block;" />
+                            @elseif(!empty($qrCodeDataUri))
+                                <img src="{{ $qrCodeDataUri }}" style="width: 48px; height: 48px; display: inline-block;" />
+                            @endif
+                            <div style="font-size: 6.2pt; color: #15803d; font-weight: bold; margin-top: 1px;">
+                                Ditandatangani secara Elektronik (TTE)
+                            </div>
+                            <div style="font-size: 5.6pt; color: #64748b;">
+                                SIKAP FKP UNRI &bull; {{ $disahkanAt ?? now()->format('d/m/Y H:i') . ' WIB' }}
+                            </div>
+                        </div>
                         <strong style="text-decoration: underline;">{{ $surat->penandatangan_nama }}</strong><br>
                         <span>NIP. {{ $surat->penandatangan_nip }}</span>
                     @else
                         <div style="margin: 8px 0 6px 0;">
                             <span style="display: inline-block; padding: 2px 6px; border: 1px dashed #e11d48; background-color: #fff1f2; color: #be123c; font-size: 7pt; font-weight: bold; border-radius: 3px;">
-                                [ DRAF - MENUNGGU PENGESAHAN ]
+                                [ DRAF - MENUNGGU PENGESAHAN TTE ]
                             </span>
                         </div>
                         <div style="color: #64748b; font-weight: bold; text-decoration: underline;">( {{ $surat->penandatangan_nama }} )</div>

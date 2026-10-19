@@ -158,13 +158,15 @@ class ReportController extends Controller
             ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . $kabagData['nip']) 
             : null;
         $qrCodeDataUri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl) : null;
+        $qrTteWd2Uri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&tte=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
+        $disahkanAt = $isDisahkan ? ($pengajuan?->updated_at ? $pengajuan->updated_at->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') : null;
 
         $nomorSuratFormatted = !empty($pengajuan?->nomor_surat) 
             ? $pengajuan->nomor_surat 
             : app(\App\Services\NomorSuratService::class)->formatKarir('', (int) ($tahunSurat ?? date('Y')), false);
 
         $pdf = Pdf::loadView('exports.pdf.sk-kgb', compact(
-            'kgb', 'pegawai', 'verifyUrl', 'verifyCode', 'qrCodeDataUri',
+            'kgb', 'pegawai', 'verifyUrl', 'verifyCode', 'qrCodeDataUri', 'qrTteWd2Uri', 'disahkanAt',
             'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja', 'isPppk',
             'tahunSurat', 'tanggalSurat', 'dasarSkTanggal', 'dasarSkNomor', 'dasarSkTmt', 'dasarMkgTahun',
             'pengajuan', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri',
@@ -247,6 +249,8 @@ class ReportController extends Controller
             ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . $kabagData['nip']) 
             : null;
         $qrCodeDataUri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl) : null;
+        $qrTteWd2Uri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&tte=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
+        $disahkanAt = $isDisahkan ? ($pengajuan?->updated_at ? Carbon::parse($pengajuan->updated_at)->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') : null;
 
         $nomorSuratFormatted = !empty($pengajuan->nomor_surat)
             ? $pengajuan->nomor_surat
@@ -254,7 +258,7 @@ class ReportController extends Controller
 
         $pdf = Pdf::loadView('exports.pdf.surat-usulan-kp', compact(
             'pengajuan', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja',
-            'verifyUrl', 'verifyCode', 'qrCodeDataUri', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri',
+            'verifyUrl', 'verifyCode', 'qrCodeDataUri', 'qrTteWd2Uri', 'disahkanAt', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri',
             'isDisahkan', 'sudahParafPokja', 'sudahParafKabag', 'nomorSuratFormatted'
         ))->setPaper('a4', 'portrait');
 

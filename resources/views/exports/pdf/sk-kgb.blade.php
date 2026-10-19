@@ -283,14 +283,26 @@
                 a.n. Dekan Fakultas Keperawatan<br>
                 Wakil Dekan Bidang Keuangan dan Umum,<br>
                 @if(!empty($isDisahkan))
-                    {{-- Ruang tanda tangan resmi --}}
-                    <div style="height: 44px;"></div>
+                    {{-- Ruang tanda tangan elektronik resmi --}}
+                    <div style="text-align: left; margin: 4px 0 4px 0;">
+                        @if(!empty($qrTteWd2Uri))
+                            <img src="{{ $qrTteWd2Uri }}" style="width: 46px; height: 46px; display: inline-block;" />
+                        @elseif(!empty($qrCodeDataUri))
+                            <img src="{{ $qrCodeDataUri }}" style="width: 46px; height: 46px; display: inline-block;" />
+                        @endif
+                        <div style="font-size: 6.2pt; color: #15803d; font-weight: bold; margin-top: 1px;">
+                            Ditandatangani secara Elektronik (TTE)
+                        </div>
+                        <div style="font-size: 5.6pt; color: #64748b;">
+                            SIKAP FKP UNRI &bull; {{ $disahkanAt ?? now()->format('d/m/Y H:i') . ' WIB' }}
+                        </div>
+                    </div>
                     <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep., Sp.Kep.M.B') }}</strong><br>
                     <span>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</span>
                 @else
                     <div style="margin: 6px 0 4px 0;">
                         <span style="display: inline-block; padding: 2px 6px; border: 1px dashed #e11d48; background-color: #fff1f2; color: #be123c; font-size: 6.8pt; font-weight: bold; border-radius: 3px;">
-                            [ DRAF - MENUNGGU PENGESAHAN ]
+                            [ DRAF - MENUNGGU PENGESAHAN TTE ]
                         </span>
                     </div>
                     <div style="color: #64748b; font-weight: bold; text-decoration: underline;">( {{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep., Sp.Kep.M.B') }} )</div>
