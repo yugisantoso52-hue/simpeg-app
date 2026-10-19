@@ -27,6 +27,7 @@ Homestead.yaml
 Thumbs.db
 
 # === Local only - jangan di-push ===
+.codebase-memory/
 /backup
 /database/database.sqlite
 /bootstrap/cache/*.php
