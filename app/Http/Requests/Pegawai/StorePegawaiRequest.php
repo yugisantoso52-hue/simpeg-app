@@ -151,6 +151,7 @@ class StorePegawaiRequest extends FormRequest
             'riwayat_skp.*.tahun'                      => 'nullable|integer',
             'riwayat_skp.*.predikat_kinerja'           => 'nullable|string|max:50',
             'riwayat_skp.*.pejabat_penilai'            => 'nullable|string|max:255',
+            'riwayat_skp.*.file_rencana_skp'           => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'riwayat_skp.*.file_evaluasi_skp'          => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
 
             // Validasi Piagam Satyalancana Terdahulu
