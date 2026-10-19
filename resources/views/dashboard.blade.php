@@ -301,7 +301,7 @@
                                             <div class="flex items-center gap-2 shrink-0">
                                                 <span class="text-[11px] text-slate-400">Diajukan: {{ \Carbon\Carbon::parse($surat->tanggal_surat ?? $surat->created_at)->format('d-m-Y') }}</span>
                                                 @if($surat->status === 'selesai')
-                                                    <a href="{{ route('layanan-surat.surat-aktif.download', $surat->id) }}" class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-2xs">
+                                                    <a href="{{ route('layanan-surat.surat-aktif.cetak', $surat->id) }}" target="_blank" class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-2xs">
                                                         <span>📥</span> Unduh Dokumen (PDF)
                                                     </a>
                                                 @endif

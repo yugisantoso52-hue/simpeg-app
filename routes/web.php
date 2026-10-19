@@ -108,6 +108,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('/surat-aktif/{id}/verifikasi', [\App\Http\Controllers\LayananSuratController::class, 'verifikasi'])->name('surat-aktif.verifikasi');
         Route::post('/surat-aktif/{id}/update-nomor', [\App\Http\Controllers\LayananSuratController::class, 'updateNomorSurat'])->name('surat-aktif.update-nomor');
         Route::get('/surat-aktif/{id}/cetak', [\App\Http\Controllers\LayananSuratController::class, 'cetakSuratAktif'])->name('surat-aktif.cetak');
+        Route::get('/surat-aktif/{id}/download', [\App\Http\Controllers\LayananSuratController::class, 'cetakSuratAktif'])->name('surat-aktif.download');
     });
 
     /* Panduan & Landasan Regulasi Tata Naskah Dinas & Paraf Digital SIKAP */
