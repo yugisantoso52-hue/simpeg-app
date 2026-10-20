@@ -332,11 +332,22 @@ class PengajuanKarirController extends Controller
         $tahap = $request->input('tahap'); // paraf_kapokja, paraf_kabag, paraf_wd2, ttd_dekan, tolak
         $catatan = $request->input('catatan');
 
+        $isAdmin   = $user->hasRole('admin');
+        $isKaPokja = $user->isKaPokjaKepeg();
+        $isKabag   = $user->isKabagUmum();
+        $isWd2     = $user->isWadek2();
+        $isDekan   = $user->isDekan();
+
         $pejabatLogin = $user->pegawai ?? Pegawai::where('nama', 'like', '%' . $user->name . '%')->first();
 
         DB::beginTransaction();
         try {
             if ($tahap === 'verifikasi_admin') {
+                if (!$isAdmin) {
+                    DB::rollBack();
+                    return back()->with('error', 'Otorisasi Ditolak: Tahap 1 (Admin Screening & Penomoran) hanya berhak dilakukan oleh akun Admin Kepegawaian.');
+                }
+
                 $updateData = [
                     'status'              => 'diverifikasi_admin',
                     'verifikasi_admin_at' => now(),
@@ -354,7 +365,12 @@ class PengajuanKarirController extends Controller
                 $pengajuan->update($updateData);
                 $msg = '1. Verifikasi Screening Berkas & Penomoran oleh Admin Kepegawaian berhasil.';
             } elseif ($tahap === 'paraf_kapokja') {
-                if (!$pengajuan->verifikasi_admin_at && !$user->canManageSystem()) {
+                if (!$isKaPokja) {
+                    DB::rollBack();
+                    return back()->with('error', 'Otorisasi Ditolak: Tahap 2 (Paraf Ka Pokja) hanya berhak dilakukan oleh Kepala Pokja Keuangan & Kepegawaian.');
+                }
+
+                if (!$pengajuan->verifikasi_admin_at) {
                     DB::rollBack();
                     return back()->with('error', 'SOP Tata Naskah: Berkas usulan harus diperiksa kelengkapannya (Admin Screening Berkas) terlebih dahulu sebelum diparaf Ka Pokja.');
                 }
@@ -365,16 +381,16 @@ class PengajuanKarirController extends Controller
                     'paraf_kapokja_by'    => $pejabatLogin?->id,
                     'catatan_verifikator' => $catatan ?? 'Telah diperiksa kelengkapan berkas administrasi dan diverifikasi sah oleh Ka Pokja Keu-Kepeg.',
                 ];
-                if (!$pengajuan->verifikasi_admin_at) {
-                    $dataPokja['verifikasi_admin_at'] = now();
-                    $dataPokja['verifikasi_admin_by'] = $user->id;
-                }
 
                 $pengajuan->update($dataPokja);
                 $msg = '2. Paraf Ka Pokja Keuangan dan Kepegawaian berhasil dibubuhkan.';
             } elseif ($tahap === 'paraf_kabag') {
-                // Validasi SOP: Harus sudah diperiksa Ka Pokja terlebih dahulu
-                if (!$pengajuan->paraf_kapokja_at && !$user->canManageSystem()) {
+                if (!$isKabag) {
+                    DB::rollBack();
+                    return back()->with('error', 'Otorisasi Ditolak: Tahap 3 (Paraf Kabag Umum) hanya berhak dilakukan oleh Kepala Bagian Umum.');
+                }
+
+                if (!$pengajuan->paraf_kapokja_at) {
                     DB::rollBack();
                     return back()->with('error', 'SOP Tata Naskah: Berkas harus diperiksa kelengkapannya dan diparaf terlebih dahulu oleh Ka Pokja Keu-Kepeg sebelum ditelaah oleh Kabag Umum.');
                 }
@@ -386,20 +402,15 @@ class PengajuanKarirController extends Controller
                     'catatan_verifikator' => $catatan ?? 'Telah ditelaah format tata naskah dinas dan diparaf oleh Kepala Bagian Umum.',
                 ];
 
-                if (!$pengajuan->verifikasi_admin_at) {
-                    $dataKabag['verifikasi_admin_at'] = now();
-                    $dataKabag['verifikasi_admin_by'] = $user->id;
-                }
-                if (!$pengajuan->paraf_kapokja_at) {
-                    $dataKabag['paraf_kapokja_at'] = now();
-                    $dataKabag['paraf_kapokja_by'] = $pejabatLogin?->id;
-                }
-
                 $pengajuan->update($dataKabag);
                 $msg = '3. Paraf Kepala Bagian Umum berhasil dibubuhkan.';
             } elseif ($tahap === 'paraf_wd2' || $tahap === 'ttd_wd2') {
-                // Validasi SOP: Harus sudah diparaf Kabag Umum
-                if (!$pengajuan->paraf_kabag_at && !$user->canManageSystem()) {
+                if (!$isWd2 && !$isDekan) {
+                    DB::rollBack();
+                    return back()->with('error', 'Otorisasi Ditolak: Tahap 4 (TTE Pengesahan Usulan) hanya berhak disahkan oleh Wakil Dekan II atau Dekan.');
+                }
+
+                if (!$pengajuan->paraf_kabag_at) {
                     DB::rollBack();
                     return back()->with('error', 'SOP Tata Naskah: Naskah dinas harus melalui telaah paraf koordinasi Kepala Bagian Umum sebelum ditandatangani Wakil Dekan II.');
                 }
@@ -411,19 +422,6 @@ class PengajuanKarirController extends Controller
                     'catatan_verifikator' => $catatan ?? 'Telah ditandatangani dan disetujui secara resmi oleh Wakil Dekan Bidang Keuangan dan Umum.',
                 ];
 
-                if (!$pengajuan->verifikasi_admin_at) {
-                    $dataWd2['verifikasi_admin_at'] = now();
-                    $dataWd2['verifikasi_admin_by'] = $user->id;
-                }
-                if (!$pengajuan->paraf_kapokja_at) {
-                    $dataWd2['paraf_kapokja_at'] = now();
-                    $dataWd2['paraf_kapokja_by'] = $pejabatLogin?->id;
-                }
-                if (!$pengajuan->paraf_kabag_at) {
-                    $dataWd2['paraf_kabag_at'] = now();
-                    $dataWd2['paraf_kabag_by'] = $pejabatLogin?->id;
-                }
-
                 $pengajuan->update($dataWd2);
 
                 // SINKRONISASI OTOMATIS: Eksekusi perubahan ke master data pegawai & riwayat
@@ -431,6 +429,11 @@ class PengajuanKarirController extends Controller
 
                 $msg = '4. Pengajuan resmi ditandatangani dan disetujui oleh Wakil Dekan Bidang Keuangan dan Umum, serta disinkronkan ke master data kepegawaian.';
             } elseif ($tahap === 'ttd_dekan') {
+                if (!$isDekan) {
+                    DB::rollBack();
+                    return back()->with('error', 'Otorisasi Ditolak: Pengesahan Dekan hanya berhak dilakukan oleh Dekan Fakultas Keperawatan.');
+                }
+
                 $pengajuan->update([
                     'status'              => 'disetujui_dekan',
                     'ttd_dekan_at'        => now(),
@@ -443,6 +446,22 @@ class PengajuanKarirController extends Controller
 
                 $msg = 'Pengajuan resmi disetujui oleh Dekan dan data induk pegawai telah diperbarui.';
             } elseif ($tahap === 'tolak') {
+                $canUserReject = false;
+                if (!$pengajuan->verifikasi_admin_at && $isAdmin) {
+                    $canUserReject = true;
+                } elseif ($pengajuan->verifikasi_admin_at && !$pengajuan->paraf_kapokja_at && $isKaPokja) {
+                    $canUserReject = true;
+                } elseif ($pengajuan->paraf_kapokja_at && !$pengajuan->paraf_kabag_at && $isKabag) {
+                    $canUserReject = true;
+                } elseif ($pengajuan->paraf_kabag_at && $pengajuan->status !== 'disetujui_wd2' && ($isWd2 || $isDekan)) {
+                    $canUserReject = true;
+                }
+
+                if (!$canUserReject) {
+                    DB::rollBack();
+                    return back()->with('error', 'Otorisasi Ditolak: Anda tidak memiliki wewenang untuk menolak / mengembalikan usulan pada tahapan alur saat ini.');
+                }
+
                 $pengajuan->update([
                     'status'              => 'ditolak',
                     'catatan_verifikator' => $catatan ?? 'Berkas dikembalikan untuk diperbaiki.',
@@ -517,7 +536,7 @@ class PengajuanKarirController extends Controller
     public function updateNomorSurat(Request $request, $id)
     {
         $user = $request->user() ?? Auth::user();
-        if (!$user || (!$user->canAccessExecutiveKepegawaianMenus() && !$user->hasRole('admin'))) {
+        if (!$user || !$user->hasRole('admin')) {
             abort(403, 'Hanya Admin Kepegawaian yang berwenang mengisi atau mengubah nomor surat.');
         }
 

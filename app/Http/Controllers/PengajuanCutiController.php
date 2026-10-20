@@ -157,7 +157,7 @@ class PengajuanCutiController extends Controller
     public function updateNomorSurat(Request $request, int $id)
     {
         $user = $request->user();
-        if (!$user->hasRole('admin') && !$user->canAccessExecutiveKepegawaianMenus()) {
+        if (!$user || !$user->hasRole('admin')) {
             abort(403, 'Hanya Admin Kepegawaian yang berwenang mengisi atau mengubah nomor surat.');
         }
 

@@ -158,7 +158,7 @@
                                                 <button type="button" disabled class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 cursor-not-allowed opacity-60" title="🔒 Terkunci: Menunggu Admin Screening">
                                                     🔒 2. Pokja
                                                 </button>
-                                            @elseif(($isKaPokja ?? false) || ($isAdmin ?? false))
+                                            @elseif($isKaPokja ?? false)
                                                 <form action="{{ route('satyalancana.verifikasi', $usl->id) }}" method="POST">
                                                     @csrf
                                                     <input type="hidden" name="tahap" value="paraf_kapokja">
@@ -181,7 +181,7 @@
                                                 <button type="button" disabled class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 cursor-not-allowed opacity-60" title="🔒 Terkunci: Menunggu Paraf Ka Pokja">
                                                     🔒 3. Kabag
                                                 </button>
-                                            @elseif(($isKabag ?? false) || ($isAdmin ?? false))
+                                            @elseif($isKabag ?? false)
                                                 <form action="{{ route('satyalancana.verifikasi', $usl->id) }}" method="POST">
                                                     @csrf
                                                     <input type="hidden" name="tahap" value="paraf_kabag">
@@ -204,7 +204,7 @@
                                                 <button type="button" disabled class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 cursor-not-allowed opacity-60" title="🔒 Terkunci: Menunggu Paraf Kabag Umum">
                                                     🔒 4. WD2
                                                 </button>
-                                            @elseif(($isWd2 ?? false) || ($isAdmin ?? false))
+                                            @elseif(($isWd2 ?? false) || ($isDekan ?? false))
                                                 <form action="{{ route('satyalancana.verifikasi', $usl->id) }}" method="POST">
                                                     @csrf
                                                     <input type="hidden" name="tahap" value="ttd_wd2">

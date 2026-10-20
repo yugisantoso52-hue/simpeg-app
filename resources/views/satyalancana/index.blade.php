@@ -397,7 +397,7 @@
                                         <td class="px-4 py-3" x-data="{ editNomorSL: false, nomorInputSL: '{{ explode('/UN19', $usulan->nomor_surat_usulan)[0] }}' }">
                                             <div class="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-800">
                                                 <span>{{ $usulan->nomor_surat_usulan }}</span>
-                                                @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+                                                @if($isAdmin ?? false)
                                                     <button type="button" @click="editNomorSL = true" class="text-blue-600 hover:text-blue-800 p-0.5 rounded hover:bg-blue-50 text-[11px]" title="Ubah Nomor Surat Usulan (Admin)">
                                                         ✏️
                                                     </button>
@@ -405,7 +405,7 @@
                                             </div>
                                             <div class="text-[11px] text-blue-600 font-medium">{{ $usulan->periode_usulan ?? ('Tahun ' . $usulan->tahun_usulan) }}</div>
 
-                                            @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+                                            @if($isAdmin ?? false)
                                                 <!-- Modal Edit Nomor Surat Satyalancana Khusus Admin -->
                                                 <div x-show="editNomorSL" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                                                     <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-4 text-left" @click.outside="editNomorSL = false">
@@ -541,7 +541,7 @@
                                                         <button type="button" disabled class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10.5px] font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 cursor-not-allowed opacity-60" title="🔒 Terkunci: Menunggu Admin Screening Berkas">
                                                             🔒 2. Pokja
                                                         </button>
-                                                    @elseif($isKaPokja || $isAdmin)
+                                                    @elseif($isKaPokja)
                                                         <form method="POST" action="{{ route('satyalancana.verifikasi', $usulan->id) }}" onsubmit="return confirm('Bubuhkan Paraf 1 (Ka Pokja Keu-Kepeg)?')">
                                                             @csrf
                                                             <input type="hidden" name="tahap" value="paraf_kapokja">
@@ -564,7 +564,7 @@
                                                         <button type="button" disabled class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10.5px] font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 cursor-not-allowed opacity-60" title="🔒 Terkunci: Menunggu Paraf Ka Pokja Keu-Kepeg">
                                                             🔒 3. Kabag
                                                         </button>
-                                                    @elseif($isKabag || $isAdmin)
+                                                    @elseif($isKabag)
                                                         <form method="POST" action="{{ route('satyalancana.verifikasi', $usulan->id) }}" onsubmit="return confirm('Bubuhkan Paraf 2 (Kepala Bagian Umum)?')">
                                                             @csrf
                                                             <input type="hidden" name="tahap" value="paraf_kabag">
@@ -587,7 +587,7 @@
                                                         <button type="button" disabled class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10.5px] font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 cursor-not-allowed opacity-60" title="🔒 Terkunci: Menunggu Paraf Kepala Bagian Umum">
                                                             🔒 4. WD2
                                                         </button>
-                                                    @elseif($isWd2 || $isAdmin)
+                                                    @elseif($isWd2 || $isDekan)
                                                         <form method="POST" action="{{ route('satyalancana.verifikasi', $usulan->id) }}" onsubmit="return confirm('Sahkan usulan secara resmi dengan TTE Wakil Dekan II?')">
                                                             @csrf
                                                             <input type="hidden" name="tahap" value="ttd_wd2">
@@ -1070,7 +1070,7 @@
                                     </template>
 
                                     {{-- 2. AKSI DIAJUKAN -> VERIFIKASI ADMIN --}}
-                                    <template x-if="currentPegawai?.usulan_id && currentPegawai?.usulan_status_raw === 'diajukan' && {{ ($isAdmin || $isExecutive) ? 'true' : 'false' }}">
+                                    <template x-if="currentPegawai?.usulan_id && currentPegawai?.usulan_status_raw === 'diajukan' && {{ ($isAdmin ?? false) ? 'true' : 'false' }}">
                                         <form method="POST" :action="'{{ url('satyalancana/verifikasi') }}/' + currentPegawai?.usulan_id" onsubmit="return confirm('Verifikasi kelayakan berkas persyaratan Satyalancana an. ' + currentPegawai?.nama + '?')">
                                             @csrf
                                             <input type="hidden" name="tahap" value="verifikasi_admin">
@@ -1082,7 +1082,7 @@
                                     </template>
 
                                     {{-- 3. AKSI DIVERIFIKASI_ADMIN -> PARAF 1 KA POKJA KEU-KEPEG --}}
-                                    <template x-if="currentPegawai?.usulan_id && currentPegawai?.usulan_status_raw === 'diverifikasi_admin' && {{ ($isKaPokja || $isAdmin) ? 'true' : 'false' }}">
+                                    <template x-if="currentPegawai?.usulan_id && currentPegawai?.usulan_status_raw === 'diverifikasi_admin' && {{ ($isKaPokja ?? false) ? 'true' : 'false' }}">
                                         <form method="POST" :action="'{{ url('satyalancana/verifikasi') }}/' + currentPegawai?.usulan_id" onsubmit="return confirm('Bubuhkan Paraf 1 (Ka Pokja Keuangan & Kepegawaian)?')">
                                             @csrf
                                             <input type="hidden" name="tahap" value="paraf_kapokja">
@@ -1094,7 +1094,7 @@
                                     </template>
 
                                     {{-- 4. AKSI DIPARAF_KAPOKJA -> PARAF 2 KEPALA BAGIAN UMUM --}}
-                                    <template x-if="currentPegawai?.usulan_id && currentPegawai?.usulan_status_raw === 'diparaf_kapokja' && {{ ($isKabag || $isAdmin) ? 'true' : 'false' }}">
+                                    <template x-if="currentPegawai?.usulan_id && currentPegawai?.usulan_status_raw === 'diparaf_kapokja' && {{ ($isKabag ?? false) ? 'true' : 'false' }}">
                                         <form method="POST" :action="'{{ url('satyalancana/verifikasi') }}/' + currentPegawai?.usulan_id" onsubmit="return confirm('Bubuhkan Paraf 2 (Kepala Bagian Umum)?')">
                                             @csrf
                                             <input type="hidden" name="tahap" value="paraf_kabag">
@@ -1106,7 +1106,7 @@
                                     </template>
 
                                     {{-- 5. AKSI DIPARAF_KABAG -> PENGESAHAN TTE WAKIL DEKAN II --}}
-                                    <template x-if="currentPegawai?.usulan_id && currentPegawai?.usulan_status_raw === 'diparaf_kabag' && {{ ($isWd2 || $isAdmin) ? 'true' : 'false' }}">
+                                    <template x-if="currentPegawai?.usulan_id && currentPegawai?.usulan_status_raw === 'diparaf_kabag' && {{ (($isWd2 ?? false) || ($isDekan ?? false)) ? 'true' : 'false' }}">
                                         <form method="POST" :action="'{{ url('satyalancana/verifikasi') }}/' + currentPegawai?.usulan_id" onsubmit="return confirm('Sahkan resmi berkas tanda kehormatan dengan Tanda Tangan Elektronik (TTE) Wakil Dekan II?')">
                                             @csrf
                                             <input type="hidden" name="tahap" value="ttd_wd2">

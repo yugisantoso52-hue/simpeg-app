@@ -58,7 +58,7 @@
                     </div>
                 </div>
 
-                @if($isAdmin || $isExecutive)
+                @if($isAdmin)
                     {{-- PANEL KHUSUS ADMIN: INPUT / UPDATE NOMOR SURAT RESMI INSTANSI --}}
                     <div class="mb-5 p-4 rounded-xl border border-indigo-200 bg-indigo-50/40">
                         <div class="flex items-center justify-between pb-2 border-b border-indigo-200/60 mb-2.5">
@@ -103,6 +103,15 @@
                                 <span>💾</span> Simpan Nomor Surat
                             </button>
                         </form>
+                    </div>
+                @elseif($pengajuan->nomor_surat)
+                    <div class="mb-5 p-3 rounded-xl border border-indigo-200 bg-indigo-50/30 flex items-center justify-between">
+                        <span class="text-xs font-semibold text-indigo-900 flex items-center gap-1.5">
+                            <span>🏛️</span> Nomor Surat Resmi Usulan {{ $pengajuan->jenis_pengajuan }}:
+                        </span>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-indigo-100 text-indigo-800 border border-indigo-300">
+                            {{ $pengajuan->nomor_surat }}
+                        </span>
                     </div>
                 @endif
 
@@ -321,7 +330,7 @@
                                 <span class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Admin Screening Berkas">
                                     🔒 2. Paraf Pokja (Terkunci)
                                 </span>
-                            @elseif($isAdmin || $isKaPokja)
+                            @elseif($isKaPokja)
                                 <button type="submit" name="tahap" value="paraf_kapokja" class="px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-xs transition">
                                     ✒ 2. Periksa & Paraf Ka Pokja
                                 </button>
@@ -340,7 +349,7 @@
                                 <span class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Paraf Ka Pokja">
                                     🔒 3. Paraf Kabag (Terkunci)
                                 </span>
-                            @elseif($isAdmin || $isKabag)
+                            @elseif($isKabag)
                                 <button type="submit" name="tahap" value="paraf_kabag" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition">
                                     ✒ 3. Telaah Naskah & Paraf Kabag
                                 </button>
@@ -359,7 +368,7 @@
                                 <span class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Paraf Kabag Umum">
                                     🔒 4. TTE WD2 (Terkunci)
                                 </span>
-                            @elseif($isAdmin || $isWd2)
+                            @elseif($isWd2 || $isDekan)
                                 <button type="submit" name="tahap" value="paraf_wd2" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition">
                                     ✍ 4. Setujui & TTE Wakil Dekan II
                                 </button>
@@ -370,7 +379,13 @@
                             @endif
 
                             {{-- Tombol Tolak / Kembalikan --}}
-                            @if($pengajuan->status !== 'disetujui_wd2' && $pengajuan->status !== 'ditolak')
+                            @php
+                                $canRejectCurrent = (!$pengajuan->verifikasi_admin_at && $isAdmin)
+                                    || ($pengajuan->verifikasi_admin_at && !$pengajuan->paraf_kapokja_at && $isKaPokja)
+                                    || ($pengajuan->paraf_kapokja_at && !$pengajuan->paraf_kabag_at && $isKabag)
+                                    || ($pengajuan->paraf_kabag_at && !$pengajuan->paraf_wd2_at && ($isWd2 || $isDekan));
+                            @endphp
+                            @if($pengajuan->status !== 'disetujui_wd2' && $pengajuan->status !== 'ditolak' && $canRejectCurrent)
                                 <button type="submit" name="tahap" value="tolak" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition">
                                     ✕ Kembalikan / Tolak
                                 </button>

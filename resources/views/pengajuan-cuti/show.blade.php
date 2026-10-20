@@ -132,7 +132,7 @@
                     @endif
                 </div>
 
-                @if(Auth::user()->hasRole('admin') || Auth::user()->canAccessExecutiveKepegawaianMenus())
+                @if(Auth::user()->hasRole('admin'))
                     {{-- PANEL KHUSUS ADMIN: INPUT / UPDATE NOMOR SURAT RESMI INSTANSI --}}
                     <div class="mt-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50/40">
                         <div class="flex items-center justify-between pb-2 border-b border-emerald-200/60 mb-2.5">
@@ -170,6 +170,15 @@
                                 <span>💾</span> Simpan Nomor Surat
                             </button>
                         </form>
+                    </div>
+                @elseif($cuti->nomor_surat)
+                    <div class="mt-4 p-3 rounded-xl border border-emerald-200 bg-emerald-50/30 flex items-center justify-between">
+                        <span class="text-xs font-semibold text-emerald-900 flex items-center gap-1.5">
+                            <span>🏛️</span> Nomor Surat Izin Cuti Resmi:
+                        </span>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            {{ $cuti->nomor_surat }}
+                        </span>
                     </div>
                 @endif
 
