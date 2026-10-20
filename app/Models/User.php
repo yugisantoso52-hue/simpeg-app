@@ -319,6 +319,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Cek apakah user memiliki hak kelola sistem penuh (Admin)
+     */
+    public function canManageSystem(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    /**
      * Cek apakah user harus diarahkan ke Dashboard Manajerial (Eksekutif)
      */
     public function shouldShowManagerialDashboard(): bool

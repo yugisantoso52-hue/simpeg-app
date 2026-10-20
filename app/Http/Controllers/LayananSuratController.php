@@ -20,6 +20,11 @@ class LayananSuratController extends Controller
     {
         $user = Auth::user();
         $isExecutiveOrAdmin = $user->canAccessExecutiveKepegawaianMenus();
+        $isAdmin   = $user->hasRole('admin');
+        $isKaPokja = $user->isKaPokjaKepeg();
+        $isKabag   = $user->isKabagUmum();
+        $isWd2     = $user->isWadek2();
+        $isDekan   = $user->isDekan();
 
         if ($isExecutiveOrAdmin) {
             $surats = LayananSurat::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])
@@ -42,7 +47,17 @@ class LayananSuratController extends Controller
             ->count() + 1;
         $nextNomorPrefix = 'B/' . str_pad($nextNomorUrut, 4, '0', STR_PAD_LEFT);
 
-        return view('layanan-surat.index', compact('surats', 'myPegawai', 'isExecutiveOrAdmin', 'nextNomorPrefix'));
+        return view('layanan-surat.index', compact(
+            'surats',
+            'myPegawai',
+            'isExecutiveOrAdmin',
+            'isAdmin',
+            'isKaPokja',
+            'isKabag',
+            'isWd2',
+            'isDekan',
+            'nextNomorPrefix'
+        ));
     }
 
     /**
@@ -58,6 +73,7 @@ class LayananSuratController extends Controller
         ]);
 
         $user = Auth::user();
+        $isAdmin = $user->hasRole('admin');
         $isExecutiveOrAdmin = $user->canAccessExecutiveKepegawaianMenus();
 
         // Tentukan pegawai target
@@ -75,7 +91,7 @@ class LayananSuratController extends Controller
         $tahunSurat = date('Y');
         $nomorSuratService = app(\App\Services\NomorSuratService::class);
 
-        if ($isExecutiveOrAdmin && $request->filled('nomor_surat_manual')) {
+        if ($isAdmin && $request->filled('nomor_surat_manual')) {
             $nomorSurat = $nomorSuratService->formatSuratAktif($request->nomor_surat_manual, (int) $tahunSurat);
         } else {
             // Pengajuan mandiri oleh pegawai: nomor urut draft instansi (ditetapkan & disahkan Admin saat verifikasi)
@@ -86,7 +102,7 @@ class LayananSuratController extends Controller
         }
 
         // Cek duplikasi nomor surat jika diinput manual oleh Admin
-        if ($isExecutiveOrAdmin && LayananSurat::where('nomor_surat', $nomorSurat)->exists()) {
+        if ($isAdmin && LayananSurat::where('nomor_surat', $nomorSurat)->exists()) {
             return back()->with('error', "Nomor surat {$nomorSurat} sudah pernah digunakan. Silakan tentukan nomor urut manual yang berbeda.")->withInput();
         }
 
@@ -126,9 +142,9 @@ class LayananSuratController extends Controller
         $now = Carbon::now();
 
         // Tentukan status awal berdasarkan inisiator permohonan
-        // Pegawai mandiri: wajib melalui antrean verifikasi ('diajukan')
-        // Admin / Pimpinan eksekutif: dapat langsung mengesahkan atau membuat draf
-        if ($isExecutiveOrAdmin && $request->filled('langsung_sahkan')) {
+        // Pegawai mandiri / pengusul: wajib melalui antrean verifikasi ('diajukan')
+        // Admin: dapat menggunakan bypass langsung sahkan jika darurat
+        if ($isAdmin && $request->filled('langsung_sahkan')) {
             $statusAwal     = 'selesai';
             $parafPokjaAt   = $now;
             $parafPokjaBy   = $pejabatKaPokja?->id;
@@ -141,7 +157,7 @@ class LayananSuratController extends Controller
             $parafPokjaBy   = null;
             $parafKabagAt   = null;
             $parafKabagBy   = null;
-            $pesanSukses    = "Permohonan Surat Keterangan Aktif Bekerja nomor {$nomorSurat} berhasil diajukan dan sedang menunggu tindakan verifikasi berkas oleh Ka Pokja Keuangan & Kepegawaian.";
+            $pesanSukses    = "Permohonan Surat Keterangan Aktif Bekerja nomor {$nomorSurat} berhasil diajukan dan sedang menunggu tindakan verifikasi berkas oleh Admin Kepegawaian.";
         }
 
         $surat = LayananSurat::create([
@@ -180,7 +196,17 @@ class LayananSuratController extends Controller
         $catatan = $request->input('catatan');
         $pejabatLogin = $user->pegawai;
 
+        $isAdmin   = $user->hasRole('admin');
+        $isKaPokja = $user->isKaPokjaKepeg();
+        $isKabag   = $user->isKabagUmum();
+        $isWd2     = $user->isWadek2();
+        $isDekan   = $user->isDekan();
+
         if ($tahap === 'verifikasi_admin') {
+            if (!$isAdmin) {
+                return back()->with('error', 'Otorisasi Ditolak: Tahap 1 (Admin Screening & Penomoran) hanya berhak dilakukan oleh akun Admin Kepegawaian.');
+            }
+
             $updateData = [
                 'status'              => 'diverifikasi_admin',
                 'verifikasi_admin_at' => now(),
@@ -200,7 +226,11 @@ class LayananSuratController extends Controller
             $surat->update($updateData);
             $msg = '1. Verifikasi Screening Berkas & Penomoran oleh Admin Kepegawaian berhasil.';
         } elseif ($tahap === 'paraf_kapokja') {
-            if (!$surat->verifikasi_admin_at && !$user->canManageSystem()) {
+            if (!$isKaPokja) {
+                return back()->with('error', 'Otorisasi Ditolak: Tahap 2 (Paraf Ka Pokja) hanya berhak dilakukan oleh Kepala Pokja Keuangan & Kepegawaian.');
+            }
+
+            if (!$surat->verifikasi_admin_at) {
                 return back()->with('error', 'SOP Tata Naskah: Berkas harus diperiksa kelengkapannya (Admin Screening Berkas) terlebih dahulu sebelum diparaf Ka Pokja.');
             }
 
@@ -210,15 +240,15 @@ class LayananSuratController extends Controller
                 'paraf_kapokja_by' => $pejabatLogin?->id,
                 'catatan'          => $catatan ?? 'Telah diperiksa keaktifan pegawai dan kelayakan berkas oleh Ka Pokja Keu-Kepeg.',
             ];
-            if (!$surat->verifikasi_admin_at) {
-                $dataPokja['verifikasi_admin_at'] = now();
-                $dataPokja['verifikasi_admin_by'] = $user->id;
-            }
 
             $surat->update($dataPokja);
             $msg = '2. Paraf Ka Pokja Keuangan & Kepegawaian berhasil dibubuhkan.';
         } elseif ($tahap === 'paraf_kabag') {
-            if (!$surat->paraf_kapokja_at && !$user->canManageSystem()) {
+            if (!$isKabag) {
+                return back()->with('error', 'Otorisasi Ditolak: Tahap 3 (Paraf Kabag Umum) hanya berhak dilakukan oleh Kepala Bagian Umum.');
+            }
+
+            if (!$surat->paraf_kapokja_at) {
                 return back()->with('error', 'SOP Tata Naskah: Berkas harus diperiksa keaktifannya dan diparaf terlebih dahulu oleh Ka Pokja Keu-Kepeg sebelum ditelaah Kabag Umum.');
             }
 
@@ -229,19 +259,20 @@ class LayananSuratController extends Controller
                 'catatan'        => $catatan ?? 'Telah ditelaah format naskah dinas dan diparaf oleh Kepala Bagian Umum.',
             ];
 
-            if (!$surat->verifikasi_admin_at) {
-                $dataKabag['verifikasi_admin_at'] = now();
-                $dataKabag['verifikasi_admin_by'] = $user->id;
-            }
-            if (!$surat->paraf_kapokja_at) {
-                $dataKabag['paraf_kapokja_at'] = now();
-                $dataKabag['paraf_kapokja_by'] = $pejabatLogin?->id;
-            }
-
             $surat->update($dataKabag);
             $msg = '3. Paraf Kepala Bagian Umum berhasil dibubuhkan.';
         } elseif ($tahap === 'ttd_pimpinan') {
-            if (!$surat->paraf_kabag_at && !$user->canManageSystem()) {
+            $isWadekLetter = str_contains(strtolower($surat->penandatangan_jabatan ?? ''), 'wakil dekan') 
+                          || str_contains(strtolower($surat->penandatangan_jabatan ?? ''), 'wadek');
+
+            $canSign = $isWadekLetter ? ($isWd2 || $isDekan) : $isDekan;
+
+            if (!$canSign) {
+                $pejabatTujuan = $isWadekLetter ? 'Wakil Dekan II / Dekan' : 'Dekan Fakultas Keperawatan';
+                return back()->with('error', "Otorisasi Ditolak: Tahap 4 (TTE Pengesahan Pimpinan) hanya berhak disahkan oleh {$pejabatTujuan}.");
+            }
+
+            if (!$surat->paraf_kabag_at) {
                 return back()->with('error', 'SOP Tata Naskah: Konsep surat harus melalui telaah paraf koordinasi Kepala Bagian Umum sebelum ditandatangani Pimpinan.');
             }
 
@@ -250,22 +281,28 @@ class LayananSuratController extends Controller
                 'catatan' => $catatan ?? 'Telah disetujui dan ditandatangani secara elektronik oleh Pimpinan.',
             ];
 
-            if (!$surat->verifikasi_admin_at) {
-                $dataTtd['verifikasi_admin_at'] = now();
-                $dataTtd['verifikasi_admin_by'] = $user->id;
-            }
-            if (!$surat->paraf_kapokja_at) {
-                $dataTtd['paraf_kapokja_at'] = now();
-                $dataTtd['paraf_kapokja_by'] = $pejabatLogin?->id;
-            }
-            if (!$surat->paraf_kabag_at) {
-                $dataTtd['paraf_kabag_at'] = now();
-                $dataTtd['paraf_kabag_by'] = $pejabatLogin?->id;
-            }
-
             $surat->update($dataTtd);
             $msg = '4. Surat Keterangan Aktif Bekerja resmi disahkan dan ditandatangani secara elektronik oleh Pimpinan.';
         } elseif ($tahap === 'tolak') {
+            $canUserReject = false;
+            if (!$surat->verifikasi_admin_at && $isAdmin) {
+                $canUserReject = true;
+            } elseif ($surat->verifikasi_admin_at && !$surat->paraf_kapokja_at && $isKaPokja) {
+                $canUserReject = true;
+            } elseif ($surat->paraf_kapokja_at && !$surat->paraf_kabag_at && $isKabag) {
+                $canUserReject = true;
+            } elseif ($surat->paraf_kabag_at && $surat->status !== 'selesai') {
+                $isWadekLetter = str_contains(strtolower($surat->penandatangan_jabatan ?? ''), 'wakil dekan') 
+                              || str_contains(strtolower($surat->penandatangan_jabatan ?? ''), 'wadek');
+                if ($isWadekLetter ? ($isWd2 || $isDekan) : $isDekan) {
+                    $canUserReject = true;
+                }
+            }
+
+            if (!$canUserReject) {
+                return back()->with('error', 'Otorisasi Ditolak: Anda tidak memiliki wewenang untuk menolak / mengembalikan surat pada tahapan alur saat ini.');
+            }
+
             $surat->update([
                 'status'  => 'ditolak',
                 'catatan' => $catatan ?? 'Permohonan surat ditolak atau dikembalikan untuk perbaikan.',
@@ -361,8 +398,8 @@ class LayananSuratController extends Controller
     public function updateNomorSurat(Request $request, int $id)
     {
         $user = $request->user() ?? Auth::user();
-        if (!$user || (!$user->canAccessExecutiveKepegawaianMenus() && !$user->hasRole('admin'))) {
-            abort(403, 'Hanya Admin Kepegawaian yang berwenang mengisi atau mengubah nomor surat.');
+        if (!$user || !$user->hasRole('admin')) {
+            abort(403, 'Hanya Admin Kepegawaian yang berwenang mengisi atau mengubah nomor surat resmi.');
         }
 
         $request->validate([
