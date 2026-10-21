@@ -450,7 +450,9 @@ class JurusanProdiApprovalResolver extends AbstractApprovalResolver
         // Dosen & Koorprodi -> PYBMC Wadek II
         return $this->findPegawaiByJabatan([
             'Wakil Dekan II (Bid. Keuangan dan Umum)',
+            'Wakil Dekan Keuangan dan Kepegawaian',
             'Wakil Dekan II',
+            'Wakil Dekan Bidang Keuangan dan Umum',
         ]);
     }
 }

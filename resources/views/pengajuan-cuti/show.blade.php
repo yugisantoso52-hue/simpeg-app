@@ -446,17 +446,19 @@
                 $isAdmin          = $authUser->hasRole('admin');
                 $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
 
-                // Cek Atasan Langsung yang sah:
-                $isAtasanLgs = $isAdmin || (
+                // Cek Atasan Langsung yang sah (Pejabat struktural/atasan riil pemohon, BUKAN Admin):
+                $isAtasanLgs = !$isAdmin && ((
                     $authUser->pegawai && $cuti->pegawai &&
                     $hierarchyService->isAtasanLangsungCuti($authUser->pegawai, $cuti->pegawai)
-                ) || ($cuti->atasan_langsung_id && (int)$cuti->atasan_langsung_id === (int)$authUser->id);
+                ) || ($cuti->atasan_langsung_id && (int)$cuti->atasan_langsung_id === (int)$authUser->id));
 
-                // Cek PYBMC yang sah:
-                $isPybmc = $isAdmin || (
+                // Cek PYBMC yang sah (Wadek II / Dekan sesuai hierarki cuti, BUKAN Admin):
+                $isPybmc = !$isAdmin && ((
                     $authUser->pegawai && $cuti->pegawai &&
                     $hierarchyService->isPybmcCuti($authUser->pegawai, $cuti->pegawai)
-                ) || ($cuti->pybmc_id && (int)$cuti->pybmc_id === (int)$authUser->id);
+                ) || ($cuti->pybmc_id && (int)$cuti->pybmc_id === (int)$authUser->id)
+                  || (($isWd2 ?? false) && ($pejabatInfo['kategori'] ?? '') !== 'wadek2' && ($pejabatInfo['kategori'] ?? '') !== 'dekan')
+                  || (($isDekan ?? false) && in_array(($pejabatInfo['kategori'] ?? ''), ['wadek2', 'pimpinan_struktural'])));
 
                 $pertimbanganSudahAda = !empty($cuti->pertimbangan_atasan);
 
@@ -468,13 +470,12 @@
                 // TAHAP 2: PYBMC memberikan keputusan final
                 $canGiveKeputusan = !in_array($cuti->status, ['Disetujui', 'Ditolak', 'Dibatalkan'])
                     && $isPybmc
-                    && ($pertimbanganSudahAda || $isAdmin);
+                    && $pertimbanganSudahAda;
 
                 // Kondisi di mana PYBMC membuka cuti yang masih menunggu Atasan Langsung
                 $isPybmcWaitingAtasan = !in_array($cuti->status, ['Disetujui', 'Ditolak', 'Dibatalkan'])
                     && $isPybmc
-                    && !$pertimbanganSudahAda
-                    && !$isAdmin;
+                    && !$pertimbanganSudahAda;
             @endphp
 
             {{-- PANEL STANDARISASI: VERIFIKASI ADMIN & PARAF KOORDINASI (POKJA & KABAG) --}}
@@ -495,6 +496,35 @@
                         <form action="{{ route('pengajuan-cuti.verifikasi', $cuti->id) }}" method="POST">
                             @csrf
                             <div class="space-y-3">
+                                @if($isAdmin)
+                                    <div>
+                                        <label for="nomor_surat_input" class="block text-xs font-bold text-slate-700 mb-1">
+                                            Nomor Surat Izin Cuti (Ditetapkan saat Admin Screening Berkas):
+                                        </label>
+                                        @php
+                                            $curNo = old('nomor_surat_input', $cuti->nomor_surat ?? '');
+                                            $prefixVal = $curNo;
+                                            if (str_contains($curNo, '/UN19')) {
+                                                $prefixVal = explode('/UN19', $curNo)[0];
+                                            }
+                                            $tahunSurat = $cuti->created_at ? $cuti->created_at->format('Y') : date('Y');
+                                        @endphp
+                                        <div class="flex rounded-lg shadow-xs max-w-md">
+                                            <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 text-slate-500 font-mono text-xs">
+                                                Nomor:
+                                            </span>
+                                            <input type="text" name="nomor_surat_input" id="nomor_surat_input"
+                                                   value="{{ $prefixVal }}"
+                                                   placeholder="Contoh: 123"
+                                                   class="flex-1 min-w-0 block w-full px-3 py-1.5 border border-slate-300 text-xs font-mono font-bold text-slate-900 focus:ring-amber-500 focus:border-amber-500">
+                                            <span class="inline-flex items-center px-3 rounded-r-lg border border-l-0 border-slate-300 bg-slate-100 text-slate-700 font-mono text-xs font-semibold">
+                                                /UN19.5.1.1.10/KP/{{ $tahunSurat }}
+                                            </span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 mt-1">Nomor urut surat izin cuti resmi Fakultas Keperawatan.</p>
+                                    </div>
+                                @endif
+
                                 <div>
                                     <label class="block text-xs font-bold text-slate-700 mb-1">
                                         Catatan / Lembar Telaah Verifikator (Wajib jika menolak):

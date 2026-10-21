@@ -213,7 +213,9 @@ class ApprovalHierarchyService
         // Fallback umum: Wakil Dekan II
         return $this->findPegawaiByJabatan([
             'Wakil Dekan II (Bid. Keuangan dan Umum)',
+            'Wakil Dekan Keuangan dan Kepegawaian',
             'Wakil Dekan II',
+            'Wakil Dekan Bidang Keuangan dan Umum',
         ]);
     }
 
@@ -240,7 +242,7 @@ class ApprovalHierarchyService
         }
 
         // KATEGORI D: WAKIL DEKAN II
-        if (str_contains($jabatanNama, 'WAKIL DEKAN II') || str_contains($jabatanNama, 'WD II')) {
+        if (str_contains($jabatanNama, 'WAKIL DEKAN II') || str_contains($jabatanNama, 'WD II') || (str_contains($jabatanNama, 'WAKIL DEKAN') && str_contains($jabatanNama, 'KEUANGAN'))) {
             $kabagUmum = $this->findPegawaiByJabatan(['Kepala Bagian Umum', 'Kabag Umum']);
             $dekan     = $this->findPegawaiByJabatan(['Dekan']);
             return [
@@ -265,7 +267,12 @@ class ApprovalHierarchyService
             str_contains($jabatanNama, 'KABAG UMUM');
 
         if ($isPimpinanStruktural) {
-            $wadek2 = $this->findPegawaiByJabatan(['Wakil Dekan II (Bid. Keuangan dan Umum)', 'Wakil Dekan II']);
+            $wadek2 = $this->findPegawaiByJabatan([
+                'Wakil Dekan II (Bid. Keuangan dan Umum)',
+                'Wakil Dekan Keuangan dan Kepegawaian',
+                'Wakil Dekan II',
+                'Wakil Dekan Bidang Keuangan dan Umum',
+            ]);
             $dekan  = $this->findPegawaiByJabatan(['Dekan']);
             return [
                 'is_dosen'       => $isDosen,
@@ -282,7 +289,12 @@ class ApprovalHierarchyService
         // KATEGORI A: DOSEN
         if ($isDosen) {
             $kajur  = $this->findPegawaiByJabatan(['Ketua Jurusan (Kajur)', 'Ketua Jurusan Preklinik Keperawatan', 'Ketua Jurusan Klinik dan Komunitas']);
-            $wadek2 = $this->findPegawaiByJabatan(['Wakil Dekan II (Bid. Keuangan dan Umum)', 'Wakil Dekan II']);
+            $wadek2 = $this->findPegawaiByJabatan([
+                'Wakil Dekan II (Bid. Keuangan dan Umum)',
+                'Wakil Dekan Keuangan dan Kepegawaian',
+                'Wakil Dekan II',
+                'Wakil Dekan Bidang Keuangan dan Umum',
+            ]);
             return [
                 'is_dosen'       => true,
                 'kategori'       => 'dosen',
@@ -297,7 +309,12 @@ class ApprovalHierarchyService
 
         // KATEGORI B: TENDIK / STAFF / LABORAN
         $kabagUmum = $this->findPegawaiByJabatan(['Kepala Bagian Umum', 'Kabag Umum']);
-        $wadek2    = $this->findPegawaiByJabatan(['Wakil Dekan II (Bid. Keuangan dan Umum)', 'Wakil Dekan II']);
+        $wadek2    = $this->findPegawaiByJabatan([
+            'Wakil Dekan II (Bid. Keuangan dan Umum)',
+            'Wakil Dekan Keuangan dan Kepegawaian',
+            'Wakil Dekan II',
+            'Wakil Dekan Bidang Keuangan dan Umum',
+        ]);
         return [
             'is_dosen'       => false,
             'kategori'       => 'tendik',

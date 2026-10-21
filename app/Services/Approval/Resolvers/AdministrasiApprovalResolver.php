@@ -389,7 +389,9 @@ class AdministrasiApprovalResolver extends AbstractApprovalResolver
         // Tendik / Staff / Ka Pokja / PLP -> PYBMC Wadek II
         return $this->findPegawaiByJabatan([
             'Wakil Dekan II (Bid. Keuangan dan Umum)',
+            'Wakil Dekan Keuangan dan Kepegawaian',
             'Wakil Dekan II',
+            'Wakil Dekan Bidang Keuangan dan Umum',
         ]);
     }
 }
