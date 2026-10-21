@@ -116,6 +116,9 @@ class PengajuanCutiController extends Controller
             abort(403, 'Anda tidak diizinkan melihat data permohonan cuti ini.');
         }
 
+        // Dapatkan informasi pejabat cuti dinamis berdasarkan kategori pegawai (Dosen/Tendik/Pimpinan)
+        $pejabatInfo = $hierarchyService->getPejabatCutiInfo($cuti->pegawai);
+
         $isKaPokja   = $user->isKaPokjaKepeg();
         $isKabag     = $user->isKabagUmum();
         $isWd2       = $user->isWadek2();
