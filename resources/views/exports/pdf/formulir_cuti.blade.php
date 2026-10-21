@@ -383,11 +383,50 @@
                 {{-- Status dan No. SK di pojok bawah kiri --}}
                 <div style="margin-top: 6px; font-size: 8.5pt; text-align: left;">
                     <div>Status: <strong>{{ in_array($cuti->status, ['Disetujui', 'Ditolak']) ? $cuti->status : 'Menunggu Keputusan' }}</strong></div>
-                    <div>No. SK/Izin: {{ $nomorSuratFormatted ?? ($cuti->nomor_surat ?: '-') }}</div>
                 </div>
             </td>
         </tr>
     </table>
+
+    {{-- Tabel Paraf Koordinasi Tata Naskah (Sesuai PermenPAN-RB No. 1/2023) --}}
+    @if(!empty($sudahParafPokja) || !empty($sudahParafKabag) || !empty($cuti->verifikasi_admin_at))
+    <table style="width: 100%; border-collapse: collapse; margin-top: 4px; margin-bottom: 4px; font-size: 7.5pt;">
+        <tr>
+            <td style="width: 50%; vertical-align: top; border: 1px solid #cbd5e1; background-color: #f8fafc; padding: 4px 6px;">
+                <div style="font-weight: bold; color: #334155; margin-bottom: 2px;">Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian:</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 7pt;">
+                    <tr>
+                        <td style="width: 48%; vertical-align: middle; padding: 1px 0;">
+                            <span style="font-weight: bold;">1. Ka Pokja Keu-Kepeg:</span>
+                            @if(!empty($sudahParafPokja))
+                                <span style="color: #047857; font-weight: bold;">[Diparaf ✓]</span>
+                                <div style="color: #64748b; font-size: 6pt;">{{ $parafPokjaAt }}</div>
+                            @else
+                                <span style="color: #94a3b8;">[Menunggu]</span>
+                            @endif
+                        </td>
+                        <td style="width: 4%; text-align: center;">&bull;</td>
+                        <td style="width: 48%; vertical-align: middle; padding: 1px 0;">
+                            <span style="font-weight: bold;">2. Kabag Umum:</span>
+                            @if(!empty($sudahParafKabag))
+                                <span style="color: #047857; font-weight: bold;">[Diparaf ✓]</span>
+                                <div style="color: #64748b; font-size: 6pt;">{{ $parafKabagAt }}</div>
+                            @else
+                                <span style="color: #94a3b8;">[Menunggu]</span>
+                            @endif
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td style="width: 50%; vertical-align: middle; border: 1px solid #cbd5e1; background-color: #f8fafc; padding: 4px 6px; font-size: 7pt; color: #475569;">
+                <div>Admin Screening: <strong>{{ $cuti->verifikasi_admin_at ? 'Terverifikasi Berkas Sah (' . $cuti->verifikasi_admin_at->format('d/m/Y H:i') . ')' : 'Proses Screening' }}</strong></div>
+                @if($cuti->catatan_verifikator)
+                    <div style="font-style: italic; color: #334155; font-size: 6.5pt;">Catatan: {{ $cuti->catatan_verifikator }}</div>
+                @endif
+            </td>
+        </tr>
+    </table>
+    @endif
 
     @if($isPejabatSigned)
         @include('exports.pdf.partials.otentikasi_dokumen')

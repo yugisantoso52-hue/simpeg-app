@@ -121,11 +121,25 @@
                         Status Alur Verifikasi & Penandatanganan Resmi:
                     </h4>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {{-- 1. Ka Pokja Keu-Kepeg --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {{-- 1. Admin Kepegawaian --}}
+                        <div class="p-3 rounded-lg border {{ $pengajuan->verifikasi_admin_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-bold">1. Admin Kepegawaian</span>
+                                <span class="text-xs font-bold">{{ $pengajuan->verifikasi_admin_at ? '✓ Selesai' : 'Menunggu' }}</span>
+                            </div>
+                            <div class="text-[11px] text-slate-600">Screening & Penomoran</div>
+                            @if($pengajuan->verifikasi_admin_at)
+                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
+                                    {{ $pengajuan->verifikasi_admin_at->format('d/m/Y H:i') }}
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- 2. Ka Pokja Keu-Kepeg --}}
                         <div class="p-3 rounded-lg border {{ $pengajuan->paraf_kapokja_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">1. Ka Pokja Keu-Kepeg</span>
+                                <span class="text-xs font-bold">2. Ka Pokja Keu-Kepeg</span>
                                 <span class="text-xs font-bold">{{ $pengajuan->paraf_kapokja_at ? '✓ Paraf' : 'Menunggu' }}</span>
                             </div>
                             <div class="text-[11px] text-slate-600">Dolli Vita Zenitha, SE</div>
@@ -136,10 +150,10 @@
                             @endif
                         </div>
 
-                        {{-- 2. Kabag Umum --}}
+                        {{-- 3. Kabag Umum --}}
                         <div class="p-3 rounded-lg border {{ $pengajuan->paraf_kabag_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">2. Kabag Umum</span>
+                                <span class="text-xs font-bold">3. Kabag Umum</span>
                                 <span class="text-xs font-bold">{{ $pengajuan->paraf_kabag_at ? '✓ Paraf' : 'Menunggu' }}</span>
                             </div>
                             <div class="text-[11px] text-slate-600">Bakhtiar, S.Sos., M.Si</div>
@@ -150,16 +164,16 @@
                             @endif
                         </div>
 
-                        {{-- 3. Wadek II (Pejabat Penandatangan Resmi) --}}
-                        <div class="p-3 rounded-lg border {{ $pengajuan->paraf_wd2_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
+                        {{-- 4. Wadek II / Dekan (Pejabat Penandatangan Resmi) --}}
+                        <div class="p-3 rounded-lg border {{ ($pengajuan->paraf_wd2_at || $pengajuan->ttd_dekan_at) ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">3. Wakil Dekan II (Penandatangan)</span>
-                                <span class="text-xs font-bold">{{ $pengajuan->paraf_wd2_at ? '✓ Ditandatangani' : 'Menunggu' }}</span>
+                                <span class="text-xs font-bold">4. TTE Pimpinan</span>
+                                <span class="text-xs font-bold">{{ ($pengajuan->paraf_wd2_at || $pengajuan->ttd_dekan_at) ? '✓ Sah (TTE)' : 'Menunggu' }}</span>
                             </div>
-                            <div class="text-[11px] text-slate-600">Dr. Safri, M.Kep., Sp.Kep.M.B</div>
-                            @if($pengajuan->paraf_wd2_at)
+                            <div class="text-[11px] text-slate-600">Dr. Safri, M.Kep / Dekan</div>
+                            @if($pengajuan->paraf_wd2_at || $pengajuan->ttd_dekan_at)
                                 <div class="text-[10px] text-emerald-700 font-mono mt-1">
-                                    {{ $pengajuan->paraf_wd2_at->format('d/m/Y H:i') }}
+                                    {{ ($pengajuan->paraf_wd2_at ?? $pengajuan->ttd_dekan_at)->format('d/m/Y H:i') }}
                                 </div>
                             @endif
                         </div>

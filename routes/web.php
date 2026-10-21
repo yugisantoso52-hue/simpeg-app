@@ -226,6 +226,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::middleware(['role:admin,pimpinan,atasan'])->group(function () {
         /* Approval Pengajuan Cuti */
         Route::post('/pengajuan-cuti/{id}/approve', [PengajuanCutiController::class, 'approve'])->name('pengajuan-cuti.approve');
+        Route::post('/pengajuan-cuti/{id}/verifikasi', [PengajuanCutiController::class, 'verifikasi'])->name('pengajuan-cuti.verifikasi');
 
         /* Monitoring & Verifikasi Logbook Kinerja Pegawai */
         Route::prefix('admin/logbook')->name('admin.logbook.')->group(function () {

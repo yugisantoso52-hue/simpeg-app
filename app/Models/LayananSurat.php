@@ -31,6 +31,8 @@ class LayananSurat extends Model
         'paraf_kabag_by',
         'paraf_kapokja_at',
         'paraf_kapokja_by',
+        'ttd_pimpinan_at',
+        'ttd_pimpinan_by',
         'catatan',
         'created_by',
     ];
@@ -40,11 +42,17 @@ class LayananSurat extends Model
         'verifikasi_admin_at' => 'datetime',
         'paraf_kabag_at'      => 'datetime',
         'paraf_kapokja_at'    => 'datetime',
+        'ttd_pimpinan_at'     => 'datetime',
     ];
 
     public function pegawai(): BelongsTo
     {
         return $this->belongsTo(Pegawai::class, 'pegawai_id');
+    }
+
+    public function pimpinan(): BelongsTo
+    {
+        return $this->belongsTo(Pegawai::class, 'ttd_pimpinan_by');
     }
 
     public function kabag(): BelongsTo

@@ -132,6 +132,71 @@
                     @endif
                 </div>
 
+                {{-- STANDARISASI ALUR VERIFIKASI BERJENJANG (STEPPER PARAF DIGITAL) --}}
+                <div class="mt-4 rounded-xl bg-slate-50 p-4 border border-slate-200">
+                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+                        Status Alur Verifikasi & Penandatanganan Resmi:
+                    </h4>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {{-- 1. Admin Kepegawaian --}}
+                        <div class="p-3 rounded-lg border {{ $cuti->verifikasi_admin_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-bold">1. Admin Kepegawaian</span>
+                                <span class="text-xs font-bold">{{ $cuti->verifikasi_admin_at ? '✓ Selesai' : 'Menunggu' }}</span>
+                            </div>
+                            <div class="text-[11px] text-slate-600">Screening Lampiran & Kuota</div>
+                            @if($cuti->verifikasi_admin_at)
+                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
+                                    {{ $cuti->verifikasi_admin_at->format('d/m/Y H:i') }}
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- 2. Ka Pokja Keu-Kepeg --}}
+                        <div class="p-3 rounded-lg border {{ $cuti->paraf_kapokja_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-bold">2. Ka Pokja Keu-Kepeg</span>
+                                <span class="text-xs font-bold">{{ $cuti->paraf_kapokja_at ? '✓ Paraf' : 'Menunggu' }}</span>
+                            </div>
+                            <div class="text-[11px] text-slate-600">Dolli Vita Zenitha, SE</div>
+                            @if($cuti->paraf_kapokja_at)
+                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
+                                    {{ $cuti->paraf_kapokja_at->format('d/m/Y H:i') }}
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- 3. Kabag Umum --}}
+                        <div class="p-3 rounded-lg border {{ $cuti->paraf_kabag_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-bold">3. Kabag Umum</span>
+                                <span class="text-xs font-bold">{{ $cuti->paraf_kabag_at ? '✓ Paraf' : 'Menunggu' }}</span>
+                            </div>
+                            <div class="text-[11px] text-slate-600">Bakhtiar, S.Sos., M.Si</div>
+                            @if($cuti->paraf_kabag_at)
+                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
+                                    {{ $cuti->paraf_kabag_at->format('d/m/Y H:i') }}
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- 4. Wadek II / PYBMC (Pejabat Penandatangan Resmi) --}}
+                        <div class="p-3 rounded-lg border {{ in_array($cuti->status, ['Disetujui', 'Ditolak']) ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-bold">4. TTE PYBMC</span>
+                                <span class="text-xs font-bold">{{ in_array($cuti->status, ['Disetujui', 'Ditolak']) ? '✓ Sah (TTE)' : 'Menunggu' }}</span>
+                            </div>
+                            <div class="text-[11px] text-slate-600">{{ $pejabatInfo['pybmc_nama'] ?? 'Wakil Dekan II' }}</div>
+                            @if($cuti->approved_at)
+                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
+                                    {{ $cuti->approved_at->format('d/m/Y H:i') }}
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
                 @if(Auth::user()->hasRole('admin'))
                     {{-- PANEL KHUSUS ADMIN: INPUT / UPDATE NOMOR SURAT RESMI INSTANSI --}}
                     <div class="mt-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50/40">
@@ -411,6 +476,105 @@
                     && !$pertimbanganSudahAda
                     && !$isAdmin;
             @endphp
+
+            {{-- PANEL STANDARISASI: VERIFIKASI ADMIN & PARAF KOORDINASI (POKJA & KABAG) --}}
+            @if($isAdmin || ($isKaPokja ?? false) || ($isKabag ?? false) || ($isExecutive ?? false))
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-slate-100 gap-2">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                                <span>🛡️</span> Tindakan Verifikasi & Paraf Koordinasi Tata Naskah
+                            </h3>
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Standar pemeriksaan syarat berkas fisik/lampiran oleh Admin, paraf teknis Ka Pokja, dan paraf tata naskah Kabag Umum.
+                            </p>
+                        </div>
+                    </div>
+
+                    @if(!in_array($cuti->status, ['Disetujui', 'Ditolak', 'Dibatalkan']))
+                        <form action="{{ route('pengajuan-cuti.verifikasi', $cuti->id) }}" method="POST">
+                            @csrf
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">
+                                        Catatan / Lembar Telaah Verifikator (Wajib jika menolak):
+                                    </label>
+                                    <textarea name="catatan" rows="2" placeholder="Tuliskan catatan kelayakan berkas, kepatuhan kuota cuti, atau catatan revisi penolakan..."
+                                              class="w-full text-xs rounded-lg border-slate-300 focus:ring-emerald-500 focus:border-emerald-500">{{ old('catatan', $cuti->catatan_verifikator) }}</textarea>
+                                </div>
+
+                                <div class="flex flex-wrap items-center gap-2.5 pt-1">
+                                    {{-- 1. Tombol Verifikasi Admin --}}
+                                    @if($cuti->verifikasi_admin_at)
+                                        <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5" title="Selesai pada {{ $cuti->verifikasi_admin_at->format('d/m/Y H:i') }}">
+                                            ✓ 1. Admin Screening: Selesai
+                                        </span>
+                                    @elseif($isAdmin)
+                                        <button type="submit" name="tahap" value="verifikasi_admin" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs transition flex items-center gap-1.5">
+                                            ✓ 1. Admin Screening Berkas
+                                        </button>
+                                    @else
+                                        <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200 select-none">
+                                            ⏳ 1. Menunggu Admin Screening Berkas
+                                        </span>
+                                    @endif
+
+                                    {{-- 2. Tombol Paraf Ka Pokja Keu-Kepeg --}}
+                                    @if($cuti->paraf_kapokja_at)
+                                        <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5" title="Selesai pada {{ $cuti->paraf_kapokja_at->format('d/m/Y H:i') }}">
+                                            ✓ 2. Paraf Ka Pokja: Selesai
+                                        </span>
+                                    @elseif(!$cuti->verifikasi_admin_at)
+                                        <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Admin Screening Berkas">
+                                            🔒 2. Paraf Pokja (Terkunci)
+                                        </span>
+                                    @elseif(($isKaPokja ?? false) || $isAdmin)
+                                        <button type="submit" name="tahap" value="paraf_kapokja" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs transition flex items-center gap-1.5">
+                                            ✒ 2. Periksa & Paraf Ka Pokja
+                                        </button>
+                                    @else
+                                        <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200 select-none">
+                                            ⏳ 2. Menunggu Paraf Ka Pokja
+                                        </span>
+                                    @endif
+
+                                    {{-- 3. Tombol Paraf Kabag Umum --}}
+                                    @if($cuti->paraf_kabag_at)
+                                        <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5" title="Selesai pada {{ $cuti->paraf_kabag_at->format('d/m/Y H:i') }}">
+                                            ✓ 3. Paraf Kabag: Selesai
+                                        </span>
+                                    @elseif(!$cuti->paraf_kapokja_at)
+                                        <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Paraf Ka Pokja">
+                                            🔒 3. Paraf Kabag (Terkunci)
+                                        </span>
+                                    @elseif(($isKabag ?? false) || $isAdmin)
+                                        <button type="submit" name="tahap" value="paraf_kabag" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition flex items-center gap-1.5">
+                                            ✒ 3. Telaah Naskah & Paraf Kabag
+                                        </button>
+                                    @else
+                                        <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200 select-none">
+                                            ⏳ 3. Menunggu Paraf Kabag
+                                        </span>
+                                    @endif
+
+                                    {{-- Tombol Tolak / Kembalikan --}}
+                                    <button type="submit" name="tahap" value="tolak" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition"
+                                            onclick="return confirm('Apakah Anda yakin ingin menolak atau mengembalikan berkas cuti ini? Pastikan kolom catatan telaah telah diisi.');">
+                                        ✕ Kembalikan / Tolak
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    @else
+                        <div class="text-xs text-slate-600 italic">
+                            Permohonan cuti ini telah berstatus final ({{ $cuti->status }}).
+                            @if($cuti->catatan_verifikator)
+                                <div class="mt-1 font-normal text-slate-700">Catatan telaah: "{{ $cuti->catatan_verifikator }}"</div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            @endif
 
             {{-- FORM TAHAP 1: Pertimbangan Atasan Langsung --}}
             @if($canGivePertimbangan)

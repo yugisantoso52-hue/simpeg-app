@@ -254,6 +254,24 @@
                                         <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold border {{ $row->status_badge_class }}">
                                             {{ $row->status_label ?? $row->status }}
                                         </span>
+                                        {{-- Tracking Mini 4 Tahap Bertingkat --}}
+                                        <div class="flex items-center justify-center gap-1 text-[10px] text-slate-500 pt-1">
+                                            <span class="{{ $row->verifikasi_admin_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}" title="1. Admin Screening">
+                                                Admin {{ $row->verifikasi_admin_at ? '✓' : '-' }}
+                                            </span>
+                                            <span>➔</span>
+                                            <span class="{{ $row->paraf_kapokja_at ? 'text-sky-700 font-bold' : 'text-slate-400' }}" title="2. Paraf Ka Pokja">
+                                                Pokja {{ $row->paraf_kapokja_at ? '✓' : '-' }}
+                                            </span>
+                                            <span>➔</span>
+                                            <span class="{{ $row->paraf_kabag_at ? 'text-indigo-700 font-bold' : 'text-slate-400' }}" title="3. Paraf Kabag">
+                                                Kabag {{ $row->paraf_kabag_at ? '✓' : '-' }}
+                                            </span>
+                                            <span>➔</span>
+                                            <span class="{{ in_array($row->status, ['Disetujui', 'Ditolak']) ? 'text-emerald-700 font-bold' : 'text-slate-400' }}" title="4. TTE PYBMC">
+                                                PYBMC {{ in_array($row->status, ['Disetujui', 'Ditolak']) ? '✓' : '-' }}
+                                            </span>
+                                        </div>
                                     </td>
                                     <td class="py-3 px-4 text-center">
                                         <div class="flex items-center justify-center gap-1.5">

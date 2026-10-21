@@ -39,11 +39,21 @@ class PengajuanCuti extends Model
         'approved_by',
         'approved_at',
         'catatan_pimpinan',
+        'verifikasi_admin_at',
+        'verifikasi_admin_by',
+        'paraf_kapokja_at',
+        'paraf_kapokja_by',
+        'paraf_kabag_at',
+        'paraf_kabag_by',
+        'catatan_verifikator',
     ];
 
     protected $casts = [
         'tanggal_mulai'          => 'date',
         'tanggal_selesai'        => 'date',
+        'verifikasi_admin_at'    => 'datetime',
+        'paraf_kapokja_at'       => 'datetime',
+        'paraf_kabag_at'         => 'datetime',
         'pertimbangan_atasan_at' => 'datetime',
         'approved_at'            => 'datetime',
         'jumlah_hari'            => 'integer',
@@ -52,6 +62,21 @@ class PengajuanCuti extends Model
     public function pegawai()
     {
         return $this->belongsTo(Pegawai::class, 'pegawai_id');
+    }
+
+    public function verifikatorAdmin()
+    {
+        return $this->belongsTo(User::class, 'verifikasi_admin_by');
+    }
+
+    public function verifikatorKaPokja()
+    {
+        return $this->belongsTo(Pegawai::class, 'paraf_kapokja_by');
+    }
+
+    public function verifikatorKabag()
+    {
+        return $this->belongsTo(Pegawai::class, 'paraf_kabag_by');
     }
 
     public function atasanLangsung()

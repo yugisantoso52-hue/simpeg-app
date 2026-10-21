@@ -277,8 +277,10 @@ class LayananSuratController extends Controller
             }
 
             $dataTtd = [
-                'status'  => 'selesai',
-                'catatan' => $catatan ?? 'Telah disetujui dan ditandatangani secara elektronik oleh Pimpinan.',
+                'status'          => 'selesai',
+                'ttd_pimpinan_at' => now(),
+                'ttd_pimpinan_by' => $pejabatLogin?->id,
+                'catatan'         => $catatan ?? 'Telah disetujui dan ditandatangani secara elektronik oleh Pimpinan.',
             ];
 
             $surat->update($dataTtd);

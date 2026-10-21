@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PengajuanCuti\ApprovePengajuanCutiRequest;
 use App\Http\Requests\PengajuanCuti\StorePengajuanCutiRequest;
+use App\Models\Pegawai;
+use App\Models\User;
+use App\Services\NomorSuratService;
 use App\Services\PengajuanCutiService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class PengajuanCutiController extends Controller
@@ -112,10 +116,15 @@ class PengajuanCutiController extends Controller
             abort(403, 'Anda tidak diizinkan melihat data permohonan cuti ini.');
         }
 
-        // Dapatkan informasi pejabat cuti dinamis berdasarkan kategori pegawai (Dosen/Tendik/Pimpinan)
-        $pejabatInfo = $hierarchyService->getPejabatCutiInfo($cuti->pegawai);
+        $isKaPokja   = $user->isKaPokjaKepeg();
+        $isKabag     = $user->isKabagUmum();
+        $isWd2       = $user->isWadek2();
+        $isDekan     = $user->isDekan();
+        $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
 
-        return view('pengajuan-cuti.show', compact('cuti', 'pejabatInfo'));
+        return view('pengajuan-cuti.show', compact(
+            'cuti', 'pejabatInfo', 'isAdmin', 'isKaPokja', 'isKabag', 'isWd2', 'isDekan', 'isExecutive'
+        ));
     }
 
     public function approve(ApprovePengajuanCutiRequest $request, int $id)
@@ -152,6 +161,102 @@ class PengajuanCutiController extends Controller
         return redirect()
             ->route('pengajuan-cuti.index')
             ->with('success', 'Permohonan cuti telah dibatalkan.');
+    }
+
+    /**
+     * Standarisasi Verifikasi Berkas & Paraf Berjenjang Pengajuan Cuti (SOP SIKAP):
+     * Tahap 1: Admin Screening Berkas Lampiran & Penomoran Resmi (verifikasi_admin)
+     * Tahap 2: Paraf Ka Pokja Keu-Kepeg (Pemeriksaan Teknis & Kuota Cuti) (paraf_kapokja)
+     * Tahap 3: Paraf Kepala Bagian Umum (Telaah Tata Naskah & Format) (paraf_kabag)
+     * Tahap Penolakan: Pengembalian Berkas dengan Catatan Wajib (tolak)
+     */
+    public function verifikasi(Request $request, int $id)
+    {
+        $user = $request->user();
+        if (!$user) {
+            abort(401);
+        }
+
+        $cuti = $this->service->find($id);
+        $tahap = $request->input('tahap');
+        $catatan = $request->input('catatan');
+        $pejabatLogin = $user->pegawai;
+
+        $isAdmin   = $user->hasRole('admin');
+        $isKaPokja = $user->isKaPokjaKepeg();
+        $isKabag   = $user->isKabagUmum();
+        $isWd2     = $user->isWadek2();
+        $isDekan   = $user->isDekan();
+
+        if ($tahap === 'verifikasi_admin') {
+            if (!$isAdmin) {
+                return back()->with('error', 'Otorisasi Ditolak: Tahap 1 (Admin Screening Berkas & Penomoran) hanya berhak dilakukan oleh Admin Kepegawaian.');
+            }
+
+            $updateData = [
+                'verifikasi_admin_at' => now(),
+                'verifikasi_admin_by' => $user->id,
+                'catatan_verifikator' => $catatan ?? 'Telah diverifikasi kelengkapan berkas fisik, lampiran, dan kuota cuti oleh Admin Kepegawaian.',
+            ];
+
+            if ($request->filled('nomor_surat_input')) {
+                $inputNomor = trim((string) $request->input('nomor_surat_input'));
+                $tahunSurat = $cuti->created_at ? $cuti->created_at->format('Y') : date('Y');
+                $updateData['nomor_surat'] = app(NomorSuratService::class)->formatCuti($inputNomor, (int) $tahunSurat);
+            }
+
+            $cuti->update($updateData);
+            return back()->with('success', '1. Verifikasi Screening Berkas Lampiran & Penomoran Cuti oleh Admin Kepegawaian berhasil.');
+        } elseif ($tahap === 'paraf_kapokja') {
+            if (!$isKaPokja && !$isAdmin) {
+                return back()->with('error', 'Otorisasi Ditolak: Tahap 2 (Paraf Ka Pokja) hanya berhak dilakukan oleh Kepala Pokja Keuangan & Kepegawaian.');
+            }
+
+            if (!$cuti->verifikasi_admin_at) {
+                return back()->with('error', 'SOP Tata Naskah: Berkas cuti harus diperiksa kelengkapannya (Admin Screening Berkas) terlebih dahulu sebelum diparaf Ka Pokja.');
+            }
+
+            $cuti->update([
+                'paraf_kapokja_at'    => now(),
+                'paraf_kapokja_by'    => $pejabatLogin?->id,
+                'catatan_verifikator' => $catatan ?? 'Telah diperiksa status kepegawaian dan kuota cuti oleh Ka Pokja Keu-Kepeg.',
+            ]);
+
+            return back()->with('success', '2. Paraf Ka Pokja Keuangan dan Kepegawaian berhasil dibubuhkan.');
+        } elseif ($tahap === 'paraf_kabag') {
+            if (!$isKabag && !$isAdmin) {
+                return back()->with('error', 'Otorisasi Ditolak: Tahap 3 (Paraf Kabag Umum) hanya berhak dilakukan oleh Kepala Bagian Umum.');
+            }
+
+            if (!$cuti->paraf_kapokja_at) {
+                return back()->with('error', 'SOP Tata Naskah: Berkas harus diperiksa dan diparaf terlebih dahulu oleh Ka Pokja Keu-Kepeg sebelum ditelaah oleh Kabag Umum.');
+            }
+
+            $cuti->update([
+                'paraf_kabag_at'      => now(),
+                'paraf_kabag_by'      => $pejabatLogin?->id,
+                'catatan_verifikator' => $catatan ?? 'Telah ditelaah format naskah izin cuti dan diparaf oleh Kepala Bagian Umum.',
+            ]);
+
+            return back()->with('success', '3. Paraf Kepala Bagian Umum berhasil dibubuhkan.');
+        } elseif ($tahap === 'tolak') {
+            $canReject = $isAdmin || $isKaPokja || $isKabag || $isWd2 || $isDekan || $user->isAtasan() || $user->hasRole('pimpinan');
+            if (!$canReject) {
+                return back()->with('error', 'Anda tidak memiliki hak wewenang untuk menolak permohonan cuti ini.');
+            }
+
+            $cuti->update([
+                'status'              => 'Ditolak',
+                'approved_by'         => $user->id,
+                'approved_at'         => now(),
+                'catatan_pimpinan'    => $catatan ?? 'Berkas permohonan cuti ditolak / tidak disetujui.',
+                'catatan_verifikator' => $catatan ?? 'Berkas permohonan cuti ditolak / tidak disetujui.',
+            ]);
+
+            return back()->with('success', 'Permohonan cuti telah ditolak / dikembalikan.');
+        }
+
+        return back()->with('error', 'Tahapan verifikasi tidak valid.');
     }
 
     public function updateNomorSurat(Request $request, int $id)
@@ -231,8 +336,25 @@ class PengajuanCutiController extends Controller
         $verifyUrl = route('verify.document', ['code' => $verifyCode]);
         $qrCodeDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl);
 
-        $pdf = Pdf::loadView('exports.pdf.formulir_cuti', compact('cuti', 'verifyUrl', 'verifyCode', 'qrCodeDataUri', 'nomorSuratFormatted'))
-            ->setPaper('a4', 'portrait');
+        $pejabatService = app(\App\Services\PejabatService::class);
+        $kabagData      = $pejabatService->getKabag();
+        $kapokjaData    = $pejabatService->getKaPokja();
+
+        $pejabatKabag   = $kabagData['pegawai'];
+        $pejabatKaPokja = $kapokjaData['pegawai'];
+
+        $sudahParafPokja = !empty($cuti->paraf_kapokja_at);
+        $sudahParafKabag = !empty($cuti->paraf_kabag_at);
+        $parafPokjaAt    = $sudahParafPokja ? $cuti->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB' : null;
+        $parafKabagAt    = $sudahParafKabag ? $cuti->paraf_kabag_at->format('d/m/Y H:i') . ' WIB' : null;
+        $qrPokjaUri      = $sudahParafPokja ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '')) : null;
+        $qrKabagUri      = $sudahParafKabag ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '')) : null;
+
+        $pdf = Pdf::loadView('exports.pdf.formulir_cuti', compact(
+            'cuti', 'verifyUrl', 'verifyCode', 'qrCodeDataUri', 'nomorSuratFormatted',
+            'pejabatKabag', 'pejabatKaPokja', 'sudahParafPokja', 'sudahParafKabag',
+            'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri'
+        ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);
 
