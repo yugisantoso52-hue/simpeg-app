@@ -73,11 +73,28 @@ class DeployWebhookController extends Controller
             // 1. Update code from GitHub zip (with SSL verification enabled)
             $logs['code_update'] = $this->updateCodeFromGithubZip();
 
-            // 2. Run database migrations
+            // 2. Pastikan direktori storage/app/private & public tersedia dan writable oleh www-data
+            foreach ([
+                storage_path('app/private'),
+                storage_path('app/private/arsip'),
+                storage_path('app/public'),
+                storage_path('framework/cache/data'),
+                storage_path('framework/sessions'),
+                storage_path('framework/views'),
+                storage_path('logs'),
+                base_path('bootstrap/cache'),
+            ] as $dir) {
+                if (!File::isDirectory($dir)) {
+                    @mkdir($dir, 0777, true);
+                }
+                @chmod($dir, 0777);
+            }
+
+            // 3. Run database migrations
             Artisan::call('migrate', ['--force' => true]);
             $logs['migrate'] = trim(Artisan::output());
 
-            // 3. Clear and optimize caches
+            // 4. Clear and optimize caches
             Artisan::call('optimize:clear');
             if (function_exists('opcache_reset')) {
                 @opcache_reset();

@@ -150,9 +150,26 @@ class PegawaiStorageService
             \Illuminate\Support\Facades\Log::warning("Gagal mengunggah berkas ke disk [{$uploadDisk}], beralih ke fallback [{$fallbackDisk}]: " . $e->getMessage());
         }
 
-        $storedPath = $file->storeAs($targetDirectory, $filename, $fallbackDisk);
+        try {
+            $storedPath = $file->storeAs($targetDirectory, $filename, $fallbackDisk);
+            if ($storedPath !== false && $storedPath !== '') {
+                return $storedPath;
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Gagal mengunggah berkas ke fallback disk [{$fallbackDisk}]: " . $e->getMessage());
+            // Coba disk alternatif lokal (public_local) jika storage/app/private terkendala permission di container
+            try {
+                $altDisk = $fallbackDisk === 'local' ? 'public_local' : 'local';
+                $storedPath = $file->storeAs($targetDirectory, $filename, $altDisk);
+                if ($storedPath !== false && $storedPath !== '') {
+                    return $storedPath;
+                }
+            } catch (\Throwable $e2) {
+                \Illuminate\Support\Facades\Log::warning("Gagal mengunggah berkas ke alt disk: " . $e2->getMessage());
+            }
+        }
 
-        return $storedPath ?: "{$targetDirectory}/{$filename}";
+        return "{$targetDirectory}/{$filename}";
     }
 
     /**

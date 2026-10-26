@@ -4,7 +4,9 @@ set -e
 echo "=== Memulai SIKAP FKP UNRI Container Entrypoint ==="
 
 # 1. Pastikan direktori storage dan cache tersedia
-mkdir -p /var/www/html/storage/app/public \
+mkdir -p /var/www/html/storage/app/private \
+         /var/www/html/storage/app/private/arsip \
+         /var/www/html/storage/app/public \
          /var/www/html/storage/framework/cache/data \
          /var/www/html/storage/framework/sessions \
          /var/www/html/storage/framework/views \
