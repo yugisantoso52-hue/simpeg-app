@@ -18,13 +18,47 @@ class PengajuanCutiController extends Controller
         protected PengajuanCutiService $service
     ) {}
 
+    /**
+     * Resolusi otomatis relasi Pegawai untuk User yang sedang login
+     */
+    protected function resolveUserPegawai(?User $user): ?Pegawai
+    {
+        if (!$user) {
+            return null;
+        }
+
+        if ($user->pegawai) {
+            return $user->pegawai;
+        }
+
+        if ($user->pegawai_id) {
+            $pegawai = Pegawai::find($user->pegawai_id);
+            if ($pegawai) {
+                return $pegawai;
+            }
+        }
+
+        $pegawai = Pegawai::where('email', $user->email)
+            ->orWhere('nip', $user->name)
+            ->first();
+
+        if ($pegawai) {
+            $user->update(['pegawai_id' => $pegawai->id]);
+            $user->setRelation('pegawai', $pegawai);
+            return $pegawai;
+        }
+
+        return null;
+    }
+
     public function index(Request $request)
     {
         $user = $request->user();
+        $pegawai = $this->resolveUserPegawai($user);
         $isAdmin = $user->hasRole('admin');
         $isAtasan = $user->isAtasan() || $user->hasRole('pimpinan');
         $isPegawaiOnly = !$isAdmin && !$isAtasan;
-        $pegawaiId = $isPegawaiOnly ? $user->pegawai_id : null;
+        $pegawaiId = $isPegawaiOnly ? ($user->pegawai_id ?? $pegawai?->id) : null;
 
         if ($isPegawaiOnly && !$pegawaiId) {
             return redirect()->route('dashboard')->with('error', 'Akun Anda belum terhubung dengan data pegawai.');
@@ -33,9 +67,9 @@ class PengajuanCutiController extends Controller
         // Scoping daftar cuti berdasarkan Matriks Hierarki E-Cuti:
         $scopedPegawaiIds = null;
         if (!$isAdmin && $isAtasan) {
-            if ($user->pegawai) {
+            if ($pegawai) {
                 $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
-                $scopedPegawaiIds = $hierarchyService->getScopedCutiPegawaiIds($user->pegawai);
+                $scopedPegawaiIds = $hierarchyService->getScopedCutiPegawaiIds($pegawai);
             } else {
                 $scopedPegawaiIds = $user->getBawahanIds();
             }
@@ -51,7 +85,6 @@ class PengajuanCutiController extends Controller
         );
 
         $statistics = $this->service->statistics($pegawaiId, $scopedPegawaiIds);
-        $pegawai = $user->pegawai;
 
         return view('pengajuan-cuti.index', compact('data', 'statistics', 'isPegawaiOnly', 'pegawai', 'isAtasan', 'isAdmin'));
     }
@@ -61,7 +94,7 @@ class PengajuanCutiController extends Controller
         $user = $request->user();
         $isAdmin = $user->hasRole('admin');
         $isPegawaiOnly = !$isAdmin;
-        $pegawai = $user->pegawai ?? ($user->pegawai_id ? \App\Models\Pegawai::find($user->pegawai_id) : null);
+        $pegawai = $this->resolveUserPegawai($user);
         $pegawaiList = $isAdmin ? $this->service->pegawaiList() : collect();
 
         if (!$isAdmin && !$pegawai) {
@@ -74,12 +107,13 @@ class PengajuanCutiController extends Controller
     public function store(StorePengajuanCutiRequest $request)
     {
         $user = $request->user();
+        $pegawai = $this->resolveUserPegawai($user);
         $pegawaiId = $user->hasRole('admin') && $request->filled('pegawai_id')
             ? (int)$request->get('pegawai_id')
-            : (int)($user->pegawai_id ?? $user->pegawai?->id);
+            : (int)($user->pegawai_id ?? $pegawai?->id);
 
         if (!$pegawaiId) {
-            return redirect()->back()->with('error', 'Data pegawai tidak ditemukan.');
+            return redirect()->back()->withInput()->with('error', 'Data pegawai tidak ditemukan.');
         }
 
         $validated = $request->safe()->except([

@@ -102,12 +102,18 @@ class PengajuanCutiService
             }
 
             // Tentukan Atasan Langsung & PYBMC via ApprovalHierarchyService sesuai Ketetapan Cuti
-            $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
-            $atasanPegawai = $hierarchyService->getAtasanLangsungCuti($pegawai);
-            $pybmcPegawai  = $hierarchyService->getPybmcCuti($pegawai, $data['jenis_cuti'] ?? null);
+            $atasanUser = null;
+            $pybmcUser  = null;
+            try {
+                $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
+                $atasanPegawai = $hierarchyService->getAtasanLangsungCuti($pegawai);
+                $pybmcPegawai  = $hierarchyService->getPybmcCuti($pegawai, $data['jenis_cuti'] ?? null);
 
-            $atasanUser = $atasanPegawai ? \App\Models\User::where('pegawai_id', $atasanPegawai->id)->first() : null;
-            $pybmcUser  = $pybmcPegawai ? \App\Models\User::where('pegawai_id', $pybmcPegawai->id)->first() : null;
+                $atasanUser = $atasanPegawai ? \App\Models\User::where('pegawai_id', $atasanPegawai->id)->first() : null;
+                $pybmcUser  = $pybmcPegawai ? \App\Models\User::where('pegawai_id', $pybmcPegawai->id)->first() : null;
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Gagal menentukan hierarki atasan/PYBMC cuti: ' . $e->getMessage());
+            }
 
             $data['pegawai_id']          = $pegawaiId;
             $data['jumlah_hari']         = $jumlahHari;
@@ -118,8 +124,12 @@ class PengajuanCutiService
             $cuti = $this->repository->create($data);
 
             if ($file && $pegawai) {
-                $jenisCuti = strtoupper(str_replace(' ', '_', $data['jenis_cuti'] ?? 'CUTI'));
-                app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, "SURAT_LAMPIRAN_{$jenisCuti}", '05_DOKUMEN_LAINNYA', "Permohonan {$data['jenis_cuti']}");
+                try {
+                    $jenisCuti = strtoupper(str_replace(' ', '_', $data['jenis_cuti'] ?? 'CUTI'));
+                    app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, "SURAT_LAMPIRAN_{$jenisCuti}", '05_DOKUMEN_LAINNYA', "Permohonan {$data['jenis_cuti']}");
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Gagal mencatat arsip dokumen cuti: ' . $e->getMessage());
+                }
             }
 
             // Kirim notifikasi ke Atasan Langsung & Pimpinan

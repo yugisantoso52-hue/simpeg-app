@@ -246,4 +246,99 @@ class PengajuanCutiTest extends TestCase
         $pdfResponse->assertStatus(200);
         $this->assertStringContainsString('application/pdf', $pdfResponse->headers->get('Content-Type'));
     }
+
+    public function test_pegawai_can_submit_cuti_form_with_attachment_when_cloud_storage_fails(): void
+    {
+        // Simulasikan kondisi di mana default disk diset ke 'supabase' yang sedang paused/unreachable
+        config([
+            'filesystems.default' => 'supabase',
+            'filesystems.disks.supabase' => [
+                'driver'   => 's3',
+                'key'      => 'invalid-key',
+                'secret'   => 'invalid-secret',
+                'region'   => 'ap-northeast-2',
+                'bucket'   => 'sikap-files',
+                'endpoint' => 'http://127.0.0.1:1', // Unreachable endpoint to trigger connection/write failure
+                'throw'    => true,
+            ],
+        ]);
+
+        $file = UploadedFile::fake()->create('surat_keterangan_dokter.pdf', 250, 'application/pdf');
+        $start = Carbon::now()->next(Carbon::MONDAY);
+        $end = $start->copy()->addDays(2);
+
+        $createPage = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.create'));
+        $createPage->assertStatus(200);
+        $createPage->assertSee('Form Permohonan Cuti');
+
+        $response = $this->actingAs($this->pegawaiUser)->post(route('pengajuan-cuti.store'), [
+            'jenis_cuti'         => 'Cuti Sakit',
+            'tanggal_mulai'      => $start->toDateString(),
+            'tanggal_selesai'    => $end->toDateString(),
+            'alasan'             => 'Perawatan medis dengan surat keterangan dokter',
+            'alamat_selama_cuti' => 'Jl. Diponegoro No. 10 Pekanbaru',
+            'nomor_telepon'      => '081234567890',
+            'file_lampiran'      => $file,
+        ]);
+
+        $response->assertRedirect(route('pengajuan-cuti.index'));
+        $response->assertSessionHas('success');
+
+        $cuti = PengajuanCuti::where('pegawai_id', $this->pegawai->id)
+            ->where('jenis_cuti', 'Cuti Sakit')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($cuti);
+        $this->assertNotNull($cuti->file_lampiran);
+        Storage::disk('local')->assertExists($cuti->file_lampiran);
+
+        // Pastikan halaman index dan detail show juga dapat diakses tanpa 500 error
+        $indexResponse = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.index'));
+        $indexResponse->assertStatus(200);
+
+        $showResponse = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.show', $cuti->id));
+        $showResponse->assertStatus(200);
+    }
+
+    public function test_pegawai_with_unlinked_pegawai_id_auto_resolves_and_submits_cuti_without_error(): void
+    {
+        $unlinkedPegawai = Pegawai::create([
+            'nip'                 => '199502022022031005',
+            'nama'                => 'Ns. Andi Pratama, S.Kep',
+            'email'               => 'andi.pratama@unri.ac.id',
+            'jenis_pegawai'       => 'Tendik',
+            'pendidikan_terakhir' => 'S1',
+            'status_pegawai'      => 'Aktif',
+        ]);
+
+        $pegawaiRole = Role::where('name', 'pegawai')->first();
+        $unlinkedUser = User::factory()->create([
+            'name'                 => '199502022022031005',
+            'email'                => 'andi.pratama@unri.ac.id',
+            'role_id'              => $pegawaiRole->id,
+            'pegawai_id'           => null,
+            'must_change_password' => false,
+        ]);
+
+        $start = Carbon::now()->next(Carbon::MONDAY);
+        $end = $start->copy()->addDays(1);
+
+        $response = $this->actingAs($unlinkedUser)->post(route('pengajuan-cuti.store'), [
+            'jenis_cuti'         => 'Cuti Tahunan',
+            'tanggal_mulai'      => $start->toDateString(),
+            'tanggal_selesai'    => $end->toDateString(),
+            'alasan'             => 'Keperluan keluarga di luar kota',
+            'alamat_selama_cuti' => 'Pekanbaru',
+            'nomor_telepon'      => '081298765432',
+        ]);
+
+        $response->assertRedirect(route('pengajuan-cuti.index'));
+        $this->assertEquals($unlinkedPegawai->id, $unlinkedUser->fresh()->pegawai_id);
+        $this->assertDatabaseHas('pengajuan_cuti', [
+            'pegawai_id' => $unlinkedPegawai->id,
+            'jenis_cuti' => 'Cuti Tahunan',
+            'status'     => 'Menunggu Persetujuan',
+        ]);
+    }
 }

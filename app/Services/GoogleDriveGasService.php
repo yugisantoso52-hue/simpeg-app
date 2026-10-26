@@ -72,47 +72,71 @@ class GoogleDriveGasService
         string $jenisDokumen = 'KTP',
         string $subFolderCategory = '01_DOKUMEN_UTAMA',
         ?string $keterangan = null
-    ): ArsipDokumen {
-        $namaFileAsli = $file->getClientOriginalName();
-        $extension    = strtolower($file->getClientOriginalExtension() ?: $file->extension());
-        $mimeType     = $file->getMimeType() ?: 'application/octet-stream';
-        $ukuranFile   = $file->getSize();
-        $fileBytes    = file_get_contents($file->getRealPath());
-        $checksum     = hash('sha256', $fileBytes);
+    ): ?ArsipDokumen {
+        $namaFileAsli = substr((string) ($file->getClientOriginalName() ?: 'dokumen'), 0, 255);
+        $extension    = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?: 'bin'));
+        $mimeType     = substr((string) ($file->getMimeType() ?: 'application/octet-stream'), 0, 100);
+        $ukuranFile   = (int) ($file->getSize() ?: 0);
+
+        $realPath  = $file->getRealPath();
+        $fileBytes = ($realPath && is_readable($realPath)) ? @file_get_contents($realPath) : false;
+        if ($fileBytes === false) {
+            try {
+                $fileBytes = (string) $file->get();
+            } catch (\Throwable $e) {
+                $fileBytes = '';
+            }
+        }
+        $checksum = hash('sha256', (string) $fileBytes);
 
         // Format nama file di sistem
-        $cleanNama    = Str::slug($pegawai->nama, '_');
-        $cleanNip     = $pegawai->nip ? Str::slug($pegawai->nip) : 'ID_' . $pegawai->id;
-        $namaFileSistem = strtoupper($jenisDokumen) . '_' . $cleanNip . '_' . $cleanNama . '.' . $extension;
+        $cleanNama      = Str::slug($pegawai->nama ?? 'pegawai', '_');
+        $cleanNip       = $pegawai->nip ? Str::slug($pegawai->nip) : 'ID_' . $pegawai->id;
+        $jenisDokClean  = substr(strtoupper($jenisDokumen), 0, 50);
+        $kategoriClean  = substr($subFolderCategory, 0, 50);
+        $namaFileSistem = substr($jenisDokClean . '_' . $cleanNip . '_' . $cleanNama, 0, 240) . '.' . $extension;
 
         // Simpan file lokal temporary buffer di storage/app/private/arsip
-        $localPath = $file->storeAs('arsip/' . $pegawai->id, $namaFileSistem, 'local');
+        try {
+            $file->storeAs('arsip/' . $pegawai->id, $namaFileSistem, 'local');
+        } catch (\Throwable $e) {
+            Log::warning('Gagal menyimpan buffer lokal arsip dokumen: ' . $e->getMessage());
+        }
 
         $kategoriFolder    = $this->resolveKategoriFolder($pegawai);
         $namaFolderPegawai = $this->resolvePegawaiFolderName($pegawai);
 
         // 1. Buat DRAFT Record di DB Database (PENDING)
-        $arsip = ArsipDokumen::create([
-            'sync_uuid'            => (string) Str::uuid(),
-            'pegawai_sync_uuid'    => $pegawai->sync_uuid ?? (string) Str::uuid(),
-            'pegawai_id'           => $pegawai->id,
-            'jenis_dokumen'        => $jenisDokumen,
-            'kategori'             => $subFolderCategory,
-            'nama_file_sistem'     => $namaFileSistem,
-            'nama_file_asli'       => $namaFileAsli,
-            'mime_type'            => $mimeType,
-            'ukuran_file'          => $ukuranFile,
-            'checksum'             => $checksum,
-            'storage_driver'       => 'gdrive',
-            'status_sync'          => 'PENDING',
-            'keterangan'           => $keterangan,
-            'created_by'           => auth()->id(),
-            'created_by_sync_uuid' => auth()->user()->sync_uuid ?? null,
-            'is_active'            => true,
-        ]);
+        try {
+            $arsip = ArsipDokumen::create([
+                'sync_uuid'            => (string) Str::uuid(),
+                'pegawai_sync_uuid'    => $pegawai->sync_uuid ?: (string) Str::uuid(),
+                'pegawai_id'           => $pegawai->id,
+                'jenis_dokumen'        => $jenisDokClean,
+                'kategori'             => $kategoriClean,
+                'nama_file_sistem'     => $namaFileSistem,
+                'nama_file_asli'       => $namaFileAsli,
+                'mime_type'            => $mimeType,
+                'ukuran_file'          => $ukuranFile,
+                'checksum'             => $checksum,
+                'storage_driver'       => 'gdrive',
+                'status_sync'          => 'PENDING',
+                'keterangan'           => $keterangan,
+                'created_by'           => auth()->id(),
+                'created_by_sync_uuid' => auth()->user()?->sync_uuid ?? null,
+                'is_active'            => true,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Gagal membuat record ArsipDokumen: ' . $e->getMessage());
+            return null;
+        }
 
-        // 2. Jika URL WebApp GAS dikonfigurasi, lakukan sync ke Google Drive via Shutdown Function / FastCGI Finish Request
-        if (!app()->environment('testing') && !app()->runningUnitTests() && !empty($this->webAppUrl) && filter_var($this->webAppUrl, FILTER_VALIDATE_URL)) {
+        // 2. Jika URL WebApp GAS valid (Google Apps Script), lakukan sync ke Google Drive via Shutdown Function
+        $isValidGasUrl = !empty($this->webAppUrl)
+            && filter_var($this->webAppUrl, FILTER_VALIDATE_URL)
+            && (str_contains($this->webAppUrl, 'script.google.com') || str_contains($this->webAppUrl, 'googleapis.com'));
+
+        if (!app()->environment('testing') && !app()->runningUnitTests() && $isValidGasUrl) {
             $webAppUrl    = $this->webAppUrl;
             $apiKey       = $this->apiKey;
             $rootFolderId = $this->rootFolderId;
@@ -131,10 +155,11 @@ class GoogleDriveGasService
                         'sub_folder_dokumen'   => $subFolderCategory,
                         'nama_file'            => $namaFileSistem,
                         'mime_type'            => $mimeType,
-                        'file_base64'          => base64_encode($fileBytes),
+                        'file_base64'          => base64_encode((string) $fileBytes),
                     ];
 
-                    $response = Http::timeout(60)
+                    $response = Http::connectTimeout(5)
+                        ->timeout(15)
                         ->withHeaders(['Content-Type' => 'application/json'])
                         ->post($webAppUrl, $payload);
 

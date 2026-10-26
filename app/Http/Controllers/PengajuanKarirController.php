@@ -266,7 +266,11 @@ class PengajuanKarirController extends Controller
 
         foreach ($uploadFields as $field) {
             if ($request->hasFile($field)) {
-                $path = $request->file($field)->store('pengajuan_karir/' . strtolower($request->jenis_pengajuan), $uploadDisk);
+                try {
+                    $path = $request->file($field)->store('pengajuan_karir/' . strtolower($request->jenis_pengajuan), $uploadDisk);
+                } catch (\Throwable $e) {
+                    $path = $request->file($field)->store('pengajuan_karir/' . strtolower($request->jenis_pengajuan), 'local');
+                }
                 $data[$field] = $path;
             }
         }

@@ -396,24 +396,32 @@ class PegawaiController extends Controller
             // 0. Cek via Storage disk cloud (Supabase / R2 / S3) jika disk utama adalah cloud
             $defaultDiskName = config('filesystems.default', 'public');
             if (in_array($defaultDiskName, ['supabase', 's3', 'r2'])) {
-                $cloudDisk = \Illuminate\Support\Facades\Storage::disk($defaultDiskName);
-                if ($cloudDisk->exists($normalizedPath)) {
-                    return $cloudDisk->response($normalizedPath);
+                try {
+                    $cloudDisk = \Illuminate\Support\Facades\Storage::disk($defaultDiskName);
+                    if ($cloudDisk->exists($normalizedPath)) {
+                        return $cloudDisk->response($normalizedPath);
+                    }
+                } catch (\Throwable $e) {
+                    // Fallback ke disk lokal apabila Cloud Storage sedang gangguan/paused
                 }
             }
 
             // 1. Cek via Storage disk public (kompatibel dengan Storage::fake, local, dan S3/R2)
-            $publicDisk = \Illuminate\Support\Facades\Storage::disk('public');
-            if ($publicDisk->exists($normalizedPath) || $publicDisk->exists($cleanPath)) {
-                $targetFile = $publicDisk->exists($normalizedPath) ? $normalizedPath : $cleanPath;
-                if (config('filesystems.disks.public.driver') === 's3') {
-                    $url = $publicDisk->url($targetFile);
-                    if ($url && !str_starts_with($url, '/')) {
-                        return redirect()->away($url);
+            try {
+                $publicDisk = \Illuminate\Support\Facades\Storage::disk('public');
+                if ($publicDisk->exists($normalizedPath) || $publicDisk->exists($cleanPath)) {
+                    $targetFile = $publicDisk->exists($normalizedPath) ? $normalizedPath : $cleanPath;
+                    if (config('filesystems.disks.public.driver') === 's3') {
+                        $url = $publicDisk->url($targetFile);
+                        if ($url && !str_starts_with($url, '/')) {
+                            return redirect()->away($url);
+                        }
+                        return $publicDisk->response($targetFile);
                     }
-                    return $publicDisk->response($targetFile);
+                    return response()->file($publicDisk->path($targetFile));
                 }
-                return response()->file($publicDisk->path($targetFile));
+            } catch (\Throwable $e) {
+                // Fallback ke disk lokal
             }
 
             // 2. Cek via Storage disk local

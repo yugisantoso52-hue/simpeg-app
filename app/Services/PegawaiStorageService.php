@@ -134,14 +134,25 @@ class PegawaiStorageService
 
         if ($cleanCategory === 'foto') {
             $uploadDisk = $isCloud ? $defaultDisk : 'public';
+            $fallbackDisk = config('filesystems.disks.public.driver') === 'local' ? 'public' : 'public_local';
         } else {
             $uploadDisk = $isCloud ? $defaultDisk : 'local';
+            $fallbackDisk = 'local';
         }
 
-        // Simpan file
-        $storedPath = $file->storeAs($targetDirectory, $filename, $uploadDisk);
+        // Simpan file dengan proteksi fallback otomatis ke disk lokal apabila Cloud Storage (Supabase/S3/R2) sedang paused/gangguan
+        try {
+            $storedPath = $file->storeAs($targetDirectory, $filename, $uploadDisk);
+            if ($storedPath !== false && $storedPath !== '') {
+                return $storedPath;
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Gagal mengunggah berkas ke disk [{$uploadDisk}], beralih ke fallback [{$fallbackDisk}]: " . $e->getMessage());
+        }
 
-        return $storedPath;
+        $storedPath = $file->storeAs($targetDirectory, $filename, $fallbackDisk);
+
+        return $storedPath ?: "{$targetDirectory}/{$filename}";
     }
 
     /**
@@ -156,16 +167,24 @@ class PegawaiStorageService
         $defaultDisk = config('filesystems.default', 'local');
         $cloudDisk   = in_array($defaultDisk, ['supabase', 's3', 'r2']) ? $defaultDisk : null;
 
-        if ($cloudDisk && Storage::disk($cloudDisk)->exists($path)) {
-            Storage::disk($cloudDisk)->delete($path);
+        if ($cloudDisk) {
+            try {
+                if (Storage::disk($cloudDisk)->exists($path)) {
+                    Storage::disk($cloudDisk)->delete($path);
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Gagal menghapus berkas pada cloud disk [{$cloudDisk}]: " . $e->getMessage());
+            }
         }
 
-        if (Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
-        }
-
-        if (Storage::disk('local')->exists($path)) {
-            Storage::disk('local')->delete($path);
+        foreach (['public', 'public_local', 'local'] as $diskName) {
+            try {
+                if (config("filesystems.disks.{$diskName}") && Storage::disk($diskName)->exists($path)) {
+                    Storage::disk($diskName)->delete($path);
+                }
+            } catch (\Throwable $e) {
+                // Abaikan kegagalan hapus pada disk sekunder
+            }
         }
     }
 }

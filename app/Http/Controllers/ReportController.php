@@ -358,15 +358,17 @@ class ReportController extends Controller
         // 5. Cek via Storage Disks (kompatibel dengan Supabase, Cloudflare R2, S3 dan Local Storage)
         $defaultDiskName = config('filesystems.default', 'local');
         if (in_array($defaultDiskName, ['supabase', 's3', 'r2'])) {
-            $cloudDisk = \Illuminate\Support\Facades\Storage::disk($defaultDiskName);
-            if ($cloudDisk->exists($normalizedPath)) {
-                return $cloudDisk->response($normalizedPath);
+            try {
+                $cloudDisk = \Illuminate\Support\Facades\Storage::disk($defaultDiskName);
+                if ($cloudDisk->exists($normalizedPath)) {
+                    return $cloudDisk->response($normalizedPath);
+                }
+            } catch (\Throwable $e) {
+                // Fallback ke disk lokal apabila Cloud Storage sedang gangguan/paused
             }
         }
 
         $localDisk = \Illuminate\Support\Facades\Storage::disk('local');
-        $publicDisk = \Illuminate\Support\Facades\Storage::disk('public');
-
         if ($localDisk->exists($normalizedPath)) {
             if (config('filesystems.disks.local.driver') === 's3') {
                 return $localDisk->response($normalizedPath);
@@ -374,11 +376,16 @@ class ReportController extends Controller
             return response()->file($localDisk->path($normalizedPath));
         }
 
-        if ($publicDisk->exists($normalizedPath)) {
-            if (config('filesystems.disks.public.driver') === 's3') {
-                return $publicDisk->response($normalizedPath);
+        try {
+            $publicDisk = \Illuminate\Support\Facades\Storage::disk('public');
+            if ($publicDisk->exists($normalizedPath)) {
+                if (config('filesystems.disks.public.driver') === 's3') {
+                    return $publicDisk->response($normalizedPath);
+                }
+                return response()->file($publicDisk->path($normalizedPath));
             }
-            return response()->file($publicDisk->path($normalizedPath));
+        } catch (\Throwable $e) {
+            // Fallback ke pemeriksaan file fisik lokal
         }
 
         // 6. Fallback direct file checks pada storage fisik lokal
