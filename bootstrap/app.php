@@ -19,6 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $trustedProxies = env('TRUSTED_PROXIES', '127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16');
         $middleware->trustProxies(at: $trustedProxies === '*' ? '*' : explode(',', $trustedProxies));
 
+        // Kecualikan endpoint webhook deploy dari CSRF agar dapat dipanggil dari GitHub Webhook & Script PC Lokal
+        $middleware->validateCsrfTokens(except: [
+            'deploy-webhook',
+        ]);
+
         // Pendaftaran Alias Middleware Role & ForcePasswordChange
         $middleware->alias([
             'role' => RoleMiddleware::class,

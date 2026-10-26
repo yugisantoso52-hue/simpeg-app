@@ -33,3 +33,5 @@ Thumbs.db
 /bootstrap/cache/*.php
 /storage/app/public/
 /storage/logs/
+/sikap_unri_release.zip
+/docker-sikap-fkp-unri.zip

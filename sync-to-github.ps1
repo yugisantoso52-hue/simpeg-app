@@ -1,4 +1,4 @@
-﻿# =============================================================================
+# =============================================================================
 # SIMPEG - Script Sync ke GitHub (Otomatis & Tanpa Kendala)
 # =============================================================================
 
@@ -100,7 +100,37 @@ if ($token) {
 }
 
 Write-Host ""
+Write-Host "[5/5] Mengirim sinyal Auto-Deploy ke Server Online (https://sikap.fkp.unri.ac.id)..." -ForegroundColor Yellow
+try {
+    $secret = "sikap_deploy_sec_2026_unri"
+    $sess = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+    $loginPage = Invoke-WebRequest -Uri "https://sikap.fkp.unri.ac.id/login" -WebSession $sess -UseBasicParsing -TimeoutSec 20
+    $csrf = ""
+    if ($loginPage.Content -match 'name="_token"\s+value="([^"]+)"') {
+        $csrf = $Matches[1]
+    }
+    $bodyStr = "key=$secret&_token=$([uri]::EscapeDataString($csrf))"
+    $hmac = New-Object System.Security.Cryptography.HMACSHA256
+    $hmac.Key = [Text.Encoding]::UTF8.GetBytes($secret)
+    $sigBytes = $hmac.ComputeHash([Text.Encoding]::UTF8.GetBytes($bodyStr))
+    $sig = "sha256=" + ([BitConverter]::ToString($sigBytes) -replace '-','').ToLower()
+
+    $headers = @{
+        "X-Hub-Signature-256" = $sig
+        "X-Deploy-Key"        = $secret
+        "Accept"              = "application/json"
+    }
+    $resp = Invoke-RestMethod -Uri "https://sikap.fkp.unri.ac.id/deploy-webhook" -Method POST -Body $bodyStr -ContentType "application/x-www-form-urlencoded" -Headers $headers -WebSession $sess -TimeoutSec 180
+    Write-Host "  [SERVER ONLINE] $($resp.message)" -ForegroundColor Green
+    if ($resp.logs -and $resp.logs.code_update) {
+        Write-Host "  [DETAIL] $($resp.logs.code_update)" -ForegroundColor Cyan
+    }
+} catch {
+    Write-Host "  [PERINGATAN] Gagal memicu webhook otomatis: $($_.Exception.Message)" -ForegroundColor Yellow
+}
+
+Write-Host ""
 Write-Host "========================================" -ForegroundColor Green
-Write-Host "  SUKSES! Kode ter-push ke GitHub & Railway akan build otomatis." -ForegroundColor Green
+Write-Host "  SUKSES! Kode ter-push ke GitHub & Server Online UNRI telah diperbarui." -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 Read-Host "`nTekan Enter untuk keluar"
