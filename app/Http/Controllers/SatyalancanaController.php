@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Satyalancana\StoreUsulanSatyalancanaRequest;
+use App\Http\Requests\Satyalancana\VerifikasiSatyalancanaRequest;
 use App\Models\Pegawai;
 use App\Models\UsulanSatyalancana;
 use App\Models\User;
@@ -74,9 +76,10 @@ class SatyalancanaController extends Controller
     /**
      * Ajukan usulan resmi tanda kehormatan Satyalancana Karya Satya
      */
-    public function ajukan(Pegawai $pegawai, Request $request)
+    public function ajukan(Pegawai $pegawai, StoreUsulanSatyalancanaRequest $request)
     {
-        $kategori = $request->input('kategori') ?? $this->satyalancanaService->cekKelayakanSatyalancana($pegawai);
+        $validated = $request->validated();
+        $kategori = $validated['kategori'] ?? $this->satyalancanaService->cekKelayakanSatyalancana($pegawai);
 
         if (!$kategori) {
             return back()->with('error', 'Pegawai belum memenuhi kriteria masa kerja Satyalancana.');

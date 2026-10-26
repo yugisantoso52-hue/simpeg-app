@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LayananSurat\StoreSuratAktifRequest;
+use App\Http\Requests\LayananSurat\VerifikasiSuratAktifRequest;
 use App\Models\LayananSurat;
 use App\Models\Pegawai;
 use App\Services\DocumentWatermarkService;
@@ -63,14 +65,9 @@ class LayananSuratController extends Controller
     /**
      * Buat Permohonan / Generate E-Surat Keterangan Aktif Bekerja Mandiri
      */
-    public function storeSuratAktif(Request $request)
+    public function storeSuratAktif(StoreSuratAktifRequest $request)
     {
-        $request->validate([
-            'keperluan'          => 'required|string|max:500',
-            'pegawai_id'         => 'nullable|exists:pegawai,id',
-            'nomor_surat_manual' => 'nullable|string|max:100',
-            'penandatangan_role' => 'nullable|in:dekan,wadek2',
-        ]);
+        $validated = $request->validated();
 
         $user = Auth::user();
         $isAdmin = $user->hasRole('admin');

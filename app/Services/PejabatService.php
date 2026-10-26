@@ -7,9 +7,9 @@ use App\Models\Pegawai;
 class PejabatService
 {
     /**
-     * In-memory memoization untuk pemanggilan dalam satu siklus request
+     * Instance-scoped cache (terisolasi per instance, tanpa global static state)
      */
-    protected static array $memoizedPejabat = [];
+    protected array $resolvedCache = [];
 
     /**
      * Dapatkan detail pejabat penandatangan berdasarkan kunci role (e.g. 'dekan', 'wadek2', 'kabag')
@@ -27,8 +27,8 @@ class PejabatService
     {
         $key = strtolower(trim($key));
 
-        if (array_key_exists($key, self::$memoizedPejabat)) {
-            return self::$memoizedPejabat[$key];
+        if (array_key_exists($key, $this->resolvedCache)) {
+            return $this->resolvedCache[$key];
         }
 
         $config = config("simpeg.pejabat.{$key}", []);
@@ -58,7 +58,7 @@ class PejabatService
             ];
         }
 
-        self::$memoizedPejabat[$key] = $result;
+        $this->resolvedCache[$key] = $result;
 
         return $result;
     }

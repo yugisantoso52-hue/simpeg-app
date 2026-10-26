@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PengajuanKarir\StorePengajuanKgbRequest;
+use App\Http\Requests\PengajuanKarir\StorePengajuanKpRequest;
+use App\Http\Requests\PengajuanKarir\VerifikasiPengajuanKarirRequest;
 use App\Models\Golongan;
 use App\Models\Pegawai;
 use App\Models\PengajuanKarir;
@@ -14,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
 class PengajuanKarirController extends Controller
@@ -27,11 +31,14 @@ class PengajuanKarirController extends Controller
         $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
         $tab = strtolower((string)$request->query('tab', 'all'));
 
-        // Otomatis sinkronkan tab dengan filter jenis jika tab kp atau kgb
-        if ($tab === 'kp' && !$request->filled('jenis')) {
-            $request->merge(['jenis' => 'KP']);
-        } elseif ($tab === 'kgb' && !$request->filled('jenis')) {
-            $request->merge(['jenis' => 'KGB']);
+        // Gunakan state lokal ($filterJenis) tanpa memutasi global $request
+        $filterJenis = $request->query('jenis');
+        if (empty($filterJenis)) {
+            if ($tab === 'kp') {
+                $filterJenis = 'KP';
+            } elseif ($tab === 'kgb') {
+                $filterJenis = 'KGB';
+            }
         }
 
         $query = PengajuanKarir::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan', 'golonganLama', 'golonganTujuan']);
@@ -43,8 +50,8 @@ class PengajuanKarirController extends Controller
             $query->where('pegawai_id', $pegawaiId);
         }
 
-        if ($request->filled('jenis')) {
-            $query->where('jenis_pengajuan', $request->jenis);
+        if (!empty($filterJenis)) {
+            $query->where('jenis_pengajuan', $filterJenis);
         }
 
         if ($request->filled('status')) {
@@ -196,7 +203,7 @@ class PengajuanKarirController extends Controller
     }
 
     /**
-     * Simpan Pengajuan Baru
+     * Simpan Pengajuan Baru (Skema Validasi Terpisah antara KP dan KGB)
      */
     public function store(Request $request)
     {
@@ -207,28 +214,24 @@ class PengajuanKarirController extends Controller
             abort(403, 'Akses ditolak.');
         }
 
-        $request->validate([
-            'jenis_pengajuan'          => 'required|in:KGB,KP',
-            'periode_kp'               => 'nullable|string',
-            'tahun_periode'            => 'nullable|integer',
-            'golongan_tujuan_id'       => 'nullable|exists:golongan,id',
-            'tmt_baru'                 => 'nullable|date',
-            'file_sk_pangkat_terakhir' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'file_sk_kgb_terakhir'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'file_sk_terakhir'         => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'file_skp_1'               => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'file_skp_2'               => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'file_karpeg'              => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'file_pak'                 => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'file_pendukung'           => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'catatan_pegawai'          => 'nullable|string|max:500',
-        ]);
+        $jenisPengajuan = strtoupper((string) $request->input('jenis_pengajuan', 'KGB'));
+        if ($jenisPengajuan === 'KP') {
+            $formRequest = new StorePengajuanKpRequest();
+        } else {
+            $formRequest = new StorePengajuanKgbRequest();
+        }
+
+        $validated = Validator::make(
+            $request->all(),
+            $formRequest->rules(),
+            $formRequest->messages()
+        )->validate();
 
         $data = [
             'pegawai_id'       => $pegawai->id,
-            'jenis_pengajuan'  => $request->jenis_pengajuan,
+            'jenis_pengajuan'  => $validated['jenis_pengajuan'],
             'status'           => 'diajukan',
-            'catatan_pegawai'  => $request->catatan_pegawai,
+            'catatan_pegawai'  => $validated['catatan_pegawai'] ?? null,
         ];
 
         if ($request->jenis_pengajuan === 'KP') {

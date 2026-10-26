@@ -357,28 +357,19 @@
         <tr>
             {{-- VI: Jabatan atas → TTE / spasi ttd → nama → NIP → Status+Catatan pojok bawah kiri --}}
             <td style="vertical-align: top; padding: 5px 6px;">
-                {{-- Jabatan di atas (rata tengah) --}}
-                <div style="text-align: center; font-weight: normal; margin-bottom: 0; line-height: 1.2;">{{ $atasanJabatan }}</div>
-                @if($isAtasanSigned && $qrAtasanDataUri)
-                    {{-- TTE Digital Signature (Seragam dengan Dokumen Resmi SIKAP) --}}
-                    <div style="text-align: center; margin: 3px auto 4px auto;">
-                        <img src="{{ $qrAtasanDataUri }}" style="width: 46px; height: 46px; display: inline-block;" />
-                        <div style="font-size: 6.2pt; color: #15803d; font-weight: bold; margin-top: 1px;">
-                            Ditandatangani secara Elektronik (TTE)
-                        </div>
-                        @if($atasanSignedAt)
-                        <div style="font-size: 5.6pt; color: #64748b;">
-                            SIKAP FKP UNRI &bull; {{ $atasanSignedAt }}
-                        </div>
-                        @endif
-                    </div>
-                @else
-                    {{-- Spasi untuk tanda tangan manual --}}
-                    <div style="height: 58px;">&nbsp;</div>
-                @endif
-                {{-- Nama (bold, underline, rata tengah) --}}
-                <div style="text-align: center; font-weight: bold; text-decoration: underline;">{{ $atasanNama }}</div>
-                <div style="text-align: center; font-size: 8.5pt;">NIP. {{ $atasanNip ?: '.....................................................' }}</div>
+                {{-- Komponen Terisolasi TTE Atasan Langsung --}}
+                <x-pdf.tte-signature
+                    :jabatan="$atasanJabatan"
+                    :mandatPrefix="''"
+                    :pejabatNama="$atasanNama"
+                    :pejabatNip="$atasanNip"
+                    :isSigned="$isAtasanSigned"
+                    :signedAt="$atasanSignedAt"
+                    :qrDataUri="$qrAtasanDataUri"
+                    align="center"
+                    :showDraftBadge="false"
+                    manualSpaceHeight="58px"
+                />
                 {{-- Status dan Catatan di pojok bawah kiri --}}
                 <div style="margin-top: 6px; font-size: 8.5pt; text-align: left;">
                     <div>Status: <strong>{{ $cuti->pertimbangan_atasan ?: ($cuti->status === 'Menunggu Persetujuan' ? 'Menunggu Pertimbangan' : $cuti->status) }}</strong></div>
@@ -387,33 +378,19 @@
             </td>
             {{-- VII: Jabatan atas → TTE / spasi ttd → nama → NIP → Status+No.SK pojok bawah kiri --}}
             <td style="vertical-align: top; padding: 5px 6px;">
-                {{-- Jabatan di atas (rata tengah) dengan formula mandat jika didelegasikan ke Wakil Dekan --}}
-                <div style="text-align: center; font-weight: normal; margin-bottom: 0; line-height: 1.2;">
-                    @if(str_contains(strtolower($pybmcJabatan ?? ''), 'wakil dekan'))
-                        a.n. Dekan Fakultas Keperawatan<br>
-                    @endif
-                    {{ $pybmcJabatan }}
-                </div>
-                @if($isPejabatSigned && $qrPejabatDataUri)
-                    {{-- TTE Digital Signature (Seragam dengan Dokumen Resmi SIKAP) --}}
-                    <div style="text-align: center; margin: 3px auto 4px auto;">
-                        <img src="{{ $qrPejabatDataUri }}" style="width: 46px; height: 46px; display: inline-block;" />
-                        <div style="font-size: 6.2pt; color: #15803d; font-weight: bold; margin-top: 1px;">
-                            Ditandatangani secara Elektronik (TTE)
-                        </div>
-                        @if($pejabatSignedAt)
-                        <div style="font-size: 5.6pt; color: #64748b;">
-                            SIKAP FKP UNRI &bull; {{ $pejabatSignedAt }}
-                        </div>
-                        @endif
-                    </div>
-                @else
-                    {{-- Spasi untuk tanda tangan manual --}}
-                    <div style="height: 58px;">&nbsp;</div>
-                @endif
-                {{-- Nama (bold, underline, rata tengah) --}}
-                <div style="text-align: center; font-weight: bold; text-decoration: underline;">{{ $pybmcNama }}</div>
-                <div style="text-align: center; font-size: 8.5pt;">NIP. {{ $pybmcNip ?: '.....................................................' }}</div>
+                {{-- Komponen Terisolasi TTE Pejabat Yang Berwenang --}}
+                <x-pdf.tte-signature
+                    :jabatan="$pybmcJabatan"
+                    :mandatPrefix="str_contains(strtolower($pybmcJabatan ?? ''), 'wakil dekan') ? 'a.n. Dekan Fakultas Keperawatan' : ''"
+                    :pejabatNama="$pybmcNama"
+                    :pejabatNip="$pybmcNip"
+                    :isSigned="$isPejabatSigned"
+                    :signedAt="$pejabatSignedAt"
+                    :qrDataUri="$qrPejabatDataUri"
+                    align="center"
+                    :showDraftBadge="false"
+                    manualSpaceHeight="58px"
+                />
                 {{-- Status dan No. SK di pojok bawah kiri --}}
                 <div style="margin-top: 6px; font-size: 8.5pt; text-align: left;">
                     <div>Status: <strong>{{ in_array($cuti->status, ['Disetujui', 'Ditolak']) ? $cuti->status : 'Menunggu Keputusan' }}</strong></div>
@@ -422,46 +399,30 @@
         </tr>
     </table>
 
-    {{-- Tabel Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian (Hanya Ka Pokja Keu-Kepeg dengan Paraf Elektronik QR Code) --}}
+    {{-- Tabel Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian (Komponen Terisolasi Paraf Elektronik) --}}
     @if(!empty($sudahParafPokja) || !empty($cuti->verifikasi_admin_at))
+    @php
+        $parafCutiItems = [
+            app(\App\Services\ElectronicSignatureService::class)->buildParafItemProps(
+                roleLabel: 'Ka Pokja Keu-Kepeg',
+                pejabatNama: $kaPokjaNama,
+                pejabatNip: $kaPokjaNip,
+                isSigned: (bool) $sudahParafPokja,
+                signedAt: $parafPokjaAt,
+                verifyUrl: $verifyUrl ?? null,
+                parafCode: 'kapokja',
+                qrDataUri: $qrPokjaUri ?? null
+            )
+        ];
+    @endphp
     <table style="width: 100%; border-collapse: collapse; margin-top: 4px; margin-bottom: 4px; font-size: 7.5pt;">
         <tr>
             <td style="width: 54%; vertical-align: top; border: 1px solid #1e293b; background-color: #f8fafc; padding: 4px 6px;">
-                <div style="font-weight: bold; color: #0f172a; margin-bottom: 2px; border-bottom: 1px solid #94a3b8; padding-bottom: 1.5px; font-size: 7pt;">
-                    Paraf Koordinasi Tata Naskah &amp; Verifikasi Kepegawaian:
-                </div>
-                <table style="width: 100%; border-collapse: collapse; font-size: 7pt; line-height: 1.2;">
-                    <tr>
-                        <td style="width: 36px; vertical-align: middle; padding: 2px 5px 2px 0; text-align: center;">
-                            @if(!empty($sudahParafPokja) && !empty($qrPokjaUri))
-                                <img src="{{ $qrPokjaUri }}" style="width: 32px; height: 32px; display: block; margin: 0 auto;" alt="QR Paraf Elektronik" />
-                            @else
-                                <div style="font-size: 5.5pt; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 4px 2px; border-radius: 2px; line-height: 1.1;">Belum<br>Paraf</div>
-                            @endif
-                        </td>
-                        <td style="vertical-align: middle; padding: 1px 0;">
-                            <div>
-                                <span style="font-weight: bold; color: #0f172a;">Ka Pokja Keu-Kepeg:</span>
-                                @if(!empty($sudahParafPokja))
-                                    <span style="color: #047857; font-weight: bold;">[Diparaf <span class="checkbox-mark" style="font-size: 7.5pt;">&#10003;</span>]</span>
-                                @else
-                                    <span style="color: #94a3b8;">[Menunggu Paraf]</span>
-                                @endif
-                            </div>
-                            <div style="color: #1e293b; font-size: 6.8pt; font-weight: bold;">{{ $kaPokjaNama }}</div>
-                            <div style="color: #475569; font-size: 6.2pt;">NIP. {{ $kaPokjaNip }}</div>
-                            @if(!empty($sudahParafPokja))
-                                <div style="color: #047857; font-weight: bold; font-size: 6pt;">
-                                    [ Terverifikasi &amp; Diparaf Digital ] &bull; {{ $parafPokjaAt }}
-                                </div>
-                            @else
-                                <div style="color: #64748b; font-size: 6pt; font-style: italic;">
-                                    [ Menunggu Verifikasi &amp; Paraf Tata Naskah ]
-                                </div>
-                            @endif
-                        </td>
-                    </tr>
-                </table>
+                <x-pdf.paraf-elektronik
+                    title="Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian:"
+                    variant="cuti"
+                    :items="$parafCutiItems"
+                />
             </td>
             <td style="width: 46%; vertical-align: middle; border: 1px solid #1e293b; background-color: #f8fafc; padding: 4px 6px; font-size: 7pt; color: #334155;">
                 <div>Admin Screening: <strong>{{ $cuti->verifikasi_admin_at ? 'Terverifikasi Berkas Sah (' . $cuti->verifikasi_admin_at->format('d/m/Y H:i') . ')' : 'Proses Screening' }}</strong></div>
