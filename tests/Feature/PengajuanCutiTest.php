@@ -341,4 +341,109 @@ class PengajuanCutiTest extends TestCase
             'status'     => 'Menunggu Persetujuan',
         ]);
     }
+
+    public function test_formulir_cuti_tendik_pertimbangan_atasan_is_kabag_umum_and_paraf_koordinasi_only_kapokja(): void
+    {
+        $jabatanKabag = \App\Models\Jabatan::create([
+            'nama_jabatan'     => 'Kepala Bagian Umum',
+            'kode_jabatan'     => 'JAB-KBU-TEST',
+            'kelompok_jabatan' => 'Tenaga Kependidikan',
+        ]);
+        $jabatanPokja = \App\Models\Jabatan::create([
+            'nama_jabatan'     => 'Ketua Pokja Keuangan dan Kepegawaian',
+            'kode_jabatan'     => 'JAB-PKK-TEST',
+            'kelompok_jabatan' => 'Tenaga Kependidikan',
+        ]);
+        $jabatanTendik = \App\Models\Jabatan::create([
+            'nama_jabatan'     => 'Penata Layanan Operasional',
+            'kode_jabatan'     => 'JAB-PLO-TEST',
+            'kelompok_jabatan' => 'Tenaga Kependidikan',
+        ]);
+
+        $kabagPegawai = Pegawai::create([
+            'nip'                 => '197507122005011002',
+            'nama'                => 'Bakhtiar',
+            'gelar_belakang'      => 'S.Sos., M.Si',
+            'jenis_pegawai'       => 'Tendik',
+            'pendidikan_terakhir' => 'S2',
+            'status_pegawai'      => 'Aktif',
+            'jabatan_id'          => $jabatanKabag->id,
+        ]);
+
+        $pokjaPegawai = Pegawai::create([
+            'nip'                 => '197605212014092001',
+            'nama'                => 'Dolli Vita Zenitha Harning Arivina',
+            'gelar_belakang'      => 'SE',
+            'jenis_pegawai'       => 'Tendik',
+            'pendidikan_terakhir' => 'S1',
+            'status_pegawai'      => 'Aktif',
+            'jabatan_id'          => $jabatanPokja->id,
+        ]);
+
+        $tendikPegawai = Pegawai::create([
+            'nip'                 => '198006152025211060',
+            'nama'                => 'Rahmad Hidayat',
+            'gelar_belakang'      => 'ST',
+            'jenis_pegawai'       => 'Tendik',
+            'pendidikan_terakhir' => 'S1',
+            'status_pegawai'      => 'Aktif',
+            'jabatan_id'          => $jabatanTendik->id,
+            'atasan_cuti_id'      => $pokjaPegawai->id, // Bahkan jika terisi Ka Pokja, harus diabaikan & diarahkan ke Kabag Umum
+        ]);
+
+        $pegawaiRole = Role::where('name', 'pegawai')->first();
+        $pokjaUser = User::factory()->create([
+            'role_id'              => $pegawaiRole->id,
+            'pegawai_id'           => $pokjaPegawai->id,
+            'must_change_password' => false,
+        ]);
+        $kabagUser = User::factory()->create([
+            'role_id'              => $pegawaiRole->id,
+            'pegawai_id'           => $kabagPegawai->id,
+            'must_change_password' => false,
+        ]);
+
+        $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
+        $this->assertFalse($hierarchyService->isAtasanLangsungCuti($pokjaPegawai, $tendikPegawai));
+        $this->assertTrue($hierarchyService->isAtasanLangsungCuti($kabagPegawai, $tendikPegawai));
+
+        $cuti = PengajuanCuti::create([
+            'pegawai_id'              => $tendikPegawai->id,
+            'jenis_cuti'              => 'Cuti Tahunan',
+            'tanggal_mulai'           => '2026-10-26',
+            'tanggal_selesai'         => '2026-10-27',
+            'jumlah_hari'             => 2,
+            'alasan'                  => 'Keluar kota',
+            'status'                  => 'Disetujui',
+            'pertimbangan_atasan'     => 'Disetujui',
+            'pertimbangan_atasan_at'  => now(),
+            'atasan_langsung_id'      => $pokjaUser->id, // Simulasi data lama yang salah menunjuk Ka Pokja
+            'verifikasi_admin_at'     => now(),
+            'paraf_kapokja_at'        => now(),
+            'paraf_kabag_at'          => now(),
+        ]);
+
+        $renderedHtml = view('exports.pdf.formulir_cuti', [
+            'cuti'                => $cuti->fresh(['pegawai.jabatan', 'atasanLangsung.pegawai.jabatan']),
+            'verifyUrl'           => 'https://sikap.fkp.unri.ac.id/verifikasi-dokumen/test',
+            'verifyCode'          => 'test',
+            'qrCodeDataUri'       => 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+            'nomorSuratFormatted' => '1235/UN19.5.1.1.10/KP/2026',
+            'pejabatKabag'        => $kabagPegawai,
+            'pejabatKaPokja'      => $pokjaPegawai,
+            'sudahParafPokja'     => true,
+            'sudahParafKabag'     => true,
+            'parafPokjaAt'        => '26/10/2026 11:17 WIB',
+            'parafKabagAt'        => '26/10/2026 11:30 WIB',
+            'qrPokjaUri'          => null,
+            'qrKabagUri'          => null,
+        ])->render();
+
+        // Pastikan di bagian VI. Pertimbangan Atasan Langsung tercetak Bakhtiar, S.Sos., M.Si (197507122005011002)
+        $this->assertStringContainsString('Bakhtiar, S.Sos., M.Si', $renderedHtml);
+        $this->assertStringContainsString('197507122005011002', $renderedHtml);
+        // Pastikan di bagian Paraf Koordinasi Tata Naskah tidak ada "2. Kabag Umum:"
+        $this->assertStringNotContainsString('2. Kabag Umum:', $renderedHtml);
+        $this->assertStringContainsString('Ka Pokja Keu-Kepeg:', $renderedHtml);
+    }
 }

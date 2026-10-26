@@ -255,20 +255,23 @@
                                             {{ $row->status_label ?? $row->status }}
                                         </span>
                                         {{-- Tracking Mini 4 Tahap Bertingkat --}}
+                                        @php
+                                            $isAtasanApproved = !empty($row->pertimbangan_atasan) && $row->pertimbangan_atasan !== 'Menunggu Persetujuan';
+                                        @endphp
                                         <div class="flex items-center justify-center gap-1 text-[10px] text-slate-500 pt-1">
                                             <span class="{{ $row->verifikasi_admin_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}" title="1. Admin Screening">
                                                 Admin {{ $row->verifikasi_admin_at ? '✓' : '-' }}
                                             </span>
                                             <span>➔</span>
-                                            <span class="{{ $row->paraf_kapokja_at ? 'text-sky-700 font-bold' : 'text-slate-400' }}" title="2. Paraf Ka Pokja">
+                                            <span class="{{ $row->paraf_kapokja_at ? 'text-sky-700 font-bold' : 'text-slate-400' }}" title="2. Paraf Koordinasi Ka Pokja Keu-Kepeg">
                                                 Pokja {{ $row->paraf_kapokja_at ? '✓' : '-' }}
                                             </span>
                                             <span>➔</span>
-                                            <span class="{{ $row->paraf_kabag_at ? 'text-indigo-700 font-bold' : 'text-slate-400' }}" title="3. Paraf Kabag">
-                                                Kabag {{ $row->paraf_kabag_at ? '✓' : '-' }}
+                                            <span class="{{ $isAtasanApproved ? 'text-indigo-700 font-bold' : 'text-slate-400' }}" title="3. TTE Pertimbangan Atasan Langsung">
+                                                Atasan {{ $isAtasanApproved ? '✓' : '-' }}
                                             </span>
                                             <span>➔</span>
-                                            <span class="{{ in_array($row->status, ['Disetujui', 'Ditolak']) ? 'text-emerald-700 font-bold' : 'text-slate-400' }}" title="4. TTE PYBMC">
+                                            <span class="{{ in_array($row->status, ['Disetujui', 'Ditolak']) ? 'text-emerald-700 font-bold' : 'text-slate-400' }}" title="4. TTE Keputusan PYBMC">
                                                 PYBMC {{ in_array($row->status, ['Disetujui', 'Ditolak']) ? '✓' : '-' }}
                                             </span>
                                         </div>

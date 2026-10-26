@@ -153,13 +153,13 @@
                             @endif
                         </div>
 
-                        {{-- 2. Ka Pokja Keu-Kepeg --}}
+                        {{-- 2. Ka Pokja Keu-Kepeg (Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian) --}}
                         <div class="p-3 rounded-lg border {{ $cuti->paraf_kapokja_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
                             <div class="flex items-center justify-between mb-1">
                                 <span class="text-xs font-bold">2. Ka Pokja Keu-Kepeg</span>
                                 <span class="text-xs font-bold">{{ $cuti->paraf_kapokja_at ? '✓ Paraf' : 'Menunggu' }}</span>
                             </div>
-                            <div class="text-[11px] text-slate-600">Dolli Vita Zenitha, SE</div>
+                            <div class="text-[11px] text-slate-600">Dolli Vita Zenitha Harning Arivina, SE</div>
                             @if($cuti->paraf_kapokja_at)
                                 <div class="text-[10px] text-emerald-700 font-mono mt-1">
                                     {{ $cuti->paraf_kapokja_at->format('d/m/Y H:i') }}
@@ -167,16 +167,22 @@
                             @endif
                         </div>
 
-                        {{-- 3. Kabag Umum --}}
-                        <div class="p-3 rounded-lg border {{ $cuti->paraf_kabag_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
+                        {{-- 3. VI. Pertimbangan Atasan Langsung (TTE Kepala Bagian Umum / Kajur / Wadek II) --}}
+                        @php
+                            $isAtasanDone = !empty($cuti->pertimbangan_atasan) && $cuti->pertimbangan_atasan !== 'Menunggu Persetujuan';
+                            $atasanDoneTime = (($pejabatInfo['kategori'] ?? '') === 'tendik' && !empty($cuti->paraf_kabag_at))
+                                ? $cuti->paraf_kabag_at
+                                : $cuti->pertimbangan_atasan_at;
+                        @endphp
+                        <div class="p-3 rounded-lg border {{ $isAtasanDone ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">3. Kabag Umum</span>
-                                <span class="text-xs font-bold">{{ $cuti->paraf_kabag_at ? '✓ Paraf' : 'Menunggu' }}</span>
+                                <span class="text-xs font-bold">3. TTE Atasan Langsung</span>
+                                <span class="text-xs font-bold">{{ $isAtasanDone ? '✓ Sah (TTE)' : 'Menunggu' }}</span>
                             </div>
-                            <div class="text-[11px] text-slate-600">Bakhtiar, S.Sos., M.Si</div>
-                            @if($cuti->paraf_kabag_at)
+                            <div class="text-[11px] text-slate-600">{{ $pejabatInfo['atasan_nama'] ?? 'Bakhtiar, S.Sos., M.Si' }}</div>
+                            @if($atasanDoneTime)
                                 <div class="text-[10px] text-emerald-700 font-mono mt-1">
-                                    {{ $cuti->paraf_kabag_at->format('d/m/Y H:i') }}
+                                    {{ $atasanDoneTime->format('d/m/Y H:i') }}
                                 </div>
                             @endif
                         </div>
@@ -446,14 +452,16 @@
                 $isAdmin          = $authUser->hasRole('admin');
                 $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
 
-                // Cek Atasan Langsung yang sah (Pejabat struktural/atasan riil pemohon, BUKAN Admin):
-                $isAtasanLgs = !$isAdmin && ((
+                // Cek Atasan Langsung yang sah (Pejabat struktural/atasan riil pemohon, BUKAN Admin dan BUKAN Ka Pokja):
+                $isAtasanLgs = !$isAdmin && !($isKaPokja ?? false) && ((
                     $authUser->pegawai && $cuti->pegawai &&
                     $hierarchyService->isAtasanLangsungCuti($authUser->pegawai, $cuti->pegawai)
-                ) || ($cuti->atasan_langsung_id && (int)$cuti->atasan_langsung_id === (int)$authUser->id));
+                ) || (
+                    $cuti->atasan_langsung_id && (int)$cuti->atasan_langsung_id === (int)$authUser->id
+                ));
 
-                // Cek PYBMC yang sah (Wadek II / Dekan sesuai hierarki cuti, BUKAN Admin):
-                $isPybmc = !$isAdmin && ((
+                // Cek PYBMC yang sah (Wadek II / Dekan sesuai hierarki cuti, BUKAN Admin dan BUKAN Ka Pokja):
+                $isPybmc = !$isAdmin && !($isKaPokja ?? false) && ((
                     $authUser->pegawai && $cuti->pegawai &&
                     $hierarchyService->isPybmcCuti($authUser->pegawai, $cuti->pegawai)
                 ) || ($cuti->pybmc_id && (int)$cuti->pybmc_id === (int)$authUser->id)
@@ -478,16 +486,16 @@
                     && !$pertimbanganSudahAda;
             @endphp
 
-            {{-- PANEL STANDARISASI: VERIFIKASI ADMIN & PARAF KOORDINASI (POKJA & KABAG) --}}
-            @if($isAdmin || ($isKaPokja ?? false) || ($isKabag ?? false) || ($isExecutive ?? false))
+            {{-- PANEL STANDARISASI: VERIFIKASI ADMIN & PARAF KOORDINASI (HANYA KA POKJA KEU-KEPEG) --}}
+            @if($isAdmin || ($isKaPokja ?? false))
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-slate-100 gap-2">
                         <div>
                             <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                                <span>🛡️</span> Tindakan Verifikasi & Paraf Koordinasi Tata Naskah
+                                <span>🛡️</span> Tindakan Verifikasi &amp; Paraf Koordinasi Tata Naskah
                             </h3>
                             <p class="text-xs text-slate-500 mt-0.5">
-                                Standar pemeriksaan syarat berkas fisik/lampiran oleh Admin, paraf teknis Ka Pokja, dan paraf tata naskah Kabag Umum.
+                                Standar pemeriksaan syarat berkas fisik/lampiran oleh Admin Kepegawaian dan Paraf Koordinasi Tata Naskah &amp; Verifikasi Kepegawaian oleh Ka Pokja Keu-Kepeg.
                             </p>
                         </div>
                     </div>
@@ -552,38 +560,19 @@
                                     {{-- 2. Tombol Paraf Ka Pokja Keu-Kepeg --}}
                                     @if($cuti->paraf_kapokja_at)
                                         <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5" title="Selesai pada {{ $cuti->paraf_kapokja_at->format('d/m/Y H:i') }}">
-                                            ✓ 2. Paraf Ka Pokja: Selesai
+                                            ✓ 2. Paraf Ka Pokja Keu-Kepeg: Selesai
                                         </span>
                                     @elseif(!$cuti->verifikasi_admin_at)
                                         <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Admin Screening Berkas">
-                                            🔒 2. Paraf Pokja (Terkunci)
+                                            🔒 2. Paraf Ka Pokja Keu-Kepeg (Terkunci)
                                         </span>
                                     @elseif(($isKaPokja ?? false) || $isAdmin)
                                         <button type="submit" name="tahap" value="paraf_kapokja" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs transition flex items-center gap-1.5">
-                                            ✒ 2. Periksa & Paraf Ka Pokja
+                                            ✒ 2. Periksa &amp; Paraf Ka Pokja Keu-Kepeg
                                         </button>
                                     @else
                                         <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200 select-none">
-                                            ⏳ 2. Menunggu Paraf Ka Pokja
-                                        </span>
-                                    @endif
-
-                                    {{-- 3. Tombol Paraf Kabag Umum --}}
-                                    @if($cuti->paraf_kabag_at)
-                                        <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5" title="Selesai pada {{ $cuti->paraf_kabag_at->format('d/m/Y H:i') }}">
-                                            ✓ 3. Paraf Kabag: Selesai
-                                        </span>
-                                    @elseif(!$cuti->paraf_kapokja_at)
-                                        <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Paraf Ka Pokja">
-                                            🔒 3. Paraf Kabag (Terkunci)
-                                        </span>
-                                    @elseif(($isKabag ?? false) || $isAdmin)
-                                        <button type="submit" name="tahap" value="paraf_kabag" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition flex items-center gap-1.5">
-                                            ✒ 3. Telaah Naskah & Paraf Kabag
-                                        </button>
-                                    @else
-                                        <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200 select-none">
-                                            ⏳ 3. Menunggu Paraf Kabag
+                                            ⏳ 2. Menunggu Paraf Ka Pokja Keu-Kepeg
                                         </span>
                                     @endif
 

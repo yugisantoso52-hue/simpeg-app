@@ -172,27 +172,35 @@ class PengajuanCutiService
             $isKeputusanFinal = false;
 
             $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
-            $isPimpinan = $approver->hasRole('pimpinan');
-            $isAdmin    = $approver->hasRole('admin');
+            $isAdmin   = $approver->hasRole('admin');
+            $isKaPokja = $approver->isKaPokjaKepeg();
 
-            $isPybmc = $isPimpinan
+            // User dengan role 'pimpinan' langsung di tabel roles (tanpa pegawai spesifik, misal akun pimpinan umum)
+            // tetap diizinkan, namun jika user terhubung ke Pegawai (seperti Ka Pokja), wajib mengikuti matriks hierarki Cuti
+            $isGenericPimpinan = !$approver->pegawai_id && $approver->hasRole('pimpinan');
+
+            $isPybmc = !$isKaPokja && (
+                $isGenericPimpinan
                 || ($cuti->pybmc_id && (int)$cuti->pybmc_id === $approverUserId)
-                || ($approver->pegawai && $cuti->pegawai && $hierarchyService->isPybmcCuti($approver->pegawai, $cuti->pegawai));
+                || ($approver->pegawai && $cuti->pegawai && $hierarchyService->isPybmcCuti($approver->pegawai, $cuti->pegawai))
+            );
 
-            $isAtasanLgs = $isPimpinan
-                || ($cuti->atasan_langsung_id && (int)$cuti->atasan_langsung_id === $approverUserId)
-                || ($approver->pegawai && $cuti->pegawai && $hierarchyService->isAtasanLangsungCuti($approver->pegawai, $cuti->pegawai));
+            $isAtasanLgs = !$isKaPokja && (
+                $isGenericPimpinan
+                || ($approver->pegawai && $cuti->pegawai && $hierarchyService->isAtasanLangsungCuti($approver->pegawai, $cuti->pegawai))
+                || ($cuti->atasan_langsung_id && (int)$cuti->atasan_langsung_id === $approverUserId && !$approver->isKaPokjaKepeg())
+            );
 
-            // Proteksi Otorisasi Hierarki: Cegah Approval Bypass
+            // Proteksi Otorisasi Hierarki: Cegah Approval Bypass (termasuk mencegah Ka Pokja melakukan TTE Pertimbangan Atasan)
             if (!$isAdmin && !$isAtasanLgs && !$isPybmc) {
                 throw ValidationException::withMessages([
-                    'error' => 'Anda tidak memiliki hak wewenang hierarkis untuk memproses atau menyetujui permohonan cuti pegawai ini.',
+                    'error' => 'Anda tidak memiliki hak wewenang hierarkis untuk menetapkan Pertimbangan Atasan Langsung atau Keputusan PYBMC pada permohonan cuti ini.',
                 ]);
             }
 
             // Jika pertimbangan atasan belum ada dan bukan admin/pimpinan yang menyertakan nomor surat,
             // maka aksi ini adalah TAHAP 1: PERTIMBANGAN ATASAN LANGSUNG
-            $isTahap1 = empty($cuti->pertimbangan_atasan) && ((!$isAdmin && !$isPimpinan) || empty($data['nomor_surat']));
+            $isTahap1 = empty($cuti->pertimbangan_atasan) && ((!$isAdmin && !$isGenericPimpinan) || empty($data['nomor_surat']));
 
             if ($isTahap1 && !$isAdmin && !$isAtasanLgs && !$isPybmc) {
                 throw ValidationException::withMessages([
@@ -212,7 +220,13 @@ class PengajuanCutiService
                 $updateData['pertimbangan_atasan']     = $statusAtasan;
                 $updateData['catatan_atasan_langsung'] = $data['catatan_atasan_langsung'] ?? $data['catatan_pimpinan'] ?? null;
                 $updateData['pertimbangan_atasan_at']  = now();
-                $updateData['atasan_langsung_id']      = $approverUserId;
+
+                // Pastikan atasan_langsung_id merujuk ke Pejabat Atasan Langsung Cuti yang sah (misal Kepala Bagian Umum untuk Tendik)
+                $expectedAtasanPegawai = $cuti->pegawai ? $hierarchyService->getAtasanLangsungCuti($cuti->pegawai) : null;
+                $expectedAtasanUser    = $expectedAtasanPegawai ? \App\Models\User::where('pegawai_id', $expectedAtasanPegawai->id)->first() : null;
+                $updateData['atasan_langsung_id'] = ($isAtasanLgs && !$isGenericPimpinan)
+                    ? $approverUserId
+                    : ($expectedAtasanUser?->id ?? $approverUserId);
 
                 if ($statusAtasan === 'Disetujui') {
                     $updateData['status'] = 'Disetujui Atasan (Menunggu PYBMC)';

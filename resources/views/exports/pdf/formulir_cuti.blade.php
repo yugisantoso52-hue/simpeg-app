@@ -277,15 +277,26 @@
 
     {{-- VI. PERTIMBANGAN ATASAN LANGSUNG & PEJABAT YANG BERWENANG --}}
     @php
-        $pejabatInfo = app(\App\Services\ApprovalHierarchyService::class)->getPejabatCutiInfo($cuti->pegawai);
+        $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
+        $pejabatInfo = $hierarchyService->getPejabatCutiInfo($cuti->pegawai);
         
         $atasanNama    = $pejabatInfo['atasan_nama'];
         $atasanJabatan = $pejabatInfo['atasan_jabatan'];
         $atasanNip     = $pejabatInfo['atasan_nip'];
 
+        // Hanya gunakan relasi atasanLangsung->pegawai jika pejabat tersebut benar-benar merupakan Atasan Langsung Cuti yang sah
+        // dan BUKAN Ka Pokja Keu-Kepeg (karena Ka Pokja Keu-Kepeg hanya memberikan Paraf Koordinasi Tata Naskah, bukan TTE Pertimbangan Atasan)
         if (!empty($cuti->pertimbangan_atasan) && $cuti->atasanLangsung && $cuti->atasanLangsung->pegawai) {
-            $atasanNama = $cuti->atasanLangsung->pegawai->nama_lengkap ?? $cuti->atasanLangsung->pegawai->nama;
-            $atasanNip  = $cuti->atasanLangsung->pegawai->nip;
+            $actualAtasanPegawai = $cuti->atasanLangsung->pegawai;
+            $actualAtasanJabatan = strtoupper(trim((string)($actualAtasanPegawai->jabatan->nama_jabatan ?? '')));
+            $isActualAtasanValid = !str_contains($actualAtasanJabatan, 'POKJA')
+                && !$cuti->atasanLangsung->isKaPokjaKepeg()
+                && ($cuti->pegawai ? $hierarchyService->isAtasanLangsungCuti($actualAtasanPegawai, $cuti->pegawai) : true);
+
+            if ($isActualAtasanValid) {
+                $atasanNama = $actualAtasanPegawai->nama_lengkap ?? $actualAtasanPegawai->nama;
+                $atasanNip  = $actualAtasanPegawai->nip;
+            }
         }
 
         $pybmcNama    = $pejabatInfo['pybmc_nama'];
@@ -293,17 +304,25 @@
         $pybmcNip     = $pejabatInfo['pybmc_nip'];
 
         if (in_array($cuti->status, ['Disetujui', 'Ditolak']) && $cuti->approvedBy && $cuti->approvedBy->pegawai) {
-            $pybmcNama = $cuti->approvedBy->pegawai->nama_lengkap ?? $cuti->approvedBy->pegawai->nama;
-            $pybmcNip  = $cuti->approvedBy->pegawai->nip;
+            $actualPybmcPegawai = $cuti->approvedBy->pegawai;
+            $actualPybmcJabatan = strtoupper(trim((string)($actualPybmcPegawai->jabatan->nama_jabatan ?? '')));
+            if (!str_contains($actualPybmcJabatan, 'POKJA') && !$cuti->approvedBy->isKaPokjaKepeg()) {
+                $pybmcNama = $actualPybmcPegawai->nama_lengkap ?? $actualPybmcPegawai->nama;
+                $pybmcNip  = $actualPybmcPegawai->nip;
+            }
         }
 
         // TTE Atasan Langsung
-        $isAtasanSigned = !empty($cuti->pertimbangan_atasan) && $cuti->pertimbangan_atasan !== 'Menunggu Persetujuan';
+        $isAtasanSigned = (!empty($cuti->pertimbangan_atasan) && $cuti->pertimbangan_atasan !== 'Menunggu Persetujuan')
+            || (!empty($cuti->paraf_kabag_at) && ($pejabatInfo['kategori'] ?? '') === 'tendik');
         $qrAtasanDataUri = null;
         $atasanSignedAt = '';
         if ($isAtasanSigned && isset($verifyUrl)) {
-            $qrAtasanDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl);
-            $atasanSignedAt = $cuti->pertimbangan_atasan_at ? $cuti->pertimbangan_atasan_at->translatedFormat('d/m/Y H:i') . ' WIB' : ($cuti->updated_at ? $cuti->updated_at->translatedFormat('d/m/Y H:i') . ' WIB' : '');
+            $qrAtasanDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&tte=atasan&nip=' . ($atasanNip ?: ''));
+            $atasanTimestamp = (($pejabatInfo['kategori'] ?? '') === 'tendik' && !empty($cuti->paraf_kabag_at))
+                ? $cuti->paraf_kabag_at
+                : ($cuti->pertimbangan_atasan_at ?: $cuti->updated_at);
+            $atasanSignedAt = $atasanTimestamp ? $atasanTimestamp->translatedFormat('d/m/Y H:i') . ' WIB' : '';
         }
 
         // TTE Pejabat Berwenang
@@ -311,7 +330,7 @@
         $qrPejabatDataUri = null;
         $pejabatSignedAt = '';
         if ($isPejabatSigned && isset($verifyUrl)) {
-            $qrPejabatDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl);
+            $qrPejabatDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&tte=pybmc&nip=' . ($pybmcNip ?: ''));
             $pejabatSignedAt = $cuti->approved_at ? $cuti->approved_at->translatedFormat('d/m/Y H:i') . ' WIB' : ($cuti->updated_at ? $cuti->updated_at->translatedFormat('d/m/Y H:i') . ' WIB' : '');
         }
     @endphp
@@ -388,31 +407,22 @@
         </tr>
     </table>
 
-    {{-- Tabel Paraf Koordinasi Tata Naskah (Sesuai PermenPAN-RB No. 1/2023) --}}
-    @if(!empty($sudahParafPokja) || !empty($sudahParafKabag) || !empty($cuti->verifikasi_admin_at))
+    {{-- Tabel Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian (Hanya Ka Pokja Keu-Kepeg) --}}
+    @if(!empty($sudahParafPokja) || !empty($cuti->verifikasi_admin_at))
     <table style="width: 100%; border-collapse: collapse; margin-top: 4px; margin-bottom: 4px; font-size: 7.5pt;">
         <tr>
             <td style="width: 50%; vertical-align: top; border: 1px solid #cbd5e1; background-color: #f8fafc; padding: 4px 6px;">
-                <div style="font-weight: bold; color: #334155; margin-bottom: 2px;">Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian:</div>
+                <div style="font-weight: bold; color: #334155; margin-bottom: 2px;">Paraf Koordinasi Tata Naskah &amp; Verifikasi Kepegawaian:</div>
                 <table style="width: 100%; border-collapse: collapse; font-size: 7pt;">
                     <tr>
-                        <td style="width: 48%; vertical-align: middle; padding: 1px 0;">
-                            <span style="font-weight: bold;">1. Ka Pokja Keu-Kepeg:</span>
+                        <td style="width: 100%; vertical-align: middle; padding: 1px 0;">
+                            <span style="font-weight: bold;">Ka Pokja Keu-Kepeg:</span>
                             @if(!empty($sudahParafPokja))
-                                <span style="color: #047857; font-weight: bold;">[Diparaf ✓]</span>
+                                <span style="color: #047857; font-weight: bold;">[Diparaf <span class="checkbox-mark" style="font-size: 7.5pt;">&#10003;</span>]</span>
+                                <div style="color: #1e293b; font-size: 6.5pt;">{{ $pejabatKaPokja->nama_lengkap ?? ($pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina, SE') }}</div>
                                 <div style="color: #64748b; font-size: 6pt;">{{ $parafPokjaAt }}</div>
                             @else
-                                <span style="color: #94a3b8;">[Menunggu]</span>
-                            @endif
-                        </td>
-                        <td style="width: 4%; text-align: center;">&bull;</td>
-                        <td style="width: 48%; vertical-align: middle; padding: 1px 0;">
-                            <span style="font-weight: bold;">2. Kabag Umum:</span>
-                            @if(!empty($sudahParafKabag))
-                                <span style="color: #047857; font-weight: bold;">[Diparaf ✓]</span>
-                                <div style="color: #64748b; font-size: 6pt;">{{ $parafKabagAt }}</div>
-                            @else
-                                <span style="color: #94a3b8;">[Menunggu]</span>
+                                <span style="color: #94a3b8;">[Menunggu Paraf]</span>
                             @endif
                         </td>
                     </tr>

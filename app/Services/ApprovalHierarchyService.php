@@ -172,13 +172,18 @@ class ApprovalHierarchyService
     public function getAtasanLangsungCuti(Pegawai $pegawai): ?Pegawai
     {
         // 1. Prioritas Utama: Atasan Langsung Pertimbangan Cuti yang Ditetapkan Eksplisit pada Profil Pegawai
+        // Catatan Penting: Ka Pokja hanya bertugas memberikan Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian,
+        // BUKAN menandatangani TTE VI. Pertimbangan Atasan Langsung. Untuk Tendik, VI. Pertimbangan Atasan Langsung adalah Kepala Bagian Umum.
         if (!empty($pegawai->atasan_cuti_id) && $pegawai->atasan_cuti_id !== $pegawai->id) {
             $atasanCuti = $pegawai->relationLoaded('atasanCuti')
                 ? $pegawai->atasanCuti
                 : Pegawai::with(['jabatan', 'unitKerja'])->find($pegawai->atasan_cuti_id);
 
             if ($atasanCuti) {
-                return $atasanCuti;
+                $jabatanAtasan = strtoupper(trim((string)($atasanCuti->jabatan->nama_jabatan ?? '')));
+                if (!str_contains($jabatanAtasan, 'POKJA')) {
+                    return $atasanCuti;
+                }
             }
         }
 
@@ -192,8 +197,9 @@ class ApprovalHierarchyService
             }
         }
 
-        // Fallback default
-        return $this->findPegawaiByJabatan(['Kepala Bagian Umum', 'Kabag Umum']);
+        // Fallback default: Kepala Bagian Umum
+        return $this->findPegawaiByJabatan(['Kepala Bagian Umum', 'Kabag Umum'])
+            ?? Pegawai::where('nip', '197507122005011002')->first();
     }
 
     /**
@@ -308,22 +314,27 @@ class ApprovalHierarchyService
         }
 
         // KATEGORI B: TENDIK / STAFF / LABORAN
-        $kabagUmum = $this->findPegawaiByJabatan(['Kepala Bagian Umum', 'Kabag Umum']);
+        $pejabatService = app(\App\Services\PejabatService::class);
+        $kabagData      = $pejabatService->getKabag();
+        $wadek2Data     = $pejabatService->getWadek2();
+
+        $kabagUmum = $this->findPegawaiByJabatan(['Kepala Bagian Umum', 'Kabag Umum']) ?? $kabagData['pegawai'];
         $wadek2    = $this->findPegawaiByJabatan([
             'Wakil Dekan II (Bid. Keuangan dan Umum)',
             'Wakil Dekan Keuangan dan Kepegawaian',
             'Wakil Dekan II',
             'Wakil Dekan Bidang Keuangan dan Umum',
-        ]);
+        ]) ?? $wadek2Data['pegawai'];
+
         return [
             'is_dosen'       => false,
             'kategori'       => 'tendik',
             'atasan_jabatan' => 'Kepala Bagian Umum',
-            'atasan_nama'    => $kabagUmum ? ($kabagUmum->nama_lengkap ?? $kabagUmum->nama) : 'Kepala Bagian Umum',
-            'atasan_nip'     => $kabagUmum?->nip ?? '',
+            'atasan_nama'    => $kabagUmum ? ($kabagUmum->nama_lengkap ?? $kabagUmum->nama) : ($kabagData['nama'] ?? 'Bakhtiar, S.Sos., M.Si'),
+            'atasan_nip'     => $kabagUmum?->nip ?? ($kabagData['nip'] ?? '197507122005011002'),
             'pybmc_jabatan'  => 'Wakil Dekan II (Bid. Keuangan dan Umum)',
-            'pybmc_nama'     => $wadek2 ? ($wadek2->nama_lengkap ?? $wadek2->nama) : 'Wakil Dekan II (Bid. Keuangan dan Umum)',
-            'pybmc_nip'      => $wadek2?->nip ?? '',
+            'pybmc_nama'     => $wadek2 ? ($wadek2->nama_lengkap ?? $wadek2->nama) : ($wadek2Data['nama'] ?? 'Dr. Safri, M.Kep, Sp.Kep.M.B'),
+            'pybmc_nip'      => $wadek2?->nip ?? ($wadek2Data['nip'] ?? '198509092014041001'),
         ];
     }
 
@@ -360,9 +371,11 @@ class ApprovalHierarchyService
             return false;
         }
 
-        // Cek penugasan eksplisit di tabel pegawai
-        if (!empty($pemohon->atasan_cuti_id)) {
-            return (int)$pemohon->atasan_cuti_id === (int)$pimpinan->id;
+        // Ka Pokja berfungsi sebagai Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian,
+        // BUKAN penandatangan TTE pada kolom VI. Pertimbangan Atasan Langsung Cuti
+        $jabatanPimpinan = strtoupper(trim((string)($pimpinan->jabatan->nama_jabatan ?? '')));
+        if (str_contains($jabatanPimpinan, 'POKJA')) {
+            return false;
         }
 
         $atasanLangsung = $this->getAtasanLangsungCuti($pemohon);
@@ -425,6 +438,12 @@ class ApprovalHierarchyService
                 $q->where('jenis_pegawai', 'not like', '%Dosen%')
                   ->orWhereNull('jenis_pegawai');
             })->whereNull('nidn_nuptk')->pluck('id')->toArray();
+        }
+
+        // 5. Ka Pokja Keu-Kepeg: Melihat seluruh pengajuan cuti untuk keperluan Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian
+        if ((str_contains($jabatanNama, 'KA POKJA') || str_contains($jabatanNama, 'KEPALA POKJA') || str_contains($jabatanNama, 'KETUA POKJA'))
+            && (str_contains($jabatanNama, 'KEU') || str_contains($jabatanNama, 'KEPEG'))) {
+            return null;
         }
 
         // 5. Pimpinan Lainnya: Bawahan langsung berdasarkan penetapan atasan_cuti_id

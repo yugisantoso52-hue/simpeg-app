@@ -201,10 +201,11 @@ class PengajuanCutiController extends Controller
     }
 
     /**
-     * Standarisasi Verifikasi Berkas & Paraf Berjenjang Pengajuan Cuti (SOP SIKAP):
+     * Standarisasi Verifikasi Berkas & Paraf Koordinasi Pengajuan Cuti (SOP SIKAP):
      * Tahap 1: Admin Screening Berkas Lampiran & Penomoran Resmi (verifikasi_admin)
-     * Tahap 2: Paraf Ka Pokja Keu-Kepeg (Pemeriksaan Teknis & Kuota Cuti) (paraf_kapokja)
-     * Tahap 3: Paraf Kepala Bagian Umum (Telaah Tata Naskah & Format) (paraf_kabag)
+     * Tahap 2: Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian oleh Ka Pokja Keu-Kepeg (paraf_kapokja)
+     * Catatan: Kepala Bagian Umum bertindak sebagai Pejabat Penandatangan TTE pada kolom VI. Pertimbangan Atasan Langsung,
+     *          sehingga di bagian Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian hanya terdapat Ka Pokja Keu-Kepeg.
      * Tahap Penolakan: Pengembalian Berkas dengan Catatan Wajib (tolak)
      */
     public function verifikasi(Request $request, int $id)
@@ -246,11 +247,11 @@ class PengajuanCutiController extends Controller
             return back()->with('success', '1. Verifikasi Screening Berkas Lampiran & Penomoran Cuti oleh Admin Kepegawaian berhasil.');
         } elseif ($tahap === 'paraf_kapokja') {
             if (!$isKaPokja && !$isAdmin) {
-                return back()->with('error', 'Otorisasi Ditolak: Tahap 2 (Paraf Ka Pokja) hanya berhak dilakukan oleh Kepala Pokja Keuangan & Kepegawaian.');
+                return back()->with('error', 'Otorisasi Ditolak: Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian hanya berhak dilakukan oleh Ka Pokja Keu-Kepeg.');
             }
 
             if (!$cuti->verifikasi_admin_at) {
-                return back()->with('error', 'SOP Tata Naskah: Berkas cuti harus diperiksa kelengkapannya (Admin Screening Berkas) terlebih dahulu sebelum diparaf Ka Pokja.');
+                return back()->with('error', 'SOP Tata Naskah: Berkas cuti harus diperiksa kelengkapannya (Admin Screening Berkas) terlebih dahulu sebelum diparaf Ka Pokja Keu-Kepeg.');
             }
 
             $cuti->update([
@@ -259,23 +260,27 @@ class PengajuanCutiController extends Controller
                 'catatan_verifikator' => $catatan ?? 'Telah diperiksa status kepegawaian dan kuota cuti oleh Ka Pokja Keu-Kepeg.',
             ]);
 
-            return back()->with('success', '2. Paraf Ka Pokja Keuangan dan Kepegawaian berhasil dibubuhkan.');
+            return back()->with('success', '2. Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian oleh Ka Pokja Keu-Kepeg berhasil dibubuhkan.');
         } elseif ($tahap === 'paraf_kabag') {
+            // Untuk Cuti, Kepala Bagian Umum memberikan TTE pada kolom VI. Pertimbangan Atasan Langsung
             if (!$isKabag && !$isAdmin) {
-                return back()->with('error', 'Otorisasi Ditolak: Tahap 3 (Paraf Kabag Umum) hanya berhak dilakukan oleh Kepala Bagian Umum.');
+                return back()->with('error', 'Otorisasi Ditolak: Pertimbangan Atasan Langsung hanya berhak dilakukan oleh Kepala Bagian Umum.');
             }
 
-            if (!$cuti->paraf_kapokja_at) {
-                return back()->with('error', 'SOP Tata Naskah: Berkas harus diperiksa dan diparaf terlebih dahulu oleh Ka Pokja Keu-Kepeg sebelum ditelaah oleh Kabag Umum.');
-            }
+            $kabagPegawai = app(\App\Services\PejabatService::class)->getKabagPegawai();
+            $kabagUser = $kabagPegawai ? User::where('pegawai_id', $kabagPegawai->id)->first() : null;
 
             $cuti->update([
-                'paraf_kabag_at'      => now(),
-                'paraf_kabag_by'      => $pejabatLogin?->id,
-                'catatan_verifikator' => $catatan ?? 'Telah ditelaah format naskah izin cuti dan diparaf oleh Kepala Bagian Umum.',
+                'paraf_kabag_at'          => now(),
+                'paraf_kabag_by'          => $pejabatLogin?->id ?? $kabagPegawai?->id,
+                'pertimbangan_atasan'     => $cuti->pertimbangan_atasan ?: 'Disetujui',
+                'pertimbangan_atasan_at'  => now(),
+                'atasan_langsung_id'      => $kabagUser?->id ?? $user->id,
+                'catatan_atasan_langsung' => $catatan ?? $cuti->catatan_atasan_langsung ?? 'Disetujui oleh Kepala Bagian Umum.',
+                'status'                  => in_array($cuti->status, ['Disetujui', 'Ditolak']) ? $cuti->status : 'Disetujui Atasan (Menunggu PYBMC)',
             ]);
 
-            return back()->with('success', '3. Paraf Kepala Bagian Umum berhasil dibubuhkan.');
+            return back()->with('success', 'Pertimbangan Atasan Langsung (TTE Kepala Bagian Umum) berhasil disimpan.');
         } elseif ($tahap === 'tolak') {
             $canReject = $isAdmin || $isKaPokja || $isKabag || $isWd2 || $isDekan || $user->isAtasan() || $user->hasRole('pimpinan');
             if (!$canReject) {
