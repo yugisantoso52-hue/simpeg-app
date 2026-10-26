@@ -41,7 +41,7 @@ class RiwayatPublikasiController extends Controller
     public function store(StoreRiwayatPublikasiRequest $request)
     {
         $data = $request->validated();
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             $data['pegawai_id'] = auth()->user()->pegawai_id;
         }
 
@@ -50,7 +50,7 @@ class RiwayatPublikasiController extends Controller
             $request->file('file_publikasi')
         );
 
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             return redirect()
                 ->route('pegawai.show', auth()->user()->pegawai_id)
                 ->with('success', 'Riwayat Publikasi berhasil disimpan.');
@@ -84,7 +84,7 @@ class RiwayatPublikasiController extends Controller
         $this->authorizeOwnerOrAdmin($existing);
 
         $data = $request->validated();
-        if (auth()->user()->hasRole('pegawai')) {
+        if (!auth()->user()->hasRole('admin')) {
             $data['pegawai_id'] = $existing->pegawai_id;
         }
 
@@ -94,7 +94,7 @@ class RiwayatPublikasiController extends Controller
             $request->file('file_publikasi')
         );
 
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             return redirect()
                 ->route('pegawai.show', auth()->user()->pegawai_id)
                 ->with('success', 'Riwayat Publikasi berhasil diperbarui.');
@@ -115,7 +115,7 @@ class RiwayatPublikasiController extends Controller
 
         $this->service->delete($id);
 
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             return redirect()
                 ->route('pegawai.show', auth()->user()->pegawai_id)
                 ->with('success', 'Riwayat Publikasi berhasil dihapus.');

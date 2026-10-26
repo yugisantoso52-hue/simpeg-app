@@ -17,7 +17,7 @@ class UpdateRiwayatPangkatRequest extends FormRequest
             return true;
         }
 
-        if ($user->hasRole('pegawai') && $user->pegawai_id) {
+        if ($user->hasRole(['pegawai', 'pimpinan']) && $user->pegawai_id) {
             $id = $this->route('riwayat_pangkat') ?? $this->route('id');
             $riwayat = \App\Models\RiwayatPangkat::find($id);
             return $riwayat && (int) $riwayat->pegawai_id === (int) $user->pegawai_id;

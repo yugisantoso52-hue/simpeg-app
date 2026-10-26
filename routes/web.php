@@ -116,15 +116,27 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::get('/regulasi-tata-naskah/pdf', [\App\Http\Controllers\RegulasiTataNaskahController::class, 'exportPdf'])->name('regulasi-tata-naskah.pdf');
 
     // ======================================================================
-    // ROUTE PEGAWAI BIASA (Akses Data Diri Sendiri)
+    // ROUTE PROFIL SAYA (Akses Data Diri Sendiri: Pegawai, Pimpinan & Admin)
     // ======================================================================
-    Route::middleware(['role:pegawai'])->group(function () {
+    Route::middleware(['role:admin,pimpinan,pegawai'])->group(function () {
         Route::get('/my-profile', function() {
             $user = auth()->user();
-            if (!$user->pegawai_id) {
+            $pegawaiId = $user->pegawai_id;
+
+            if (!$pegawaiId) {
+                $pegawai = \App\Models\Pegawai::where('email', $user->email)
+                    ->orWhere('nip', $user->name)
+                    ->first();
+                if ($pegawai) {
+                    $pegawaiId = $pegawai->id;
+                    $user->update(['pegawai_id' => $pegawaiId]);
+                }
+            }
+
+            if (!$pegawaiId) {
                 return redirect()->route('dashboard')->with('error', 'Akun Anda belum terhubung dengan data pegawai.');
             }
-            return redirect()->route('pegawai.show', $user->pegawai_id);
+            return redirect()->route('pegawai.show', $pegawaiId);
         })->name('pegawai.my-profile');
     });
 

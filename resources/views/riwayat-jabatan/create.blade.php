@@ -36,7 +36,7 @@
                             {{-- Pegawai --}}
                             <div>
                                 <label class="block mb-2 font-semibold">Pegawai <span class="text-red-600">*</span></label>
-                                @if(auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id)
+                                @if(!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id)
                                     @php
                                         $currentPegawai = $pegawai->firstWhere('id', auth()->user()->pegawai_id);
                                     @endphp

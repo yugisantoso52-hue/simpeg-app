@@ -1,6 +1,13 @@
 @php
+    $routePegawaiParam = request()->route('pegawai');
+    $routePegawaiId = is_object($routePegawaiParam) ? $routePegawaiParam->id : $routePegawaiParam;
+    $isViewingOwnProfile = request()->routeIs('pegawai.my-profile')
+        || (request()->routeIs('pegawai.show', 'pegawai.edit') && Auth::user()->pegawai_id && (int) $routePegawaiId === (int) Auth::user()->pegawai_id);
+
     $currentSection = '';
-    if (request()->routeIs('presensi.*', 'admin.presensi.*', 'logbook.*', 'admin.logbook.*')) {
+    if ($isViewingOwnProfile || request()->routeIs('manajemen-talenta.my-talent') || (!Auth::user()->canAccessExecutiveKepegawaianMenus() && request()->routeIs('duk.*', 'pengajuan-karir.*'))) {
+        $currentSection = 'profil-karir';
+    } elseif (request()->routeIs('presensi.*', 'admin.presensi.*', 'logbook.*', 'admin.logbook.*')) {
         $currentSection = 'presensi-kinerja';
     } elseif (request()->routeIs('pengajuan-cuti.*', 'layanan-surat.*', 'regulasi-tata-naskah.*')) {
         $currentSection = 'tata-naskah';
@@ -31,8 +38,8 @@
         </x-responsive-nav-link>
     @endif
 
-    {{-- 3. PROFIL & KARIR SAYA (PEGAWAI MANDIRI NON-EKSEKUTIF) --}}
-    @if(Auth::user()->hasRole('pegawai') && !Auth::user()->canAccessExecutiveKepegawaianMenus())
+    {{-- 3. PROFIL & KARIR SAYA (PEGAWAI MANDIRI & UNSUR PIMPINAN) --}}
+    @if(Auth::user()->hasRole(['pegawai', 'pimpinan']) || Auth::user()->pegawai_id)
         <div class="rounded-xl border border-slate-200/80 bg-white overflow-hidden transition">
             <button @click="openSection = openSection === 'profil-karir' ? '' : 'profil-karir'" 
                     type="button" 
@@ -47,7 +54,7 @@
             </button>
             <div x-show="openSection === 'profil-karir'" x-transition class="px-2 pb-2 space-y-0.5 bg-slate-50/60 border-t border-slate-100">
                 <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Profil Pegawai</div>
-                <x-responsive-nav-link :href="route('pegawai.my-profile')" :active="request()->routeIs('pegawai.my-profile', 'pegawai.show')" class="flex items-center gap-2 text-xs rounded-lg">
+                <x-responsive-nav-link :href="route('pegawai.my-profile')" :active="$isViewingOwnProfile" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="user" class="w-3.5 h-3.5 text-blue-600" />
                     <span>Profil Saya</span>
                 </x-responsive-nav-link>
@@ -57,7 +64,7 @@
                 </x-responsive-nav-link>
 
                 <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Layanan Karir Mandiri</div>
-                <x-responsive-nav-link :href="route('pengajuan-karir.index')" :active="request()->routeIs('pengajuan-karir.*')" class="flex items-center gap-2 text-xs rounded-lg">
+                <x-responsive-nav-link :href="route('pengajuan-karir.index', Auth::user()->canAccessExecutiveKepegawaianMenus() ? ['scope' => 'saya'] : [])" :active="request()->routeIs('pengajuan-karir.*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="award" class="w-3.5 h-3.5 text-emerald-600" />
                     <span>Usulan Karir & Satyalancana</span>
                 </x-responsive-nav-link>

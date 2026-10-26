@@ -41,13 +41,13 @@ class RiwayatOrganisasiController extends Controller
     public function store(StoreRiwayatOrganisasiRequest $request)
     {
         $data = $request->validated();
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             $data['pegawai_id'] = auth()->user()->pegawai_id;
         }
 
         $this->service->create($data);
 
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             return redirect()
                 ->route('pegawai.show', auth()->user()->pegawai_id)
                 ->with('success', 'Riwayat Organisasi berhasil disimpan.');
@@ -81,13 +81,13 @@ class RiwayatOrganisasiController extends Controller
         $this->authorizeOwnerOrAdmin($existing);
 
         $data = $request->validated();
-        if (auth()->user()->hasRole('pegawai')) {
+        if (!auth()->user()->hasRole('admin')) {
             $data['pegawai_id'] = $existing->pegawai_id;
         }
 
         $this->service->update($id, $data);
 
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             return redirect()
                 ->route('pegawai.show', auth()->user()->pegawai_id)
                 ->with('success', 'Riwayat Organisasi berhasil diperbarui.');
@@ -108,7 +108,7 @@ class RiwayatOrganisasiController extends Controller
 
         $this->service->delete($id);
 
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             return redirect()
                 ->route('pegawai.show', auth()->user()->pegawai_id)
                 ->with('success', 'Riwayat Organisasi berhasil dihapus.');

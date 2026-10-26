@@ -46,7 +46,7 @@ class RiwayatDiklatController extends Controller
     public function store(StoreRiwayatDiklatRequest $request)
     {
         $data = $request->validated();
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             $data['pegawai_id'] = auth()->user()->pegawai_id;
         }
 
@@ -55,7 +55,7 @@ class RiwayatDiklatController extends Controller
             $request->file('file_sertifikat')
         );
 
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             return redirect()
                 ->route('pegawai.show', auth()->user()->pegawai_id)
                 ->with(
@@ -102,7 +102,7 @@ class RiwayatDiklatController extends Controller
             $request->file('file_sertifikat')
         );
 
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             return redirect()
                 ->route('pegawai.show', auth()->user()->pegawai_id)
                 ->with(
@@ -129,7 +129,7 @@ class RiwayatDiklatController extends Controller
 
         $this->service->delete($id);
 
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             return redirect()
                 ->route('pegawai.show', auth()->user()->pegawai_id)
                 ->with(

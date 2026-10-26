@@ -206,8 +206,9 @@ class PegawaiController extends Controller
             "Memperbarui data profil pegawai: " . ($pegawai->nama ?? 'Pegawai')
         );
 
-        // Pengarahan halaman berdasarkan Role
-        if (auth()->user()->hasRole('pegawai')) {
+        // Pengarahan halaman berdasarkan Role (Pegawai atau Pimpinan yang mengedit profil pribadinya)
+        $currentUser = auth()->user();
+        if ($currentUser->hasRole('pegawai') || (!$currentUser->hasRole('admin') && (int) $currentUser->pegawai_id === (int) $id)) {
             return redirect()
                 ->route('pegawai.show', $id)
                 ->with('success', 'Data profil pribadi Anda berhasil diperbarui.');

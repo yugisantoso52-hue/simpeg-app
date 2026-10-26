@@ -19,13 +19,22 @@
 @endif
 
 {{-- ============================================================== --}}
-{{-- 3. PROFIL & KARIR SAYA (Khusus Pegawai Mandiri Non-Eksekutif)  --}}
+{{-- 3. PROFIL & KARIR SAYA (Pegawai Mandiri & Unsur Pimpinan)      --}}
 {{-- ============================================================== --}}
-@if(Auth::user()->hasRole('pegawai') && !Auth::user()->canAccessExecutiveKepegawaianMenus())
+@if(Auth::user()->hasRole(['pegawai', 'pimpinan']) || Auth::user()->pegawai_id)
+    @php
+        $routePegawaiParam = request()->route('pegawai');
+        $routePegawaiId = is_object($routePegawaiParam) ? $routePegawaiParam->id : $routePegawaiParam;
+        $isViewingOwnProfile = request()->routeIs('pegawai.my-profile')
+            || (request()->routeIs('pegawai.show', 'pegawai.edit') && Auth::user()->pegawai_id && (int) $routePegawaiId === (int) Auth::user()->pegawai_id);
+        $isProfilKarirActive = $isViewingOwnProfile
+            || request()->routeIs('manajemen-talenta.my-talent')
+            || (!Auth::user()->canAccessExecutiveKepegawaianMenus() && request()->routeIs('duk.*', 'pengajuan-karir.*'));
+    @endphp
     <x-dropdown align="left" width="w-64">
         <x-slot name="trigger">
-            <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('pegawai.my-profile', 'pegawai.show', 'duk.*', 'pengajuan-karir.*', 'manajemen-talenta.my-talent') ? 'bg-blue-50 text-blue-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-                <x-icon name="user" class="w-4 h-4 {{ request()->routeIs('pegawai.my-profile', 'pegawai.show', 'duk.*', 'pengajuan-karir.*', 'manajemen-talenta.my-talent') ? 'text-blue-600' : 'text-slate-500' }}" />
+            <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ $isProfilKarirActive ? 'bg-blue-50 text-blue-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                <x-icon name="user" class="w-4 h-4 {{ $isProfilKarirActive ? 'text-blue-600' : 'text-slate-500' }}" />
                 <span>Profil & Karir Saya</span>
                 <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
             </button>
@@ -34,7 +43,7 @@
             <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
                 Profil Pegawai
             </div>
-            <x-dropdown-link :href="route('pegawai.my-profile')" class="flex items-center gap-2 {{ request()->routeIs('pegawai.my-profile', 'pegawai.show') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+            <x-dropdown-link :href="route('pegawai.my-profile')" class="flex items-center gap-2 {{ $isViewingOwnProfile ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                 <x-icon name="user" class="w-4 h-4 text-blue-600 shrink-0" />
                 <span>Profil Saya</span>
             </x-dropdown-link>
@@ -47,7 +56,7 @@
             <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
                 Layanan Karir Mandiri
             </div>
-            <x-dropdown-link :href="route('pengajuan-karir.index')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
+            <x-dropdown-link :href="route('pengajuan-karir.index', Auth::user()->canAccessExecutiveKepegawaianMenus() ? ['scope' => 'saya'] : [])" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
                 <x-icon name="award" class="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>Usulan Karir & Satyalancana</span>
             </x-dropdown-link>
@@ -63,10 +72,13 @@
 {{-- 4. DATA INDUK & RIWAYAT (Khusus Pimpinan & Admin Eksekutif)    --}}
 {{-- ============================================================== --}}
 @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+    @php
+        $isKepegawaianActive = (request()->routeIs('pegawai.*', 'kepegawaian.*', 'duk.*', 'riwayat-*')) && !($isViewingOwnProfile ?? false);
+    @endphp
     <x-dropdown align="left" width="w-72">
         <x-slot name="trigger">
-            <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('pegawai.*', 'kepegawaian.*', 'duk.*', 'riwayat-*') ? 'bg-emerald-50 text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-                <x-icon name="users" class="w-4 h-4 {{ request()->routeIs('pegawai.*', 'kepegawaian.*', 'duk.*', 'riwayat-*') ? 'text-emerald-600' : 'text-slate-500' }}" />
+            <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ $isKepegawaianActive ? 'bg-emerald-50 text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                <x-icon name="users" class="w-4 h-4 {{ $isKepegawaianActive ? 'text-emerald-600' : 'text-slate-500' }}" />
                 <span>Data Kepegawaian</span>
                 <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
             </button>

@@ -213,4 +213,49 @@ class UserJourneyFunctionalAuditTest extends TestCase
             ->post('/notifications/mark-all-read')
             ->assertRedirect();
     }
+
+    /**
+     * TEST 9 — PIMPINAN HAS PROFIL & KARIR SAYA AND PROFIL SAYA (DETAIL LENGKAP PROFIL PEGAWAI)
+     */
+    public function test_pimpinan_has_profil_dan_karir_saya_and_can_access_my_profile(): void
+    {
+        $jabatanDekan = Jabatan::create(['kode_jabatan' => 'JAB-DEKAN', 'nama_jabatan' => 'Dekan']);
+        $pegawaiPimpinan = Pegawai::create([
+            'nip'            => '197508222001122001',
+            'nama'           => 'Prof. Wan Nishfa Dewi',
+            'status_pegawai' => 'Aktif',
+            'jenis_pegawai'  => 'Dosen',
+            'status_asn'     => 'ASN',
+            'unit_kerja_id'  => $this->unit->id,
+            'jabatan_id'     => $jabatanDekan->id,
+            'golongan_id'    => $this->golongan->id,
+        ]);
+
+        $this->pimpinanUser->update(['pegawai_id' => $pegawaiPimpinan->id]);
+
+        // 1. Pimpinan melihat menu "Profil & Karir Saya" dan "Profil Saya" di navigasi
+        $dashboardResponse = $this->actingAs($this->pimpinanUser)->get('/dashboard');
+        $dashboardResponse->assertStatus(200);
+        $dashboardResponse->assertSee('Profil & Karir Saya', false);
+        $dashboardResponse->assertSee('Profil Saya', false);
+
+        // 2. Pimpinan mengakses route('pegawai.my-profile') (/my-profile) -> redirect ke pegawai.show
+        $myProfileResponse = $this->actingAs($this->pimpinanUser)->get(route('pegawai.my-profile'));
+        $myProfileResponse->assertRedirect(route('pegawai.show', $pegawaiPimpinan->id));
+
+        // 3. Halaman Detail Lengkap Profil Pegawai terbuka dan menampilkan data pimpinan
+        $showResponse = $this->actingAs($this->pimpinanUser)->get(route('pegawai.show', $pegawaiPimpinan->id));
+        $showResponse->assertStatus(200);
+        $showResponse->assertSee('Detail Lengkap Profil Pegawai');
+        $showResponse->assertSee('Prof. Wan Nishfa Dewi');
+        $showResponse->assertSee('Edit Data');
+
+        // 4. Pimpinan dapat mengedit & menyimpan profil pribadinya dan diarahkan kembali ke Detail Lengkap Profil Pegawai
+        $updateResponse = $this->actingAs($this->pimpinanUser)->put(route('pegawai.update', $pegawaiPimpinan->id), [
+            'nip'    => $pegawaiPimpinan->nip,
+            'nama'   => 'Prof. Wan Nishfa Dewi, S.Kp., M.Ng., Ph.D',
+            'alamat' => 'Jl. Pattimura No. 9 Pekanbaru',
+        ]);
+        $updateResponse->assertRedirect(route('pegawai.show', $pegawaiPimpinan->id));
+    }
 }

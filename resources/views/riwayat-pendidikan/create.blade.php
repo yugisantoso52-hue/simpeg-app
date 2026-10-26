@@ -5,7 +5,7 @@
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             Tambah Riwayat Pendidikan
         </h2>
-        <a href="{{ auth()->user()->hasRole('pegawai') ? route('pegawai.show', auth()->user()->pegawai_id) : (request('pegawai_id') ? route('pegawai.show', request('pegawai_id')) : route('riwayat-pendidikan.index')) }}"
+        <a href="{{ (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) ? route('pegawai.show', auth()->user()->pegawai_id) : (request('pegawai_id') ? route('pegawai.show', request('pegawai_id')) : route('riwayat-pendidikan.index')) }}"
            class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition">
             ← Kembali
         </a>
@@ -19,7 +19,7 @@
             <form action="{{ route('riwayat-pendidikan.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
-                @if(auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id)
+                @if(!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id)
                     <input type="hidden" name="pegawai_id" value="{{ auth()->user()->pegawai_id }}">
                 @else
                     <div class="mb-4">

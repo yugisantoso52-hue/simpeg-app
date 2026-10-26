@@ -12,7 +12,7 @@ class StoreRiwayatJabatanRequest extends FormRequest
     public function authorize(): bool
     {
         $user = $this->user();
-        return $user && ($user->hasRole('admin') || ($user->hasRole('pegawai') && $user->pegawai_id));
+        return $user && ($user->hasRole('admin') || ($user->hasRole(['pegawai', 'pimpinan']) && $user->pegawai_id));
     }
 
     /**

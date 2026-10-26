@@ -36,7 +36,7 @@ class RiwayatPendidikanController extends Controller
     public function create()
     {
         $user = auth()->user();
-        if (!$user->hasRole('admin') && (!$user->hasRole('pegawai') || !$user->pegawai_id)) {
+        if (!$user->hasRole('admin') && (!$user->hasRole(['pegawai', 'pimpinan']) || !$user->pegawai_id)) {
             abort(403, 'Anda tidak memiliki hak untuk menambah data riwayat pendidikan.');
         }
 
@@ -48,8 +48,12 @@ class RiwayatPendidikanController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
-        if (!$user->hasRole('admin') && (!$user->hasRole('pegawai') || !$user->pegawai_id)) {
+        if (!$user->hasRole('admin') && (!$user->hasRole(['pegawai', 'pimpinan']) || !$user->pegawai_id)) {
             abort(403, 'Anda tidak memiliki hak untuk menambah data riwayat pendidikan.');
+        }
+
+        if (!$user->hasRole('admin') && $user->pegawai_id) {
+            $request->merge(['pegawai_id' => $user->pegawai_id]);
         }
 
         $request->validate([
@@ -88,7 +92,7 @@ class RiwayatPendidikanController extends Controller
             Pegawai::where('id', $request->pegawai_id)->update(['pendidikan_terakhir' => $request->jenjang]);
         });
 
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             return redirect()
                 ->route('pegawai.show', auth()->user()->pegawai_id)
                 ->with('success', 'Data berhasil disimpan');
@@ -157,7 +161,7 @@ class RiwayatPendidikanController extends Controller
             Pegawai::where('id', $pegawaiId)->update(['pendidikan_terakhir' => $request->jenjang]);
         });
 
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             return redirect()
                 ->route('pegawai.show', auth()->user()->pegawai_id)
                 ->with('success', 'Data berhasil diperbarui');
@@ -178,7 +182,7 @@ class RiwayatPendidikanController extends Controller
         }
         $data->delete();
 
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             return redirect()
                 ->route('pegawai.show', auth()->user()->pegawai_id)
                 ->with('success', 'Data berhasil dihapus');

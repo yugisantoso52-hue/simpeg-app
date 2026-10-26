@@ -1151,12 +1151,12 @@
                         <div>
                             <div class="flex items-center justify-between border-b pb-1 mb-2">
                                 <h4 class="text-xs font-bold uppercase text-blue-600 tracking-wider">16. Riwayat Mutasi Pegawai</h4>
-                                @can('update', $pegawai)
+                                @if(Auth::user()->hasRole('admin'))
                                     <a href="{{ route('mutasi-pegawai.create', ['pegawai_id' => $pegawai->id]) }}"
                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
                                         + Tambah Mutasi
                                     </a>
-                                @endcan
+                                @endif
                             </div>
                             @if($pegawai->mutasi && $pegawai->mutasi->count() > 0)
                                 <div class="overflow-x-auto">

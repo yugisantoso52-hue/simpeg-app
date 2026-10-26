@@ -34,7 +34,7 @@ class RiwayatPangkatController extends Controller
     public function create()
     {
         $user = auth()->user();
-        if (!$user->hasRole('admin') && (!$user->hasRole('pegawai') || !$user->pegawai_id)) {
+        if (!$user->hasRole('admin') && (!$user->hasRole(['pegawai', 'pimpinan']) || !$user->pegawai_id)) {
             abort(403, 'Anda tidak memiliki hak untuk menambah data riwayat pangkat.');
         }
 
@@ -47,7 +47,7 @@ class RiwayatPangkatController extends Controller
     public function store(StoreRiwayatPangkatRequest $request)
     {
         $data = $request->validated();
-        if (auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id) {
+        if (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) {
             $data['pegawai_id'] = auth()->user()->pegawai_id;
         }
 

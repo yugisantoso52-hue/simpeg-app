@@ -9,7 +9,7 @@
                     Pencatatan keanggotaan organisasi profesi, asosiasi akademik, atau kemasyarakatan
                 </p>
             </div>
-            <a href="{{ auth()->user()->hasRole('pegawai') ? route('pegawai.show', auth()->user()->pegawai_id) : (request('pegawai_id') ? route('pegawai.show', request('pegawai_id')) : route('riwayat-organisasi.index')) }}"
+            <a href="{{ (!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id) ? route('pegawai.show', auth()->user()->pegawai_id) : (request('pegawai_id') ? route('pegawai.show', request('pegawai_id')) : route('riwayat-organisasi.index')) }}"
                class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition">
                 ← Kembali
             </a>
@@ -35,7 +35,7 @@
                     @csrf
 
                     {{-- Pegawai --}}
-                    @if(auth()->user()->hasRole('pegawai') && auth()->user()->pegawai_id)
+                    @if(!auth()->user()->hasRole('admin') && auth()->user()->pegawai_id)
                         <input type="hidden" name="pegawai_id" value="{{ auth()->user()->pegawai_id }}">
                     @else
                         <div>

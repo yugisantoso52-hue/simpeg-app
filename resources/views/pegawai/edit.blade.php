@@ -2,7 +2,8 @@
 
     <x-slot name="header">
         @php
-            $isPegawai = auth()->user()->hasRole('pegawai') || (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('pimpinan'));
+            $isOwnProfile = auth()->user()->pegawai_id && (int) auth()->user()->pegawai_id === (int) $pegawai->id && !auth()->user()->hasRole('admin');
+            $isPegawai = $isOwnProfile || auth()->user()->hasRole('pegawai') || (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('pimpinan'));
             
             $backUrl = $isPegawai 
                 ? route('pegawai.show', $pegawai->id) 
