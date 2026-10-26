@@ -9,13 +9,21 @@ class ApprovePengajuanCutiRequest extends FormRequest
     public function authorize(): bool
     {
         $user = $this->user();
+        if (!$user) {
+            return false;
+        }
 
-        // Admin dan Pimpinan selalu bisa
-        if ($user->hasRole(['admin', 'pimpinan'])) {
+        // Admin Screening (Tahap 1) dan Ka Pokja Keu-Kepeg (Tahap 2) menggunakan endpoint verifikasi,
+        // BUKAN endpoint approve (Tahap 3 Pertimbangan Atasan & Tahap 4 Keputusan PYBMC)
+        if ($user->isScreeningAdmin() || $user->isKaPokjaKepeg()) {
+            return false;
+        }
+
+        if ($user->hasRole('pimpinan')) {
             return true;
         }
 
-        // Atasan Langsung juga bisa memberikan pertimbangan
+        // Atasan Langsung / Pejabat Berwenang
         return $user->isAtasan();
     }
 

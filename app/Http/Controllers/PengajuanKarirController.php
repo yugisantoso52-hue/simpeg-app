@@ -142,14 +142,12 @@ class PengajuanKarirController extends Controller
             })->sortBy('kgb_berikutnya')->values();
         }
 
-        // Jabatan & wewenang login
-        $jabatan = strtoupper(trim((string)($user->pegawai?->jabatan->nama_jabatan ?? '')));
-        $isAdmin = $user->hasRole('admin');
-        $isKaPokja = (str_contains($jabatan, 'KA POKJA') || str_contains($jabatan, 'KEPALA POKJA') || str_contains($jabatan, 'KETUA POKJA'))
-            && (str_contains($jabatan, 'KEU') || str_contains($jabatan, 'KEPEG'));
-        $isKabag = str_contains($jabatan, 'KEPALA BAGIAN UMUM') || str_contains($jabatan, 'KABAG UMUM') || str_contains($jabatan, 'KABAG TU');
-        $isWd2 = str_contains($jabatan, 'WADEK II') || str_contains($jabatan, 'WAKIL DEKAN II') || (str_contains($jabatan, 'WAKIL DEKAN') && str_contains($jabatan, 'KEUANGAN'));
-        $isDekan = str_contains($jabatan, 'DEKAN') && !str_contains($jabatan, 'WAKIL') && !str_contains($jabatan, 'WADEK');
+        // Jabatan & wewenang login (eksklusif sesuai tahapan masing-masing)
+        $isKaPokja = $user->isKaPokjaKepeg();
+        $isKabag   = $user->isKabagUmum();
+        $isWd2     = $user->isWadek2();
+        $isDekan   = $user->isDekan();
+        $isAdmin   = $user->isScreeningAdmin();
 
         return view('pengajuan-karir.index', compact(
             'pengajuans', 'isExecutive', 'userPegawai', 'tab',
@@ -314,13 +312,11 @@ class PengajuanKarirController extends Controller
             abort(403, 'Anda tidak memiliki hak akses melihat berkas pengajuan ini.');
         }
 
-        $jabatan = strtoupper(trim((string)($user->pegawai?->jabatan->nama_jabatan ?? '')));
-        $isAdmin = $user->hasRole('admin');
-        $isKaPokja = (str_contains($jabatan, 'KA POKJA') || str_contains($jabatan, 'KEPALA POKJA') || str_contains($jabatan, 'KETUA POKJA'))
-            && (str_contains($jabatan, 'KEU') || str_contains($jabatan, 'KEPEG'));
-        $isKabag = str_contains($jabatan, 'KEPALA BAGIAN UMUM') || str_contains($jabatan, 'KABAG UMUM') || str_contains($jabatan, 'KABAG TU');
-        $isWd2 = str_contains($jabatan, 'WADEK II') || str_contains($jabatan, 'WAKIL DEKAN II') || (str_contains($jabatan, 'WAKIL DEKAN') && str_contains($jabatan, 'KEUANGAN'));
-        $isDekan = str_contains($jabatan, 'DEKAN') && !str_contains($jabatan, 'WAKIL') && !str_contains($jabatan, 'WADEK');
+        $isKaPokja = $user->isKaPokjaKepeg();
+        $isKabag   = $user->isKabagUmum();
+        $isWd2     = $user->isWadek2();
+        $isDekan   = $user->isDekan();
+        $isAdmin   = $user->isScreeningAdmin();
 
         return view('pengajuan-karir.show', compact('pengajuan', 'isExecutive', 'isAdmin', 'isKaPokja', 'isKabag', 'isWd2', 'isDekan'));
     }
@@ -339,11 +335,11 @@ class PengajuanKarirController extends Controller
         $tahap = $request->input('tahap'); // paraf_kapokja, paraf_kabag, paraf_wd2, ttd_dekan, tolak
         $catatan = $request->input('catatan');
 
-        $isAdmin   = $user->hasRole('admin');
         $isKaPokja = $user->isKaPokjaKepeg();
         $isKabag   = $user->isKabagUmum();
         $isWd2     = $user->isWadek2();
         $isDekan   = $user->isDekan();
+        $isAdmin   = $user->isScreeningAdmin();
 
         $pejabatLogin = $user->pegawai ?? Pegawai::where('nama', 'like', '%' . $user->name . '%')->first();
 

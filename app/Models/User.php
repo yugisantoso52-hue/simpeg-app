@@ -158,12 +158,53 @@ class User extends Authenticatable
     }
 
     /**
+     * Resolusi model Pegawai milik User (mendukung fallback email / NIP jika pegawai_id belum terisi)
+     */
+    public function resolvePegawaiWithJabatan(): ?Pegawai
+    {
+        if ($this->relationLoaded('pegawai') && $this->pegawai) {
+            if (!$this->pegawai->relationLoaded('jabatan')) {
+                $this->pegawai->load('jabatan');
+            }
+            return $this->pegawai;
+        }
+
+        if ($this->pegawai_id) {
+            $pegawai = Pegawai::with('jabatan')->find($this->pegawai_id);
+            if ($pegawai) {
+                $this->setRelation('pegawai', $pegawai);
+                return $pegawai;
+            }
+        }
+
+        if (!empty($this->email) || !empty($this->name)) {
+            $emailStr = (string) ($this->email ?? '');
+            $nameStr  = (string) ($this->name ?? '');
+            $pegawai = Pegawai::with('jabatan')
+                ->where(function ($q) use ($emailStr, $nameStr) {
+                    if ($emailStr !== '') {
+                        $q->where('email', $emailStr);
+                    }
+                    if ($nameStr !== '') {
+                        $q->orWhere('nip', $nameStr);
+                    }
+                })->first();
+
+            if ($pegawai) {
+                $this->setRelation('pegawai', $pegawai);
+                return $pegawai;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Cek apakah user adalah Dekan FKp UNRI
      */
     public function isDekan(): bool
     {
-        if (!$this->pegawai_id) return false;
-        $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
+        $pegawai = $this->resolvePegawaiWithJabatan();
         if (!$pegawai || !$pegawai->jabatan) return false;
         $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
         return str_contains($jabatan, 'DEKAN') && !str_contains($jabatan, 'WADEK') && !str_contains($jabatan, 'WAKIL');
@@ -174,8 +215,7 @@ class User extends Authenticatable
      */
     public function isWadek2(): bool
     {
-        if (!$this->pegawai_id) return false;
-        $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
+        $pegawai = $this->resolvePegawaiWithJabatan();
         if (!$pegawai || !$pegawai->jabatan) return false;
         $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
         $isWakilDekan = str_contains($jabatan, 'WADEK') || str_contains($jabatan, 'WAKIL DEKAN') || str_contains($jabatan, 'WD ') || str_contains($jabatan, 'WD2') || str_contains($jabatan, 'WDII');
@@ -187,8 +227,7 @@ class User extends Authenticatable
      */
     public function isKabagUmum(): bool
     {
-        if (!$this->pegawai_id) return false;
-        $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
+        $pegawai = $this->resolvePegawaiWithJabatan();
         if (!$pegawai || !$pegawai->jabatan) return false;
         $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
         return str_contains($jabatan, 'KEPALA BAGIAN UMUM') || str_contains($jabatan, 'KABAG UMUM') || str_contains($jabatan, 'KABAG TU');
@@ -199,14 +238,30 @@ class User extends Authenticatable
      */
     public function isKaPokjaKepeg(): bool
     {
-        if (!$this->pegawai_id) return false;
-        $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
+        $pegawai = $this->resolvePegawaiWithJabatan();
         if (!$pegawai || !$pegawai->jabatan) return false;
         $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
         $isKaPokja = (str_contains($jabatan, 'KA POKJA') || str_contains($jabatan, 'KEPALA POKJA') || str_contains($jabatan, 'KETUA POKJA'))
             && !str_contains($jabatan, 'STAFF')
             && !str_contains($jabatan, 'STAF');
         return $isKaPokja && (str_contains($jabatan, 'KEU') || str_contains($jabatan, 'KEPEG'));
+    }
+
+    /**
+     * Cek apakah user adalah murni Admin Screening Kepegawaian (Tahap 1),
+     * dan BUKAN pejabat struktural berjenjang (Ka Pokja Keu-Kepeg, Kabag Umum, Wakil Dekan II, Dekan).
+     */
+    public function isScreeningAdmin(): bool
+    {
+        if (!$this->hasRole('admin')) {
+            return false;
+        }
+
+        if ($this->isKaPokjaKepeg() || $this->isKabagUmum() || $this->isWadek2() || $this->isDekan()) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

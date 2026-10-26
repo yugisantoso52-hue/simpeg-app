@@ -449,62 +449,81 @@
             {{-- ===== FORM PERSETUJUAN (ADMIN/PIMPINAN/ATASAN) ===== --}}
             @php
                 $authUser         = Auth::user();
-                $isAdmin          = $authUser->hasRole('admin');
+                $isKaPokja        = $authUser->isKaPokjaKepeg();
+                $isKabag          = $authUser->isKabagUmum();
+                $isWd2            = $authUser->isWadek2();
+                $isDekan          = $authUser->isDekan();
+                $isAdmin          = $authUser->isScreeningAdmin();
                 $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
 
                 // Cek Atasan Langsung yang sah (Pejabat struktural/atasan riil pemohon, BUKAN Admin dan BUKAN Ka Pokja):
-                $isAtasanLgs = !$isAdmin && !($isKaPokja ?? false) && ((
+                $isAtasanLgs = !$isAdmin && !$isKaPokja && ((
                     $authUser->pegawai && $cuti->pegawai &&
                     $hierarchyService->isAtasanLangsungCuti($authUser->pegawai, $cuti->pegawai)
                 ) || (
-                    $cuti->atasan_langsung_id && (int)$cuti->atasan_langsung_id === (int)$authUser->id
+                    $cuti->atasan_langsung_id && (int)$cuti->atasan_langsung_id === (int)$authUser->id && !$isKaPokja
                 ));
 
-                // Cek PYBMC yang sah (Wadek II / Dekan sesuai hierarki cuti, BUKAN Admin dan BUKAN Ka Pokja):
-                $isPybmc = !$isAdmin && !($isKaPokja ?? false) && ((
+                // Cek PYBMC yang sah (Wadek II / Dekan sesuai hierarki cuti, BUKAN Admin, BUKAN Ka Pokja, dan BUKAN Kabag):
+                $isPybmc = !$isAdmin && !$isKaPokja && !$isKabag && ((
                     $authUser->pegawai && $cuti->pegawai &&
                     $hierarchyService->isPybmcCuti($authUser->pegawai, $cuti->pegawai)
                 ) || ($cuti->pybmc_id && (int)$cuti->pybmc_id === (int)$authUser->id)
-                  || (($isWd2 ?? false) && ($pejabatInfo['kategori'] ?? '') !== 'wadek2' && ($pejabatInfo['kategori'] ?? '') !== 'dekan')
-                  || (($isDekan ?? false) && in_array(($pejabatInfo['kategori'] ?? ''), ['wadek2', 'pimpinan_struktural'])));
+                  || ($isWd2 && ($pejabatInfo['kategori'] ?? '') !== 'wadek2' && ($pejabatInfo['kategori'] ?? '') !== 'dekan')
+                  || ($isDekan && in_array(($pejabatInfo['kategori'] ?? ''), ['wadek2', 'pimpinan_struktural'])));
 
-                $pertimbanganSudahAda = !empty($cuti->pertimbangan_atasan);
+                $sudahScreeningAdmin  = !empty($cuti->verifikasi_admin_at);
+                $sudahParafPokja      = !empty($cuti->paraf_kapokja_at);
+                $pertimbanganSudahAda = !empty($cuti->pertimbangan_atasan) && $cuti->pertimbangan_atasan !== 'Menunggu Persetujuan';
+                $isFinalStatus        = in_array($cuti->status, ['Disetujui', 'Ditolak', 'Dibatalkan']);
 
-                // TAHAP 1: Atasan Langsung memberikan pertimbangan
-                $canGivePertimbangan = !in_array($cuti->status, ['Disetujui', 'Ditolak', 'Dibatalkan'])
+                // TAHAP 1: Admin Screening (Hanya aktif bagi Admin Kepegawaian saat belum diverifikasi)
+                $canDoAdminScreening = !$isFinalStatus && !$sudahScreeningAdmin && $isAdmin;
+
+                // TAHAP 2: Paraf Ka Pokja Keu-Kepeg (Hanya aktif bagi Ka Pokja setelah Admin Screening selesai)
+                $canDoParafPokja = !$isFinalStatus && $sudahScreeningAdmin && !$sudahParafPokja && $isKaPokja;
+
+                // TAHAP 3: Atasan Langsung memberikan Pertimbangan & TTE (Hanya aktif bagi Atasan Langsung setelah Paraf Ka Pokja selesai)
+                $canGivePertimbangan = !$isFinalStatus
+                    && $sudahParafPokja
                     && !$pertimbanganSudahAda
                     && $isAtasanLgs;
 
-                // TAHAP 2: PYBMC memberikan keputusan final
-                $canGiveKeputusan = !in_array($cuti->status, ['Disetujui', 'Ditolak', 'Dibatalkan'])
+                // Kondisi di mana Atasan Langsung membuka cuti yang masih menunggu Screening Admin / Paraf Ka Pokja
+                $isAtasanWaitingScreeningOrPokja = !$isFinalStatus
+                    && !$sudahParafPokja
+                    && $isAtasanLgs;
+
+                // TAHAP 4: PYBMC memberikan Keputusan Final & TTE (Hanya aktif bagi PYBMC setelah Pertimbangan Atasan selesai)
+                $canGiveKeputusan = !$isFinalStatus
                     && $isPybmc
                     && $pertimbanganSudahAda;
 
-                // Kondisi di mana PYBMC membuka cuti yang masih menunggu Atasan Langsung
-                $isPybmcWaitingAtasan = !in_array($cuti->status, ['Disetujui', 'Ditolak', 'Dibatalkan'])
+                // Kondisi di mana PYBMC membuka cuti yang masih menunggu tahapan sebelumnya
+                $isPybmcWaitingAtasan = !$isFinalStatus
                     && $isPybmc
                     && !$pertimbanganSudahAda;
             @endphp
 
-            {{-- PANEL STANDARISASI: VERIFIKASI ADMIN & PARAF KOORDINASI (HANYA KA POKJA KEU-KEPEG) --}}
-            @if($isAdmin || ($isKaPokja ?? false))
+            {{-- PANEL STANDARISASI: VERIFIKASI BERJENJANG 4 TAHAP SESUAI WEWENANG MASING-MASING --}}
+            @if($isAdmin || $isKaPokja || $isKabag || $isAtasanLgs || $isPybmc || $isWd2 || $isDekan)
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-slate-100 gap-2">
                         <div>
                             <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                                <span>🛡️</span> Tindakan Verifikasi &amp; Paraf Koordinasi Tata Naskah
+                                <span>🛡️</span> Tindakan Verifikasi &amp; Paraf Koordinasi Tata Naskah Berjenjang
                             </h3>
                             <p class="text-xs text-slate-500 mt-0.5">
-                                Standar pemeriksaan syarat berkas fisik/lampiran oleh Admin Kepegawaian dan Paraf Koordinasi Tata Naskah &amp; Verifikasi Kepegawaian oleh Ka Pokja Keu-Kepeg.
+                                Setiap pejabat hanya dapat mengeksekusi tahapan yang menjadi wewenangnya secara berurutan (1. Admin Screening &rarr; 2. Paraf Ka Pokja &rarr; 3. TTE Pertimbangan Atasan &rarr; 4. TTE Keputusan PYBMC).
                             </p>
                         </div>
                     </div>
 
-                    @if(!in_array($cuti->status, ['Disetujui', 'Ditolak', 'Dibatalkan']))
+                    @if(!$isFinalStatus)
                         <form action="{{ route('pengajuan-cuti.verifikasi', $cuti->id) }}" method="POST">
                             @csrf
                             <div class="space-y-3">
-                                @if($isAdmin)
+                                @if($canDoAdminScreening)
                                     <div>
                                         <label for="nomor_surat_input" class="block text-xs font-bold text-slate-700 mb-1">
                                             Nomor Surat Izin Cuti (Ditetapkan saat Admin Screening Berkas):
@@ -533,21 +552,23 @@
                                     </div>
                                 @endif
 
-                                <div>
-                                    <label class="block text-xs font-bold text-slate-700 mb-1">
-                                        Catatan / Lembar Telaah Verifikator (Wajib jika menolak):
-                                    </label>
-                                    <textarea name="catatan" rows="2" placeholder="Tuliskan catatan kelayakan berkas, kepatuhan kuota cuti, atau catatan revisi penolakan..."
-                                              class="w-full text-xs rounded-lg border-slate-300 focus:ring-emerald-500 focus:border-emerald-500">{{ old('catatan', $cuti->catatan_verifikator) }}</textarea>
-                                </div>
+                                @if($canDoAdminScreening || $canDoParafPokja)
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 mb-1">
+                                            Catatan / Lembar Telaah Verifikator (Wajib jika menolak):
+                                        </label>
+                                        <textarea name="catatan" rows="2" placeholder="Tuliskan catatan kelayakan berkas, kepatuhan kuota cuti, atau catatan revisi penolakan..."
+                                                  class="w-full text-xs rounded-lg border-slate-300 focus:ring-emerald-500 focus:border-emerald-500">{{ old('catatan', $cuti->catatan_verifikator) }}</textarea>
+                                    </div>
+                                @endif
 
                                 <div class="flex flex-wrap items-center gap-2.5 pt-1">
-                                    {{-- 1. Tombol Verifikasi Admin --}}
-                                    @if($cuti->verifikasi_admin_at)
+                                    {{-- 1. Tahap 1: Admin Screening Berkas (Khusus Admin Kepegawaian) --}}
+                                    @if($sudahScreeningAdmin)
                                         <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5" title="Selesai pada {{ $cuti->verifikasi_admin_at->format('d/m/Y H:i') }}">
                                             ✓ 1. Admin Screening: Selesai
                                         </span>
-                                    @elseif($isAdmin)
+                                    @elseif($canDoAdminScreening)
                                         <button type="submit" name="tahap" value="verifikasi_admin" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs transition flex items-center gap-1.5">
                                             ✓ 1. Admin Screening Berkas
                                         </button>
@@ -557,31 +578,85 @@
                                         </span>
                                     @endif
 
-                                    {{-- 2. Tombol Paraf Ka Pokja Keu-Kepeg --}}
-                                    @if($cuti->paraf_kapokja_at)
+                                    {{-- 2. Tahap 2: Paraf Ka Pokja Keu-Kepeg (Khusus Ka Pokja Keu-Kepeg) --}}
+                                    @if($sudahParafPokja)
                                         <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5" title="Selesai pada {{ $cuti->paraf_kapokja_at->format('d/m/Y H:i') }}">
                                             ✓ 2. Paraf Ka Pokja Keu-Kepeg: Selesai
                                         </span>
-                                    @elseif(!$cuti->verifikasi_admin_at)
+                                    @elseif(!$sudahScreeningAdmin)
                                         <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Admin Screening Berkas">
                                             🔒 2. Paraf Ka Pokja Keu-Kepeg (Terkunci)
                                         </span>
-                                    @elseif(($isKaPokja ?? false) || $isAdmin)
+                                    @elseif($canDoParafPokja)
                                         <button type="submit" name="tahap" value="paraf_kapokja" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-xs transition flex items-center gap-1.5">
                                             ✒ 2. Periksa &amp; Paraf Ka Pokja Keu-Kepeg
                                         </button>
                                     @else
-                                        <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200 select-none">
+                                        <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200 select-none">
                                             ⏳ 2. Menunggu Paraf Ka Pokja Keu-Kepeg
                                         </span>
                                     @endif
 
-                                    {{-- Tombol Tolak / Kembalikan --}}
-                                    <button type="submit" name="tahap" value="tolak" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition"
-                                            onclick="return confirm('Apakah Anda yakin ingin menolak atau mengembalikan berkas cuti ini? Pastikan kolom catatan telaah telah diisi.');">
-                                        ✕ Kembalikan / Tolak
-                                    </button>
+                                    {{-- 3. Tahap 3: VI. Pertimbangan & TTE Atasan Langsung (Khusus Kabag Umum / Atasan Langsung) --}}
+                                    @if($pertimbanganSudahAda)
+                                        <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5">
+                                            ✓ 3. TTE Pertimbangan ({{ $pejabatInfo['atasan_jabatan'] ?? 'Kepala Bagian Umum' }}): Selesai
+                                        </span>
+                                    @elseif(!$sudahParafPokja)
+                                        <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Paraf Ka Pokja Keu-Kepeg">
+                                            🔒 3. TTE Pertimbangan {{ $pejabatInfo['atasan_jabatan'] ?? 'Kabag Umum' }} (Terkunci)
+                                        </span>
+                                    @elseif($canGivePertimbangan)
+                                        <a href="#form-pertimbangan-atasan" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition flex items-center gap-1.5">
+                                            ✍️ 3. Isi Pertimbangan &amp; TTE ({{ $pejabatInfo['atasan_jabatan'] ?? 'Kepala Bagian Umum' }})
+                                        </a>
+                                    @else
+                                        <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200 select-none">
+                                            ⏳ 3. Menunggu TTE Pertimbangan {{ $pejabatInfo['atasan_jabatan'] ?? 'Kabag Umum' }}
+                                        </span>
+                                    @endif
+
+                                    {{-- 4. Tahap 4: VII. Keputusan & TTE Pejabat Berwenang / PYBMC (Khusus Wakil Dekan II / Dekan) --}}
+                                    @if(!$pertimbanganSudahAda)
+                                        <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Pertimbangan Atasan Langsung">
+                                            🔒 4. TTE Keputusan {{ $pejabatInfo['pybmc_jabatan'] ?? 'Wakil Dekan II' }} (Terkunci)
+                                        </span>
+                                    @elseif($canGiveKeputusan)
+                                        <a href="#form-keputusan-pybmc" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition flex items-center gap-1.5">
+                                            🏛️ 4. Isi Keputusan &amp; TTE ({{ $pejabatInfo['pybmc_jabatan'] ?? 'Wakil Dekan II' }})
+                                        </a>
+                                    @else
+                                        <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200 select-none">
+                                            ⏳ 4. Menunggu TTE Keputusan {{ $pejabatInfo['pybmc_jabatan'] ?? 'Wakil Dekan II' }}
+                                        </span>
+                                    @endif
+
+                                    {{-- Tombol Tolak / Kembalikan (Hanya tampil jika sedang giliran aktif Admin atau Ka Pokja) --}}
+                                    @if($canDoAdminScreening || $canDoParafPokja)
+                                        <button type="submit" name="tahap" value="tolak" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition"
+                                                onclick="return confirm('Apakah Anda yakin ingin menolak atau mengembalikan berkas cuti ini? Pastikan kolom catatan telaah telah diisi.');">
+                                            ✕ Kembalikan / Tolak
+                                        </button>
+                                    @endif
                                 </div>
+
+                                {{-- Informasi Status Giliran untuk Admin / Ka Pokja / Kabag setelah menyelesaikan tahapannya --}}
+                                @if($isAdmin && $sudahScreeningAdmin)
+                                    <div class="mt-2 p-3 rounded-lg bg-sky-50 border border-sky-200 text-xs text-sky-900 flex items-center gap-2">
+                                        <span>ℹ️</span>
+                                        <span><strong>Tahap 1 (Admin Screening) telah selesai.</strong> Selanjutnya berkas hanya dapat diperiksa &amp; diparaf oleh <strong>Ka Pokja Keu-Kepeg (Dolli Vita Zenitha Harning Arivina, SE)</strong> pada akunnya masing-masing.</span>
+                                    </div>
+                                @elseif($isKaPokja && $sudahParafPokja)
+                                    <div class="mt-2 p-3 rounded-lg bg-indigo-50 border border-indigo-200 text-xs text-indigo-900 flex items-center gap-2">
+                                        <span>ℹ️</span>
+                                        <span><strong>Tahap 2 (Paraf Koordinasi Ka Pokja Keu-Kepeg) telah selesai.</strong> Selanjutnya berkas hanya dapat diberikan Pertimbangan &amp; TTE oleh <strong>{{ $pejabatInfo['atasan_jabatan'] ?? 'Kepala Bagian Umum' }} ({{ $pejabatInfo['atasan_nama'] ?? 'Bakhtiar, S.Sos., M.Si' }})</strong> pada akunnya masing-masing.</span>
+                                    </div>
+                                @elseif($isAtasanLgs && $pertimbanganSudahAda)
+                                    <div class="mt-2 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center gap-2">
+                                        <span>ℹ️</span>
+                                        <span><strong>Tahap 3 (Pertimbangan &amp; TTE Atasan Langsung) telah selesai.</strong> Selanjutnya berkas hanya dapat ditetapkan Keputusan Akhir &amp; TTE oleh <strong>{{ $pejabatInfo['pybmc_jabatan'] ?? 'Wakil Dekan II' }} ({{ $pejabatInfo['pybmc_nama'] ?? 'Dr. Safri, M.Kep, Sp.Kep.M.B' }})</strong> pada akunnya masing-masing.</span>
+                                    </div>
+                                @endif
                             </div>
                         </form>
                     @else
@@ -595,15 +670,30 @@
                 </div>
             @endif
 
-            {{-- FORM TAHAP 1: Pertimbangan Atasan Langsung --}}
+            {{-- NOTIFIKASI INFO UNTUK ATASAN LANGSUNG JIKA BELUM MELALUI SCREENING ADMIN & PARAF KA POKJA --}}
+            @if($isAtasanWaitingScreeningOrPokja)
+                <div class="rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-900 flex items-start gap-3 shadow-sm">
+                    <span class="text-2xl">🔒</span>
+                    <div class="text-sm">
+                        <div class="font-bold text-amber-950 mb-0.5">Menunggu Verifikasi Berjenjang (Tahap 1 &amp; Tahap 2)</div>
+                        <div class="text-xs leading-relaxed text-amber-800">
+                            Anda adalah <strong>{{ $pejabatInfo['atasan_jabatan'] ?? 'Atasan Langsung' }}</strong> untuk permohonan ini.
+                            Sesuai SOP Tata Naskah, Form Pertimbangan &amp; TTE Atasan Langsung akan terbuka secara otomatis setelah berkas selesai melalui
+                            <strong>1. Admin Screening Berkas</strong> dan <strong>2. Paraf Koordinasi Ka Pokja Keu-Kepeg (Dolli Vita Zenitha Harning Arivina, SE)</strong>.
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- FORM TAHAP 3: Pertimbangan Atasan Langsung --}}
             @if($canGivePertimbangan)
-                <div class="bg-white rounded-xl shadow-sm border border-amber-300 p-6">
+                <div id="form-pertimbangan-atasan" class="bg-white rounded-xl shadow-sm border border-amber-300 p-6 scroll-mt-20">
                     <h3 class="text-base font-bold text-gray-900 mb-1 flex items-center gap-2">
-                        <span>✍️</span> VI. Form Pertimbangan Atasan Langsung
+                        <span>✍️</span> VI. Form Pertimbangan &amp; TTE Atasan Langsung
                         <span class="text-xs font-normal text-gray-500">({{ $pejabatInfo['atasan_jabatan'] ?? 'Atasan Langsung' }})</span>
                     </h3>
                     <p class="text-xs text-amber-800 mb-4 bg-amber-50 border border-amber-200 rounded px-3.5 py-2.5 leading-relaxed">
-                        Silakan berikan catatan <strong>PERTIMBANGAN ATASAN LANGSUNG</strong>. Setelah Anda simpan, permohonan akan secara otomatis diteruskan ke <strong>{{ $pejabatInfo['pybmc_jabatan'] ?? 'Pejabat Berwenang' }}</strong> untuk persetujuan / keputusan akhir.
+                        Berkas telah diverifikasi oleh Admin Kepegawaian dan diparaf oleh Ka Pokja Keu-Kepeg. Silakan berikan <strong>PERTIMBANGAN &amp; TTE ATASAN LANGSUNG</strong>. Setelah Anda simpan, permohonan akan diteruskan ke <strong>{{ $pejabatInfo['pybmc_jabatan'] ?? 'Pejabat Berwenang' }}</strong> untuk keputusan akhir.
                     </p>
                     <form action="{{ route('pengajuan-cuti.approve', $cuti->id) }}" method="POST" class="space-y-4">
                         @csrf
@@ -613,8 +703,8 @@
                             </label>
                             <select name="status" required
                                     class="w-full rounded-lg border-gray-300 text-sm focus:ring-amber-500 focus:border-amber-500 font-medium">
-                                <option value="Disetujui">✅ Setuju (Diteruskan untuk Keputusan Akhir)</option>
-                                <option value="Ditolak">❌ Tidak Disetujui (Ditolak Langsung)</option>
+                                <option value="Disetujui">✅ Setuju &amp; Bubuhkan TTE (Diteruskan ke {{ $pejabatInfo['pybmc_jabatan'] ?? 'Pejabat Berwenang' }})</option>
+                                <option value="Ditolak">❌ Tidak Disetujui (Ditolak)</option>
                             </select>
                         </div>
                         <div>
@@ -628,7 +718,7 @@
                         <div class="flex justify-end pt-1">
                             <button type="submit"
                                     class="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-sm shadow transition flex items-center gap-2">
-                                <span>💾</span> Simpan Pertimbangan Atasan Langsung
+                                <span>💾</span> Simpan &amp; Sahkan Pertimbangan Atasan (TTE)
                             </button>
                         </div>
                     </form>
@@ -640,21 +730,20 @@
                 <div class="rounded-xl border border-blue-200 bg-blue-50 p-5 text-blue-800 flex items-start gap-3 shadow-sm">
                     <span class="text-2xl">⏳</span>
                     <div class="text-sm">
-                        <div class="font-bold text-blue-900 mb-0.5">Menunggu Pertimbangan Atasan Langsung</div>
+                        <div class="font-bold text-blue-900 mb-0.5">Menunggu Tahapan Verifikasi &amp; Pertimbangan Sebelumnya</div>
                         <div class="text-xs leading-relaxed text-blue-700">
                             Anda adalah <strong>{{ $pejabatInfo['pybmc_jabatan'] ?? 'Pejabat Berwenang' }}</strong> untuk permohonan ini.
-                            Permohonan saat ini sedang menunggu catatan pertimbangan dari Atasan Langsung: <strong>{{ $pejabatInfo['atasan_jabatan'] ?? 'Atasan Langsung' }} ({{ $pejabatInfo['atasan_nama'] ?? '—' }})</strong>.
-                            Form Keputusan Final akan otomatis aktif setelah Atasan Langsung memberikan pertimbangan.
+                            Form Keputusan Final &amp; TTE Pejabat Berwenang akan otomatis terbuka setelah berkas selesai melalui Admin Screening, Paraf Ka Pokja Keu-Kepeg, serta Pertimbangan &amp; TTE Atasan Langsung: <strong>{{ $pejabatInfo['atasan_jabatan'] ?? 'Atasan Langsung' }} ({{ $pejabatInfo['atasan_nama'] ?? '—' }})</strong>.
                         </div>
                     </div>
                 </div>
             @endif
 
-            {{-- FORM TAHAP 2: Keputusan Pejabat Berwenang --}}
+            {{-- FORM TAHAP 4: Keputusan Pejabat Berwenang --}}
             @if($canGiveKeputusan)
-                <div class="bg-white rounded-xl shadow-sm border border-blue-300 p-6">
+                <div id="form-keputusan-pybmc" class="bg-white rounded-xl shadow-sm border border-blue-300 p-6 scroll-mt-20">
                     <h3 class="text-base font-bold text-gray-900 mb-1 flex items-center gap-2">
-                        <span>🏛️</span> VII. Form Keputusan Pejabat Berwenang
+                        <span>🏛️</span> VII. Form Keputusan &amp; TTE Pejabat Berwenang
                         <span class="text-xs font-normal text-gray-500">({{ $pejabatInfo['pybmc_jabatan'] ?? 'Pejabat Berwenang' }})</span>
                     </h3>
                     <p class="text-xs text-blue-800 mb-4 bg-blue-50 border border-blue-200 rounded px-3.5 py-2.5 leading-relaxed">

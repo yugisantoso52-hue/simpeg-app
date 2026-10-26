@@ -14,9 +14,9 @@ use Illuminate\Support\Facades\Cache;
 class ApprovalHierarchyService
 {
     /**
-     * In-memory memoization per request cycle
+     * In-memory memoization per instance (tidak bocor lintas request / test)
      */
-    protected static array $memoizedJabatanPegawai = [];
+    protected array $memoizedJabatanPegawai = [];
 
     /**
      * Daftar resolver hierarki persetujuan modular
@@ -344,8 +344,11 @@ class ApprovalHierarchyService
     public function findPegawaiByJabatan(array $jabatanNames): ?Pegawai
     {
         $cacheKey = implode('|', $jabatanNames);
-        if (array_key_exists($cacheKey, self::$memoizedJabatanPegawai)) {
-            return self::$memoizedJabatanPegawai[$cacheKey];
+        if (array_key_exists($cacheKey, $this->memoizedJabatanPegawai)) {
+            $cached = $this->memoizedJabatanPegawai[$cacheKey];
+            if ($cached === null || Pegawai::whereKey($cached->id)->exists()) {
+                return $cached;
+            }
         }
 
         foreach ($jabatanNames as $name) {
@@ -355,11 +358,11 @@ class ApprovalHierarchyService
                 })->first();
 
             if ($pegawai) {
-                return self::$memoizedJabatanPegawai[$cacheKey] = $pegawai;
+                return $this->memoizedJabatanPegawai[$cacheKey] = $pegawai;
             }
         }
 
-        return self::$memoizedJabatanPegawai[$cacheKey] = null;
+        return $this->memoizedJabatanPegawai[$cacheKey] = null;
     }
 
     /**
@@ -451,46 +454,53 @@ class ApprovalHierarchyService
     }
 
     /**
-     * Hitung jumlah pengajuan cuti yang sedang menunggu persetujuan spesifik dari user pimpinan
+     * Hitung jumlah pengajuan cuti yang sedang menunggu persetujuan spesifik dari user sesuai tahapan wewenangnya
      */
     public function countPendingCutiForUser(User $user): int
     {
-        if ($user->hasRole('admin')) {
-            return \App\Models\PengajuanCuti::whereIn('status', [
-                'Menunggu Persetujuan',
-                'Disetujui Atasan (Menunggu PYBMC)',
-                'Disetujui Atasan (Menunggu Keputusan Akhir)',
-            ])->count();
+        if ($user->isScreeningAdmin()) {
+            return \App\Models\PengajuanCuti::whereNull('verifikasi_admin_at')
+                ->whereIn('status', [
+                    'Menunggu Persetujuan',
+                    'Menunggu Pertimbangan Atasan',
+                    'Menunggu Persetujuan Atasan',
+                ])->count();
         }
 
-        $pimpinan = $user->pegawai;
+        if ($user->isKaPokjaKepeg()) {
+            return \App\Models\PengajuanCuti::whereNotNull('verifikasi_admin_at')
+                ->whereNull('paraf_kapokja_at')
+                ->whereNotIn('status', ['Disetujui', 'Ditolak', 'Dibatalkan'])
+                ->count();
+        }
+
+        $pimpinan = $user->resolvePegawaiWithJabatan();
         if (!$pimpinan) {
             return 0;
         }
 
-        $jabatanNama = strtoupper(trim((string)($pimpinan->jabatan->nama_jabatan ?? '')));
         $count = 0;
 
-        $isDekan = str_contains($jabatanNama, 'DEKAN') && !str_contains($jabatanNama, 'WAKIL') && !str_contains($jabatanNama, 'WADEK');
-        $isWadek2 = str_contains($jabatanNama, 'WAKIL DEKAN II') || str_contains($jabatanNama, 'WD II')
-            || (str_contains($jabatanNama, 'WAKIL DEKAN') && str_contains($jabatanNama, 'KEUANGAN'));
-        $isKajur = str_contains($jabatanNama, 'KETUA JURUSAN') || str_contains($jabatanNama, 'KAJUR');
-        $isKabag = str_contains($jabatanNama, 'KEPALA BAGIAN UMUM') || str_contains($jabatanNama, 'KABAG UMUM') || str_contains($jabatanNama, 'KABAG TU');
-
-        // Tahap 1: Menunggu Persetujuan Atasan Langsung
-        $pendingTahap1 = \App\Models\PengajuanCuti::with(['pegawai.jabatan', 'pegawai.unitKerja'])
+        // Tahap 3: Menunggu Pertimbangan & TTE Atasan Langsung (setelah Paraf Ka Pokja selesai)
+        $pendingTahap3 = \App\Models\PengajuanCuti::with(['pegawai.jabatan', 'pegawai.unitKerja'])
+            ->whereNotNull('paraf_kapokja_at')
+            ->where(function ($q) {
+                $q->whereNull('pertimbangan_atasan')
+                  ->orWhere('pertimbangan_atasan', '')
+                  ->orWhere('pertimbangan_atasan', 'Menunggu Persetujuan');
+            })
             ->where('status', 'Menunggu Persetujuan')
             ->where('pegawai_id', '!=', $pimpinan->id)
             ->get();
 
-        foreach ($pendingTahap1 as $cuti) {
+        foreach ($pendingTahap3 as $cuti) {
             if ($cuti->pegawai && $this->isAtasanLangsungCuti($pimpinan, $cuti->pegawai)) {
                 $count++;
             }
         }
 
-        // Tahap 2: Menunggu Persetujuan PYBMC
-        $pendingTahap2 = \App\Models\PengajuanCuti::with(['pegawai.jabatan', 'pegawai.unitKerja'])
+        // Tahap 4: Menunggu Keputusan & TTE PYBMC (setelah Pertimbangan Atasan disetujui)
+        $pendingTahap4 = \App\Models\PengajuanCuti::with(['pegawai.jabatan', 'pegawai.unitKerja'])
             ->whereIn('status', [
                 'Disetujui Atasan (Menunggu PYBMC)',
                 'Disetujui Atasan (Menunggu Keputusan Akhir)',
@@ -498,7 +508,7 @@ class ApprovalHierarchyService
             ->where('pegawai_id', '!=', $pimpinan->id)
             ->get();
 
-        foreach ($pendingTahap2 as $cuti) {
+        foreach ($pendingTahap4 as $cuti) {
             if ($cuti->pegawai && $this->isPybmcCuti($pimpinan, $cuti->pegawai)) {
                 $count++;
             }

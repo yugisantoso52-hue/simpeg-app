@@ -183,7 +183,7 @@ class PengajuanCutiTest extends TestCase
             'catatan_pimpinan' => 'Sedang berlangsung akreditasi prodi, permohonan ditunda.',
         ];
 
-        $response = $this->actingAs($this->adminUser)->post(route('pengajuan-cuti.approve', $cuti->id), $rejectPayload);
+        $response = $this->actingAs($this->pimpinanUser)->post(route('pengajuan-cuti.approve', $cuti->id), $rejectPayload);
         $response->assertRedirect(route('pengajuan-cuti.show', $cuti->id));
 
         $this->assertDatabaseHas('pengajuan_cuti', [
@@ -445,5 +445,164 @@ class PengajuanCutiTest extends TestCase
         // Pastikan di bagian Paraf Koordinasi Tata Naskah tidak ada "2. Kabag Umum:"
         $this->assertStringNotContainsString('2. Kabag Umum:', $renderedHtml);
         $this->assertStringContainsString('Ka Pokja Keu-Kepeg:', $renderedHtml);
+    }
+
+    public function test_strict_4_stage_cuti_workflow_enforces_each_role_authority_only(): void
+    {
+        $jabatanPokja = \App\Models\Jabatan::create([
+            'nama_jabatan'     => 'Ketua Pokja Keuangan dan Kepegawaian',
+            'kode_jabatan'     => 'JAB-PKK-WF',
+            'kelompok_jabatan' => 'Tenaga Kependidikan',
+        ]);
+        $jabatanKabag = \App\Models\Jabatan::create([
+            'nama_jabatan'     => 'Kepala Bagian Umum',
+            'kode_jabatan'     => 'JAB-KBU-WF',
+            'kelompok_jabatan' => 'Tenaga Kependidikan',
+        ]);
+        $jabatanWd2 = \App\Models\Jabatan::create([
+            'nama_jabatan'     => 'Wakil Dekan II (Bid. Keuangan dan Umum)',
+            'kode_jabatan'     => 'JAB-WD2-WF',
+            'kelompok_jabatan' => 'Dosen',
+        ]);
+        $jabatanTendik = \App\Models\Jabatan::create([
+            'nama_jabatan'     => 'Penata Layanan Operasional',
+            'kode_jabatan'     => 'JAB-PLO-WF',
+            'kelompok_jabatan' => 'Tenaga Kependidikan',
+        ]);
+
+        $pokjaPegawai = Pegawai::create([
+            'nip'                 => '197605212014092001',
+            'nama'                => 'Dolli Vita Zenitha Harning Arivina',
+            'gelar_belakang'      => 'SE',
+            'jenis_pegawai'       => 'Tendik',
+            'pendidikan_terakhir' => 'S1',
+            'status_pegawai'      => 'Aktif',
+            'jabatan_id'          => $jabatanPokja->id,
+        ]);
+        $kabagPegawai = Pegawai::create([
+            'nip'                 => '197507122005011002',
+            'nama'                => 'Bakhtiar',
+            'gelar_belakang'      => 'S.Sos., M.Si',
+            'jenis_pegawai'       => 'Tendik',
+            'pendidikan_terakhir' => 'S2',
+            'status_pegawai'      => 'Aktif',
+            'jabatan_id'          => $jabatanKabag->id,
+        ]);
+        $wd2Pegawai = Pegawai::create([
+            'nip'                 => '198509092014041001',
+            'nama'                => 'Safri',
+            'gelar_depan'         => 'Dr.',
+            'gelar_belakang'      => 'M.Kep, Sp.Kep.M.B',
+            'jenis_pegawai'       => 'Dosen',
+            'pendidikan_terakhir' => 'S3',
+            'status_pegawai'      => 'Aktif',
+            'jabatan_id'          => $jabatanWd2->id,
+        ]);
+        $pemohonTendik = Pegawai::create([
+            'nip'                 => '199104102022031001',
+            'nama'                => 'Dedi Kurniawan',
+            'jenis_pegawai'       => 'Tendik',
+            'pendidikan_terakhir' => 'S1',
+            'status_pegawai'      => 'Aktif',
+            'jabatan_id'          => $jabatanTendik->id,
+        ]);
+
+        $adminRole = Role::where('name', 'admin')->first();
+        $pimpinanRole = Role::where('name', 'pimpinan')->first();
+
+        // Bahkan jika akun Ka Pokja di DB pernah diset role 'admin', isScreeningAdmin() harus false
+        $pokjaUser = User::factory()->create([
+            'role_id'              => $adminRole->id,
+            'pegawai_id'           => $pokjaPegawai->id,
+            'must_change_password' => false,
+        ]);
+        $kabagUser = User::factory()->create([
+            'role_id'              => $pimpinanRole->id,
+            'pegawai_id'           => $kabagPegawai->id,
+            'must_change_password' => false,
+        ]);
+        $wd2User = User::factory()->create([
+            'role_id'              => $pimpinanRole->id,
+            'pegawai_id'           => $wd2Pegawai->id,
+            'must_change_password' => false,
+        ]);
+
+        $cuti = PengajuanCuti::create([
+            'pegawai_id'      => $pemohonTendik->id,
+            'jenis_cuti'      => 'Cuti Tahunan',
+            'tanggal_mulai'   => '2026-11-10',
+            'tanggal_selesai' => '2026-11-11',
+            'jumlah_hari'     => 2,
+            'alasan'          => 'Keperluan keluarga',
+            'status'          => 'Menunggu Persetujuan',
+        ]);
+
+        // 1. Sebelum Tahap 1 (Admin Screening), Ka Pokja TIDAK BISA melakukan Screening Admin maupun Paraf Pokja
+        $this->actingAs($pokjaUser)->post(route('pengajuan-cuti.verifikasi', $cuti->id), [
+            'tahap' => 'verifikasi_admin',
+        ])->assertSessionHas('error');
+        $this->assertNull($cuti->fresh()->verifikasi_admin_at);
+
+        // 2. Admin melakukan Tahap 1 (Admin Screening) -> Berhasil
+        $this->actingAs($this->adminUser)->post(route('pengajuan-cuti.verifikasi', $cuti->id), [
+            'tahap'             => 'verifikasi_admin',
+            'nomor_surat_input' => '456',
+        ])->assertSessionHas('success');
+        $this->assertNotNull($cuti->fresh()->verifikasi_admin_at);
+
+        // 3. Setelah Admin klik Screening, Admin TIDAK BISA klik Paraf Ka Pokja maupun Paraf Kabag!
+        $adminShowHtml = $this->actingAs($this->adminUser)->get(route('pengajuan-cuti.show', $cuti->id))->getContent();
+        $this->assertStringNotContainsString('Periksa &amp; Paraf Ka Pokja Keu-Kepeg', $adminShowHtml);
+        $this->assertStringContainsString('Menunggu Paraf Ka Pokja Keu-Kepeg', $adminShowHtml);
+
+        $this->actingAs($this->adminUser)->post(route('pengajuan-cuti.verifikasi', $cuti->id), [
+            'tahap' => 'paraf_kapokja',
+        ])->assertSessionHas('error');
+        $this->assertNull($cuti->fresh()->paraf_kapokja_at);
+
+        // 4. Kabag Umum TIDAK BISA memberikan Pertimbangan sebelum Ka Pokja memberikan paraf
+        $this->actingAs($kabagUser)->post(route('pengajuan-cuti.approve', $cuti->id), [
+            'status'                  => 'Disetujui',
+            'catatan_atasan_langsung' => 'Coba bypass pokja',
+        ])->assertSessionHasErrors('error');
+
+        // 5. Ka Pokja melakukan Tahap 2 (Paraf Ka Pokja Keu-Kepeg) -> Berhasil
+        $this->actingAs($pokjaUser)->post(route('pengajuan-cuti.verifikasi', $cuti->id), [
+            'tahap' => 'paraf_kapokja',
+        ])->assertSessionHas('success');
+        $this->assertNotNull($cuti->fresh()->paraf_kapokja_at);
+
+        // 6. Setelah Ka Pokja klik Paraf Pokja, Ka Pokja TIDAK BISA melakukan Paraf Kabag maupun Pertimbangan Atasan!
+        $this->actingAs($pokjaUser)->post(route('pengajuan-cuti.verifikasi', $cuti->id), [
+            'tahap' => 'paraf_kabag',
+        ])->assertSessionHas('error');
+        $this->assertNull($cuti->fresh()->paraf_kabag_at);
+
+        $this->actingAs($pokjaUser)->post(route('pengajuan-cuti.approve', $cuti->id), [
+            'status'                  => 'Disetujui',
+            'catatan_atasan_langsung' => 'Ka Pokja coba approve atasan',
+        ])->assertStatus(403);
+
+        // 7. Kabag Umum melakukan Tahap 3 (Pertimbangan & TTE Atasan Langsung) -> Berhasil
+        $this->actingAs($kabagUser)->post(route('pengajuan-cuti.approve', $cuti->id), [
+            'status'                  => 'Disetujui',
+            'catatan_atasan_langsung' => 'Disetujui oleh Kepala Bagian Umum.',
+        ])->assertSessionHas('success');
+        $this->assertEquals('Disetujui', $cuti->fresh()->pertimbangan_atasan);
+        $this->assertNotNull($cuti->fresh()->paraf_kabag_at);
+
+        // 8. Kabag Umum TIDAK BISA melakukan Tahap 4 (Keputusan Akhir PYBMC)
+        $this->actingAs($kabagUser)->post(route('pengajuan-cuti.approve', $cuti->id), [
+            'status'           => 'Disetujui',
+            'catatan_pimpinan' => 'Kabag coba ambil alih PYBMC',
+        ])->assertSessionHasErrors('error');
+        $this->assertNotEquals('Disetujui', $cuti->fresh()->status);
+
+        // 9. Wakil Dekan II (PYBMC) melakukan Tahap 4 (Keputusan Akhir & TTE PYBMC) -> Berhasil
+        $this->actingAs($wd2User)->post(route('pengajuan-cuti.approve', $cuti->id), [
+            'status'           => 'Disetujui',
+            'catatan_pimpinan' => 'Disetujui oleh Wakil Dekan II.',
+        ])->assertSessionHas('success');
+        $this->assertEquals('Disetujui', $cuti->fresh()->status);
     }
 }

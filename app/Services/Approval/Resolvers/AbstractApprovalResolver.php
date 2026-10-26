@@ -8,9 +8,9 @@ use App\Services\Approval\ApprovalResolverInterface;
 abstract class AbstractApprovalResolver implements ApprovalResolverInterface
 {
     /**
-     * Cache in-memory per siklus request untuk pencarian pegawai berdasarkan jabatan
+     * Cache in-memory per instance untuk pencarian pegawai berdasarkan jabatan (tidak bocor secara global)
      */
-    protected static array $memoizedJabatanPegawai = [];
+    protected array $memoizedJabatanPegawai = [];
 
     /**
      * Helper cari Pegawai berdasarkan list nama jabatan (dengan in-memory memoization)
@@ -18,8 +18,11 @@ abstract class AbstractApprovalResolver implements ApprovalResolverInterface
     public function findPegawaiByJabatan(array $jabatanNames): ?Pegawai
     {
         $cacheKey = implode('|', $jabatanNames);
-        if (array_key_exists($cacheKey, self::$memoizedJabatanPegawai)) {
-            return self::$memoizedJabatanPegawai[$cacheKey];
+        if (array_key_exists($cacheKey, $this->memoizedJabatanPegawai)) {
+            $cached = $this->memoizedJabatanPegawai[$cacheKey];
+            if ($cached === null || Pegawai::whereKey($cached->id)->exists()) {
+                return $cached;
+            }
         }
 
         foreach ($jabatanNames as $name) {
@@ -29,11 +32,11 @@ abstract class AbstractApprovalResolver implements ApprovalResolverInterface
                 })->first();
 
             if ($pegawai) {
-                return self::$memoizedJabatanPegawai[$cacheKey] = $pegawai;
+                return $this->memoizedJabatanPegawai[$cacheKey] = $pegawai;
             }
         }
 
-        return self::$memoizedJabatanPegawai[$cacheKey] = null;
+        return $this->memoizedJabatanPegawai[$cacheKey] = null;
     }
 
     /**

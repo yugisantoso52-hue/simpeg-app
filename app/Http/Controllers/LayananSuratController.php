@@ -22,11 +22,11 @@ class LayananSuratController extends Controller
     {
         $user = Auth::user();
         $isExecutiveOrAdmin = $user->canAccessExecutiveKepegawaianMenus();
-        $isAdmin   = $user->hasRole('admin');
         $isKaPokja = $user->isKaPokjaKepeg();
         $isKabag   = $user->isKabagUmum();
         $isWd2     = $user->isWadek2();
         $isDekan   = $user->isDekan();
+        $isAdmin   = $user->isScreeningAdmin();
 
         if ($isExecutiveOrAdmin) {
             $surats = LayananSurat::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])
@@ -193,11 +193,11 @@ class LayananSuratController extends Controller
         $catatan = $request->input('catatan');
         $pejabatLogin = $user->pegawai;
 
-        $isAdmin   = $user->hasRole('admin');
         $isKaPokja = $user->isKaPokjaKepeg();
         $isKabag   = $user->isKabagUmum();
         $isWd2     = $user->isWadek2();
         $isDekan   = $user->isDekan();
+        $isAdmin   = $user->isScreeningAdmin();
 
         if ($tahap === 'verifikasi_admin') {
             if (!$isAdmin) {
@@ -397,7 +397,7 @@ class LayananSuratController extends Controller
     public function updateNomorSurat(Request $request, int $id)
     {
         $user = $request->user() ?? Auth::user();
-        if (!$user || !$user->hasRole('admin')) {
+        if (!$user || !$user->isScreeningAdmin()) {
             abort(403, 'Hanya Admin Kepegawaian yang berwenang mengisi atau mengubah nomor surat resmi.');
         }
 

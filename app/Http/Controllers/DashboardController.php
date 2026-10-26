@@ -46,13 +46,13 @@ class DashboardController extends Controller
             'reminder'         => $this->dashboardService->reminder(),
         ];
 
-        // Cek identitas & peran user
-        $isAdmin  = $user->hasRole('admin');
-        $isAtasan = $user->isAtasan() || $user->hasRole('pimpinan') || $user->canAccessExecutiveKepegawaianMenus();
+        // Cek identitas & peran user (eksklusif sesuai tahapan wewenang masing-masing)
         $isDekan  = $user->isDekan();
         $isWadek2 = $user->isWadek2();
         $isKabag  = $user->isKabagUmum();
         $isPokja  = $user->isKaPokjaKepeg();
+        $isAdmin  = $user->isScreeningAdmin();
+        $isAtasan = $user->isAtasan() || $user->hasRole('pimpinan') || $user->canAccessExecutiveKepegawaianMenus();
 
         $data['isAdmin']  = $isAdmin;
         $data['isAtasan'] = $isAtasan;
@@ -300,10 +300,12 @@ class DashboardController extends Controller
                         COUNT(CASE WHEN paraf_kabag_at IS NOT NULL AND ttd_wd2_at IS NULL AND status NOT IN ('ditolak', 'selesai') THEN 1 END) as wd2_pending
                     ")->first();
 
-                    // 4. Pengajuan Cuti Agregasi
+                    // 4. Pengajuan Cuti Agregasi (4 Tahap Berjenjang)
                     $cutiStats = \App\Models\PengajuanCuti::selectRaw("
-                        COUNT(CASE WHEN status IN ('Menunggu Persetujuan', 'Menunggu Pertimbangan Atasan', 'Menunggu Persetujuan Atasan') THEN 1 END) as admin_screening,
-                        COUNT(CASE WHEN (nomor_surat IS NULL OR nomor_surat = '') AND status = ? THEN 1 END) as admin_nomor
+                        COUNT(CASE WHEN verifikasi_admin_at IS NULL AND status IN ('Menunggu Persetujuan', 'Menunggu Pertimbangan Atasan', 'Menunggu Persetujuan Atasan') THEN 1 END) as admin_screening,
+                        COUNT(CASE WHEN (nomor_surat IS NULL OR nomor_surat = '') AND status = ? THEN 1 END) as admin_nomor,
+                        COUNT(CASE WHEN verifikasi_admin_at IS NOT NULL AND paraf_kapokja_at IS NULL AND status NOT IN ('Disetujui', 'Ditolak', 'Dibatalkan') THEN 1 END) as pokja_pending,
+                        COUNT(CASE WHEN paraf_kapokja_at IS NOT NULL AND (pertimbangan_atasan IS NULL OR pertimbangan_atasan = '' OR pertimbangan_atasan = 'Menunggu Persetujuan') AND status NOT IN ('Disetujui', 'Ditolak', 'Dibatalkan') THEN 1 END) as kabag_pending
                     ", [\App\Models\PengajuanCuti::STATUS_DISETUJUI])->first();
 
                     $adminScreeningKarir = (int) ($karirStats->admin_screening ?? 0);
@@ -321,12 +323,14 @@ class DashboardController extends Controller
                     $pokjaPendingKarir = (int) ($karirStats->pokja_pending ?? 0);
                     $pokjaPendingSurat = (int) ($suratStats->pokja_pending ?? 0);
                     $pokjaPendingSatya = (int) ($satyaStats->pokja_pending ?? 0);
-                    $pokjaPendingTotal = $pokjaPendingKarir + $pokjaPendingSurat + $pokjaPendingSatya;
+                    $pokjaPendingCuti  = (int) ($cutiStats->pokja_pending ?? 0);
+                    $pokjaPendingTotal = $pokjaPendingKarir + $pokjaPendingSurat + $pokjaPendingSatya + $pokjaPendingCuti;
 
                     $kabagPendingKarir = (int) ($karirStats->kabag_pending ?? 0);
                     $kabagPendingSurat = (int) ($suratStats->kabag_pending ?? 0);
                     $kabagPendingSatya = (int) ($satyaStats->kabag_pending ?? 0);
-                    $kabagPendingTotal = $kabagPendingKarir + $kabagPendingSurat + $kabagPendingSatya;
+                    $kabagPendingCuti  = (int) ($cutiStats->kabag_pending ?? 0);
+                    $kabagPendingTotal = $kabagPendingKarir + $kabagPendingSurat + $kabagPendingSatya + $kabagPendingCuti;
 
                     $wd2PendingKarir = (int) ($karirStats->wd2_pending ?? 0);
                     $wd2PendingSurat = (int) ($suratStats->wd2_pending ?? 0);
@@ -352,10 +356,12 @@ class DashboardController extends Controller
                         'pokja_pending_karir'   => $pokjaPendingKarir,
                         'pokja_pending_surat'   => $pokjaPendingSurat,
                         'pokja_pending_satya'   => $pokjaPendingSatya,
+                        'pokja_pending_cuti'    => $pokjaPendingCuti,
                         'kabag_pending_total'   => $kabagPendingTotal,
                         'kabag_pending_karir'   => $kabagPendingKarir,
                         'kabag_pending_surat'   => $kabagPendingSurat,
                         'kabag_pending_satya'   => $kabagPendingSatya,
+                        'kabag_pending_cuti'    => $kabagPendingCuti,
                         'wd2_pending_total'     => $wd2PendingTotal,
                         'wd2_pending_karir'     => $wd2PendingKarir,
                         'wd2_pending_surat'     => $wd2PendingSurat,

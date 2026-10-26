@@ -136,28 +136,26 @@ class PengajuanCutiController extends Controller
     {
         $cuti = $this->service->find($id);
         $user = $request->user();
-
-        // Otorisasi: Pegawai biasa hanya bisa melihat permohonannya sendiri atau permohonan bawahannya jika atasan
-        $isAdmin    = $user->hasRole('admin');
-        $isOwn      = $user->pegawai_id && $user->pegawai_id === $cuti->pegawai_id;
-
-        $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
-        $isAtasanLgs = $user->pegawai && $cuti->pegawai && $hierarchyService->isAtasanLangsungCuti($user->pegawai, $cuti->pegawai);
-        $isPybmc     = $user->pegawai && $cuti->pegawai && $hierarchyService->isPybmcCuti($user->pegawai, $cuti->pegawai);
-        $isDekan     = $user->pegawai && str_contains(strtoupper((string)($user->pegawai->jabatan->nama_jabatan ?? '')), 'DEKAN') && !str_contains(strtoupper((string)($user->pegawai->jabatan->nama_jabatan ?? '')), 'WAKIL');
-
-        if (!$isAdmin && !$isOwn && !$isAtasanLgs && !$isPybmc && !$isDekan && !$user->hasRole('pimpinan')) {
-            abort(403, 'Anda tidak diizinkan melihat data permohonan cuti ini.');
-        }
-
-        // Dapatkan informasi pejabat cuti dinamis berdasarkan kategori pegawai (Dosen/Tendik/Pimpinan)
-        $pejabatInfo = $hierarchyService->getPejabatCutiInfo($cuti->pegawai);
+        $this->resolveUserPegawai($user);
 
         $isKaPokja   = $user->isKaPokjaKepeg();
         $isKabag     = $user->isKabagUmum();
         $isWd2       = $user->isWadek2();
         $isDekan     = $user->isDekan();
+        $isAdmin     = $user->isScreeningAdmin();
         $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
+        $isOwn       = $user->pegawai_id && (int) $user->pegawai_id === (int) $cuti->pegawai_id;
+
+        $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
+        $isAtasanLgs = $user->pegawai && $cuti->pegawai && $hierarchyService->isAtasanLangsungCuti($user->pegawai, $cuti->pegawai);
+        $isPybmc     = $user->pegawai && $cuti->pegawai && $hierarchyService->isPybmcCuti($user->pegawai, $cuti->pegawai);
+
+        if (!$isAdmin && !$isOwn && !$isAtasanLgs && !$isPybmc && !$isDekan && !$isKaPokja && !$isKabag && !$isWd2 && !$isExecutive && !$user->hasRole('pimpinan')) {
+            abort(403, 'Anda tidak diizinkan melihat data permohonan cuti ini.');
+        }
+
+        // Dapatkan informasi pejabat cuti dinamis berdasarkan kategori pegawai (Dosen/Tendik/Pimpinan)
+        $pejabatInfo = $hierarchyService->getPejabatCutiInfo($cuti->pegawai);
 
         return view('pengajuan-cuti.show', compact(
             'cuti', 'pejabatInfo', 'isAdmin', 'isKaPokja', 'isKabag', 'isWd2', 'isDekan', 'isExecutive'
@@ -218,13 +216,25 @@ class PengajuanCutiController extends Controller
         $cuti = $this->service->find($id);
         $tahap = $request->input('tahap');
         $catatan = $request->input('catatan');
-        $pejabatLogin = $user->pegawai;
+        $pejabatLogin = $this->resolveUserPegawai($user);
 
-        $isAdmin   = $user->hasRole('admin');
         $isKaPokja = $user->isKaPokjaKepeg();
         $isKabag   = $user->isKabagUmum();
         $isWd2     = $user->isWadek2();
         $isDekan   = $user->isDekan();
+        $isAdmin   = $user->isScreeningAdmin();
+
+        $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
+        $isAtasanLgs = !$isAdmin && !$isKaPokja && (
+            ($pejabatLogin && $cuti->pegawai && $hierarchyService->isAtasanLangsungCuti($pejabatLogin, $cuti->pegawai))
+            || ($cuti->atasan_langsung_id && (int) $cuti->atasan_langsung_id === (int) $user->id)
+        );
+        $isPybmc = !$isAdmin && !$isKaPokja && (
+            ($pejabatLogin && $cuti->pegawai && $hierarchyService->isPybmcCuti($pejabatLogin, $cuti->pegawai))
+            || ($cuti->pybmc_id && (int) $cuti->pybmc_id === (int) $user->id)
+            || $isWd2
+            || $isDekan
+        );
 
         if ($tahap === 'verifikasi_admin') {
             if (!$isAdmin) {
@@ -246,8 +256,8 @@ class PengajuanCutiController extends Controller
             $cuti->update($updateData);
             return back()->with('success', '1. Verifikasi Screening Berkas Lampiran & Penomoran Cuti oleh Admin Kepegawaian berhasil.');
         } elseif ($tahap === 'paraf_kapokja') {
-            if (!$isKaPokja && !$isAdmin) {
-                return back()->with('error', 'Otorisasi Ditolak: Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian hanya berhak dilakukan oleh Ka Pokja Keu-Kepeg.');
+            if (!$isKaPokja) {
+                return back()->with('error', 'Otorisasi Ditolak: Tahap 2 (Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian) hanya berhak dilakukan oleh Ka Pokja Keu-Kepeg.');
             }
 
             if (!$cuti->verifikasi_admin_at) {
@@ -262,9 +272,13 @@ class PengajuanCutiController extends Controller
 
             return back()->with('success', '2. Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian oleh Ka Pokja Keu-Kepeg berhasil dibubuhkan.');
         } elseif ($tahap === 'paraf_kabag') {
-            // Untuk Cuti, Kepala Bagian Umum memberikan TTE pada kolom VI. Pertimbangan Atasan Langsung
-            if (!$isKabag && !$isAdmin) {
-                return back()->with('error', 'Otorisasi Ditolak: Pertimbangan Atasan Langsung hanya berhak dilakukan oleh Kepala Bagian Umum.');
+            // Untuk Cuti, Kepala Bagian Umum memberikan pertimbangan & TTE pada kolom VI. Pertimbangan Atasan Langsung
+            if (!$isKabag) {
+                return back()->with('error', 'Otorisasi Ditolak: Tahap 3 (Pertimbangan & TTE Atasan Langsung) hanya berhak dilakukan oleh Kepala Bagian Umum.');
+            }
+
+            if (!$cuti->paraf_kapokja_at) {
+                return back()->with('error', 'SOP Tata Naskah: Berkas cuti harus diperiksa dan diparaf terlebih dahulu oleh Ka Pokja Keu-Kepeg sebelum disetujui Kepala Bagian Umum.');
             }
 
             $kabagPegawai = app(\App\Services\PejabatService::class)->getKabagPegawai();
@@ -280,11 +294,21 @@ class PengajuanCutiController extends Controller
                 'status'                  => in_array($cuti->status, ['Disetujui', 'Ditolak']) ? $cuti->status : 'Disetujui Atasan (Menunggu PYBMC)',
             ]);
 
-            return back()->with('success', 'Pertimbangan Atasan Langsung (TTE Kepala Bagian Umum) berhasil disimpan.');
+            return back()->with('success', '3. Pertimbangan Atasan Langsung (TTE Kepala Bagian Umum) berhasil disimpan.');
         } elseif ($tahap === 'tolak') {
-            $canReject = $isAdmin || $isKaPokja || $isKabag || $isWd2 || $isDekan || $user->isAtasan() || $user->hasRole('pimpinan');
+            $canReject = false;
+            if (!$cuti->verifikasi_admin_at && $isAdmin) {
+                $canReject = true;
+            } elseif ($cuti->verifikasi_admin_at && !$cuti->paraf_kapokja_at && $isKaPokja) {
+                $canReject = true;
+            } elseif ($cuti->paraf_kapokja_at && empty($cuti->pertimbangan_atasan) && ($isAtasanLgs || $isKabag)) {
+                $canReject = true;
+            } elseif (!empty($cuti->pertimbangan_atasan) && !in_array($cuti->status, ['Disetujui', 'Ditolak']) && $isPybmc) {
+                $canReject = true;
+            }
+
             if (!$canReject) {
-                return back()->with('error', 'Anda tidak memiliki hak wewenang untuk menolak permohonan cuti ini.');
+                return back()->with('error', 'Otorisasi Ditolak: Anda hanya dapat menolak atau mengembalikan berkas pada tahapan verifikasi yang menjadi wewenang aktif Anda.');
             }
 
             $cuti->update([
@@ -304,7 +328,7 @@ class PengajuanCutiController extends Controller
     public function updateNomorSurat(Request $request, int $id)
     {
         $user = $request->user();
-        if (!$user || !$user->hasRole('admin')) {
+        if (!$user || !$user->isScreeningAdmin()) {
             abort(403, 'Hanya Admin Kepegawaian yang berwenang mengisi atau mengubah nomor surat.');
         }
 

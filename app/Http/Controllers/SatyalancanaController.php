@@ -156,14 +156,12 @@ class SatyalancanaController extends Controller
 
         $pejabatLogin = $user->pegawai ?? Pegawai::where('nama', 'like', '%' . $user->name . '%')->first();
 
-        // Otorisasi peran per tahap
-        $jabatan = strtoupper(trim((string)($user->pegawai?->jabatan->nama_jabatan ?? '')));
-        $isAdmin = $user->hasRole('admin');
-        $isKaPokja = (str_contains($jabatan, 'KA POKJA') || str_contains($jabatan, 'KEPALA POKJA') || str_contains($jabatan, 'KETUA POKJA'))
-            && (str_contains($jabatan, 'KEU') || str_contains($jabatan, 'KEPEG'));
-        $isKabag = str_contains($jabatan, 'KEPALA BAGIAN UMUM') || str_contains($jabatan, 'KABAG UMUM') || str_contains($jabatan, 'KABAG TU');
-        $isWd2 = str_contains($jabatan, 'WADEK II') || str_contains($jabatan, 'WAKIL DEKAN II') || (str_contains($jabatan, 'WAKIL DEKAN') && str_contains($jabatan, 'KEUANGAN'));
-        $isDekan = str_contains($jabatan, 'DEKAN') && !str_contains($jabatan, 'WAKIL') && !str_contains($jabatan, 'WADEK');
+        // Otorisasi peran per tahap (eksklusif sesuai jabatan struktural)
+        $isKaPokja = $user->isKaPokjaKepeg();
+        $isKabag   = $user->isKabagUmum();
+        $isWd2     = $user->isWadek2();
+        $isDekan   = $user->isDekan();
+        $isAdmin   = $user->isScreeningAdmin();
 
         // 1. TAHAP VERIFIKASI ADMIN KEPEGAWAIAN
         if ($tahap === 'verifikasi_admin') {

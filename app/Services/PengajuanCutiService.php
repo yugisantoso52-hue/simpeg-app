@@ -172,11 +172,17 @@ class PengajuanCutiService
             $isKeputusanFinal = false;
 
             $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
-            $isAdmin   = $approver->hasRole('admin');
+            $isAdmin   = $approver->isScreeningAdmin();
             $isKaPokja = $approver->isKaPokjaKepeg();
 
-            // User dengan role 'pimpinan' langsung di tabel roles (tanpa pegawai spesifik, misal akun pimpinan umum)
-            // tetap diizinkan, namun jika user terhubung ke Pegawai (seperti Ka Pokja), wajib mengikuti matriks hierarki Cuti
+            if ($isAdmin || $isKaPokja) {
+                throw ValidationException::withMessages([
+                    'error' => 'Otorisasi Ditolak: Wewenang Admin Kepegawaian (Screening) dan Ka Pokja Keu-Kepeg (Paraf Koordinasi) tidak mencakup penetapan TTE Pertimbangan Atasan Langsung maupun Keputusan PYBMC.',
+                ]);
+            }
+
+            // User dengan role 'pimpinan' langsung di tabel roles (tanpa pegawai spesifik, misal akun pengujian)
+            // tetap diizinkan, namun jika user terhubung ke Pegawai struktural, wajib mengikuti matriks hierarki Cuti
             $isGenericPimpinan = !$approver->pegawai_id && $approver->hasRole('pimpinan');
 
             $isPybmc = !$isKaPokja && (
@@ -191,35 +197,54 @@ class PengajuanCutiService
                 || ($cuti->atasan_langsung_id && (int)$cuti->atasan_langsung_id === $approverUserId && !$approver->isKaPokjaKepeg())
             );
 
-            // Proteksi Otorisasi Hierarki: Cegah Approval Bypass (termasuk mencegah Ka Pokja melakukan TTE Pertimbangan Atasan)
-            if (!$isAdmin && !$isAtasanLgs && !$isPybmc) {
+            // Proteksi Otorisasi Hierarki: Cegah Approval Bypass
+            if (!$isAtasanLgs && !$isPybmc) {
                 throw ValidationException::withMessages([
                     'error' => 'Anda tidak memiliki hak wewenang hierarkis untuk menetapkan Pertimbangan Atasan Langsung atau Keputusan PYBMC pada permohonan cuti ini.',
                 ]);
             }
 
-            // Jika pertimbangan atasan belum ada dan bukan admin/pimpinan yang menyertakan nomor surat,
-            // maka aksi ini adalah TAHAP 1: PERTIMBANGAN ATASAN LANGSUNG
-            $isTahap1 = empty($cuti->pertimbangan_atasan) && ((!$isAdmin && !$isGenericPimpinan) || empty($data['nomor_surat']));
+            // Jika pertimbangan atasan belum ada dan bukan generic pimpinan yang langsung menyertakan nomor surat,
+            // maka aksi ini adalah TAHAP 3 (VI. PERTIMBANGAN ATASAN LANGSUNG)
+            $isTahap1 = empty($cuti->pertimbangan_atasan) && (!$isGenericPimpinan || empty($data['nomor_surat']));
 
-            if ($isTahap1 && !$isAdmin && !$isAtasanLgs && !$isPybmc) {
-                throw ValidationException::withMessages([
-                    'error' => 'Pertimbangan tahap 1 hanya dapat diberikan oleh Atasan Langsung dari pemohon cuti.',
-                ]);
-            }
+            if ($isTahap1) {
+                if (!$isAtasanLgs) {
+                    throw ValidationException::withMessages([
+                        'error' => 'Otorisasi Ditolak: Pertimbangan Atasan Langsung (Bagian VI) hanya dapat diberikan oleh Atasan Langsung pemohon cuti.',
+                    ]);
+                }
 
-            if (!$isTahap1 && !$isAdmin && !$isPybmc) {
-                throw ValidationException::withMessages([
-                    'error' => 'Keputusan akhir cuti (tahap 2) hanya dapat ditetapkan oleh Pejabat Yang Berwenang Memberikan Cuti (PYBMC / Dekanat).',
-                ]);
+                if (!$isGenericPimpinan && !$cuti->paraf_kapokja_at) {
+                    throw ValidationException::withMessages([
+                        'error' => 'SOP Tata Naskah: Berkas permohonan cuti harus melalui Tahap 1 (Admin Screening) dan Tahap 2 (Paraf Ka Pokja Keu-Kepeg) terlebih dahulu sebelum diberikan Pertimbangan Atasan Langsung.',
+                    ]);
+                }
+            } else {
+                if (!$isPybmc) {
+                    throw ValidationException::withMessages([
+                        'error' => 'Otorisasi Ditolak: Keputusan akhir cuti (Bagian VII) hanya dapat ditetapkan oleh Pejabat Yang Berwenang Memberikan Cuti (PYBMC).',
+                    ]);
+                }
+
+                if (!$isGenericPimpinan && empty($cuti->pertimbangan_atasan)) {
+                    throw ValidationException::withMessages([
+                        'error' => 'SOP Tata Naskah: Keputusan Pejabat Berwenang (PYBMC) hanya dapat ditetapkan setelah Atasan Langsung memberikan pertimbangan.',
+                    ]);
+                }
             }
 
             if ($isTahap1) {
-                // Pertimbangan Atasan Langsung (Tahap 1 PerBKN 7/2022)
+                // Pertimbangan Atasan Langsung (Bagian VI Form Cuti BKN)
                 $statusAtasan = $data['status'] === 'Disetujui' ? 'Disetujui' : ($data['status'] === 'Ditolak' ? 'Ditolak' : $data['status']);
                 $updateData['pertimbangan_atasan']     = $statusAtasan;
                 $updateData['catatan_atasan_langsung'] = $data['catatan_atasan_langsung'] ?? $data['catatan_pimpinan'] ?? null;
                 $updateData['pertimbangan_atasan_at']  = now();
+
+                if ($approver->isKabagUmum()) {
+                    $updateData['paraf_kabag_at'] = now();
+                    $updateData['paraf_kabag_by'] = $approver->pegawai_id ?? $approver->pegawai?->id;
+                }
 
                 // Pastikan atasan_langsung_id merujuk ke Pejabat Atasan Langsung Cuti yang sah (misal Kepala Bagian Umum untuk Tendik)
                 $expectedAtasanPegawai = $cuti->pegawai ? $hierarchyService->getAtasanLangsungCuti($cuti->pegawai) : null;

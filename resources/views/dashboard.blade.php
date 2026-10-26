@@ -1158,6 +1158,12 @@
                                         </span>
                                         <strong class="font-mono text-slate-800 group-hover:text-amber-900">{{ $workflowStats['admin_screening_satya'] ?? 0 }}</strong>
                                     </a>
+                                    <a href="{{ route('pengajuan-cuti.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-amber-100/80 transition group" title="Buka Meja Screening E-Cuti Pegawai">
+                                        <span class="group-hover:text-amber-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>🏖️</span> E-Cuti Pegawai:
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-amber-900">{{ $workflowStats['admin_screening_cuti'] ?? 0 }}</strong>
+                                    </a>
                                     <div class="flex items-center justify-between pt-1 border-t border-amber-200/50 text-amber-900 font-semibold px-1.5 py-0.5">
                                         <span>Perlu Penomoran Surat:</span>
                                         <strong class="font-mono text-amber-950 font-bold">{{ $workflowStats['admin_nomor_total'] ?? 0 }}</strong>
@@ -1174,7 +1180,9 @@
                         {{-- 2. TAHAP 2: PARAF KA POKJA KEU-KEPEG --}}
                         @php
                             $targetStage2 = route('layanan-surat.index');
-                            if (($workflowStats['pokja_pending_satya'] ?? 0) > 0) {
+                            if (($workflowStats['pokja_pending_cuti'] ?? 0) > 0) {
+                                $targetStage2 = route('pengajuan-cuti.index');
+                            } elseif (($workflowStats['pokja_pending_satya'] ?? 0) > 0) {
                                 $targetStage2 = route('satyalancana.index');
                             } elseif (($workflowStats['pokja_pending_karir'] ?? 0) > 0) {
                                 $targetStage2 = route('pengajuan-karir.index');
@@ -1214,6 +1222,12 @@
                                         </span>
                                         <strong class="font-mono text-slate-800 group-hover:text-sky-900">{{ $workflowStats['pokja_pending_satya'] ?? 0 }}</strong>
                                     </a>
+                                    <a href="{{ route('pengajuan-cuti.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-sky-100/80 transition group" title="Buka Paraf Koordinasi E-Cuti Pegawai">
+                                        <span class="group-hover:text-sky-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>🏖️</span> E-Cuti Pegawai:
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-sky-900">{{ $workflowStats['pokja_pending_cuti'] ?? 0 }}</strong>
+                                    </a>
                                     <p class="text-[10px] text-sky-700 italic pt-1 border-t border-sky-200/50">
                                         Pemeriksaan keaktifan dinas &amp; kelayakan berkas.
                                     </p>
@@ -1226,10 +1240,12 @@
                             </div>
                         </div>
 
-                        {{-- 3. TAHAP 3: TELAAH & PARAF KABAG UMUM --}}
+                        {{-- 3. TAHAP 3: TELAAH, PARAF & TTE KABAG UMUM --}}
                         @php
                             $targetStage3 = route('layanan-surat.index');
-                            if (($workflowStats['kabag_pending_satya'] ?? 0) > 0) {
+                            if (($workflowStats['kabag_pending_cuti'] ?? 0) > 0) {
+                                $targetStage3 = route('pengajuan-cuti.index');
+                            } elseif (($workflowStats['kabag_pending_satya'] ?? 0) > 0) {
                                 $targetStage3 = route('satyalancana.index');
                             } elseif (($workflowStats['kabag_pending_karir'] ?? 0) > 0) {
                                 $targetStage3 = route('pengajuan-karir.index');
@@ -1240,7 +1256,7 @@
                                 <div class="flex items-center justify-between mb-2">
                                     <div class="flex items-center gap-1.5">
                                         <span class="w-6 h-6 rounded-lg bg-purple-600 text-white flex items-center justify-center text-xs font-black">3</span>
-                                        <span class="text-xs font-bold uppercase tracking-wider text-purple-950">Paraf Kabag Umum</span>
+                                        <span class="text-xs font-bold uppercase tracking-wider text-purple-950">Paraf / TTE Kabag</span>
                                     </div>
                                     @if($isKabag)
                                         <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-purple-200 text-purple-900">👉 Tugas Anda</span>
@@ -1269,8 +1285,14 @@
                                         </span>
                                         <strong class="font-mono text-slate-800 group-hover:text-purple-900">{{ $workflowStats['kabag_pending_satya'] ?? 0 }}</strong>
                                     </a>
+                                    <a href="{{ route('pengajuan-cuti.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-purple-100/80 transition group" title="Buka Pertimbangan & TTE Cuti Kabag Umum">
+                                        <span class="group-hover:text-purple-950 group-hover:font-semibold flex items-center gap-1">
+                                            <span>🏖️</span> E-Cuti Pegawai:
+                                        </span>
+                                        <strong class="font-mono text-slate-800 group-hover:text-purple-900">{{ $workflowStats['kabag_pending_cuti'] ?? 0 }}</strong>
+                                    </a>
                                     <p class="text-[10px] text-purple-700 italic pt-1 border-t border-purple-200/50">
-                                        Telaah format tata naskah &amp; paraf dinas.
+                                        Telaah tata naskah, paraf dinas &amp; TTE pertimbangan cuti.
                                     </p>
                                 </div>
                             </div>
