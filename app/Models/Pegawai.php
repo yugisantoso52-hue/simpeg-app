@@ -363,14 +363,15 @@ class Pegawai extends Model
 
                 $gelarBelakang = trim((string)($this->gelar_belakang ?? ''));
                 if ($gelarBelakang !== '') {
-                    if (str_contains($namaUtama, $gelarBelakang)) {
-                        $namaUtama = str_replace([', ' . $gelarBelakang, ',' . $gelarBelakang, $gelarBelakang], '', $namaUtama);
+                    if (stripos($namaUtama, $gelarBelakang) !== false) {
+                        $namaUtama = str_ireplace([', ' . $gelarBelakang, ',' . $gelarBelakang, $gelarBelakang], '', $namaUtama);
                         $namaUtama = trim($namaUtama, " \t\n\r\0\x0B,");
                     }
                     $gelarBelakang = ', ' . $gelarBelakang;
                 }
 
-                return trim($gelarDepan . $namaUtama . $gelarBelakang);
+                $full = trim($gelarDepan . $namaUtama . $gelarBelakang);
+                return str_replace(['M.kep', 'Sp.kep', 'Sp. Kep.M.B'], ['M.Kep', 'Sp.Kep', 'Sp.Kep.M.B'], $full);
             }
         );
     }

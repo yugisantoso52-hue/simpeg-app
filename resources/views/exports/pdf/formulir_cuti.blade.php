@@ -318,7 +318,7 @@
         $qrAtasanDataUri = null;
         $atasanSignedAt = '';
         if ($isAtasanSigned && isset($verifyUrl)) {
-            $qrAtasanDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&tte=atasan&nip=' . ($atasanNip ?: ''));
+            $qrAtasanDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '?tte=atasan&nip=' . ($atasanNip ?: ''));
             $atasanTimestamp = (($pejabatInfo['kategori'] ?? '') === 'tendik' && !empty($cuti->paraf_kabag_at))
                 ? $cuti->paraf_kabag_at
                 : ($cuti->pertimbangan_atasan_at ?: $cuti->updated_at);
@@ -330,8 +330,23 @@
         $qrPejabatDataUri = null;
         $pejabatSignedAt = '';
         if ($isPejabatSigned && isset($verifyUrl)) {
-            $qrPejabatDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '&tte=pybmc&nip=' . ($pybmcNip ?: ''));
+            $qrPejabatDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '?tte=pybmc&nip=' . ($pybmcNip ?: ''));
             $pejabatSignedAt = $cuti->approved_at ? $cuti->approved_at->translatedFormat('d/m/Y H:i') . ' WIB' : ($cuti->updated_at ? $cuti->updated_at->translatedFormat('d/m/Y H:i') . ' WIB' : '');
+        }
+
+        // Paraf Elektronik Ka Pokja Keu-Kepeg (Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian)
+        $sudahParafPokja = !empty($sudahParafPokja)
+            || !empty($cuti->paraf_kapokja_at)
+            || !empty($cuti->paraf_kabag_at)
+            || in_array($cuti->status, ['Disetujui', 'Disetujui Atasan (Menunggu PYBMC)', 'Disetujui Atasan (Menunggu Keputusan Akhir)']);
+        $parafPokjaTimestamp = $cuti->paraf_kapokja_at ?: ($cuti->verifikasi_admin_at ?: ($cuti->paraf_kabag_at ?: $cuti->updated_at));
+        $parafPokjaAt = !empty($parafPokjaAt)
+            ? $parafPokjaAt
+            : ($parafPokjaTimestamp ? $parafPokjaTimestamp->format('d/m/Y H:i') . ' WIB' : '');
+        $kaPokjaNama = $pejabatKaPokja->nama_lengkap ?? ($pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina, SE');
+        $kaPokjaNip  = $pejabatKaPokja->nip ?? '197605212014092001';
+        if ($sudahParafPokja && empty($qrPokjaUri) && isset($verifyUrl)) {
+            $qrPokjaUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '?paraf=kapokja&nip=' . $kaPokjaNip);
         }
     @endphp
     <table class="bkn-table">
@@ -343,16 +358,16 @@
             {{-- VI: Jabatan atas → TTE / spasi ttd → nama → NIP → Status+Catatan pojok bawah kiri --}}
             <td style="vertical-align: top; padding: 5px 6px;">
                 {{-- Jabatan di atas (rata tengah) --}}
-                <div style="text-align: center; font-weight: normal; margin-bottom: 0;">{{ $atasanJabatan }}</div>
+                <div style="text-align: center; font-weight: normal; margin-bottom: 0; line-height: 1.2;">{{ $atasanJabatan }}</div>
                 @if($isAtasanSigned && $qrAtasanDataUri)
-                    {{-- TTE Digital Signature (Opsi A) --}}
+                    {{-- TTE Digital Signature (Seragam dengan Dokumen Resmi SIKAP) --}}
                     <div style="text-align: center; margin: 3px auto 4px auto;">
-                        <img src="{{ $qrAtasanDataUri }}" style="width: 48px; height: 48px; display: inline-block;" />
-                        <div style="font-size: 6pt; color: #15803d; font-weight: bold; margin-top: 1px;">
+                        <img src="{{ $qrAtasanDataUri }}" style="width: 46px; height: 46px; display: inline-block;" />
+                        <div style="font-size: 6.2pt; color: #15803d; font-weight: bold; margin-top: 1px;">
                             Ditandatangani secara Elektronik (TTE)
                         </div>
                         @if($atasanSignedAt)
-                        <div style="font-size: 5.5pt; color: #64748b;">
+                        <div style="font-size: 5.6pt; color: #64748b;">
                             SIKAP FKP UNRI &bull; {{ $atasanSignedAt }}
                         </div>
                         @endif
@@ -380,14 +395,14 @@
                     {{ $pybmcJabatan }}
                 </div>
                 @if($isPejabatSigned && $qrPejabatDataUri)
-                    {{-- TTE Digital Signature (Opsi A) --}}
+                    {{-- TTE Digital Signature (Seragam dengan Dokumen Resmi SIKAP) --}}
                     <div style="text-align: center; margin: 3px auto 4px auto;">
-                        <img src="{{ $qrPejabatDataUri }}" style="width: 48px; height: 48px; display: inline-block;" />
-                        <div style="font-size: 6pt; color: #15803d; font-weight: bold; margin-top: 1px;">
+                        <img src="{{ $qrPejabatDataUri }}" style="width: 46px; height: 46px; display: inline-block;" />
+                        <div style="font-size: 6.2pt; color: #15803d; font-weight: bold; margin-top: 1px;">
                             Ditandatangani secara Elektronik (TTE)
                         </div>
                         @if($pejabatSignedAt)
-                        <div style="font-size: 5.5pt; color: #64748b;">
+                        <div style="font-size: 5.6pt; color: #64748b;">
                             SIKAP FKP UNRI &bull; {{ $pejabatSignedAt }}
                         </div>
                         @endif
@@ -407,31 +422,51 @@
         </tr>
     </table>
 
-    {{-- Tabel Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian (Hanya Ka Pokja Keu-Kepeg) --}}
+    {{-- Tabel Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian (Hanya Ka Pokja Keu-Kepeg dengan Paraf Elektronik QR Code) --}}
     @if(!empty($sudahParafPokja) || !empty($cuti->verifikasi_admin_at))
     <table style="width: 100%; border-collapse: collapse; margin-top: 4px; margin-bottom: 4px; font-size: 7.5pt;">
         <tr>
-            <td style="width: 50%; vertical-align: top; border: 1px solid #cbd5e1; background-color: #f8fafc; padding: 4px 6px;">
-                <div style="font-weight: bold; color: #334155; margin-bottom: 2px;">Paraf Koordinasi Tata Naskah &amp; Verifikasi Kepegawaian:</div>
-                <table style="width: 100%; border-collapse: collapse; font-size: 7pt;">
+            <td style="width: 54%; vertical-align: top; border: 1px solid #1e293b; background-color: #f8fafc; padding: 4px 6px;">
+                <div style="font-weight: bold; color: #0f172a; margin-bottom: 2px; border-bottom: 1px solid #94a3b8; padding-bottom: 1.5px; font-size: 7pt;">
+                    Paraf Koordinasi Tata Naskah &amp; Verifikasi Kepegawaian:
+                </div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 7pt; line-height: 1.2;">
                     <tr>
-                        <td style="width: 100%; vertical-align: middle; padding: 1px 0;">
-                            <span style="font-weight: bold;">Ka Pokja Keu-Kepeg:</span>
-                            @if(!empty($sudahParafPokja))
-                                <span style="color: #047857; font-weight: bold;">[Diparaf <span class="checkbox-mark" style="font-size: 7.5pt;">&#10003;</span>]</span>
-                                <div style="color: #1e293b; font-size: 6.5pt;">{{ $pejabatKaPokja->nama_lengkap ?? ($pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina, SE') }}</div>
-                                <div style="color: #64748b; font-size: 6pt;">{{ $parafPokjaAt }}</div>
+                        <td style="width: 36px; vertical-align: middle; padding: 2px 5px 2px 0; text-align: center;">
+                            @if(!empty($sudahParafPokja) && !empty($qrPokjaUri))
+                                <img src="{{ $qrPokjaUri }}" style="width: 32px; height: 32px; display: block; margin: 0 auto;" alt="QR Paraf Elektronik" />
                             @else
-                                <span style="color: #94a3b8;">[Menunggu Paraf]</span>
+                                <div style="font-size: 5.5pt; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 4px 2px; border-radius: 2px; line-height: 1.1;">Belum<br>Paraf</div>
+                            @endif
+                        </td>
+                        <td style="vertical-align: middle; padding: 1px 0;">
+                            <div>
+                                <span style="font-weight: bold; color: #0f172a;">Ka Pokja Keu-Kepeg:</span>
+                                @if(!empty($sudahParafPokja))
+                                    <span style="color: #047857; font-weight: bold;">[Diparaf <span class="checkbox-mark" style="font-size: 7.5pt;">&#10003;</span>]</span>
+                                @else
+                                    <span style="color: #94a3b8;">[Menunggu Paraf]</span>
+                                @endif
+                            </div>
+                            <div style="color: #1e293b; font-size: 6.8pt; font-weight: bold;">{{ $kaPokjaNama }}</div>
+                            <div style="color: #475569; font-size: 6.2pt;">NIP. {{ $kaPokjaNip }}</div>
+                            @if(!empty($sudahParafPokja))
+                                <div style="color: #047857; font-weight: bold; font-size: 6pt;">
+                                    [ Terverifikasi &amp; Diparaf Digital ] &bull; {{ $parafPokjaAt }}
+                                </div>
+                            @else
+                                <div style="color: #64748b; font-size: 6pt; font-style: italic;">
+                                    [ Menunggu Verifikasi &amp; Paraf Tata Naskah ]
+                                </div>
                             @endif
                         </td>
                     </tr>
                 </table>
             </td>
-            <td style="width: 50%; vertical-align: middle; border: 1px solid #cbd5e1; background-color: #f8fafc; padding: 4px 6px; font-size: 7pt; color: #475569;">
+            <td style="width: 46%; vertical-align: middle; border: 1px solid #1e293b; background-color: #f8fafc; padding: 4px 6px; font-size: 7pt; color: #334155;">
                 <div>Admin Screening: <strong>{{ $cuti->verifikasi_admin_at ? 'Terverifikasi Berkas Sah (' . $cuti->verifikasi_admin_at->format('d/m/Y H:i') . ')' : 'Proses Screening' }}</strong></div>
                 @if($cuti->catatan_verifikator)
-                    <div style="font-style: italic; color: #334155; font-size: 6.5pt;">Catatan: {{ $cuti->catatan_verifikator }}</div>
+                    <div style="font-style: italic; color: #334155; font-size: 6.5pt; margin-top: 2px;">Catatan: {{ $cuti->catatan_verifikator }}</div>
                 @endif
             </td>
         </tr>

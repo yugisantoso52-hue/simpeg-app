@@ -138,8 +138,9 @@ class DeployWebhookController extends Controller
     protected function updateCodeFromGithubZip(): string
     {
         $zipUrl = 'https://codeload.github.com/yugisantoso52-hue/simpeg-app/zip/refs/heads/main';
-        $tempZip = storage_path('app/temp_deploy_main.zip');
-        $tempExtractDir = storage_path('app/temp_deploy_extract');
+        $runId = uniqid('dep_', true);
+        $tempZip = storage_path("app/temp_deploy_{$runId}.zip");
+        $tempExtractDir = storage_path("app/temp_deploy_extract_{$runId}");
 
         $curlError = null;
         $zipData = null;

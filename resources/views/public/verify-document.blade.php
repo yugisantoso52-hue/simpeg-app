@@ -62,6 +62,26 @@
                         </div>
                     </div>
 
+                    @if(!empty($signerInfo))
+                    <div class="mt-4 bg-emerald-50 rounded-xl p-4 border border-emerald-200 text-xs space-y-2">
+                        <div class="font-bold text-emerald-800 uppercase tracking-wide text-[11px] border-b border-emerald-200 pb-1.5">
+                            ✓ {{ $signerInfo['jenis'] }}
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-emerald-700">Jabatan Pejabat</span>
+                            <strong class="text-slate-800 text-right">{{ $signerInfo['jabatan'] }}</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-emerald-700">Nama Pejabat</span>
+                            <strong class="text-slate-800 text-right">{{ $signerInfo['nama'] }}</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-emerald-700">NIP</span>
+                            <strong class="text-slate-800 font-mono text-right">{{ $signerInfo['nip'] }}</strong>
+                        </div>
+                    </div>
+                    @endif
+
                     <div class="mt-6 p-3 rounded-xl bg-blue-50 border border-blue-200 text-[11px] text-blue-800 flex items-start gap-2.5">
                         <span class="text-base">ℹ️</span>
                         <span>

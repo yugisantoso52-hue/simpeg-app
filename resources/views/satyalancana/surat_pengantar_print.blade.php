@@ -342,16 +342,16 @@
             <td style="width: 48%; text-align: left; vertical-align: top; padding-left: 8px;">
                 <div style="font-size: 9.5pt; line-height: 1.25;">
                     a.n. Dekan Fakultas Keperawatan<br>
-                    Wakil Dekan Bidang Keuangan dan Umum,
+                    Wakil Dekan II (Bid. Keuangan dan Umum)
                     
                     {{-- QR Code TTE Pimpinan --}}
                     <div style="text-align: left; margin: 4px 0 4px 0; min-height: 48px;">
                         @if(!empty($sudahTtdWd2) && !empty($qrWd2Uri))
                             <img src="{{ $qrWd2Uri }}" style="width: 46px; height: 46px; display: inline-block;" />
-                            <div style="font-size: 6pt; color: #15803d; font-weight: bold;">
+                            <div style="font-size: 6.2pt; color: #15803d; font-weight: bold; margin-top: 1px;">
                                 Ditandatangani secara Elektronik (TTE)
                             </div>
-                            <div style="font-size: 5.5pt; color: #64748b;">
+                            <div style="font-size: 5.6pt; color: #64748b;">
                                 SIKAP FKP UNRI &bull; {{ $ttdWd2At }}
                             </div>
                         @else
@@ -361,7 +361,7 @@
                         @endif
                     </div>
 
-                    <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep., Sp.Kep.M.B') }}</strong><br>
+                    <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep, Sp.Kep.M.B') }}</strong><br>
                     <span>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</span>
                 </div>
             </td>

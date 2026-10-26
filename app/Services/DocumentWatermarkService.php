@@ -74,7 +74,8 @@ class DocumentWatermarkService
      */
     public function verifyDocumentCode(string $code): ?array
     {
-        $parts = explode('.', $code, 2);
+        $cleanCode = preg_split('/[&?]/', trim($code), 2)[0] ?? $code;
+        $parts = explode('.', $cleanCode, 2);
         if (count($parts) !== 2) {
             return null;
         }

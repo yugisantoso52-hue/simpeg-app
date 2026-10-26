@@ -153,13 +153,13 @@ class ReportController extends Controller
         $parafKabagAt = $sudahParafKabag ? $pengajuan->paraf_kabag_at->format('d/m/Y H:i') . ' WIB' : null;
 
         $qrPokjaUri = $sudahParafPokja 
-            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . $kapokjaData['nip']) 
+            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '?paraf=kapokja&nip=' . $kapokjaData['nip']) 
             : null;
         $qrKabagUri = $sudahParafKabag 
-            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . $kabagData['nip']) 
+            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '?paraf=kabag&nip=' . $kabagData['nip']) 
             : null;
         $qrCodeDataUri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl) : null;
-        $qrTteWd2Uri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&tte=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
+        $qrTteWd2Uri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '?tte=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
         $disahkanAt = $isDisahkan ? ($pengajuan?->updated_at ? $pengajuan->updated_at->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') : null;
 
         $nomorSuratFormatted = !empty($pengajuan?->nomor_surat) 
@@ -244,13 +244,13 @@ class ReportController extends Controller
         $parafKabagAt = $sudahParafKabag ? Carbon::parse($pengajuan->paraf_kabag_at)->format('d/m/Y H:i') . ' WIB' : null;
 
         $qrPokjaUri = $sudahParafPokja 
-            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . $kapokjaData['nip']) 
+            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '?paraf=kapokja&nip=' . $kapokjaData['nip']) 
             : null;
         $qrKabagUri = $sudahParafKabag 
-            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . $kabagData['nip']) 
+            ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '?paraf=kabag&nip=' . $kabagData['nip']) 
             : null;
         $qrCodeDataUri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl) : null;
-        $qrTteWd2Uri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&tte=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
+        $qrTteWd2Uri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '?tte=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
         $disahkanAt = $isDisahkan ? ($pengajuan?->updated_at ? Carbon::parse($pengajuan->updated_at)->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') : null;
 
         $nomorSuratFormatted = !empty($pengajuan->nomor_surat)

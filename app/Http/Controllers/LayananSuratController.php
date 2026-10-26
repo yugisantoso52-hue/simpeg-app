@@ -353,8 +353,8 @@ class LayananSuratController extends Controller
         $qrCodeDataUri = $isDisahkan ? QrCodeService::generateDataUri($verifyUrl) : null;
 
         // Mini QR Paraf Digital Tata Naskah (Kabag & Ka Pokja)
-        $qrPokjaUri = $sudahParafPokja ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . $kapokjaData['nip']) : null;
-        $qrKabagUri = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . $kabagData['nip']) : null;
+        $qrPokjaUri = $sudahParafPokja ? QrCodeService::generateDataUri($verifyUrl . '?paraf=kapokja&nip=' . $kapokjaData['nip']) : null;
+        $qrKabagUri = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '?paraf=kabag&nip=' . $kabagData['nip']) : null;
 
         // Tanggal & Waktu Paraf Digital Faktual
         $parafPokjaAt = $sudahParafPokja ? $surat->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB' : null;
@@ -365,7 +365,7 @@ class LayananSuratController extends Controller
             ? ($surat->updated_at ? $surat->updated_at->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') 
             : null;
         $qrTtePimpinanUri = $isDisahkan 
-            ? QrCodeService::generateDataUri($verifyUrl . '&tte=pimpinan&nip=' . ($surat->penandatangan_nip ?? '')) 
+            ? QrCodeService::generateDataUri($verifyUrl . '?tte=pimpinan&nip=' . ($surat->penandatangan_nip ?? '')) 
             : null;
 
         $watermarkService = app(DocumentWatermarkService::class);

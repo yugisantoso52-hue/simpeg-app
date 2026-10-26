@@ -351,9 +351,9 @@ class SatyalancanaController extends Controller
         $ttdWd2At     = $sudahTtdWd2     ? $usulan->ttd_wd2_at->format('d/m/Y H:i') . ' WIB' : null;
 
         $qrCodeDataUri = QrCodeService::generateDataUri($verifyUrl);
-        $qrPokjaUri    = $sudahParafPokja ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) : null;
-        $qrKabagUri    = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) : null;
-        $qrWd2Uri      = $sudahTtdWd2     ? QrCodeService::generateDataUri($verifyUrl . '&ttd=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
+        $qrPokjaUri    = $sudahParafPokja ? QrCodeService::generateDataUri($verifyUrl . '?paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) : null;
+        $qrKabagUri    = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '?paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) : null;
+        $qrWd2Uri      = $sudahTtdWd2     ? QrCodeService::generateDataUri($verifyUrl . '?ttd=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
 
         $pdf = Pdf::loadView('satyalancana.drh_print', compact(
             'pegawai',
@@ -466,9 +466,9 @@ class SatyalancanaController extends Controller
         );
         $verifyUrl = route('verify.document', ['code' => $verifyCode]);
 
-        $qrWd2Uri      = $sudahTtdWd2 ? QrCodeService::generateDataUri($verifyUrl . '&ttd=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
-        $qrPokjaUri    = $sudahParafPokja ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) : null;
-        $qrKabagUri    = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) : null;
+        $qrWd2Uri      = $sudahTtdWd2 ? QrCodeService::generateDataUri($verifyUrl . '?ttd=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
+        $qrPokjaUri    = $sudahParafPokja ? QrCodeService::generateDataUri($verifyUrl . '?paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) : null;
+        $qrKabagUri    = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '?paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) : null;
         $qrCodeDataUri = QrCodeService::generateDataUri($verifyUrl);
 
         $pdf = Pdf::loadView('satyalancana.surat_pengantar_print', compact(

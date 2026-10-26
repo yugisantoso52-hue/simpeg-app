@@ -238,7 +238,7 @@
                         </td>
                         <td style="vertical-align: middle; padding: 2px 0;">
                             <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">1. Kepala Bagian Umum</div>
-                            <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKabag->nama ?? 'Bakhtiar' }}, S.Sos., M.Si</div>
+                            <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKabag->nama_lengkap ?? ($pejabatKabag->nama ?? 'Bakhtiar, S.Sos., M.Si') }}</div>
                             @if(!empty($sudahParafKabag))
                                 <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
                                     [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafKabagAt }}
@@ -261,7 +261,7 @@
                         </td>
                         <td style="vertical-align: middle; padding: 3px 0;">
                             <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">2. Ka Pokja Keu-Kepeg</div>
-                            <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina' }}, SE</div>
+                            <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKaPokja->nama_lengkap ?? ($pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina, SE') }}</div>
                             @if(!empty($sudahParafPokja))
                                 <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
                                     [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafPokjaAt }}
@@ -281,7 +281,7 @@
         <td style="width: 47%; text-align: left; vertical-align: top; padding-left: 8px;">
             <div style="font-size: 9.5pt; line-height: 1.25;">
                 a.n. Dekan Fakultas Keperawatan<br>
-                Wakil Dekan Bidang Keuangan dan Umum,<br>
+                Wakil Dekan II (Bid. Keuangan dan Umum)<br>
                 @if(!empty($isDisahkan))
                     {{-- Ruang tanda tangan elektronik resmi --}}
                     <div style="text-align: left; margin: 4px 0 4px 0;">
@@ -297,7 +297,7 @@
                             SIKAP FKP UNRI &bull; {{ $disahkanAt ?? now()->format('d/m/Y H:i') . ' WIB' }}
                         </div>
                     </div>
-                    <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep., Sp.Kep.M.B') }}</strong><br>
+                    <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep, Sp.Kep.M.B') }}</strong><br>
                     <span>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</span>
                 @else
                     <div style="margin: 6px 0 4px 0;">
@@ -305,7 +305,7 @@
                             [ DRAF - MENUNGGU PENGESAHAN TTE ]
                         </span>
                     </div>
-                    <div style="color: #64748b; font-weight: bold; text-decoration: underline;">( {{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep., Sp.Kep.M.B') }} )</div>
+                    <div style="color: #64748b; font-weight: bold; text-decoration: underline;">( {{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep, Sp.Kep.M.B') }} )</div>
                     <div style="color: #64748b;">NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</div>
                 @endif
             </div>

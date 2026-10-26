@@ -385,12 +385,17 @@ class PengajuanCutiController extends Controller
         $pejabatKabag   = $kabagData['pegawai'];
         $pejabatKaPokja = $kapokjaData['pegawai'];
 
-        $sudahParafPokja = !empty($cuti->paraf_kapokja_at);
+        $sudahParafPokja = !empty($cuti->paraf_kapokja_at)
+            || !empty($cuti->paraf_kabag_at)
+            || in_array($cuti->status, ['Disetujui', 'Disetujui Atasan (Menunggu PYBMC)', 'Disetujui Atasan (Menunggu Keputusan Akhir)']);
         $sudahParafKabag = !empty($cuti->paraf_kabag_at);
-        $parafPokjaAt    = $sudahParafPokja ? $cuti->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB' : null;
+        $parafPokjaTimestamp = $cuti->paraf_kapokja_at ?: ($cuti->verifikasi_admin_at ?: ($cuti->paraf_kabag_at ?: $cuti->updated_at));
+        $parafPokjaAt    = $sudahParafPokja && $parafPokjaTimestamp ? $parafPokjaTimestamp->format('d/m/Y H:i') . ' WIB' : null;
         $parafKabagAt    = $sudahParafKabag ? $cuti->paraf_kabag_at->format('d/m/Y H:i') . ' WIB' : null;
-        $qrPokjaUri      = $sudahParafPokja ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '')) : null;
-        $qrKabagUri      = $sudahParafKabag ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '&paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '')) : null;
+        $kaPokjaNip      = $pejabatKaPokja?->nip ?? ($kapokjaData['nip'] ?? '197605212014092001');
+        $kabagNip        = $pejabatKabag?->nip ?? ($kabagData['nip'] ?? '197507122005011002');
+        $qrPokjaUri      = $sudahParafPokja ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '?paraf=kapokja&nip=' . $kaPokjaNip) : null;
+        $qrKabagUri      = $sudahParafKabag ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '?paraf=kabag&nip=' . $kabagNip) : null;
 
         $pdf = Pdf::loadView('exports.pdf.formulir_cuti', compact(
             'cuti', 'verifyUrl', 'verifyCode', 'qrCodeDataUri', 'nomorSuratFormatted',

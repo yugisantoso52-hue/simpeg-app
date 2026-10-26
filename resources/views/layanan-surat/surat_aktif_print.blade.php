@@ -357,17 +357,17 @@
                 <div style="font-size: 10pt; line-height: 1.25;">
                     Pekanbaru, {{ \Carbon\Carbon::parse($surat->tanggal_surat)->locale('id')->translatedFormat('d F Y') }}<br>
                     @if(str_contains(strtolower($surat->penandatangan_jabatan), 'wakil dekan'))
-                        a.n. Dekan Fakultas Keperawatan,<br>
-                        Wakil Dekan Bidang Keuangan dan Umum,
+                        a.n. Dekan Fakultas Keperawatan<br>
+                        Wakil Dekan II (Bid. Keuangan dan Umum)
                     @else
                         {{ $surat->penandatangan_jabatan }},
                     @endif
                     @if(!empty($isDisahkan))
                         <div style="text-align: left; margin: 4px 0 4px 0;">
                             @if(!empty($qrTtePimpinanUri))
-                                <img src="{{ $qrTtePimpinanUri }}" style="width: 48px; height: 48px; display: inline-block;" />
+                                <img src="{{ $qrTtePimpinanUri }}" style="width: 46px; height: 46px; display: inline-block;" />
                             @elseif(!empty($qrCodeDataUri))
-                                <img src="{{ $qrCodeDataUri }}" style="width: 48px; height: 48px; display: inline-block;" />
+                                <img src="{{ $qrCodeDataUri }}" style="width: 46px; height: 46px; display: inline-block;" />
                             @endif
                             <div style="font-size: 6.2pt; color: #15803d; font-weight: bold; margin-top: 1px;">
                                 Ditandatangani secara Elektronik (TTE)
@@ -376,7 +376,7 @@
                                 SIKAP FKP UNRI &bull; {{ $disahkanAt ?? now()->format('d/m/Y H:i') . ' WIB' }}
                             </div>
                         </div>
-                        <strong style="text-decoration: underline;">{{ $surat->penandatangan_nama }}</strong><br>
+                        <strong style="text-decoration: underline;">{{ str_replace(['M.kep', 'Sp.kep'], ['M.Kep', 'Sp.Kep'], $surat->penandatangan_nama) }}</strong><br>
                         <span>NIP. {{ $surat->penandatangan_nip }}</span>
                     @else
                         <div style="margin: 8px 0 6px 0;">
@@ -384,7 +384,7 @@
                                 [ DRAF - MENUNGGU PENGESAHAN TTE ]
                             </span>
                         </div>
-                        <div style="color: #64748b; font-weight: bold; text-decoration: underline;">( {{ $surat->penandatangan_nama }} )</div>
+                        <div style="color: #64748b; font-weight: bold; text-decoration: underline;">( {{ str_replace(['M.kep', 'Sp.kep'], ['M.Kep', 'Sp.Kep'], $surat->penandatangan_nama) }} )</div>
                         <div style="color: #64748b;">NIP. {{ $surat->penandatangan_nip }}</div>
                     @endif
                 </div>

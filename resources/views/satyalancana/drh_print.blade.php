@@ -348,16 +348,17 @@
         <!-- SISI KIRI: Mengetahui Wakil Dekan Bidang Keuangan dan Umum & Paraf Koordinasi Tata Naskah -->
         <div class="ttd-box-left">
             <div>Mengetahui :</div>
-            <div>Wakil Dekan Bidang Keuangan dan Umum,</div>
+            <div>a.n. Dekan Fakultas Keperawatan</div>
+            <div>Wakil Dekan II (Bid. Keuangan dan Umum)</div>
             
             {{-- TTE Digital Signature (QR Code Otentikasi) - HANYA MUNCUL JIKA SUDAH DISAHKAN WAKIL DEKAN II --}}
             <div style="text-align: left; margin: 3px 0 3px 0; min-height: 48px;">
                 @if(!empty($sudahTtdWd2) && !empty($qrWd2Uri))
-                    <img src="{{ $qrWd2Uri }}" style="width: 44px; height: 44px; display: inline-block;" />
-                    <div style="font-size: 6pt; color: #15803d; font-weight: bold; margin-top: 1px;">
+                    <img src="{{ $qrWd2Uri }}" style="width: 46px; height: 46px; display: inline-block;" />
+                    <div style="font-size: 6.2pt; color: #15803d; font-weight: bold; margin-top: 1px;">
                         Ditandatangani secara Elektronik (TTE)
                     </div>
-                    <div style="font-size: 5.5pt; color: #64748b;">
+                    <div style="font-size: 5.6pt; color: #64748b;">
                         SIKAP FKP UNRI &bull; {{ $ttdWd2At }}
                     </div>
                 @else
@@ -367,7 +368,7 @@
                 @endif
             </div>
 
-            <div style="font-weight: bold; text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? 'Dr. Safri, M.Kep, Sp. Kep.M.B' }}</div>
+            <div style="font-weight: bold; text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? 'Dr. Safri, M.Kep, Sp.Kep.M.B' }}</div>
             <div>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</div>
 
             {{-- KOTAK PARAF DIGITAL KOORDINASI TATA NASKAH (Urutan: 1. Ka Pokja Keu-Kepeg, 2. Kepala Bagian Umum) --}}
