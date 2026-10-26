@@ -26,8 +26,8 @@ class StorePegawaiRequest extends FormRequest
             'bpjs_ketenagakerjaan' => 'nullable|string|max:30',
             'karpeg_karis_karsu'   => 'nullable|string|max:50',
             'nidn_nuptk'           => 'nullable|string|max:20',
-            'gelar_depan'          => 'nullable|string|max:20',
-            'gelar_belakang'       => 'nullable|string|max:20',
+            'gelar_depan'          => 'nullable|string|max:100',
+            'gelar_belakang'       => 'nullable|string|max:100',
             'tempat_lahir'         => 'nullable|string|max:100',
             'tanggal_lahir'        => 'nullable|date',
             'jenis_kelamin'        => 'nullable|in:L,P',
@@ -162,6 +162,54 @@ class StorePegawaiRequest extends FormRequest
             'piagam_satyalancana.tanggal_sk'            => 'nullable|date',
             'piagam_satyalancana.instansi_pemberi'      => 'nullable|string|max:255',
             'piagam_satyalancana.file_sk'               => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+
+            // Validasi Input Multi-Riwayat Penghargaan & Tanda Jasa Lainnya (Opsional)
+            'riwayat_penghargaan'                      => 'nullable|array',
+            'riwayat_penghargaan.*.id'                 => 'nullable|integer',
+            'riwayat_penghargaan.*.nama_penghargaan'   => 'nullable|string|max:255',
+            'riwayat_penghargaan.*.jenis_penghargaan'  => 'nullable|string|max:100',
+            'riwayat_penghargaan.*.instansi_pemberi'   => 'nullable|string|max:255',
+            'riwayat_penghargaan.*.nomor_sk'           => 'nullable|string|max:100',
+            'riwayat_penghargaan.*.tanggal_terima'     => 'nullable|date',
+            'riwayat_penghargaan.*.file_sk'            => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+
+            // Validasi Input Multi-Riwayat Keanggotaan Organisasi (Opsional)
+            'riwayat_organisasi'                       => 'nullable|array',
+            'riwayat_organisasi.*.id'                  => 'nullable|integer',
+            'riwayat_organisasi.*.nama_organisasi'     => 'nullable|string|max:255',
+            'riwayat_organisasi.*.jabatan_organisasi'  => 'nullable|string|max:150',
+            'riwayat_organisasi.*.tahun_mulai'         => 'nullable|integer',
+            'riwayat_organisasi.*.tahun_selesai'       => 'nullable|integer',
+            'riwayat_organisasi.*.masih_aktif'         => 'nullable|boolean',
+
+            // Validasi Input Multi-Riwayat Publikasi Ilmiah & Karya (Opsional)
+            'riwayat_publikasi'                        => 'nullable|array',
+            'riwayat_publikasi.*.id'                   => 'nullable|integer',
+            'riwayat_publikasi.*.judul_publikasi'      => 'nullable|string|max:500',
+            'riwayat_publikasi.*.jenis_publikasi'      => 'nullable|string|max:100',
+            'riwayat_publikasi.*.indeksasi'            => 'nullable|string|max:100',
+            'riwayat_publikasi.*.nama_jurnal'          => 'nullable|string|max:255',
+            'riwayat_publikasi.*.penerbit'             => 'nullable|string|max:255',
+            'riwayat_publikasi.*.tahun_terbit'         => 'nullable|integer',
+            'riwayat_publikasi.*.volume_nomor'         => 'nullable|string|max:100',
+            'riwayat_publikasi.*.url_doi'              => 'nullable|string|max:500',
+            'riwayat_publikasi.*.file_publikasi'       => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+
+            // Validasi Input Multi-Riwayat Tugas Belajar & Izin Belajar (Opsional)
+            'tugas_belajar'                            => 'nullable|array',
+            'tugas_belajar.*.id'                       => 'nullable|integer',
+            'tugas_belajar.*.jenis_pengembangan'       => 'nullable|string|max:100',
+            'tugas_belajar.*.jenjang_studi'            => 'nullable|string|max:100',
+            'tugas_belajar.*.perguruan_tinggi'         => 'nullable|string|max:255',
+            'tugas_belajar.*.program_studi'            => 'nullable|string|max:255',
+            'tugas_belajar.*.negara'                   => 'nullable|string|max:100',
+            'tugas_belajar.*.sumber_pembiayaan'        => 'nullable|string|max:150',
+            'tugas_belajar.*.nomor_sk'                 => 'nullable|string|max:100',
+            'tugas_belajar.*.tanggal_mulai'            => 'nullable|date',
+            'tugas_belajar.*.tanggal_selesai'          => 'nullable|date',
+            'tugas_belajar.*.semester_berjalan'        => 'nullable|integer|min:1',
+            'tugas_belajar.*.status_studi'             => 'nullable|string|max:100',
+            'tugas_belajar.*.file_sk'                  => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ];
     }
 

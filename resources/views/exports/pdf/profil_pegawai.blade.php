@@ -85,9 +85,39 @@
     <div class="section-header">1. DATA PRIBADI</div>
     <table class="form-table">
         <tr>
-            <td style="width: 32%;" class="bold">Nama Lengkap</td>
+            <td style="width: 32%;" class="bold">NIP (Nomor Induk Pegawai)</td>
             <td style="width: 3%;">:</td>
+            <td>{{ $pegawai->nip ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">NIK (No. KTP)</td>
+            <td>:</td>
+            <td>{{ $pegawai->nik ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">NPWP</td>
+            <td>:</td>
+            <td>{{ $pegawai->npwp ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">No. BPJS Kesehatan</td>
+            <td>:</td>
+            <td>{{ $pegawai->bpjs_kesehatan ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">No. BPJS Ketenagakerjaan</td>
+            <td>:</td>
+            <td>{{ $pegawai->bpjs_ketenagakerjaan ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Nama Lengkap</td>
+            <td>:</td>
             <td>{{ $namaCore }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Gelar Depan / Belakang</td>
+            <td>:</td>
+            <td>Depan: {{ $pegawai->gelar_depan ?: '-' }} | Belakang: {{ $pegawai->gelar_belakang ?: '-' }}</td>
         </tr>
         <tr>
             <td class="bold">Jenis Kelamin</td>
@@ -198,6 +228,21 @@
             <td>{{ $pegawai->jabatan->nama_jabatan ?? $pegawai->jabatan->nama ?? $pegawai->jabatan ?? '-' }}</td>
         </tr>
         <tr>
+            <td class="bold">Atasan Langsung Utama</td>
+            <td>:</td>
+            <td>{{ $pegawai->atasan ? ($pegawai->atasan->nama_lengkap ?? $pegawai->atasan->nama) : 'Otomatis Sesuai Matriks Jabatan' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Pejabat Penilai Kinerja</td>
+            <td>:</td>
+            <td>{{ $pegawai->pejabatPenilai ? ($pegawai->pejabatPenilai->nama_lengkap ?? $pegawai->pejabatPenilai->nama) : 'Mengikuti Atasan Langsung / Matriks Resmi' }}</td>
+        </tr>
+        <tr>
+            <td class="bold">Atasan Pertimbangan Cuti</td>
+            <td>:</td>
+            <td>{{ $pegawai->atasanCuti ? ($pegawai->atasanCuti->nama_lengkap ?? $pegawai->atasanCuti->nama) : 'Mengikuti Regulasi Ketetapan Cuti' }}</td>
+        </tr>
+        <tr>
             <td class="bold">Golongan / Pangkat</td>
             <td>:</td>
             <td>
@@ -213,9 +258,13 @@
             <td>{{ $pegawai->jenis_jabatan ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="bold">Angka Kredit Kumulatif (PAK)</td>
+            <td class="bold">Penilaian Angka Kredit (PAK)</td>
             <td>:</td>
-            <td>{{ number_format($pegawai->angka_kredit ?? 0, 2, ',', '.') }}</td>
+            <td>
+                {{ number_format($pegawai->angka_kredit ?? 0, 2, ',', '.') }}
+                @if($pegawai->nomor_pak) (No: {{ $pegawai->nomor_pak }}) @endif
+                @if($pegawai->tanggal_pak) (Tgl: {{ is_string($pegawai->tanggal_pak) ? \Carbon\Carbon::parse($pegawai->tanggal_pak)->format('d/m/Y') : $pegawai->tanggal_pak->format('d/m/Y') }}) @endif
+            </td>
         </tr>
         <tr>
             <td class="bold">Jenis Pegawai</td>
@@ -351,10 +400,11 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th style="width: 30%;">Nama Jabatan</th>
-                    <th style="width: 25%;">Unit Kerja</th>
+                    <th style="width: 25%;">Nama Jabatan</th>
+                    <th style="width: 20%;">Unit Kerja</th>
                     <th style="width: 15%;">TMT Jabatan</th>
-                    <th style="width: 20%;">Nomor SK</th>
+                    <th style="width: 18%;">Nomor SK</th>
+                    <th style="width: 12%;">Tanggal SK</th>
                     <th style="width: 10%;">Status</th>
                 </tr>
             </thead>
@@ -365,6 +415,7 @@
                         <td>{{ $rj->unitKerja->nama_unit ?? '-' }}</td>
                         <td class="text-center">{{ $rj->tmt_jabatan ? \Carbon\Carbon::parse($rj->tmt_jabatan)->format('d/m/Y') : '-' }}</td>
                         <td>{{ $rj->nomor_sk ?? '-' }}</td>
+                        <td class="text-center">{{ $rj->tanggal_sk ? \Carbon\Carbon::parse($rj->tanggal_sk)->format('d/m/Y') : '-' }}</td>
                         <td class="text-center">{{ ucfirst($rj->status ?? 'Riwayat') }}</td>
                     </tr>
                 @endforeach
@@ -380,10 +431,11 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th style="width: 15%;">Tingkat</th>
-                    <th style="width: 45%;">Nama Institusi / Sekolah</th>
-                    <th style="width: 25%;">Jurusan</th>
-                    <th style="width: 15%;">Tahun Lulus</th>
+                    <th style="width: 12%;">Tingkat</th>
+                    <th style="width: 35%;">Nama Institusi / Sekolah</th>
+                    <th style="width: 20%;">Fakultas</th>
+                    <th style="width: 21%;">Jurusan</th>
+                    <th style="width: 12%;">Tahun Lulus</th>
                 </tr>
             </thead>
             <tbody>
@@ -391,6 +443,7 @@
                     <tr>
                         <td class="bold text-center">{{ $pendidikan->tingkat_pendidikan ?? $pendidikan->jenjang ?? '-' }}</td>
                         <td>{{ $pendidikan->nama_institusi ?? $pendidikan->institusi ?? '-' }}</td>
+                        <td>{{ $pendidikan->fakultas ?? '-' }}</td>
                         <td>{{ $pendidikan->jurusan ?? '-' }}</td>
                         <td class="text-center">{{ $pendidikan->tahun_lulus ?? '-' }}</td>
                     </tr>
@@ -500,10 +553,11 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th style="width: 35%;">Nama Penghargaan</th>
-                    <th style="width: 20%;">Jenis</th>
-                    <th style="width: 25%;">Instansi Pemberi</th>
-                    <th style="width: 20%;">Tanggal Terima</th>
+                    <th style="width: 30%;">Nama Penghargaan</th>
+                    <th style="width: 18%;">Jenis</th>
+                    <th style="width: 20%;">Instansi Pemberi</th>
+                    <th style="width: 18%;">Nomor SK</th>
+                    <th style="width: 14%;">Tanggal Terima</th>
                 </tr>
             </thead>
             <tbody>
@@ -512,6 +566,7 @@
                         <td class="bold">{{ $p->nama_penghargaan }}</td>
                         <td>{{ $p->jenis_penghargaan ?? '-' }}</td>
                         <td>{{ $p->instansi_pemberi ?? '-' }}</td>
+                        <td>{{ $p->nomor_sk ?? '-' }}</td>
                         <td class="text-center">{{ $p->tanggal_terima ? $p->tanggal_terima->format('d/m/Y') : '-' }}</td>
                     </tr>
                 @endforeach

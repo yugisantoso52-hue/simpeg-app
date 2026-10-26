@@ -168,8 +168,17 @@
                         {{-- 10. RIWAYAT DIKLAT / PELATIHAN --}}
                         @include('pegawai.forms._diklat')
 
-                        {{-- 11. PENILAIAN KINERJA (SKP 2 TAHUN LALU) & PIAGAM SATYALANCANA --}}
+                        {{-- 11. PENILAIAN KINERJA (SKP 2 TAHUN) & RIWAYAT PENGHARGAAN / SATYALANCANA --}}
                         @include('pegawai.forms._penghargaan_skp')
+
+                        {{-- 12. RIWAYAT KEANGGOTAAN ORGANISASI --}}
+                        @include('pegawai.forms._organisasi')
+
+                        {{-- 13. RIWAYAT PUBLIKASI ILMIAH & KARYA --}}
+                        @include('pegawai.forms._publikasi')
+
+                        {{-- 14. TUGAS BELAJAR & IZIN BELAJAR (STUDI LANJUT) --}}
+                        @include('pegawai.forms._tugas_belajar')
 
                         <x-enterprise.forms.actions
                             :back="$backUrl"

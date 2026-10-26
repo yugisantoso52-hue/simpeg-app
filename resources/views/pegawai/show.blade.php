@@ -99,6 +99,14 @@
                                         <td class="py-1.5 text-gray-900 font-semibold">{{ $pegawai->nama_lengkap ?? $pegawai->nama }}</td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
+                                        <td class="py-1.5 font-medium text-gray-500">Gelar Depan / Gelar Belakang</td>
+                                        <td class="py-1.5 text-gray-900">
+                                            <span class="text-xs text-gray-500">Depan:</span> <span class="font-medium">{{ $pegawai->gelar_depan ?: '-' }}</span>
+                                            <span class="mx-2 text-gray-300">|</span>
+                                            <span class="text-xs text-gray-500">Belakang:</span> <span class="font-medium">{{ $pegawai->gelar_belakang ?: '-' }}</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">Tempat, Tanggal Lahir</td>
                                         <td class="py-1.5 text-gray-900">
                                             {{ $pegawai->tempat_lahir ?? '-' }}, 
@@ -277,6 +285,9 @@
                                              <span class="font-mono font-semibold">{{ number_format($pegawai->angka_kredit ?? 0, 2, ',', '.') }}</span>
                                              @if($pegawai->nomor_pak)
                                                  <span class="text-xs text-slate-500 ml-2 font-mono">(No: {{ $pegawai->nomor_pak }})</span>
+                                             @endif
+                                             @if($pegawai->tanggal_pak)
+                                                 <span class="text-xs text-slate-500 ml-1 font-mono">(Tgl: {{ is_string($pegawai->tanggal_pak) ? \Carbon\Carbon::parse($pegawai->tanggal_pak)->format('d/m/Y') : $pegawai->tanggal_pak->format('d/m/Y') }})</span>
                                              @endif
                                              @if($pegawai->file_pak)
                                                  <a href="{{ route('document.preview', ['path' => $pegawai->file_pak]) }}" target="_blank" class="ml-2 inline-flex items-center text-xs text-emerald-600 hover:underline font-sans font-semibold">
@@ -544,6 +555,7 @@
                                                 <th class="py-2 px-3">Unit Kerja</th>
                                                 <th class="py-2 px-3 text-center">TMT Jabatan</th>
                                                 <th class="py-2 px-3">Nomor SK</th>
+                                                <th class="py-2 px-3 text-center">Tanggal SK</th>
                                                 <th class="py-2 px-3 text-center">Status</th>
                                                 <th class="py-2 px-3 text-center">Berkas</th>
                                             </tr>
@@ -555,6 +567,7 @@
                                                     <td class="py-1.5 px-3 text-xs">{{ $rj->unitKerja->nama_unit ?? '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $rj->tmt_jabatan ? \Carbon\Carbon::parse($rj->tmt_jabatan)->format('d/m/Y') : '-' }}</td>
                                                     <td class="py-1.5 px-3 font-mono text-xs">{{ $rj->nomor_sk ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $rj->tanggal_sk ? \Carbon\Carbon::parse($rj->tanggal_sk)->format('d/m/Y') : '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center">
                                                         <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ strtolower($rj->status ?? '') == 'aktif' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
                                                             {{ ucfirst($rj->status ?? 'Riwayat') }}
@@ -597,8 +610,10 @@
                                             <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
                                                 <th class="py-2 px-3">Tingkat</th>
                                                 <th class="py-2 px-3">Nama Institusi / Sekolah</th>
-                                                <th class="py-2 px-3">Jurusan</th>
+                                                <th class="py-2 px-3">Fakultas</th>
+                                                <th class="py-2 px-3">Jurusan / Prodi</th>
                                                 <th class="py-2 px-3 text-center">Tahun Lulus</th>
+                                                <th class="py-2 px-3 text-center">Berkas Ijazah</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -606,8 +621,16 @@
                                                 <tr class="border-b border-gray-50 hover:bg-gray-50/50">
                                                     <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $pendidikan->tingkat_pendidikan ?? $pendidikan->jenjang ?? '-' }}</td>
                                                     <td class="py-1.5 px-3">{{ $pendidikan->nama_institusi ?? $pendidikan->institusi ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-xs">{{ $pendidikan->fakultas ?? '-' }}</td>
                                                     <td class="py-1.5 px-3">{{ $pendidikan->jurusan ?? '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center font-mono">{{ $pendidikan->tahun_lulus ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        @if($pendidikan->ijazah)
+                                                            <a href="{{ route('document.preview', ['path' => $pendidikan->ijazah]) }}" target="_blank" class="text-blue-600 font-semibold text-xs hover:underline">Lihat Ijazah</a>
+                                                        @else
+                                                            <span class="text-gray-400 text-xs">-</span>
+                                                        @endif
+                                                    </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -637,21 +660,37 @@
                                         <thead>
                                             <tr class="bg-gray-50 text-left border-b border-gray-100 text-xs font-semibold text-gray-500">
                                                 <th class="py-2 px-3">Nama Diklat</th>
+                                                <th class="py-2 px-3">Jenis / Kategori</th>
                                                 <th class="py-2 px-3">Penyelenggara</th>
                                                 <th class="py-2 px-3 text-center">Tahun</th>
                                                 <th class="py-2 px-3 text-center">Jumlah Jam</th>
+                                                <th class="py-2 px-3 text-center">Status</th>
+                                                <th class="py-2 px-3 text-center">Sertifikat</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach($pegawai->riwayatDiklat as $diklat)
                                                 <tr class="border-b border-gray-50 hover:bg-gray-50/50">
                                                     <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $diklat->nama_diklat ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-xs">{{ $diklat->jenis_diklat ?? '-' }}</td>
                                                     <td class="py-1.5 px-3">{{ $diklat->penyelenggara ?? '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center font-mono">
                                                         {{ $diklat->tahun ?? ($diklat->tanggal_mulai ? \Carbon\Carbon::parse($diklat->tanggal_mulai)->year : '-') }}
                                                     </td>
                                                     <td class="py-1.5 px-3 text-center font-mono">
                                                         {{ $diklat->jumlah_jam ? $diklat->jumlah_jam . ' JP' : '-' }}
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ ($diklat->status ?? 'Lulus') === 'Lulus' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">
+                                                            {{ $diklat->status ?? 'Lulus' }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="py-1.5 px-3 text-center">
+                                                        @if($diklat->file_sertifikat)
+                                                            <a href="{{ route('document.preview', ['path' => $diklat->file_sertifikat]) }}" target="_blank" class="text-blue-600 font-semibold text-xs hover:underline">Lihat</a>
+                                                        @else
+                                                            <span class="text-gray-400 text-xs">-</span>
+                                                        @endif
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -744,24 +783,27 @@
                             </div>
 
                             @php
-                                $skpN = $pegawai->getSkpTahun(now()->year);
-                                $skpN1 = $pegawai->getSkpTahun(now()->year - 1);
-                                $skpLainnya = $pegawai->riwayatSkp->filter(fn($s) => !in_array($s->tahun, [now()->year, now()->year - 1]));
+                                $hasCurrentYearSkp = $pegawai->getSkpTahun(now()->year) !== null;
+                                $primaryYear1 = $hasCurrentYearSkp ? now()->year : (now()->year - 1);
+                                $primaryYear2 = $hasCurrentYearSkp ? (now()->year - 1) : (now()->year - 2);
+                                $skpN = $pegawai->getSkpTahun($primaryYear1);
+                                $skpN1 = $pegawai->getSkpTahun($primaryYear2);
+                                $skpLainnya = $pegawai->riwayatSkp->filter(fn($s) => !in_array($s->tahun, [$primaryYear1, $primaryYear2]));
                             @endphp
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                {{-- KARTU TAHUN INI (N) --}}
+                                {{-- KARTU PERIODE 1 --}}
                                 <div class="rounded-xl border {{ $skpN ? 'border-blue-200 bg-blue-50/30' : 'border-dashed border-gray-300 bg-gray-50/50' }} p-4">
                                     <div class="flex items-center justify-between border-b border-gray-200/70 pb-2">
                                         <div class="flex items-center gap-2">
-                                            <span class="text-base font-extrabold text-gray-900">Tahun {{ now()->year }} (N)</span>
-                                            <span class="text-[11px] font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">Tahun Berjalan</span>
+                                            <span class="text-base font-extrabold text-gray-900">Tahun {{ $primaryYear1 }}</span>
+                                            <span class="text-[11px] font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">{{ $primaryYear1 == now()->year ? 'Tahun Berjalan' : 'Periode N-1' }}</span>
                                         </div>
                                         @can('update', $pegawai)
                                             @if($skpN)
                                                 <a href="{{ route('riwayat-skp.edit', $skpN->id) }}" class="text-xs text-yellow-700 hover:underline font-semibold">Edit</a>
                                             @else
-                                                <a href="{{ route('riwayat-skp.create', ['pegawai_id' => $pegawai->id, 'tahun' => now()->year]) }}" class="text-xs text-blue-600 font-semibold hover:underline">+ Unggah SKP {{ now()->year }}</a>
+                                                <a href="{{ route('riwayat-skp.create', ['pegawai_id' => $pegawai->id, 'tahun' => $primaryYear1]) }}" class="text-xs text-blue-600 font-semibold hover:underline">+ Unggah SKP {{ $primaryYear1 }}</a>
                                             @endif
                                         @endcan
                                     </div>
@@ -777,6 +819,11 @@
                                                 @else
                                                     <span class="text-gray-400 italic">Sedang Berjalan</span>
                                                 @endif
+                                            </div>
+
+                                            <div class="flex justify-between items-center pt-1 border-t border-gray-100">
+                                                <span class="text-gray-600">Pejabat Penilai:</span>
+                                                <span class="font-medium text-gray-800">{{ $skpN->pejabat_penilai ?: '-' }}</span>
                                             </div>
 
                                             <div class="flex justify-between items-center pt-1 border-t border-gray-100">
@@ -799,23 +846,23 @@
                                         </div>
                                     @else
                                         <div class="py-4 text-center text-xs text-gray-400 italic">
-                                            Belum ada arsip SKP Tahun {{ now()->year }}.
+                                            Belum ada arsip SKP Tahun {{ $primaryYear1 }}.
                                         </div>
                                     @endif
                                 </div>
 
-                                {{-- KARTU TAHUN SEBELUMNYA (N-1) --}}
+                                {{-- KARTU PERIODE 2 --}}
                                 <div class="rounded-xl border {{ $skpN1 ? 'border-indigo-200 bg-indigo-50/30' : 'border-dashed border-gray-300 bg-gray-50/50' }} p-4">
                                     <div class="flex items-center justify-between border-b border-gray-200/70 pb-2">
                                         <div class="flex items-center gap-2">
-                                            <span class="text-base font-extrabold text-gray-900">Tahun {{ now()->year - 1 }} (N-1)</span>
-                                            <span class="text-[11px] font-semibold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded">Tahun Sebelumnya</span>
+                                            <span class="text-base font-extrabold text-gray-900">Tahun {{ $primaryYear2 }}</span>
+                                            <span class="text-[11px] font-semibold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded">{{ $primaryYear2 == (now()->year - 1) ? 'Tahun Sebelumnya' : 'Periode N-2' }}</span>
                                         </div>
                                         @can('update', $pegawai)
                                             @if($skpN1)
                                                 <a href="{{ route('riwayat-skp.edit', $skpN1->id) }}" class="text-xs text-yellow-700 hover:underline font-semibold">Edit</a>
                                             @else
-                                                <a href="{{ route('riwayat-skp.create', ['pegawai_id' => $pegawai->id, 'tahun' => now()->year - 1]) }}" class="text-xs text-indigo-600 font-semibold hover:underline">+ Unggah SKP {{ now()->year - 1 }}</a>
+                                                <a href="{{ route('riwayat-skp.create', ['pegawai_id' => $pegawai->id, 'tahun' => $primaryYear2]) }}" class="text-xs text-indigo-600 font-semibold hover:underline">+ Unggah SKP {{ $primaryYear2 }}</a>
                                             @endif
                                         @endcan
                                     </div>
@@ -831,6 +878,11 @@
                                                 @else
                                                     <span class="text-gray-400 italic">Belum Ada</span>
                                                 @endif
+                                            </div>
+
+                                            <div class="flex justify-between items-center pt-1 border-t border-gray-100">
+                                                <span class="text-gray-600">Pejabat Penilai:</span>
+                                                <span class="font-medium text-gray-800">{{ $skpN1->pejabat_penilai ?: '-' }}</span>
                                             </div>
 
                                             <div class="flex justify-between items-center pt-1 border-t border-gray-100">
@@ -853,7 +905,7 @@
                                         </div>
                                     @else
                                         <div class="py-4 text-center text-xs text-gray-400 italic">
-                                            Belum ada arsip SKP Tahun {{ now()->year - 1 }}.
+                                            Belum ada arsip SKP Tahun {{ $primaryYear2 }}.
                                         </div>
                                     @endif
                                 </div>
@@ -927,6 +979,7 @@
                                                 <th class="py-2 px-3">Nama Penghargaan</th>
                                                 <th class="py-2 px-3">Jenis</th>
                                                 <th class="py-2 px-3">Pemberi</th>
+                                                <th class="py-2 px-3">Nomor SK</th>
                                                 <th class="py-2 px-3 text-center">Tanggal Terima</th>
                                                 <th class="py-2 px-3 text-center">Berkas</th>
                                             </tr>
@@ -937,6 +990,7 @@
                                                     <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $p->nama_penghargaan }}</td>
                                                     <td class="py-1.5 px-3 text-xs text-gray-600">{{ $p->jenis_penghargaan ?? '-' }}</td>
                                                     <td class="py-1.5 px-3 text-xs text-gray-600">{{ $p->instansi_pemberi ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 font-mono text-xs">{{ $p->nomor_sk ?? '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $p->tanggal_terima ? $p->tanggal_terima->format('d/m/Y') : '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center">
                                                         @if($p->file_sk)

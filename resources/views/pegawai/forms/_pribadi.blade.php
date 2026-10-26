@@ -15,13 +15,13 @@
             </x-enterprise.form-group>
         </x-enterprise.forms.field>
 
-        {{-- NIDN / NUPTK (Khusus Dosen / Tendik Terdaftar) --}}
+        {{-- NIDN / NUPTK (Dosen & Tendik Terdaftar) --}}
         <x-enterprise.forms.field>
-            <div x-show="kategori === 'dosen' || kategori === 'all'">
-                <x-enterprise.form-group label="NIDN / NUPTK (Khusus Dosen)">
+            <div x-show="kategori !== 'phl'">
+                <x-enterprise.form-group label="NIDN / NUPTK">
                     <x-enterprise.input name="nidn_nuptk"
                         :value="old('nidn_nuptk', $pegawai->nidn_nuptk ?? '')"
-                        placeholder="Nomor Induk Dosen Nasional..." />
+                        placeholder="Nomor Induk Dosen / NUPTK..." />
                 </x-enterprise.form-group>
             </div>
         </x-enterprise.forms.field>

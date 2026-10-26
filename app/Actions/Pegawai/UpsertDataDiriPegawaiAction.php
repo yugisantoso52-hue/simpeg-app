@@ -28,17 +28,21 @@ class UpsertDataDiriPegawaiAction
             $data['nip'] = preg_replace('/[^0-9]/', '', (string)$data['nip']);
         }
 
-        // 2. Kalkulasi KGB, KP, dan Satyalancana
-        $data['kgb_berikutnya'] = $this->generateKGB($data['tmt_kgb_terakhir'] ?? null);
-        $data['kp_berikutnya']  = $this->generateKP($data['tmt_pangkat_terakhir'] ?? null);
+        // 2. Kalkulasi KGB, KP, dan Satyalancana (pertahankan nilai lama jika partial update)
+        $tmtKgb     = array_key_exists('tmt_kgb_terakhir', $data) ? $data['tmt_kgb_terakhir'] : $pegawai?->tmt_kgb_terakhir;
+        $tmtPangkat = array_key_exists('tmt_pangkat_terakhir', $data) ? $data['tmt_pangkat_terakhir'] : $pegawai?->tmt_pangkat_terakhir;
+        $tmtPertama = array_key_exists('tmt_sk_pertama', $data) ? $data['tmt_sk_pertama'] : $pegawai?->tmt_sk_pertama;
 
-        $satyalancana = $this->generateSatyalancana($data['tmt_sk_pertama'] ?? null);
-        $data['satyalancana_terakhir']   = $satyalancana['terakhir'];
-        $data['satyalancana_berikutnya'] = $satyalancana['berikutnya'];
+        $data['kgb_berikutnya'] = $this->generateKGB($tmtKgb);
+        $data['kp_berikutnya']  = $this->generateKP($tmtPangkat);
+
+        $satyalancana = $this->generateSatyalancana($tmtPertama);
+        $data['satyalancana_terakhir']   = $satyalancana['terakhir'] ?? $pegawai?->satyalancana_terakhir;
+        $data['satyalancana_berikutnya'] = $satyalancana['berikutnya'] ?? $pegawai?->satyalancana_berikutnya;
 
         // 3. Default values
-        $data['jumlah_anak']    = $data['jumlah_anak'] ?? 0;
-        $data['status_pegawai'] = $data['status_pegawai'] ?? 'Aktif';
+        $data['jumlah_anak']    = $data['jumlah_anak'] ?? ($pegawai?->jumlah_anak ?? 0);
+        $data['status_pegawai'] = $data['status_pegawai'] ?? ($pegawai?->status_pegawai ?? 'Aktif');
 
         $filteredData = $this->filterPegawaiColumns($data);
 
@@ -74,29 +78,33 @@ class UpsertDataDiriPegawaiAction
     protected function syncStrSip(Pegawai $pegawai): void
     {
         if (!empty($pegawai->nomor_str)) {
+            $existingStr = RiwayatStrSip::where('pegawai_id', $pegawai->id)->where('jenis_dokumen', 'STR')->first();
             RiwayatStrSip::updateOrCreate(
                 ['pegawai_id' => $pegawai->id, 'jenis_dokumen' => 'STR'],
                 [
-                    'nomor_registrasi' => $pegawai->nomor_str,
-                    'nama_dokumen'     => 'Surat Tanda Registrasi (STR)',
-                    'tanggal_berakhir' => $pegawai->tanggal_kadaluarsa_str,
-                    'status'           => 'aktif',
-                    'file_dokumen'     => $pegawai->file_str,
-                    'keterangan'       => 'Tersinkronisasi otomatis dari profil pegawai',
+                    'nomor_registrasi'  => $pegawai->nomor_str,
+                    'nama_dokumen'      => $existingStr?->nama_dokumen ?: 'Surat Tanda Registrasi (STR)',
+                    'instansi_penerbit' => $existingStr?->instansi_penerbit ?: 'KTKI / Kemenkes RI',
+                    'tanggal_berakhir'  => $pegawai->tanggal_kadaluarsa_str,
+                    'status'            => 'aktif',
+                    'file_dokumen'      => $pegawai->file_str ?: $existingStr?->file_dokumen,
+                    'keterangan'        => 'Tersinkronisasi otomatis dari profil pegawai',
                 ]
             );
         }
 
         if (!empty($pegawai->nomor_sip)) {
+            $existingSip = RiwayatStrSip::where('pegawai_id', $pegawai->id)->where('jenis_dokumen', 'SIP')->first();
             RiwayatStrSip::updateOrCreate(
                 ['pegawai_id' => $pegawai->id, 'jenis_dokumen' => 'SIP'],
                 [
-                    'nomor_registrasi' => $pegawai->nomor_sip,
-                    'nama_dokumen'     => 'Surat Izin Praktik (SIP)',
-                    'tanggal_berakhir' => $pegawai->tanggal_kadaluarsa_sip,
-                    'status'           => 'aktif',
-                    'file_dokumen'     => $pegawai->file_sip,
-                    'keterangan'       => 'Tersinkronisasi otomatis dari profil pegawai',
+                    'nomor_registrasi'  => $pegawai->nomor_sip,
+                    'nama_dokumen'      => $existingSip?->nama_dokumen ?: 'Surat Izin Praktik (SIP)',
+                    'instansi_penerbit' => $existingSip?->instansi_penerbit ?: 'DPMPTSP / Dinas Kesehatan',
+                    'tanggal_berakhir'  => $pegawai->tanggal_kadaluarsa_sip,
+                    'status'            => 'aktif',
+                    'file_dokumen'      => $pegawai->file_sip ?: $existingSip?->file_dokumen,
+                    'keterangan'        => 'Tersinkronisasi otomatis dari profil pegawai',
                 ]
             );
         }

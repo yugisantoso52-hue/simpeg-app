@@ -18,7 +18,7 @@ class SyncRiwayatPegawaiAction
     }
 
     /**
-     * Menyinkronkan seluruh riwayat kepegawaian (Pendidikan, Diklat, Jabatan, Pangkat, SKP, Satyalancana)
+     * Menyinkronkan seluruh riwayat kepegawaian (Pendidikan, Diklat, Jabatan, Pangkat, SKP, Satyalancana, Penghargaan, Organisasi, Publikasi, Tugas Belajar)
      */
     public function execute(Pegawai $pegawai, array $data, array $files = [], bool $isUpdate = false): void
     {
@@ -28,6 +28,10 @@ class SyncRiwayatPegawaiAction
         $this->syncPangkat($pegawai, $data, $files, $isUpdate);
         $this->syncSkp($pegawai, $data, $files, $isUpdate);
         $this->syncSatyalancana($pegawai, $data, $files, $isUpdate);
+        $this->syncPenghargaanLainnya($pegawai, $data, $files, $isUpdate);
+        $this->syncOrganisasi($pegawai, $data, $isUpdate);
+        $this->syncPublikasi($pegawai, $data, $files, $isUpdate);
+        $this->syncTugasBelajar($pegawai, $data, $files, $isUpdate);
     }
 
     /**
@@ -35,6 +39,9 @@ class SyncRiwayatPegawaiAction
      */
     protected function syncPendidikan(Pegawai $pegawai, array $data, array $files, bool $isUpdate): void
     {
+        if (!array_key_exists('riwayat_pendidikan', $data)) {
+            return;
+        }
         $incoming = $data['riwayat_pendidikan'] ?? [];
         if (!is_array($incoming)) return;
 
@@ -85,6 +92,9 @@ class SyncRiwayatPegawaiAction
      */
     protected function syncDiklat(Pegawai $pegawai, array $data, array $files, bool $isUpdate): void
     {
+        if (!array_key_exists('riwayat_diklat', $data)) {
+            return;
+        }
         $incoming = $data['riwayat_diklat'] ?? [];
         if (!is_array($incoming)) return;
 
@@ -121,6 +131,7 @@ class SyncRiwayatPegawaiAction
                 'nomor_sertifikat' => $row['nomor_sertifikat'] ?? null,
                 'tanggal_mulai'    => $tanggalMulai,
                 'tanggal_selesai'  => $tanggalSelesai,
+                'jumlah_jam'       => isset($row['jumlah_jam']) && $row['jumlah_jam'] !== '' ? (int)$row['jumlah_jam'] : null,
                 'status'           => $row['status'] ?? 'Aktif',
                 'keterangan'       => $row['keterangan'] ?? null,
             ];
@@ -141,6 +152,9 @@ class SyncRiwayatPegawaiAction
      */
     protected function syncJabatan(Pegawai $pegawai, array $data, array $files, bool $isUpdate): void
     {
+        if (!array_key_exists('riwayat_jabatan', $data)) {
+            return;
+        }
         $incoming = $data['riwayat_jabatan'] ?? [];
         if (!is_array($incoming)) return;
 
@@ -203,6 +217,9 @@ class SyncRiwayatPegawaiAction
      */
     protected function syncPangkat(Pegawai $pegawai, array $data, array $files, bool $isUpdate): void
     {
+        if (!array_key_exists('riwayat_pangkat', $data)) {
+            return;
+        }
         $incoming = $data['riwayat_pangkat'] ?? [];
         if (!is_array($incoming)) return;
 
@@ -260,7 +277,7 @@ class SyncRiwayatPegawaiAction
     }
 
     /**
-     * 5. Riwayat SKP (2 Tahun Lalu)
+     * 5. Riwayat SKP (2 Tahun)
      */
     protected function syncSkp(Pegawai $pegawai, array $data, array $files, bool $isUpdate): void
     {
@@ -268,14 +285,29 @@ class SyncRiwayatPegawaiAction
         if (!is_array($incoming)) return;
 
         foreach ($incoming as $index => $row) {
-            if (empty($row['predikat_kinerja']) && empty($row['pejabat_penilai']) && !isset($files['riwayat_skp'][$index]['file_evaluasi_skp']) && empty($row['id'])) {
+            $hasRencanaFile = isset($files['riwayat_skp'][$index]['file_rencana_skp']);
+            $hasEvaluasiFile = isset($files['riwayat_skp'][$index]['file_evaluasi_skp']);
+
+            if (empty($row['predikat_kinerja']) && empty($row['pejabat_penilai']) && !$hasRencanaFile && !$hasEvaluasiFile && empty($row['id'])) {
                 continue;
             }
 
             $tahunSkp = !empty($row['tahun']) ? (int)$row['tahun'] : ((int)date('Y') - ($index + 1));
+            $fileRencana = null;
             $fileEvaluasi = null;
 
-            if (isset($files['riwayat_skp'][$index]['file_evaluasi_skp'])) {
+            if ($hasRencanaFile) {
+                if ($isUpdate && !empty($row['id'])) {
+                    $old = $pegawai->riwayatSkp()->where('id', $row['id'])->first();
+                    if ($old?->file_rencana_skp) {
+                        PegawaiStorageService::delete($old->file_rencana_skp);
+                    }
+                }
+                $fileRencana = PegawaiStorageService::store($files['riwayat_skp'][$index]['file_rencana_skp'], $pegawai, 'skp', 'rencana_skp_' . $tahunSkp);
+                $this->syncFileToDrive($pegawai, $files['riwayat_skp'][$index]['file_rencana_skp'], 'RENCANA SKP ' . $tahunSkp, '08_SKP');
+            }
+
+            if ($hasEvaluasiFile) {
                 if ($isUpdate && !empty($row['id'])) {
                     $old = $pegawai->riwayatSkp()->where('id', $row['id'])->first();
                     if ($old?->file_evaluasi_skp) {
@@ -292,6 +324,9 @@ class SyncRiwayatPegawaiAction
                 'pejabat_penilai'  => $row['pejabat_penilai'] ?? null,
                 'keterangan'       => $isUpdate ? 'Update dari formulir profil pegawai' : 'Input otomatis dari formulir pegawai',
             ];
+            if ($fileRencana) {
+                $payload['file_rencana_skp'] = $fileRencana;
+            }
             if ($fileEvaluasi) {
                 $payload['file_evaluasi_skp'] = $fileEvaluasi;
             }
@@ -355,6 +390,249 @@ class SyncRiwayatPegawaiAction
 
             if (!empty($piagamData['nama_penghargaan'])) {
                 $pegawai->update(['satyalancana_terakhir' => $piagamData['nama_penghargaan']]);
+            }
+        }
+    }
+
+    /**
+     * 7. Riwayat Penghargaan & Tanda Jasa Lainnya
+     */
+    protected function syncPenghargaanLainnya(Pegawai $pegawai, array $data, array $files, bool $isUpdate): void
+    {
+        if (!array_key_exists('riwayat_penghargaan', $data)) {
+            return;
+        }
+        $incoming = $data['riwayat_penghargaan'] ?? [];
+        if (!is_array($incoming)) return;
+
+        if ($isUpdate) {
+            $satyalancanaId = $data['piagam_satyalancana']['id'] ?? $pegawai->riwayatPenghargaan()->where('jenis_penghargaan', 'Satyalancana')->value('id');
+            $existingIds = $pegawai->riwayatPenghargaan()
+                ->when($satyalancanaId, fn($q) => $q->where('id', '!=', $satyalancanaId))
+                ->pluck('id')
+                ->toArray();
+            $incomingIds = collect($incoming)->pluck('id')->filter()->toArray();
+            $pegawai->riwayatPenghargaan()->whereIn('id', array_diff($existingIds, $incomingIds))->delete();
+        }
+
+        foreach ($incoming as $index => $row) {
+            if (empty($row['nama_penghargaan'])) {
+                continue;
+            }
+
+            $fileSk = null;
+            if (isset($files['riwayat_penghargaan'][$index]['file_sk'])) {
+                if ($isUpdate && !empty($row['id'])) {
+                    $old = $pegawai->riwayatPenghargaan()->where('id', $row['id'])->first();
+                    if ($old?->file_sk) {
+                        PegawaiStorageService::delete($old->file_sk);
+                    }
+                }
+                $fileSk = PegawaiStorageService::store($files['riwayat_penghargaan'][$index]['file_sk'], $pegawai, 'penghargaan', $row['nama_penghargaan']);
+                $this->syncFileToDrive($pegawai, $files['riwayat_penghargaan'][$index]['file_sk'], 'PENGHARGAAN ' . strtoupper($row['nama_penghargaan']), '16_PENGHARGAAN');
+            }
+
+            $payload = [
+                'nama_penghargaan'  => $row['nama_penghargaan'],
+                'jenis_penghargaan' => $row['jenis_penghargaan'] ?? 'Penghargaan',
+                'instansi_pemberi'  => $row['instansi_pemberi'] ?? null,
+                'nomor_sk'          => $row['nomor_sk'] ?? null,
+                'tanggal_terima'    => !empty($row['tanggal_terima']) ? $row['tanggal_terima'] : null,
+                'keterangan'        => $row['keterangan'] ?? null,
+            ];
+            if ($fileSk) {
+                $payload['file_sk'] = $fileSk;
+            }
+
+            if ($isUpdate && !empty($row['id'])) {
+                $pegawai->riwayatPenghargaan()->where('id', $row['id'])->update($payload);
+            } else {
+                $pegawai->riwayatPenghargaan()->create($payload);
+            }
+        }
+    }
+
+    /**
+     * 8. Riwayat Keanggotaan Organisasi
+     */
+    protected function syncOrganisasi(Pegawai $pegawai, array $data, bool $isUpdate): void
+    {
+        if (!array_key_exists('riwayat_organisasi', $data)) {
+            return;
+        }
+        $incoming = $data['riwayat_organisasi'] ?? [];
+        if (!is_array($incoming)) return;
+
+        if ($isUpdate) {
+            $existingIds = $pegawai->riwayatOrganisasi()->pluck('id')->toArray();
+            $incomingIds = collect($incoming)->pluck('id')->filter()->toArray();
+            $pegawai->riwayatOrganisasi()->whereIn('id', array_diff($existingIds, $incomingIds))->delete();
+        }
+
+        foreach ($incoming as $row) {
+            if (empty($row['nama_organisasi'])) {
+                continue;
+            }
+
+            $payload = [
+                'nama_organisasi'    => $row['nama_organisasi'],
+                'jabatan_organisasi' => $row['jabatan_organisasi'] ?? null,
+                'tahun_mulai'        => !empty($row['tahun_mulai']) ? (int)$row['tahun_mulai'] : null,
+                'tahun_selesai'      => !empty($row['tahun_selesai']) ? (int)$row['tahun_selesai'] : null,
+                'masih_aktif'        => isset($row['masih_aktif']) ? (bool)$row['masih_aktif'] : true,
+                'keterangan'         => $row['keterangan'] ?? null,
+            ];
+
+            if ($isUpdate && !empty($row['id'])) {
+                $pegawai->riwayatOrganisasi()->where('id', $row['id'])->update($payload);
+            } else {
+                $pegawai->riwayatOrganisasi()->create($payload);
+            }
+        }
+    }
+
+    /**
+     * 9. Riwayat Publikasi Ilmiah & Karya
+     */
+    protected function syncPublikasi(Pegawai $pegawai, array $data, array $files, bool $isUpdate): void
+    {
+        if (!array_key_exists('riwayat_publikasi', $data)) {
+            return;
+        }
+        $incoming = $data['riwayat_publikasi'] ?? [];
+        if (!is_array($incoming)) return;
+
+        if ($isUpdate) {
+            $existingIds = $pegawai->riwayatPublikasi()->pluck('id')->toArray();
+            $incomingIds = collect($incoming)->pluck('id')->filter()->toArray();
+            $pegawai->riwayatPublikasi()->whereIn('id', array_diff($existingIds, $incomingIds))->delete();
+        }
+
+        foreach ($incoming as $index => $row) {
+            if (empty($row['judul_publikasi'])) {
+                continue;
+            }
+
+            $filePub = null;
+            if (isset($files['riwayat_publikasi'][$index]['file_publikasi'])) {
+                if ($isUpdate && !empty($row['id'])) {
+                    $old = $pegawai->riwayatPublikasi()->where('id', $row['id'])->first();
+                    if ($old?->file_publikasi) {
+                        PegawaiStorageService::delete($old->file_publikasi);
+                    }
+                }
+                $filePub = PegawaiStorageService::store($files['riwayat_publikasi'][$index]['file_publikasi'], $pegawai, 'publikasi', $row['judul_publikasi']);
+                $this->syncFileToDrive($pegawai, $files['riwayat_publikasi'][$index]['file_publikasi'], 'PUBLIKASI ILMIAH', '17_PUBLIKASI');
+            }
+
+            $validJenisPub = ['Jurnal', 'Prosiding', 'Buku', 'Book Chapter', 'Paten', 'HKI', 'Lainnya'];
+            $rawJenisPub = $row['jenis_publikasi'] ?? 'Jurnal';
+            $jenisPub = in_array($rawJenisPub, $validJenisPub, true)
+                ? $rawJenisPub
+                : (str_contains(strtolower($rawJenisPub), 'jurnal') ? 'Jurnal' : (str_contains(strtolower($rawJenisPub), 'prosiding') ? 'Prosiding' : (str_contains(strtolower($rawJenisPub), 'buku') ? 'Buku' : 'Lainnya')));
+
+            $validIndeksasi = ['Scopus', 'WoS', 'SINTA 1', 'SINTA 2', 'SINTA 3', 'SINTA 4', 'SINTA 5', 'SINTA 6', 'Nasional Terakreditasi', 'Nasional Tidak Terakreditasi', 'Lainnya'];
+            $rawIndeksasi = $row['indeksasi'] ?? null;
+            if (!empty($rawIndeksasi) && !in_array($rawIndeksasi, $validIndeksasi, true)) {
+                $rawIndeksasi = str_contains(strtolower($rawIndeksasi), 'scopus') ? 'Scopus' : (str_contains(strtolower($rawIndeksasi), 'wos') ? 'WoS' : 'Lainnya');
+            }
+
+            $payload = [
+                'judul_publikasi' => $row['judul_publikasi'],
+                'jenis_publikasi' => $jenisPub,
+                'indeksasi'       => !empty($rawIndeksasi) ? $rawIndeksasi : null,
+                'nama_jurnal'     => $row['nama_jurnal'] ?? null,
+                'penerbit'        => $row['penerbit'] ?? ($row['nama_jurnal'] ?? null),
+                'tahun_terbit'    => !empty($row['tahun_terbit']) ? (int)$row['tahun_terbit'] : null,
+                'volume_nomor'    => $row['volume_nomor'] ?? null,
+                'url_doi'         => $row['url_doi'] ?? null,
+                'keterangan'      => $row['keterangan'] ?? null,
+            ];
+            if ($filePub) {
+                $payload['file_publikasi'] = $filePub;
+            }
+
+            if ($isUpdate && !empty($row['id'])) {
+                $pegawai->riwayatPublikasi()->where('id', $row['id'])->update($payload);
+            } else {
+                $pegawai->riwayatPublikasi()->create($payload);
+            }
+        }
+    }
+
+    /**
+     * 10. Tugas Belajar & Izin Belajar (Studi Lanjut)
+     */
+    protected function syncTugasBelajar(Pegawai $pegawai, array $data, array $files, bool $isUpdate): void
+    {
+        if (!array_key_exists('tugas_belajar', $data)) {
+            return;
+        }
+        $incoming = $data['tugas_belajar'] ?? [];
+        if (!is_array($incoming)) return;
+
+        if ($isUpdate) {
+            $existingIds = $pegawai->tugasBelajar()->pluck('id')->toArray();
+            $incomingIds = collect($incoming)->pluck('id')->filter()->toArray();
+            $pegawai->tugasBelajar()->whereIn('id', array_diff($existingIds, $incomingIds))->delete();
+        }
+
+        foreach ($incoming as $index => $row) {
+            if (empty($row['perguruan_tinggi']) && empty($row['program_studi'])) {
+                continue;
+            }
+
+            $fileSk = null;
+            if (isset($files['tugas_belajar'][$index]['file_sk'])) {
+                if ($isUpdate && !empty($row['id'])) {
+                    $old = $pegawai->tugasBelajar()->where('id', $row['id'])->first();
+                    if ($old?->file_sk) {
+                        PegawaiStorageService::delete($old->file_sk);
+                    }
+                }
+                $fileSk = PegawaiStorageService::store($files['tugas_belajar'][$index]['file_sk'], $pegawai, 'tugas_belajar', 'sk_tubel');
+                $this->syncFileToDrive($pegawai, $files['tugas_belajar'][$index]['file_sk'], 'SK TUGAS BELAJAR', '03_PENDIDIKAN_DIKLAT');
+            }
+
+            $validJenisTubel = ['Tugas Belajar', 'Izin Belajar'];
+            $rawJenisTubel = $row['jenis_pengembangan'] ?? 'Tugas Belajar';
+            $jenisTubel = in_array($rawJenisTubel, $validJenisTubel, true) ? $rawJenisTubel : 'Tugas Belajar';
+
+            $validJenjang = ['S2', 'S3', 'Spesialis', 'Subspesialis', 'Post Doctoral'];
+            $rawJenjang = $row['jenjang_studi'] ?? 'S2';
+            $jenjangStudi = in_array($rawJenjang, $validJenjang, true)
+                ? $rawJenjang
+                : (str_contains($rawJenjang, 'S3') ? 'S3' : (str_contains($rawJenjang, 'S2') ? 'S2' : 'Spesialis'));
+
+            $validStatusStudi = ['Sedang Studi', 'Perpanjangan', 'Lulus', 'Dibatalkan / DO'];
+            $rawStatusStudi = $row['status_studi'] ?? 'Sedang Studi';
+            $statusStudi = in_array($rawStatusStudi, $validStatusStudi, true) ? $rawStatusStudi : 'Sedang Studi';
+
+            $tglMulai = !empty($row['tanggal_mulai']) ? $row['tanggal_mulai'] : now()->toDateString();
+            $tglSelesai = !empty($row['tanggal_selesai']) ? $row['tanggal_selesai'] : \Carbon\Carbon::parse($tglMulai)->addYears(2)->toDateString();
+
+            $payload = [
+                'jenis_pengembangan' => $jenisTubel,
+                'jenjang_studi'      => $jenjangStudi,
+                'perguruan_tinggi'   => $row['perguruan_tinggi'] ?? '-',
+                'program_studi'      => $row['program_studi'] ?? '-',
+                'negara'             => $row['negara'] ?? 'Indonesia',
+                'sumber_pembiayaan'  => $row['sumber_pembiayaan'] ?? 'Mandiri / Beasiswa',
+                'nomor_sk'           => !empty($row['nomor_sk']) ? $row['nomor_sk'] : '-',
+                'tanggal_mulai'      => $tglMulai,
+                'tanggal_selesai'    => $tglSelesai,
+                'semester_berjalan'  => !empty($row['semester_berjalan']) ? (int)$row['semester_berjalan'] : 1,
+                'status_studi'       => $statusStudi,
+                'keterangan'         => $row['keterangan'] ?? null,
+            ];
+            if ($fileSk) {
+                $payload['file_sk'] = $fileSk;
+            }
+
+            if ($isUpdate && !empty($row['id'])) {
+                $pegawai->tugasBelajar()->where('id', $row['id'])->update($payload);
+            } else {
+                $pegawai->tugasBelajar()->create($payload);
             }
         }
     }

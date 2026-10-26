@@ -113,19 +113,23 @@ class PegawaiService
                 'unitKerja',
                 'jabatan',
                 'golongan',
-                'atasan',
-                'pejabatPenilai',
-                'atasanCuti',
+                'atasan.jabatan',
+                'pejabatPenilai.jabatan',
+                'atasanCuti.jabatan',
                 'riwayatPendidikan',
                 'riwayatDiklat',
-                'riwayatJabatan',
-                'riwayatPangkat',
+                'riwayatJabatan.jabatan',
+                'riwayatJabatan.unitKerja',
+                'riwayatPangkat.golongan',
                 'riwayatStrSip',
                 'tugasBelajar',
                 'riwayatSkp',
                 'riwayatPenghargaan',
                 'riwayatOrganisasi',
                 'riwayatPublikasi',
+                'mutasi.unitKerjaAsal',
+                'mutasi.unitKerjaTujuan',
+                'pengajuanCuti',
             ]);
         } else {
             $pegawai->load(['unitKerja', 'jabatan', 'golongan', 'atasan', 'pejabatPenilai', 'atasanCuti']);
@@ -338,7 +342,7 @@ class PegawaiService
                 if ($this->hasPegawaiColumn('tmt_jabatan_terakhir', $columns)) {
                     $pegawai->tmt_jabatan_terakhir = $activeJabatan->tmt_jabatan;
                 }
-                if ($this->hasPegawaiColumn('tmt_sk_pertama', $columns)) {
+                if ($this->hasPegawaiColumn('tmt_sk_pertama', $columns) && empty($pegawai->tmt_sk_pertama)) {
                     $pegawai->tmt_sk_pertama = $activeJabatan->tmt_jabatan;
                 }
             }
@@ -346,7 +350,7 @@ class PegawaiService
                 if ($this->hasPegawaiColumn('nomor_sk_jabatan_terakhir', $columns)) {
                     $pegawai->nomor_sk_jabatan_terakhir = $activeJabatan->nomor_sk;
                 }
-                if ($this->hasPegawaiColumn('nomor_sk_pertama', $columns)) {
+                if ($this->hasPegawaiColumn('nomor_sk_pertama', $columns) && empty($pegawai->nomor_sk_pertama)) {
                     $pegawai->nomor_sk_pertama = $activeJabatan->nomor_sk;
                 }
             }
@@ -354,7 +358,7 @@ class PegawaiService
                 if ($this->hasPegawaiColumn('tanggal_sk_jabatan_terakhir', $columns)) {
                     $pegawai->tanggal_sk_jabatan_terakhir = $activeJabatan->tanggal_sk;
                 }
-                if ($this->hasPegawaiColumn('tanggal_sk_pertama', $columns)) {
+                if ($this->hasPegawaiColumn('tanggal_sk_pertama', $columns) && empty($pegawai->tanggal_sk_pertama)) {
                     $pegawai->tanggal_sk_pertama = $activeJabatan->tanggal_sk;
                 }
             }
@@ -362,7 +366,7 @@ class PegawaiService
                 if ($this->hasPegawaiColumn('file_sk_jabatan_terakhir', $columns)) {
                     $pegawai->file_sk_jabatan_terakhir = $activeJabatan->file_sk;
                 }
-                if ($this->hasPegawaiColumn('file_sk_pertama', $columns)) {
+                if ($this->hasPegawaiColumn('file_sk_pertama', $columns) && empty($pegawai->file_sk_pertama)) {
                     $pegawai->file_sk_pertama = $activeJabatan->file_sk;
                 }
             }

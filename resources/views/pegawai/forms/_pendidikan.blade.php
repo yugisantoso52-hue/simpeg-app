@@ -63,7 +63,7 @@
                         <td class="px-3 py-2">
                             <select name="riwayat_pendidikan[0][jenjang]" class="w-full border rounded px-2 py-1 text-xs">
                                 <option value="">-- Pilih --</option>
-                                @foreach(['SD', 'SMP', 'SMA', 'D3', 'S1', 'S2', 'S3', 'Profesor'] as $j)
+                                @foreach(['SD', 'SMP', 'SMA', 'D1', 'D2', 'D3', 'D4', 'S1', 'S2', 'S3', 'Profesi'] as $j)
                                     <option value="{{ $j }}">{{ $j }}</option>
                                 @endforeach
                             </select>
