@@ -2189,15 +2189,29 @@
 
                 {{-- ⚖️ ANALISIS JABATAN & KEBUTUHAN FORMASI PEGAWAI (ANJAB & ABK) ⚖️ --}}
                 @if(isset($abkSummary))
+                    @php
+                        $abkItemsList = $abkSummary['items'] ?? [];
+                        if ($abkItemsList instanceof \Illuminate\Support\Collection) {
+                            $abkItemsList = $abkItemsList->values()->all();
+                        } elseif (is_array($abkItemsList)) {
+                            $abkItemsList = array_values($abkItemsList);
+                        } else {
+                            $abkItemsList = [];
+                        }
+                    @endphp
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6"
                          x-data="{
                              filter: 'all',
                              search: '',
-                             items: {{ Js::from($abkSummary['items'] ?? []) }},
+                             rawItems: {{ Js::from($abkItemsList) }},
+                             get items() {
+                                 return Array.isArray(this.rawItems) ? this.rawItems : Object.values(this.rawItems || {});
+                             },
                              get filteredItems() {
                                  let f = this.filter;
                                  let s = this.search.toLowerCase().trim();
-                                 return this.items.filter(item => {
+                                 let list = this.items;
+                                 return list.filter(item => {
                                      let matchFilter = true;
                                      if (f === 'defisit') matchFilter = item.is_defisit;
                                      if (f === 'ideal') matchFilter = item.is_ideal;
@@ -2219,10 +2233,11 @@
                                  return 'Daftar Seluruh Formasi Jabatan Teranalisis (ABK & Bezetting Riil)';
                              },
                              get filterBadge() {
-                                 if (this.filter === 'defisit') return '🔴 Formasi Kurang (' + this.items.filter(i => i.is_defisit).length + ' Jabatan)';
-                                 if (this.filter === 'ideal') return '🟢 Formasi Ideal (' + this.items.filter(i => i.is_ideal).length + ' Jabatan)';
-                                 if (this.filter === 'dokumen') return '📑 Dokumen Baku (' + this.items.length + ' Dokumen)';
-                                 return '📋 Semua Formasi (' + this.items.length + ' Jabatan)';
+                                 let list = this.items;
+                                 if (this.filter === 'defisit') return '🔴 Formasi Kurang (' + list.filter(i => i.is_defisit).length + ' Jabatan)';
+                                 if (this.filter === 'ideal') return '🟢 Formasi Ideal (' + list.filter(i => i.is_ideal).length + ' Jabatan)';
+                                 if (this.filter === 'dokumen') return '📑 Dokumen Baku (' + list.length + ' Dokumen)';
+                                 return '📋 Semua Formasi (' + list.length + ' Jabatan)';
                              },
                              setFilter(f) {
                                  this.filter = (this.filter === f && f !== 'all') ? 'all' : f;
@@ -2558,7 +2573,10 @@
                              showTable: true,
                              page: 1,
                              perPage: 10,
-                             items: {{ Js::from($itemsJson) }},
+                             rawItems: {{ Js::from($itemsJson) }},
+                             get items() {
+                                 return Array.isArray(this.rawItems) ? this.rawItems : Object.values(this.rawItems || {});
+                             },
                              counts: {
                                  all: {{ count($facultyCompleteness['pegawai_scores'] ?? []) }},
                                  complete: {{ $facultyCompleteness['total_complete'] ?? 0 }},
@@ -2568,7 +2586,8 @@
                              get filteredItems() {
                                  let f = this.filter;
                                  let s = this.search.toLowerCase().trim();
-                                 return this.items.filter(item => {
+                                 let list = this.items;
+                                 return list.filter(item => {
                                      let matchFilter = (f === 'all' || item.category === f);
                                      let matchSearch = !s || (
                                          (item.nama && item.nama.toLowerCase().includes(s)) ||

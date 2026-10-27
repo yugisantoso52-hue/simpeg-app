@@ -104,7 +104,7 @@ class DashboardController extends Controller
 
             // Ringkasan Eksekutif Analisis Jabatan & Formasi Beban Kerja (Anjab & ABK)
             try {
-                $data['abkSummary'] = Cache::remember('dashboard_abk_summary', 600, function() {
+                $data['abkSummary'] = Cache::remember('dashboard_abk_summary_v2', 600, function() {
                     $anjabs = AnalisisJabatan::with(['jabatan', 'unitKerja', 'uraianTugas'])->get()->sortByDesc('hierarchy_order')->values();
                     $totalKebutuhan = (int) $anjabs->sum('formasi_pembulatan');
                     $totalBezetting = (int) $anjabs->sum('bezetting');
@@ -136,7 +136,7 @@ class DashboardController extends Controller
                             'url_abk'      => route('abk.edit', $a->id),
                             'url_anjab'    => route('anjab.show', $a->id),
                         ];
-                    })->values();
+                    })->values()->all();
 
                     return [
                         'totalKebutuhan'     => $totalKebutuhan,
@@ -163,7 +163,7 @@ class DashboardController extends Controller
                     'totalDokumen'       => 0,
                     'totalMasterJabatan' => 0,
                     'prioritasDefisit'   => collect(),
-                    'items'              => collect(),
+                    'items'              => [],
                 ];
             }
 

@@ -152,7 +152,7 @@
                         'url_show'      => route('anjab.show', $item),
                         'can_manage'    => $canManage,
                     ];
-                });
+                })->values()->all();
             @endphp
 
             {{-- Tabel Matrix Formasi ABK dengan Paginasi & Kontrol Tampilan --}}
@@ -162,11 +162,15 @@
                      statusFilter: 'all',
                      perPage: 10,
                      currentPage: 1,
-                     items: {{ Js::from($itemsJson) }},
+                     rawItems: {{ Js::from($itemsJson) }},
+                     get items() {
+                         return Array.isArray(this.rawItems) ? this.rawItems : Object.values(this.rawItems || {});
+                     },
                      get filteredItems() {
                          let q = this.search.toLowerCase().trim();
                          let sf = this.statusFilter;
-                         return this.items.filter(item => {
+                         let list = this.items;
+                         return list.filter(item => {
                              let matchSearch = !q || (
                                  item.nama_jabatan.toLowerCase().includes(q) ||
                                  item.nama_unit.toLowerCase().includes(q) ||
