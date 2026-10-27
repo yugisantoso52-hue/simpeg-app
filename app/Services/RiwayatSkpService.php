@@ -30,9 +30,11 @@ class RiwayatSkpService
         return $this->repository->findOrFail($id);
     }
 
-    public function pegawaiList()
+    public function pegawaiList(?int $pegawaiId = null)
     {
-        return Pegawai::orderByRaw("CASE WHEN status_pegawai = 'Aktif' THEN 0 ELSE 1 END")
+        return Pegawai::query()
+            ->when($pegawaiId, fn($q) => $q->where('id', $pegawaiId))
+            ->orderByRaw("CASE WHEN status_pegawai = 'Aktif' THEN 0 ELSE 1 END")
             ->orderBy('nama')
             ->get();
     }

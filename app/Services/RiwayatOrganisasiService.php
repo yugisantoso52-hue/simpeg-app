@@ -12,9 +12,9 @@ class RiwayatOrganisasiService
         protected RiwayatOrganisasiRepositoryInterface $repository
     ) {}
 
-    public function search(?string $search, int $perPage = 15)
+    public function search(?string $search, int $perPage = 15, ?int $pegawaiId = null)
     {
-        return $this->repository->search($search, $perPage);
+        return $this->repository->search($search, $perPage, $pegawaiId);
     }
 
     public function find(int $id): RiwayatOrganisasi
@@ -27,9 +27,12 @@ class RiwayatOrganisasiService
         return $this->repository->getByPegawai($pegawaiId);
     }
 
-    public function pegawai()
+    public function pegawai(?int $pegawaiId = null)
     {
-        return Pegawai::orderBy('nama')->get(['id', 'nama', 'nip']);
+        return Pegawai::query()
+            ->when($pegawaiId, fn($q) => $q->where('id', $pegawaiId))
+            ->orderBy('nama')
+            ->get(['id', 'nama', 'nip']);
     }
 
     public function create(array $data): RiwayatOrganisasi

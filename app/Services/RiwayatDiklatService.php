@@ -33,21 +33,23 @@ class RiwayatDiklatService
     public function filter(
         ?string $search,
         ?string $status,
-        int $perPage = 10
+        int $perPage = 10,
+        ?int $pegawaiId = null
     ) {
         return $this->repository->filter(
             $search,
             $status,
-            $perPage
+            $perPage,
+            $pegawaiId
         );
     }
 
     /**
      * Dashboard Statistic
      */
-    public function statistics(): array
+    public function statistics(?int $pegawaiId = null): array
     {
-        return $this->repository->getStatistics();
+        return $this->repository->getStatistics($pegawaiId);
     }
 
     /**
@@ -62,9 +64,11 @@ class RiwayatDiklatService
     /**
      * Data Pegawai
      */
-    public function pegawai()
+    public function pegawai(?int $pegawaiId = null)
     {
-        return Pegawai::orderByRaw("CASE WHEN status_pegawai = 'Aktif' THEN 0 ELSE 1 END")
+        return Pegawai::query()
+            ->when($pegawaiId, fn($q) => $q->where('id', $pegawaiId))
+            ->orderByRaw("CASE WHEN status_pegawai = 'Aktif' THEN 0 ELSE 1 END")
             ->orderBy('nama')
             ->get();
     }

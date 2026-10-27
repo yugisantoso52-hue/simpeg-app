@@ -41,12 +41,14 @@ class RiwayatJabatanService
     public function filter(
         ?string $search,
         ?string $status,
-        int $perPage = 10
+        int $perPage = 10,
+        ?int $pegawaiId = null
     ) {
         return $this->repository->filter(
             $search,
             $status,
-            $perPage
+            $perPage,
+            $pegawaiId
         );
     }
 
@@ -56,9 +58,11 @@ class RiwayatJabatanService
     |--------------------------------------------------------------------------
     */
 
-    public function pegawai()
+    public function pegawai(?int $pegawaiId = null)
     {
-        return Pegawai::orderByRaw("CASE WHEN status_pegawai = 'Aktif' THEN 0 ELSE 1 END")
+        return Pegawai::query()
+            ->when($pegawaiId, fn($q) => $q->where('id', $pegawaiId))
+            ->orderByRaw("CASE WHEN status_pegawai = 'Aktif' THEN 0 ELSE 1 END")
             ->orderBy('nama')
             ->get();
     }

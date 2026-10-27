@@ -20,7 +20,11 @@ class RiwayatOrganisasiController extends Controller
      */
     public function index()
     {
-        $data = $this->service->search(request('search'));
+        $user = auth()->user();
+        $isExecutive = $user && $user->canAccessExecutiveKepegawaianMenus();
+        $pegawaiId = $isExecutive ? null : ($user?->pegawai_id ?: -1);
+
+        $data = $this->service->search(request('search'), 15, $pegawaiId);
 
         return view('riwayat-organisasi.index', compact('data'));
     }
@@ -30,8 +34,16 @@ class RiwayatOrganisasiController extends Controller
      */
     public function create()
     {
+        $user = auth()->user();
+        if (!$user->hasRole('admin') && (!$user->hasRole(['pegawai', 'pimpinan']) || !$user->pegawai_id)) {
+            abort(403, 'Anda tidak memiliki hak untuk menambah data riwayat organisasi.');
+        }
+
+        $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
+        $targetPegawaiId = $isExecutive ? null : $user->pegawai_id;
+
         return view('riwayat-organisasi.create', [
-            'pegawai' => $this->service->pegawai(),
+            'pegawai' => $this->service->pegawai($targetPegawaiId),
         ]);
     }
 

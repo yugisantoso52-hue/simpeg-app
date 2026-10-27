@@ -65,6 +65,12 @@ class PetaJabatanController extends Controller
 
         $anjab = $jabatan->analisisJabatan;
 
+        // PRIVASI ASN: Sembunyikan kontak pribadi (no_hp, email) jika bukan Administrator/Pimpinan
+        $isExecutive = auth()->user()?->canAccessExecutiveKepegawaianMenus();
+        if (!$isExecutive) {
+            $jabatan->pegawai->makeHidden(['no_hp', 'email']);
+        }
+
         return response()->json([
             'success'          => true,
             'jabatan'          => $jabatan,

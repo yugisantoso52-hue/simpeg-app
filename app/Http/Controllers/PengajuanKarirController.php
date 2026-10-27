@@ -129,6 +129,9 @@ class PengajuanKarirController extends Controller
             $hariTarget = Carbon::now()->addMonths(3)->endOfDay();
             $allPegawaiRadar = Pegawai::with(['unitKerja', 'jabatan', 'golongan', 'pengajuanKarir'])
                 ->where('status_pegawai', 'Aktif')
+                ->when(!$isExecutive || $request->query('scope') === 'saya', function ($q) use ($pegawaiId) {
+                    $q->where('id', $pegawaiId ?: 0);
+                })
                 ->get();
             $reminderKp = $allPegawaiRadar->filter(function ($p) use ($hariIni, $hariTarget) {
                 if (!$p->kp_berikutnya) return false;

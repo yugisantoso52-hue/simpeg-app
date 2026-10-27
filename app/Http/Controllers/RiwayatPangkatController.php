@@ -18,12 +18,18 @@ class RiwayatPangkatController extends Controller
 
     public function index(Request $request)
     {
+        $user = auth()->user();
+        $isExecutive = $user && $user->canAccessExecutiveKepegawaianMenus();
+        $pegawaiId = $isExecutive ? null : ($user?->pegawai_id ?: -1);
+
         $data = $this->service->filter(
             $request->input('search'),
-            $request->input('status')
+            $request->input('status'),
+            10,
+            $pegawaiId
         );
 
-        $statistics = $this->service->getStatistics();
+        $statistics = $this->service->getStatistics($pegawaiId);
 
         return view('riwayat-pangkat.index', compact(
             'data',
@@ -38,8 +44,11 @@ class RiwayatPangkatController extends Controller
             abort(403, 'Anda tidak memiliki hak untuk menambah data riwayat pangkat.');
         }
 
+        $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
+        $targetPegawaiId = $isExecutive ? null : $user->pegawai_id;
+
         return view('riwayat-pangkat.create', [
-            'pegawai'  => $this->service->pegawai(),
+            'pegawai'  => $this->service->pegawai($targetPegawaiId),
             'golongan' => $this->service->golongan(),
         ]);
     }

@@ -19,7 +19,8 @@ class RiwayatSkpController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $isPegawaiOnly = $user->hasRole('pegawai') && !$user->hasRole(['admin', 'pimpinan']);
+        $isExecutive = $user && $user->canAccessExecutiveKepegawaianMenus();
+        $isPegawaiOnly = !$isExecutive;
         $pegawaiId = $isPegawaiOnly ? $user->pegawai_id : null;
 
         $data = $this->service->filter(
@@ -36,8 +37,16 @@ class RiwayatSkpController extends Controller
 
     public function create()
     {
+        $user = auth()->user();
+        if (!$user->hasRole('admin') && (!$user->hasRole(['pegawai', 'pimpinan']) || !$user->pegawai_id)) {
+            abort(403, 'Anda tidak memiliki hak untuk menambah dokumen SKP.');
+        }
+
+        $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
+        $targetPegawaiId = $isExecutive ? null : $user->pegawai_id;
+
         return view('riwayat-skp.create', [
-            'pegawai' => $this->service->pegawaiList(),
+            'pegawai' => $this->service->pegawaiList($targetPegawaiId),
         ]);
     }
 

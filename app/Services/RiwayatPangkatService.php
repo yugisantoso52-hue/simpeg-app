@@ -35,12 +35,14 @@ class RiwayatPangkatService
     public function filter(
         ?string $search,
         ?string $status,
-        int $perPage = 10
+        int $perPage = 10,
+        ?int $pegawaiId = null
     ) {
         return $this->repository->filter(
             $search,
             $status,
-            $perPage
+            $perPage,
+            $pegawaiId
         );
     }
 
@@ -56,9 +58,11 @@ class RiwayatPangkatService
     /**
      * Data Pegawai
      */
-    public function pegawai()
+    public function pegawai(?int $pegawaiId = null)
     {
-        return Pegawai::orderByRaw("CASE WHEN status_pegawai = 'Aktif' THEN 0 ELSE 1 END")
+        return Pegawai::query()
+            ->when($pegawaiId, fn($q) => $q->where('id', $pegawaiId))
+            ->orderByRaw("CASE WHEN status_pegawai = 'Aktif' THEN 0 ELSE 1 END")
             ->orderBy('nama')
             ->get();
     }
@@ -243,8 +247,8 @@ class RiwayatPangkatService
     /**
      * Statistik Riwayat Pangkat
      */
-    public function getStatistics(): array
+    public function getStatistics(?int $pegawaiId = null): array
     {
-        return $this->repository->getStatistics();
+        return $this->repository->getStatistics($pegawaiId);
     }
 }

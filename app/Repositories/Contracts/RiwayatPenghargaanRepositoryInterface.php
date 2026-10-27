@@ -7,7 +7,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface RiwayatPenghargaanRepositoryInterface extends BaseRepositoryInterface
 {
-    public function search(?string $search, int $perPage = 10): LengthAwarePaginator;
+    public function search(?string $search, int $perPage = 10, ?int $pegawaiId = null): LengthAwarePaginator;
     public function getByPegawai(int $pegawaiId);
     public function createRiwayat(array $data): RiwayatPenghargaan;
     public function updateRiwayat(int $id, array $data): RiwayatPenghargaan;

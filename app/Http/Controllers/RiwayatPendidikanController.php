@@ -15,16 +15,24 @@ class RiwayatPendidikanController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search');
+        $user = auth()->user();
+        $isExecutive = $user && $user->canAccessExecutiveKepegawaianMenus();
+        $pegawaiId = $user?->pegawai_id;
 
         $data = RiwayatPendidikan::with('pegawai')
+            ->when(!$isExecutive, function ($query) use ($pegawaiId) {
+                $query->where('pegawai_id', $pegawaiId ?: -1);
+            })
             ->when($search, function ($query) use ($search) {
-                $query->whereHas('pegawai', function ($q) use ($search) {
-                    $q->where('nama', 'like', "%{$search}%")
-                      ->orWhere('nip', 'like', "%{$search}%");
-                })
-                ->orWhere('institusi', 'like', "%{$search}%")
-                ->orWhere('jurusan', 'like', "%{$search}%")
-                ->orWhere('jenjang', 'like', "%{$search}%");
+                $query->where(function ($sq) use ($search) {
+                    $sq->whereHas('pegawai', function ($q) use ($search) {
+                        $q->where('nama', 'like', "%{$search}%")
+                          ->orWhere('nip', 'like', "%{$search}%");
+                    })
+                    ->orWhere('institusi', 'like', "%{$search}%")
+                    ->orWhere('jurusan', 'like', "%{$search}%")
+                    ->orWhere('jenjang', 'like', "%{$search}%");
+                });
             })
             ->latest()
             ->paginate(10)
@@ -40,7 +48,10 @@ class RiwayatPendidikanController extends Controller
             abort(403, 'Anda tidak memiliki hak untuk menambah data riwayat pendidikan.');
         }
 
-        $pegawai = Pegawai::orderBy('nama')->get();
+        $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
+        $pegawai = $isExecutive 
+            ? Pegawai::orderBy('nama')->get()
+            : Pegawai::where('id', $user->pegawai_id)->get();
 
         return view('riwayat-pendidikan.create', compact('pegawai'));
     }

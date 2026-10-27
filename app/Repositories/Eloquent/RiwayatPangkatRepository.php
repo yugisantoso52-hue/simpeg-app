@@ -65,10 +65,15 @@ class RiwayatPangkatRepository extends BaseRepository implements RiwayatPangkatR
     public function filter(
         ?string $search,
         ?string $status,
-        int $perPage = 10
+        int $perPage = 10,
+        ?int $pegawaiId = null
     ): LengthAwarePaginator {
 
         return $this->query()
+
+            ->when($pegawaiId, function ($q) use ($pegawaiId) {
+                $q->where('pegawai_id', $pegawaiId);
+            })
 
             ->when($search, function ($q) use ($search) {
 
@@ -181,16 +186,18 @@ class RiwayatPangkatRepository extends BaseRepository implements RiwayatPangkatR
     /**
      * Statistik Riwayat Pangkat
      */
-    public function getStatistics(): array
+    public function getStatistics(?int $pegawaiId = null): array
     {
-        return [
-            'total' => $this->model->count(),
+        $query = $this->model->when($pegawaiId, fn($q) => $q->where('pegawai_id', $pegawaiId));
 
-            'aktif' => $this->model
+        return [
+            'total' => (clone $query)->count(),
+
+            'aktif' => (clone $query)
                 ->where('status', 'aktif')
                 ->count(),
 
-            'nonaktif' => $this->model
+            'nonaktif' => (clone $query)
                 ->where('status', 'nonaktif')
                 ->count(),
         ];

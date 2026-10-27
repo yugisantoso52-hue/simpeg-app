@@ -26,7 +26,8 @@ interface RiwayatPangkatRepositoryInterface extends BaseRepositoryInterface
     public function filter(
         ?string $search,
         ?string $status,
-        int $perPage = 10
+        int $perPage = 10,
+        ?int $pegawaiId = null
     ): LengthAwarePaginator;
 
     /**
@@ -82,5 +83,5 @@ interface RiwayatPangkatRepositoryInterface extends BaseRepositoryInterface
      *     'nonaktif' => int
      * ]
      */
-    public function getStatistics(): array;
+    public function getStatistics(?int $pegawaiId = null): array;
 }

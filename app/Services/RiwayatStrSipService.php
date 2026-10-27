@@ -21,14 +21,14 @@ class RiwayatStrSipService
         return $this->repository->search($search, $perPage);
     }
 
-    public function filter(?string $search, ?string $jenis, ?string $status, int $perPage = 10)
+    public function filter(?string $search, ?string $jenis, ?string $status, int $perPage = 10, ?int $pegawaiId = null)
     {
-        return $this->repository->filter($search, $jenis, $status, $perPage);
+        return $this->repository->filter($search, $jenis, $status, $perPage, $pegawaiId);
     }
 
-    public function statistics(): array
+    public function statistics(?int $pegawaiId = null): array
     {
-        return $this->repository->getStatistics();
+        return $this->repository->getStatistics($pegawaiId);
     }
 
     public function find(int $id): RiwayatStrSip
@@ -36,9 +36,11 @@ class RiwayatStrSipService
         return $this->repository->findOrFail($id);
     }
 
-    public function pegawai()
+    public function pegawai(?int $pegawaiId = null)
     {
-        return Pegawai::orderByRaw("CASE WHEN status_pegawai = 'Aktif' THEN 0 ELSE 1 END")
+        return Pegawai::query()
+            ->when($pegawaiId, fn($q) => $q->where('id', $pegawaiId))
+            ->orderByRaw("CASE WHEN status_pegawai = 'Aktif' THEN 0 ELSE 1 END")
             ->orderBy('nama')
             ->get();
     }

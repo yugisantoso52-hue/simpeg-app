@@ -18,9 +18,12 @@ class RiwayatPublikasiRepository extends BaseRepository implements RiwayatPublik
         return $this->model->with(['pegawai']);
     }
 
-    public function search(?string $search, int $perPage = 10): LengthAwarePaginator
+    public function search(?string $search, int $perPage = 10, ?int $pegawaiId = null): LengthAwarePaginator
     {
         return $this->query()
+            ->when($pegawaiId, function ($q) use ($pegawaiId) {
+                $q->where('pegawai_id', $pegawaiId);
+            })
             ->when($search, function ($q) use ($search) {
                 $q->where('judul_publikasi', 'like', "%{$search}%")
                   ->orWhere('nama_jurnal', 'like', "%{$search}%")

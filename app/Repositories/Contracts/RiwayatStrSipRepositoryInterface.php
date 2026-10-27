@@ -10,9 +10,9 @@ interface RiwayatStrSipRepositoryInterface extends BaseRepositoryInterface
 {
     public function search(?string $search, int $perPage = 10): LengthAwarePaginator;
 
-    public function filter(?string $search, ?string $jenis, ?string $status, int $perPage = 10): LengthAwarePaginator;
+    public function filter(?string $search, ?string $jenis, ?string $status, int $perPage = 10, ?int $pegawaiId = null): LengthAwarePaginator;
 
-    public function getStatistics(): array;
+    public function getStatistics(?int $pegawaiId = null): array;
 
     public function getByPegawai(int $pegawaiId): Collection;
 

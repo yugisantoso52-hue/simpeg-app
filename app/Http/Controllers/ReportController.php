@@ -17,6 +17,10 @@ class ReportController extends Controller
      */
     public function exportDukPdf(Request $request)
     {
+        if (!auth()->user()?->canAccessExecutiveKepegawaianMenus()) {
+            abort(403, 'Akses ekspor seluruh DUK dibatasi hanya untuk Pimpinan dan Administrator demi privasi ASN.');
+        }
+
         $query = Pegawai::with(['unitKerja', 'jabatan', 'golongan'])
             ->where('status_pegawai', 'Aktif')
             ->orderByDuk();
@@ -39,6 +43,10 @@ class ReportController extends Controller
      */
     public function exportDukExcel(Request $request)
     {
+        if (!auth()->user()?->canAccessExecutiveKepegawaianMenus()) {
+            abort(403, 'Akses ekspor seluruh DUK dibatasi hanya untuk Pimpinan dan Administrator demi privasi ASN.');
+        }
+
         $unitKerjaId = $request->get('unit_kerja_id');
         return Excel::download(new DukExport($unitKerjaId), 'DUK_Pegawai_' . date('Y-m-d') . '.xlsx');
     }

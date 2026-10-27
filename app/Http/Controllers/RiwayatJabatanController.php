@@ -22,9 +22,15 @@ class RiwayatJabatanController extends Controller
      */
     public function index(Request $request)
     {
+        $user = auth()->user();
+        $isExecutive = $user && $user->canAccessExecutiveKepegawaianMenus();
+        $pegawaiId = $isExecutive ? null : ($user?->pegawai_id ?: -1);
+
         $data = $this->service->filter(
             $request->search,
-            $request->status
+            $request->status,
+            10,
+            $pegawaiId
         );
 
         return view('riwayat-jabatan.index', compact('data'));
@@ -40,8 +46,11 @@ class RiwayatJabatanController extends Controller
             abort(403, 'Anda tidak memiliki hak untuk menambah data riwayat jabatan.');
         }
 
+        $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
+        $targetPegawaiId = $isExecutive ? null : $user->pegawai_id;
+
         return view('riwayat-jabatan.create', [
-            'pegawai'    => $this->service->pegawai(),
+            'pegawai'    => $this->service->pegawai($targetPegawaiId),
             'jabatan'    => $this->service->jabatan(),
             'unit_kerja' => $this->service->unitKerja(),
         ]);

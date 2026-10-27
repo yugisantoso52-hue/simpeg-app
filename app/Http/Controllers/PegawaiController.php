@@ -82,11 +82,33 @@ class PegawaiController extends Controller
         $tendikList = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'Tendik');
         $phlListRaw = $allPegawai->filter(fn($p) => $p->kategori_kepegawaian === 'PHL');
 
-        $dosenPnsList   = Pegawai::sortDukCollection($dosenList->filter($isPns));
-        $dosenPppkList  = Pegawai::sortDukCollection($dosenList->filter($isPppk));
-        $tendikPnsList  = Pegawai::sortDukCollection($tendikList->filter($isPns));
-        $tendikPppkList = Pegawai::sortDukCollection($tendikList->filter($isPppk));
-        $phlList        = Pegawai::sortDukCollection($phlListRaw);
+        $assignRank = function($collection) {
+            $rank = 1;
+            foreach ($collection as $item) {
+                $item->official_duk_rank = $rank++;
+            }
+            return $collection;
+        };
+
+        $dosenPnsList   = $assignRank(Pegawai::sortDukCollection($dosenList->filter($isPns)));
+        $dosenPppkList  = $assignRank(Pegawai::sortDukCollection($dosenList->filter($isPppk)));
+        $tendikPnsList  = $assignRank(Pegawai::sortDukCollection($tendikList->filter($isPns)));
+        $tendikPppkList = $assignRank(Pegawai::sortDukCollection($tendikList->filter($isPppk)));
+        $phlList        = $assignRank(Pegawai::sortDukCollection($phlListRaw));
+
+        $user = auth()->user();
+        $isExecutive = $user && $user->canAccessExecutiveKepegawaianMenus();
+        $pegawaiId = $user?->pegawai_id;
+
+        // PRIVASI ASN: Untuk akun pegawai biasa, hanya tampilkan baris pegawai bersangkutan
+        // namun nomor urut resmi hierarki fakultas (official_duk_rank) tetap dipertahankan.
+        if (!$isExecutive) {
+            $dosenPnsList   = $dosenPnsList->filter(fn($p) => (int)$p->id === (int)$pegawaiId);
+            $dosenPppkList  = $dosenPppkList->filter(fn($p) => (int)$p->id === (int)$pegawaiId);
+            $tendikPnsList  = $tendikPnsList->filter(fn($p) => (int)$p->id === (int)$pegawaiId);
+            $tendikPppkList = $tendikPppkList->filter(fn($p) => (int)$p->id === (int)$pegawaiId);
+            $phlList        = $phlList->filter(fn($p) => (int)$p->id === (int)$pegawaiId);
+        }
 
         $statistics = [
             'dosen_pns'   => count($dosenPnsList),
@@ -99,7 +121,7 @@ class PegawaiController extends Controller
 
         return view('pegawai.duk', compact(
             'dosenPnsList', 'dosenPppkList', 'tendikPnsList', 'tendikPppkList', 'phlList',
-            'statistics', 'search', 'filter'
+            'statistics', 'search', 'filter', 'isExecutive'
         ));
     }
 
@@ -319,6 +341,10 @@ class PegawaiController extends Controller
 
     public function exportDukPdf(Request $request)
     {
+        if (!auth()->user()?->canAccessExecutiveKepegawaianMenus()) {
+            abort(403, 'Akses ekspor seluruh DUK dibatasi hanya untuk Pimpinan dan Administrator demi privasi ASN.');
+        }
+
         $search = $request->get('search');
         
         // 1 Query Utama untuk PDF Export (Mengurangi dari 25 query menjadi 5 query)
@@ -366,6 +392,10 @@ class PegawaiController extends Controller
 
     public function exportDukExcel(Request $request)
     {
+        if (!auth()->user()?->canAccessExecutiveKepegawaianMenus()) {
+            abort(403, 'Akses ekspor seluruh DUK dibatasi hanya untuk Pimpinan dan Administrator demi privasi ASN.');
+        }
+
         $search = $request->get('search');
         return Excel::download(new DukExport($search), 'DUK_Pegawai_' . date('Y-m-d') . '.xlsx');
     }

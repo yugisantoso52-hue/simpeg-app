@@ -76,9 +76,16 @@
                     {{-- Action Header & Tombol Export --}}
                     <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200">
                         <div>
-                            <h3 class="text-lg font-bold text-slate-800">Laporan Resmi DUK Terpisah (Dosen & Tendik: PNS vs PPPK, PHL)</h3>
+                            <h3 class="text-lg font-bold text-slate-800">
+                                @if(isset($isExecutive) && !$isExecutive)
+                                    Daftar Urut Kepangkatan (DUK) Pegawai
+                                @else
+                                    Laporan Resmi DUK Terpisah (Dosen & Tendik: PNS vs PPPK, PHL)
+                                @endif
+                            </h3>
                             <p class="text-xs text-slate-500">Urutan hierarki otomatis berdasarkan Golongan (Tertinggi), TMT Pangkat, dan Usia.</p>
                         </div>
+                        @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
                         <div class="flex flex-wrap items-center gap-2">
                             <a href="{{ route('reports.duk.pdf', request()->query()) }}" target="_blank"
                                class="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 transition">
@@ -96,7 +103,22 @@
                                 Export DUK (Excel)
                             </a>
                         </div>
+                        @endif
                     </div>
+
+                    @if(isset($isExecutive) && !$isExecutive)
+                    <div class="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50/70 p-4 text-blue-900">
+                        <svg class="h-5 w-5 text-blue-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div class="text-xs space-y-1">
+                            <p class="font-bold text-sm text-blue-800">Pemberitahuan Privasi Data ASN</p>
+                            <p class="text-slate-600">
+                                Sesuai regulasi perlindungan data pribadi ASN, Anda hanya dapat melihat data dan urutan hierarki DUK pribadi Anda. Nomor urut yang tertera merupakan peringkat resmi Anda di dalam daftar hierarki kepangkatan fakultas.
+                            </p>
+                        </div>
+                    </div>
+                    @endif
 
                     {{-- Form Pencarian DUK --}}
                     <form method="GET" action="{{ route('duk.index') }}">
@@ -169,7 +191,7 @@
                                 <tbody class="divide-y divide-slate-200 bg-white">
                                     @forelse($dosenPnsList as $row)
                                         <tr class="hover:bg-blue-50/50 transition">
-                                            <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $loop->iteration }}</td>
+                                            <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $row->official_duk_rank ?? $loop->iteration }}</td>
                                             <td class="px-3 py-3 border-r border-slate-200">
                                                 <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-blue-600 hover:underline">
                                                     {{ $row->nama_lengkap ?? $row->nama }}
@@ -249,7 +271,7 @@
                                 <tbody class="divide-y divide-slate-200 bg-white">
                                     @forelse($dosenPppkList as $row)
                                         <tr class="hover:bg-indigo-50/50 transition">
-                                            <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $loop->iteration }}</td>
+                                            <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $row->official_duk_rank ?? $loop->iteration }}</td>
                                             <td class="px-3 py-3 border-r border-slate-200">
                                                 <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-indigo-600 hover:underline">
                                                     {{ $row->nama_lengkap ?? $row->nama }}
@@ -329,7 +351,7 @@
                                 <tbody class="divide-y divide-slate-200 bg-white">
                                     @forelse($tendikPnsList as $row)
                                         <tr class="hover:bg-emerald-50/50 transition">
-                                            <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $loop->iteration }}</td>
+                                            <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $row->official_duk_rank ?? $loop->iteration }}</td>
                                             <td class="px-3 py-3 border-r border-slate-200">
                                                 <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-emerald-700 hover:underline">
                                                     {{ $row->nama_lengkap ?? $row->nama }}
@@ -406,7 +428,7 @@
                                 <tbody class="divide-y divide-slate-200 bg-white">
                                     @forelse($tendikPppkList as $row)
                                         <tr class="hover:bg-teal-50/50 transition">
-                                            <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $loop->iteration }}</td>
+                                            <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $row->official_duk_rank ?? $loop->iteration }}</td>
                                             <td class="px-3 py-3 border-r border-slate-200">
                                                 <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-teal-700 hover:underline">
                                                     {{ $row->nama_lengkap ?? $row->nama }}
@@ -481,7 +503,7 @@
                                 <tbody class="divide-y divide-slate-200 bg-white">
                                     @forelse($phlList as $row)
                                         <tr class="hover:bg-amber-50/50 transition">
-                                            <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $loop->iteration }}</td>
+                                            <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $row->official_duk_rank ?? $loop->iteration }}</td>
                                             <td class="px-3 py-3 border-r border-slate-200">
                                                 <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-amber-800 hover:underline">
                                                     {{ $row->nama_lengkap ?? $row->nama }}

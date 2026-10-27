@@ -26,13 +26,14 @@ interface RiwayatDiklatRepositoryInterface extends BaseRepositoryInterface
     public function filter(
         ?string $search,
         ?string $status,
-        int $perPage = 10
+        int $perPage = 10,
+        ?int $pegawaiId = null
     ): LengthAwarePaginator;
 
     /**
      * Statistik Dashboard
      */
-    public function getStatistics(): array;
+    public function getStatistics(?int $pegawaiId = null): array;
 
     /**
      * Riwayat berdasarkan Pegawai

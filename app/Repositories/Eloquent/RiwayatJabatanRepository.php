@@ -74,7 +74,8 @@ class RiwayatJabatanRepository extends BaseRepository implements RiwayatJabatanR
     public function filter(
         ?string $search,
         ?string $status,
-        int $perPage = 10
+        int $perPage = 10,
+        ?int $pegawaiId = null
     ): LengthAwarePaginator {
 
         return $this->model
@@ -83,6 +84,10 @@ class RiwayatJabatanRepository extends BaseRepository implements RiwayatJabatanR
                 'jabatan',
                 'unitKerja',
             ])
+
+            ->when($pegawaiId, function ($query) use ($pegawaiId) {
+                $query->where('pegawai_id', $pegawaiId);
+            })
 
             ->when($search, function ($query) use ($search) {
 

@@ -18,9 +18,12 @@ class RiwayatOrganisasiRepository extends BaseRepository implements RiwayatOrgan
         return $this->model->with(['pegawai']);
     }
 
-    public function search(?string $search, int $perPage = 10): LengthAwarePaginator
+    public function search(?string $search, int $perPage = 10, ?int $pegawaiId = null): LengthAwarePaginator
     {
         return $this->query()
+            ->when($pegawaiId, function ($q) use ($pegawaiId) {
+                $q->where('pegawai_id', $pegawaiId);
+            })
             ->when($search, function ($q) use ($search) {
                 $q->where('nama_organisasi', 'like', "%{$search}%")
                   ->orWhere('jabatan_organisasi', 'like', "%{$search}%")

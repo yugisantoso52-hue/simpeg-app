@@ -32,12 +32,15 @@ class RiwayatStrSipRepository extends BaseRepository implements RiwayatStrSipRep
             ->withQueryString();
     }
 
-    public function filter(?string $search, ?string $jenis, ?string $status, int $perPage = 10): LengthAwarePaginator
+    public function filter(?string $search, ?string $jenis, ?string $status, int $perPage = 10, ?int $pegawaiId = null): LengthAwarePaginator
     {
         $today = Carbon::today()->toDateString();
         $target6Months = Carbon::today()->addMonths(6)->toDateString();
 
         return $this->model->with(['pegawai.unitKerja', 'pegawai.jabatan'])
+            ->when($pegawaiId, function ($query) use ($pegawaiId) {
+                $query->where('pegawai_id', $pegawaiId);
+            })
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('nomor_registrasi', 'like', "%{$search}%")
@@ -81,18 +84,19 @@ class RiwayatStrSipRepository extends BaseRepository implements RiwayatStrSipRep
             ->withQueryString();
     }
 
-    public function getStatistics(): array
+    public function getStatistics(?int $pegawaiId = null): array
     {
         $today = Carbon::today()->toDateString();
         $target6Months = Carbon::today()->addMonths(6)->toDateString();
+        $query = $this->model->when($pegawaiId, fn($q) => $q->where('pegawai_id', $pegawaiId));
 
         return [
-            'total'           => $this->model->count(),
-            'str'             => $this->model->where('jenis_dokumen', 'STR')->count(),
-            'sip'             => $this->model->whereIn('jenis_dokumen', ['SIP', 'SIKP'])->count(),
-            'seumur_hidup'    => $this->model->where('is_seumur_hidup', true)->count(),
-            'segera_berakhir' => $this->model->where('is_seumur_hidup', false)->whereBetween('tanggal_berakhir', [$today, $target6Months])->count(),
-            'kedaluwarsa'     => $this->model->where('is_seumur_hidup', false)->where('tanggal_berakhir', '<', $today)->count(),
+            'total'           => (clone $query)->count(),
+            'str'             => (clone $query)->where('jenis_dokumen', 'STR')->count(),
+            'sip'             => (clone $query)->whereIn('jenis_dokumen', ['SIP', 'SIKP'])->count(),
+            'seumur_hidup'    => (clone $query)->where('is_seumur_hidup', true)->count(),
+            'segera_berakhir' => (clone $query)->where('is_seumur_hidup', false)->whereBetween('tanggal_berakhir', [$today, $target6Months])->count(),
+            'kedaluwarsa'     => (clone $query)->where('is_seumur_hidup', false)->where('tanggal_berakhir', '<', $today)->count(),
         ];
     }
 

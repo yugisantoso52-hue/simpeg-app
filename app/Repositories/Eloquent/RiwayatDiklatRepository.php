@@ -69,10 +69,15 @@ class RiwayatDiklatRepository extends BaseRepository implements RiwayatDiklatRep
     public function filter(
         ?string $search,
         ?string $status,
-        int $perPage = 10
+        int $perPage = 10,
+        ?int $pegawaiId = null
     ): LengthAwarePaginator {
 
         return $this->query()
+
+            ->when($pegawaiId, function ($q) use ($pegawaiId) {
+                $q->where('pegawai_id', $pegawaiId);
+            })
 
             ->when($search, function ($q) use ($search) {
 
@@ -103,17 +108,19 @@ class RiwayatDiklatRepository extends BaseRepository implements RiwayatDiklatRep
     /**
      * Statistik Dashboard
      */
-    public function getStatistics(): array
+    public function getStatistics(?int $pegawaiId = null): array
     {
+        $query = $this->model->when($pegawaiId, fn($q) => $q->where('pegawai_id', $pegawaiId));
+
         return [
 
-            'total' => $this->model->count(),
+            'total' => (clone $query)->count(),
 
-            'aktif' => $this->model
+            'aktif' => (clone $query)
                 ->where('status', 'Aktif')
                 ->count(),
 
-            'nonaktif' => $this->model
+            'nonaktif' => (clone $query)
                 ->where('status', 'Tidak Aktif')
                 ->count(),
 

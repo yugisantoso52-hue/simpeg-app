@@ -15,7 +15,8 @@ interface RiwayatJabatanRepositoryInterface extends BaseRepositoryInterface
     public function filter(
         ?string $search,
         ?string $status,
-        int $perPage = 10
+        int $perPage = 10,
+        ?int $pegawaiId = null
     ): LengthAwarePaginator;
 
     public function getByPegawai(

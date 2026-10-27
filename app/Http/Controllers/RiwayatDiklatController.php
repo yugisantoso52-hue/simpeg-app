@@ -20,12 +20,18 @@ class RiwayatDiklatController extends Controller
      */
     public function index()
     {
+        $user = auth()->user();
+        $isExecutive = $user && $user->canAccessExecutiveKepegawaianMenus();
+        $pegawaiId = $isExecutive ? null : ($user?->pegawai_id ?: -1);
+
         $data = $this->service->filter(
             request('search'),
-            request('status')
+            request('status'),
+            10,
+            $pegawaiId
         );
 
-        $statistics = $this->service->statistics();
+        $statistics = $this->service->statistics($pegawaiId);
 
         return view('riwayat-diklat.index', compact('data', 'statistics'));
     }
@@ -35,8 +41,16 @@ class RiwayatDiklatController extends Controller
      */
     public function create()
     {
+        $user = auth()->user();
+        if (!$user->hasRole('admin') && (!$user->hasRole(['pegawai', 'pimpinan']) || !$user->pegawai_id)) {
+            abort(403, 'Anda tidak memiliki hak untuk menambah data riwayat diklat.');
+        }
+
+        $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
+        $targetPegawaiId = $isExecutive ? null : $user->pegawai_id;
+
         return view('riwayat-diklat.create', [
-            'pegawai' => $this->service->pegawai(),
+            'pegawai' => $this->service->pegawai($targetPegawaiId),
         ]);
     }
 
