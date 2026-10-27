@@ -255,8 +255,8 @@
                         <span style="font-size: 8pt; color: #475569;">NIP. {{ $p->nip }}</span>
                     </td>
                     <td>
-                        {{ $p->golongan->nama_pangkat ?? '-' }} ({{ $p->golongan->nama_golongan ?? '-' }})<br>
-                        <span style="font-size: 8pt;">{{ $p->jabatan->nama_jabatan ?? 'Dosen / PLP' }}</span>
+                        {{ $p->golongan?->nama_pangkat ?? '-' }} ({{ $p->golongan?->nama_golongan ?? '-' }})<br>
+                        <span style="font-size: 8pt;">{{ $p->jabatan?->nama_jabatan ?? 'Dosen / PLP' }}</span>
                     </td>
                     <td style="text-align: center;">
                         {{ $p->tmt_sk_pertama ? \Carbon\Carbon::parse($p->tmt_sk_pertama)->format('d-m-Y') : ($p->tanggal_masuk ? \Carbon\Carbon::parse($p->tanggal_masuk)->format('d-m-Y') : '-') }}

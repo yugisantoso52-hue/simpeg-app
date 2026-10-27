@@ -128,18 +128,18 @@
                                         {{ $anjabs->firstItem() + $index }}
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="font-bold text-gray-900">{{ $item->jabatan->nama_jabatan ?? '-' }}</div>
-                                        <div class="text-xs text-blue-600 font-mono font-medium">{{ $item->kode_anjab ?? $item->jabatan->kode_jabatan ?? 'DRAFT' }}</div>
+                                        <div class="font-bold text-gray-900">{{ $item->jabatan?->nama_jabatan ?? '-' }}</div>
+                                        <div class="text-xs text-blue-600 font-mono font-medium">{{ $item->kode_anjab ?? $item->jabatan?->kode_jabatan ?? 'DRAFT' }}</div>
                                         <div class="text-xs text-gray-500 line-clamp-1 mt-0.5">{{ $item->ikhtisar_jabatan ?? 'Belum ada ikhtisar jabatan.' }}</div>
                                     </td>
                                     <td class="px-6 py-4">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            {{ $item->unitKerja->nama_unit ?? 'Unit Kerja Fakultas' }}
+                                            {{ $item->unitKerja?->nama_unit ?? 'Unit Kerja Fakultas' }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-center">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                                            Grade {{ $item->kelas_jabatan ?? $item->jabatan->kelas_jabatan ?? '-' }}
+                                            Grade {{ $item->kelas_jabatan ?? $item->jabatan?->kelas_jabatan ?? '-' }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-center">

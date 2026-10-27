@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulir Anjab - {{ $anjab->jabatan->nama_jabatan ?? 'Jabatan' }}</title>
+    <title>Formulir Anjab - {{ $anjab->jabatan?->nama_jabatan ?? 'Jabatan' }}</title>
     <style>
         body {
             font-family: 'Times New Roman', Times, serif;
@@ -114,17 +114,17 @@
     <table class="content-table">
         <tr>
             <td style="width: 25%; font-weight: bold;">1. Nama Jabatan</td>
-            <td style="width: 75%;">{{ $anjab->jabatan->nama_jabatan ?? '-' }}</td>
+            <td style="width: 75%;">{{ $anjab->jabatan?->nama_jabatan ?? '-' }}</td>
         </tr>
         <tr>
             <td style="font-weight: bold;">2. Kode Jabatan</td>
-            <td>{{ $anjab->kode_anjab ?? $anjab->jabatan->kode_jabatan ?? '-' }}</td>
+            <td>{{ $anjab->kode_anjab ?? $anjab->jabatan?->kode_jabatan ?? '-' }}</td>
         </tr>
         <tr>
             <td style="font-weight: bold;">3. Unit Kerja</td>
             <td>
                 Fakultas Keperawatan Universitas Riau<br>
-                <strong>Unit Pengelola:</strong> {{ $anjab->unitKerja->nama_unit ?? 'Fakultas Keperawatan' }}
+                <strong>Unit Pengelola:</strong> {{ $anjab->unitKerja?->nama_unit ?? 'Fakultas Keperawatan' }}
             </td>
         </tr>
         <tr>
@@ -229,7 +229,7 @@
         </tr>
         <tr>
             <td style="font-weight: bold;">16. Kelas Jabatan</td>
-            <td><strong>Grade {{ $anjab->kelas_jabatan ?? $anjab->jabatan->kelas_jabatan ?? '-' }}</strong></td>
+            <td><strong>Grade {{ $anjab->kelas_jabatan ?? $anjab->jabatan?->kelas_jabatan ?? '-' }}</strong></td>
         </tr>
     </table>
 

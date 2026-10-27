@@ -53,15 +53,15 @@
                                 </td>
 
                                 <td class="px-4 py-3 font-semibold text-gray-800">
-                                    {{ $row->pegawai->nama_lengkap ?? $row->pegawai->nama ?? '-' }}
+                                    {{ $row->pegawai?->nama_lengkap ?? $row->pegawai?->nama ?? '-' }}
                                 </td>
 
                                 <td class="px-4 py-3">
-                                    {{ $row->unitLama->nama_unit ?? '-' }}
+                                    {{ $row->unitLama?->nama_unit ?? '-' }}
                                 </td>
 
                                 <td class="px-4 py-3">
-                                    {{ $row->unitBaru->nama_unit ?? '-' }}
+                                    {{ $row->unitBaru?->nama_unit ?? '-' }}
                                 </td>
 
                                 <td class="px-4 py-3">

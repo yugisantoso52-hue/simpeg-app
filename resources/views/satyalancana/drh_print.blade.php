@@ -230,8 +230,8 @@
         }
 
         // 6. Pangkat, Golongan Ruang Terakhir (TMT)
-        $namaGolongan = $pegawai->golongan->nama_golongan ?? '';
-        $namaPangkat = $pegawai->golongan->nama_pangkat ?? '';
+        $namaGolongan = $pegawai->golongan?->nama_golongan ?? '';
+        $namaPangkat = $pegawai->golongan?->nama_pangkat ?? '';
         $tmtPangkat = $pegawai->tmt_pangkat_terakhir ? \Carbon\Carbon::parse($pegawai->tmt_pangkat_terakhir)->locale('id')->translatedFormat('d F Y') : ($pegawai->tmt_pangkat ? \Carbon\Carbon::parse($pegawai->tmt_pangkat)->locale('id')->translatedFormat('d F Y') : null);
 
         if ($namaPangkat && $namaGolongan) {
@@ -255,7 +255,7 @@
         $tmtCpnsStr = $tmtCpnsObj ? $tmtCpnsObj->translatedFormat('d F Y') : '1 Desember 2010';
 
         // 8. Jabatan Terakhir (TMT)
-        $namaJabatan = $pegawai->jabatan->nama_jabatan ?? '';
+        $namaJabatan = $pegawai->jabatan?->nama_jabatan ?? '';
         if (str_contains(strtolower($namaJabatan), 'pranata laboratorium pendidikan')) {
             $namaJabatan = 'PLP Ahli Muda';
         }

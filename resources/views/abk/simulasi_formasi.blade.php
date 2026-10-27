@@ -164,9 +164,9 @@
                             <tr class="hover:bg-purple-50/30 transition {{ $row['selisih'] < 0 ? 'bg-rose-50/15' : '' }}">
                                 <td class="px-4 py-3 text-center text-gray-400 font-mono">{{ $idx + 1 }}</td>
                                 <td class="px-4 py-3">
-                                    <div class="font-bold text-gray-900 text-xs">{{ $row['anjab']->jabatan->nama_jabatan ?? '-' }}</div>
+                                    <div class="font-bold text-gray-900 text-xs">{{ $row['anjab']->jabatan?->nama_jabatan ?? '-' }}</div>
                                     <div class="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1.5">
-                                        <span>🏢 {{ $row['anjab']->unitKerja->nama_unit ?? 'Fakultas' }}</span>
+                                        <span>🏢 {{ $row['anjab']->unitKerja?->nama_unit ?? 'Fakultas' }}</span>
                                         <span class="text-gray-300">&bull;</span>
                                         <span class="font-mono text-gray-400">{{ $row['anjab']->kode_anjab ?? '-' }}</span>
                                     </div>
@@ -178,7 +178,7 @@
                                             <ul class="list-disc list-inside mt-0.5 space-y-0.5">
                                                 @foreach($row['pegawai_pensiun_list'] as $pensiun)
                                                     <li>
-                                                        <b>{{ $pensiun['pegawai']->nama }}</b> (NIP. {{ $pensiun['pegawai']->nip }}) &bull; TMT BUP: {{ $pensiun['tgl_pensiun'] }} [{{ $pensiun['sisa'] }}]
+                                                        <b>{{ $pensiun['pegawai']?->nama ?? '-' }}</b> (NIP. {{ $pensiun['pegawai']?->nip ?? '-' }}) &bull; TMT BUP: {{ $pensiun['tgl_pensiun'] }} [{{ $pensiun['sisa'] }}]
                                                     </li>
                                                 @endforeach
                                             </ul>
@@ -186,7 +186,7 @@
                                     @endif
                                 </td>
                                 <td class="px-3 py-3 text-center font-mono font-bold text-amber-700">
-                                    {{ $row['anjab']->kelas_jabatan ?? $row['anjab']->jabatan->kelas_jabatan ?? '-' }}
+                                    {{ $row['anjab']->kelas_jabatan ?? $row['anjab']->jabatan?->kelas_jabatan ?? '-' }}
                                 </td>
                                 <td class="px-3 py-3 text-center font-black text-blue-700 text-sm">
                                     {{ $row['kebutuhan'] }}

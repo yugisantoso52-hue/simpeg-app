@@ -107,8 +107,8 @@
                                 </td>
 
                                 <td class="px-4 py-3">
-                                    <div class="font-semibold text-gray-800">{{ $row->pegawai->nama_lengkap ?? $row->pegawai->nama ?? '-' }}</div>
-                                    <div class="text-xs text-gray-500">{{ $row->pegawai->nip ?? '-' }}</div>
+                                    <div class="font-semibold text-gray-800">{{ $row->pegawai?->nama_lengkap ?? $row->pegawai?->nama ?? '-' }}</div>
+                                    <div class="text-xs text-gray-500">{{ $row->pegawai?->nip ?? '-' }}</div>
                                 </td>
 
                                 <td class="px-4 py-3">

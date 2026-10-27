@@ -111,18 +111,18 @@
                                 </td>
                                 <td class="py-3 px-4">
                                     <div class="font-bold text-gray-900">
-                                        {{ $item->pegawai->nama_lengkap ?? $item->pegawai->nama }}
+                                        {{ $item->pegawai?->nama_lengkap ?? $item->pegawai?->nama ?? '-' }}
                                     </div>
                                     <div class="text-[10px] font-mono text-gray-500">
-                                        NIP. {{ $item->pegawai->nip }} &bull; Gol. {{ $item->pegawai->golongan->kode ?? '-' }}
+                                        NIP. {{ $item->pegawai?->nip ?? '-' }} &bull; Gol. {{ $item->pegawai?->golongan?->kode ?? $item->pegawai?->golongan?->nama_golongan ?? '-' }}
                                     </div>
                                 </td>
                                 <td class="py-3 px-4">
                                     <div class="font-semibold text-gray-800">
-                                        {{ $item->pegawai->jabatan->nama_jabatan ?? '-' }}
+                                        {{ $item->pegawai?->jabatan?->nama_jabatan ?? '-' }}
                                     </div>
                                     <div class="text-[10px] text-gray-500">
-                                        {{ $item->pegawai->unitKerja->nama_unit ?? '-' }}
+                                        {{ $item->pegawai?->unitKerja?->nama_unit ?? '-' }}
                                     </div>
                                 </td>
                                 <td class="py-3 px-4 text-center">

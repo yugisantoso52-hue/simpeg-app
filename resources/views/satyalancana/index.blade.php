@@ -193,12 +193,12 @@
                                     'nama' => $row->nama_lengkap ?? $row->nama,
                                     'nip' => $row->nip,
                                     'kategori' => $row->kategori_satyalancana,
-                                    'unit' => $row->unitKerja->nama_unit ?? '-',
-                                    'golongan' => ($row->golongan->nama_golongan ?? '-') . ' (' . ($row->golongan->kode_golongan ?? '-') . ')',
+                                    'unit' => $row->unitKerja?->nama_unit ?? '-',
+                                    'golongan' => ($row->golongan?->nama_golongan ?? '-') . ' (' . ($row->golongan?->kode_golongan ?? '-') . ')',
                                     'tmt_cpns' => $row->tmt_sk_pertama ? \Carbon\Carbon::parse($row->tmt_sk_pertama)->format('d-m-Y') : ($row->tanggal_masuk ? \Carbon\Carbon::parse($row->tanggal_masuk)->format('d-m-Y') : '-'),
                                     'no_sk_cpns' => $row->nomor_sk_pertama ?? '19597/A4/KP/2011',
-                                    'pangkat_terakhir' => ($pangkatTerakhir->golongan->nama_pangkat ?? ($row->golongan->nama_pangkat ?? '-')) . ' / SK: ' . ($pangkatTerakhir->nomor_sk ?? ($row->nomor_sk_pangkat_terakhir ?? '-')),
-                                    'jabatan_terakhir' => ($jabatanTerakhir->jabatan->nama_jabatan ?? ($row->jabatan->nama_jabatan ?? '-')) . ' / SK: ' . ($jabatanTerakhir->nomor_sk ?? '-'),
+                                    'pangkat_terakhir' => ($pangkatTerakhir?->golongan?->nama_pangkat ?? ($row->golongan?->nama_pangkat ?? '-')) . ' / SK: ' . ($pangkatTerakhir?->nomor_sk ?? ($row->nomor_sk_pangkat_terakhir ?? '-')),
+                                    'jabatan_terakhir' => ($jabatanTerakhir?->jabatan?->nama_jabatan ?? ($row->jabatan?->nama_jabatan ?? '-')) . ' / SK: ' . ($jabatanTerakhir?->nomor_sk ?? '-'),
                                     'skp_status' => $skpStatusText,
                                     'skp_count' => $skpCount,
                                     'skp_items' => $skpItems,
@@ -230,8 +230,8 @@
                                     <div class="text-xs text-slate-500">NIP: {{ $row->nip }}</div>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <div class="text-sm text-slate-800">{{ $row->unitKerja->nama_unit ?? '-' }}</div>
-                                    <div class="text-xs text-slate-500">{{ $row->golongan->nama_golongan ?? '-' }} ({{ $row->golongan->kode_golongan ?? '-' }})</div>
+                                    <div class="text-sm text-slate-800">{{ $row->unitKerja?->nama_unit ?? '-' }}</div>
+                                    <div class="text-xs text-slate-500">{{ $row->golongan?->nama_golongan ?? '-' }} ({{ $row->golongan?->kode_golongan ?? '-' }})</div>
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     <span class="text-sm font-medium text-slate-700">
@@ -364,12 +364,12 @@
                                             'nama' => $pPegawai->nama_lengkap ?? $pPegawai->nama,
                                             'nip' => $pPegawai->nip,
                                             'kategori' => $usulan->kategori,
-                                            'unit' => $pPegawai->unitKerja->nama_unit ?? '-',
-                                            'golongan' => ($pPegawai->golongan->nama_golongan ?? '-') . ' (' . ($pPegawai->golongan->kode_golongan ?? '-') . ')',
+                                            'unit' => $pPegawai->unitKerja?->nama_unit ?? '-',
+                                            'golongan' => ($pPegawai->golongan?->nama_golongan ?? '-') . ' (' . ($pPegawai->golongan?->kode_golongan ?? '-') . ')',
                                             'tmt_cpns' => $pPegawai->tmt_sk_pertama ? \Carbon\Carbon::parse($pPegawai->tmt_sk_pertama)->format('d-m-Y') : ($pPegawai->tanggal_masuk ? \Carbon\Carbon::parse($pPegawai->tanggal_masuk)->format('d-m-Y') : '-'),
                                             'no_sk_cpns' => $pPegawai->nomor_sk_pertama ?? '19597/A4/KP/2011',
-                                            'pangkat_terakhir' => ($uPangkatTerakhir->golongan->nama_pangkat ?? ($pPegawai->golongan->nama_pangkat ?? '-')) . ' / SK: ' . ($uPangkatTerakhir->nomor_sk ?? ($pPegawai->nomor_sk_pangkat_terakhir ?? '-')),
-                                            'jabatan_terakhir' => ($uJabatanTerakhir->jabatan->nama_jabatan ?? ($pPegawai->jabatan->nama_jabatan ?? '-')) . ' / SK: ' . ($uJabatanTerakhir->nomor_sk ?? '-'),
+                                            'pangkat_terakhir' => ($uPangkatTerakhir?->golongan?->nama_pangkat ?? ($pPegawai->golongan?->nama_pangkat ?? '-')) . ' / SK: ' . ($uPangkatTerakhir?->nomor_sk ?? ($pPegawai->nomor_sk_pangkat_terakhir ?? '-')),
+                                            'jabatan_terakhir' => ($uJabatanTerakhir?->jabatan?->nama_jabatan ?? ($pPegawai->jabatan?->nama_jabatan ?? '-')) . ' / SK: ' . ($uJabatanTerakhir?->nomor_sk ?? '-'),
                                             'skp_status' => $uSkpStatusText,
                                             'skp_count' => $uSkpCount,
                                             'skp_items' => $uSkpItems,
@@ -410,7 +410,7 @@
                                                 <div x-show="editNomorSL" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                                                     <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-4 text-left" @click.outside="editNomorSL = false">
                                                         <h4 class="text-sm font-bold text-slate-800 mb-1">Penomoran Usulan Satyalancana (Admin)</h4>
-                                                        <p class="text-xs text-slate-500 mb-3">Tuliskan nomor urut dinas resmi untuk usulan an. <strong>{{ $usulan->pegawai->nama }}</strong>.</p>
+                                                        <p class="text-xs text-slate-500 mb-3">Tuliskan nomor urut dinas resmi untuk usulan an. <strong>{{ $usulan->pegawai?->nama ?? '-' }}</strong>.</p>
                                                         <form action="{{ route('satyalancana.update-nomor', $usulan->id) }}" method="POST">
                                                             @csrf
                                                             <div class="flex rounded-lg shadow-sm mb-3">
@@ -430,8 +430,8 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-3">
-                                            <div class="font-semibold text-slate-900">{{ $usulan->pegawai->nama_lengkap ?? $usulan->pegawai->nama }}</div>
-                                            <div class="text-xs text-slate-500">NIP: {{ $usulan->pegawai->nip }}</div>
+                                            <div class="font-semibold text-slate-900">{{ $usulan->pegawai?->nama_lengkap ?? $usulan->pegawai?->nama ?? '-' }}</div>
+                                            <div class="text-xs text-slate-500">NIP: {{ $usulan->pegawai?->nip ?? '-' }}</div>
                                         </td>
                                         <td class="px-4 py-3 text-center">
                                             <x-enterprise.badge color="{{ $usulan->kategori == '30 Tahun' ? 'amber' : ($usulan->kategori == '20 Tahun' ? 'blue' : 'green') }}">

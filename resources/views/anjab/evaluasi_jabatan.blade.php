@@ -64,15 +64,15 @@
                 <span class="text-[10px] font-black uppercase tracking-wider text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
                     Jabatan Sasaran Evaluasi
                 </span>
-                <h2 class="text-lg font-black text-gray-900 mt-1">{{ $anjab->jabatan->nama_jabatan ?? '-' }}</h2>
+                <h2 class="text-lg font-black text-gray-900 mt-1">{{ $anjab->jabatan?->nama_jabatan ?? '-' }}</h2>
                 <p class="text-xs text-gray-500 mt-0.5">
-                    Unit Kerja: <b>{{ $anjab->unitKerja->nama_unit ?? 'Fakultas Keperawatan UNRI' }}</b> &bull; Kode Anjab: <span class="font-mono">{{ $anjab->kode_anjab ?? '-' }}</span>
+                    Unit Kerja: <b>{{ $anjab->unitKerja?->nama_unit ?? 'Fakultas Keperawatan UNRI' }}</b> &bull; Kode Anjab: <span class="font-mono">{{ $anjab->kode_anjab ?? '-' }}</span>
                 </p>
             </div>
             <div class="flex items-center gap-4 bg-amber-50/60 p-3 rounded-xl border border-amber-200 shrink-0">
                 <div class="text-center">
                     <span class="text-[10px] font-bold text-gray-500 block uppercase">Kelas Eksisting</span>
-                    <span class="text-xl font-black text-gray-700">Grade {{ $anjab->kelas_jabatan ?? $anjab->jabatan->kelas_jabatan ?? '-' }}</span>
+                    <span class="text-xl font-black text-gray-700">Grade {{ $anjab->kelas_jabatan ?? $anjab->jabatan?->kelas_jabatan ?? '-' }}</span>
                 </div>
                 <div class="text-gray-300 font-light text-2xl">➔</div>
                 <div class="text-center">

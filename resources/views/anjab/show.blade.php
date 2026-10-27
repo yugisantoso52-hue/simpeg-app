@@ -8,11 +8,11 @@
                     <span class="text-xs font-mono uppercase bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">{{ $anjab->kode_anjab ?? 'ANJAB' }}</span>
                 </div>
                 <h1 class="text-2xl font-bold text-gray-900 mt-1">
-                    {{ $anjab->jabatan->nama_jabatan ?? 'Dokumen Analisis Jabatan' }}
+                    {{ $anjab->jabatan?->nama_jabatan ?? 'Dokumen Analisis Jabatan' }}
                 </h1>
                 <p class="text-sm text-gray-600">
-                    Unit: <span class="font-semibold text-gray-800">{{ $anjab->unitKerja->nama_unit ?? 'Fakultas Keperawatan UNRI' }}</span> |
-                    Kelas Jabatan: <span class="font-bold text-amber-700">Grade {{ $anjab->kelas_jabatan ?? $anjab->jabatan->kelas_jabatan ?? '-' }}</span> |
+                    Unit: <span class="font-semibold text-gray-800">{{ $anjab->unitKerja?->nama_unit ?? 'Fakultas Keperawatan UNRI' }}</span> |
+                    Kelas Jabatan: <span class="font-bold text-amber-700">Grade {{ $anjab->kelas_jabatan ?? $anjab->jabatan?->kelas_jabatan ?? '-' }}</span> |
                     Status: <span class="uppercase text-xs font-bold px-2 py-0.5 rounded-full {{ $anjab->status === 'disetujui' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-700' }}">{{ $anjab->status }}</span>
                 </p>
             </div>
@@ -138,7 +138,7 @@
                     {{-- 1. Nama Jabatan --}}
                     <div class="p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div class="font-bold text-gray-700">1. Nama Jabatan</div>
-                        <div class="md:col-span-3 text-gray-900 font-semibold">{{ $anjab->jabatan->nama_jabatan ?? '-' }} (Kode: {{ $anjab->kode_anjab ?? $anjab->jabatan->kode_jabatan ?? '-' }})</div>
+                        <div class="md:col-span-3 text-gray-900 font-semibold">{{ $anjab->jabatan?->nama_jabatan ?? '-' }} (Kode: {{ $anjab->kode_anjab ?? $anjab->jabatan?->kode_jabatan ?? '-' }})</div>
                     </div>
 
                     {{-- 2. Unit Kerja --}}
@@ -146,7 +146,7 @@
                         <div class="font-bold text-gray-700">2. Unit Kerja</div>
                         <div class="md:col-span-3 text-gray-900">
                             <div><strong>Satuan Kerja:</strong> Fakultas Keperawatan Universitas Riau</div>
-                            <div><strong>Unit Pelaksana:</strong> {{ $anjab->unitKerja->nama_unit ?? '-' }}</div>
+                            <div><strong>Unit Pelaksana:</strong> {{ $anjab->unitKerja?->nama_unit ?? '-' }}</div>
                         </div>
                     </div>
 
@@ -314,7 +314,7 @@
                         </div>
                         <div>
                             <div class="font-bold text-gray-700 mb-1">15. Kelas Jabatan (Job Grading)</div>
-                            <div class="text-sm font-bold text-amber-700">Grade {{ $anjab->kelas_jabatan ?? $anjab->jabatan->kelas_jabatan ?? '-' }}</div>
+                            <div class="text-sm font-bold text-amber-700">Grade {{ $anjab->kelas_jabatan ?? $anjab->jabatan?->kelas_jabatan ?? '-' }}</div>
                         </div>
                     </div>
 

@@ -50,10 +50,10 @@
                             </span>
                         </div>
                         <p class="text-xs text-gray-500 font-mono mt-0.5">
-                            NIP. {{ $pegawai->nip }} &bull; Golongan: {{ $pegawai->golongan->nama_pangkat ?? '-' }} ({{ $pegawai->golongan->kode ?? '-' }})
+                            NIP. {{ $pegawai->nip ?? '-' }} &bull; Golongan: {{ $pegawai->golongan?->nama_pangkat ?? '-' }} ({{ $pegawai->golongan?->kode ?? $pegawai->golongan?->nama_golongan ?? '-' }})
                         </p>
                         <p class="text-xs font-semibold text-slate-700 mt-1">
-                            {{ $pegawai->jabatan->nama_jabatan ?? '-' }} &bull; <span class="text-slate-500 font-normal">{{ $pegawai->unitKerja->nama_unit ?? '-' }}</span>
+                            {{ $pegawai->jabatan?->nama_jabatan ?? '-' }} &bull; <span class="text-slate-500 font-normal">{{ $pegawai->unitKerja?->nama_unit ?? '-' }}</span>
                         </p>
                     </div>
                 </div>

@@ -180,21 +180,21 @@
         </tr>
         <tr>
             <td style="width: 18%;">Nama</td>
-            <td style="width: 32%;" class="text-bold">{{ $cuti->pegawai->nama_lengkap ?? $cuti->pegawai->nama }}</td>
+            <td style="width: 32%;" class="text-bold">{{ $cuti->pegawai?->nama_lengkap ?? $cuti->pegawai?->nama ?? '-' }}</td>
             <td style="width: 18%;">NIP</td>
-            <td style="width: 32%;">{{ $cuti->pegawai->nip ?? '-' }}</td>
+            <td style="width: 32%;">{{ $cuti->pegawai?->nip ?? '-' }}</td>
         </tr>
         <tr>
             <td>Jabatan</td>
-            <td>{{ $cuti->pegawai->jabatan->nama_jabatan ?? '-' }}</td>
+            <td>{{ $cuti->pegawai?->jabatan?->nama_jabatan ?? '-' }}</td>
             <td>Masa Kerja Golongan</td>
-            <td>{{ $cuti->pegawai->mkg_tahun ?? 0 }} Thn {{ $cuti->pegawai->mkg_bulan ?? 0 }} Bln</td>
+            <td>{{ $cuti->pegawai?->mkg_tahun ?? 0 }} Thn {{ $cuti->pegawai?->mkg_bulan ?? 0 }} Bln</td>
         </tr>
         <tr>
             <td>Unit Kerja</td>
-            <td>{{ $cuti->pegawai->unitKerja->nama_unit ?? 'Fakultas Keperawatan' }}</td>
+            <td>{{ $cuti->pegawai?->unitKerja?->nama_unit ?? 'Fakultas Keperawatan' }}</td>
             <td>Golongan / Pangkat</td>
-            <td>{{ $cuti->pegawai->golongan->nama_golongan ?? '-' }} ({{ $cuti->pegawai->golongan->nama_pangkat ?? '-' }})</td>
+            <td>{{ $cuti->pegawai?->golongan?->nama_golongan ?? '-' }} ({{ $cuti->pegawai?->golongan?->nama_pangkat ?? '-' }})</td>
         </tr>
     </table>
 

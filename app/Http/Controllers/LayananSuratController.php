@@ -346,7 +346,8 @@ class LayananSuratController extends Controller
         $sudahParafKabag = !empty($surat->paraf_kabag_at);
 
         // QR Code Verifikasi Publik
-        $verifyUrl     = route('verify.document', ['code' => $surat->qr_token]);
+        $qrToken       = $surat->qr_token ?: md5($surat->id . '-' . ($surat->nomor_surat ?? uniqid()));
+        $verifyUrl     = route('verify.document', ['code' => $qrToken]);
         $qrCodeDataUri = $isDisahkan ? QrCodeService::generateDataUri($verifyUrl) : null;
 
         // Mini QR Paraf Digital Tata Naskah (Kabag & Ka Pokja)

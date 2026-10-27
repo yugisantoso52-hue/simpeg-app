@@ -3,7 +3,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <a href="{{ route('anjab.show', $anjab) }}" class="text-sm text-blue-600 hover:underline">← Kembali ke Detail Anjab</a>
-                <h1 class="text-2xl font-bold text-gray-900 mt-1">Edit Analisis Jabatan: {{ $anjab->jabatan->nama_jabatan ?? '-' }}</h1>
+                <h1 class="text-2xl font-bold text-gray-900 mt-1">Edit Analisis Jabatan: {{ $anjab->jabatan?->nama_jabatan ?? '-' }}</h1>
                 <p class="text-sm text-gray-600">Instrumen 17 butir standar PermenPAN-RB No. 1 Tahun 2020</p>
             </div>
         </div>
@@ -22,7 +22,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Nama Jabatan</label>
-                                <input type="text" disabled value="{{ $anjab->jabatan->nama_jabatan ?? '-' }} ({{ $anjab->jabatan->kode_jabatan ?? '-' }})" class="w-full text-sm rounded-lg bg-gray-100 border-gray-300">
+                                <input type="text" disabled value="{{ $anjab->jabatan?->nama_jabatan ?? '-' }} ({{ $anjab->jabatan?->kode_jabatan ?? '-' }})" class="w-full text-sm rounded-lg bg-gray-100 border-gray-300">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Unit Kerja Penempatan</label>
@@ -41,7 +41,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Kelas Jabatan (Grade)</label>
-                                <input type="number" name="kelas_jabatan" min="1" max="17" value="{{ old('kelas_jabatan', $anjab->kelas_jabatan ?? $anjab->jabatan->kelas_jabatan) }}" class="w-full text-sm rounded-lg border-gray-300">
+                                <input type="number" name="kelas_jabatan" min="1" max="17" value="{{ old('kelas_jabatan', $anjab->kelas_jabatan ?? $anjab->jabatan?->kelas_jabatan) }}" class="w-full text-sm rounded-lg border-gray-300">
                             </div>
                         </div>
                     </div>

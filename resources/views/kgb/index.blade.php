@@ -79,8 +79,8 @@
                                     <div class="font-semibold text-slate-900">{{ $row->nama_lengkap ?? $row->nama }}</div>
                                     <div class="text-xs text-slate-500">{{ $row->nip }}</div>
                                 </td>
-                                <td class="px-4 py-3">{{ $row->unitKerja->nama_unit ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ $row->golongan->nama_golongan ?? '-' }}</td>
+                                <td class="px-4 py-3">{{ $row->unitKerja?->nama_unit ?? '-' }}</td>
+                                <td class="px-4 py-3">{{ $row->golongan?->nama_golongan ?? '-' }}</td>
                                 <td class="px-4 py-3 text-center">
                                     <x-enterprise.badge color="amber">
                                         {{ $row->tmt_kgb_terakhir ? \Carbon\Carbon::parse($row->tmt_kgb_terakhir)->format('d-m-Y') : '-' }}

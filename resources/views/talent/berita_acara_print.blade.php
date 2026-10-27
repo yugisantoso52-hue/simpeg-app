@@ -162,11 +162,11 @@
                 <tr>
                     <td style="text-align: center;">{{ $idx + 1 }}</td>
                     <td>
-                        <strong>{{ $t->pegawai->nama }}</strong><br>
-                        <span style="font-size: 8pt; color: #333;">NIP. {{ $t->pegawai->nip }}</span>
+                        <strong>{{ $t->pegawai?->nama_lengkap ?? $t->pegawai?->nama ?? '-' }}</strong><br>
+                        <span style="font-size: 8pt; color: #333;">NIP. {{ $t->pegawai?->nip ?? '-' }}</span>
                     </td>
-                    <td style="text-align: center;">{{ $t->pegawai->golongan->kode ?? '-' }}</td>
-                    <td>{{ $t->pegawai->jabatan->nama_jabatan ?? '-' }}</td>
+                    <td style="text-align: center;">{{ $t->pegawai?->golongan?->kode ?? $t->pegawai?->golongan?->nama_golongan ?? '-' }}</td>
+                    <td>{{ $t->pegawai?->jabatan?->nama_jabatan ?? '-' }}</td>
                     <td style="text-align: center; font-weight: bold;">Kotak {{ $t->kuadran_box }}</td>
                     <td style="text-align: center;">{{ $t->sumbu_kinerja_nilai }}</td>
                     <td style="text-align: center;">{{ $t->sumbu_potensi_nilai }}</td>

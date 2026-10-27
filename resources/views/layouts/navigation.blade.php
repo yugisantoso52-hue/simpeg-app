@@ -80,7 +80,7 @@
                             @endif
                         </div>
                         @if(Auth::user()->pegawai?->jabatan?->nama_jabatan)
-                            <div class="text-[10px] font-medium text-slate-600 truncate mt-0.5">{{ Auth::user()->pegawai->jabatan->nama_jabatan }}</div>
+                            <div class="text-[10px] font-medium text-slate-600 truncate mt-0.5">{{ Auth::user()->pegawai?->jabatan?->nama_jabatan }}</div>
                         @endif
                         <div class="text-[10px] text-gray-400 font-mono truncate mt-0.5">NIP: {{ Auth::user()->pegawai?->nip ?? '-' }}</div>
                     </div>
@@ -224,7 +224,7 @@
                     @endif
                 </div>
                 @if(Auth::user()->pegawai?->jabatan?->nama_jabatan)
-                    <div class="text-xs font-medium text-slate-600 mt-0.5 truncate">{{ Auth::user()->pegawai->jabatan->nama_jabatan }}</div>
+                    <div class="text-xs font-medium text-slate-600 mt-0.5 truncate">{{ Auth::user()->pegawai?->jabatan?->nama_jabatan }}</div>
                 @endif
                 <div class="font-mono text-[11px] text-slate-400 mt-0.5">NIP: {{ Auth::user()->pegawai?->nip ?? '-' }}</div>
             </div>

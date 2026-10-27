@@ -259,13 +259,13 @@
                         <div>
                             <div class="text-xs text-gray-500 font-semibold uppercase">Nama Pegawai / Pemohon</div>
                             <div class="font-bold text-gray-900 text-base mt-0.5">
-                                <a href="{{ route('pegawai.show', $cuti->pegawai_id) }}" class="hover:text-emerald-600">
-                                    {{ $cuti->pegawai->nama_lengkap ?? $cuti->pegawai->nama }}
+                                <a href="{{ $cuti->pegawai_id ? route('pegawai.show', $cuti->pegawai_id) : '#' }}" class="hover:text-emerald-600">
+                                    {{ $cuti->pegawai?->nama_lengkap ?? $cuti->pegawai?->nama ?? '-' }}
                                 </a>
                             </div>
-                            <div class="text-xs text-gray-500 font-mono">NIP. {{ $cuti->pegawai->nip ?? '-' }}</div>
+                            <div class="text-xs text-gray-500 font-mono">NIP. {{ $cuti->pegawai?->nip ?? '-' }}</div>
                             <div class="text-xs text-gray-600 mt-0.5">
-                                {{ $cuti->pegawai->jabatan->nama_jabatan ?? '-' }} - {{ $cuti->pegawai->unitKerja->nama_unit ?? '-' }}
+                                {{ $cuti->pegawai?->jabatan?->nama_jabatan ?? '-' }} - {{ $cuti->pegawai?->unitKerja?->nama_unit ?? '-' }}
                             </div>
                         </div>
 

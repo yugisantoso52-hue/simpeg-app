@@ -166,11 +166,11 @@
                                     </td>
                                     <td class="py-3 px-4">
                                         <div class="font-bold text-gray-900">
-                                            <a href="{{ route('pegawai.show', $row->pegawai_id) }}" class="hover:text-blue-600">
-                                                {{ $row->pegawai->nama_lengkap ?? $row->pegawai->nama }}
+                                            <a href="{{ $row->pegawai_id ? route('pegawai.show', $row->pegawai_id) : '#' }}" class="hover:text-blue-600">
+                                                {{ $row->pegawai?->nama_lengkap ?? $row->pegawai?->nama ?? '-' }}
                                             </a>
                                         </div>
-                                        <div class="text-xs text-gray-500 font-mono">NIP. {{ $row->pegawai->nip ?? '-' }}</div>
+                                        <div class="text-xs text-gray-500 font-mono">NIP. {{ $row->pegawai?->nip ?? '-' }}</div>
                                     </td>
                                     <td class="py-3 px-4">
                                         <span class="inline-block px-2 py-0.5 rounded text-xs font-bold {{ $row->jenis_dokumen == 'STR' ? 'bg-blue-100 text-blue-800' : 'bg-indigo-100 text-indigo-800' }}">

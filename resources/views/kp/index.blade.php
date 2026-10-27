@@ -113,7 +113,7 @@
                                     <div class="font-bold text-slate-900">{{ $row->nama_lengkap ?? $row->nama }}</div>
                                     <div class="text-xs text-slate-500 font-mono">NIP: {{ $row->nip }}</div>
                                     <div class="text-xs text-slate-600 mt-0.5">
-                                        {{ $row->jabatan->nama_jabatan ?? '-' }}
+                                        {{ $row->jabatan?->nama_jabatan ?? '-' }}
                                         @if($row->isDosen())
                                             <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-semibold bg-blue-100 text-blue-800">Dosen</span>
                                         @elseif($row->isPlp())
@@ -122,8 +122,8 @@
                                     </div>
                                 </td>
                                 <td class="px-3 py-3">
-                                    <div class="font-semibold text-slate-800">{{ $row->golongan->nama_golongan ?? '-' }}</div>
-                                    <div class="text-xs text-slate-500">{{ $row->golongan->nama_pangkat ?? '' }}</div>
+                                    <div class="font-semibold text-slate-800">{{ $row->golongan?->nama_golongan ?? '-' }}</div>
+                                    <div class="text-xs text-slate-500">{{ $row->golongan?->nama_pangkat ?? '' }}</div>
                                 </td>
                                 <td class="px-3 py-3 text-center">
                                     <x-enterprise.badge color="blue">

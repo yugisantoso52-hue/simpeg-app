@@ -142,9 +142,9 @@
                 @endphp
                 <tr>
                     <td style="text-align: center;">{{ $idx + 1 }}</td>
-                    <td><strong>{{ $item->jabatan->nama_jabatan ?? '-' }}</strong></td>
-                    <td>{{ $item->unitKerja->nama_unit ?? 'Fakultas Keperawatan' }}</td>
-                    <td style="text-align: center;">{{ $item->kelas_jabatan ?? $item->jabatan->kelas_jabatan ?? '-' }}</td>
+                    <td><strong>{{ $item->jabatan?->nama_jabatan ?? '-' }}</strong></td>
+                    <td>{{ $item->unitKerja?->nama_unit ?? 'Fakultas Keperawatan' }}</td>
+                    <td style="text-align: center;">{{ $item->kelas_jabatan ?? $item->jabatan?->kelas_jabatan ?? '-' }}</td>
                     <td style="text-align: center;">{{ $item->uraianTugas->count() }}</td>
                     <td style="text-align: right;">{{ number_format($item->total_waktu_beban_menit) }}</td>
                     <td style="text-align: center;">{{ $item->kebutuhan_pegawai }}</td>

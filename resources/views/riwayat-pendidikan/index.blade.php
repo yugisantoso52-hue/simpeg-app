@@ -94,8 +94,8 @@
                                     {{ ($data->currentPage()-1) * $data->perPage() + $loop->iteration }}
                                 </td>
                                 <td class="px-4 py-3">
-                                    <div class="font-semibold text-slate-800">{{ $row->pegawai->nama_lengkap ?? $row->pegawai->nama ?? '-' }}</div>
-                                    <div class="text-xs text-slate-500">{{ $row->pegawai->nip ?? '' }}</div>
+                                    <div class="font-semibold text-slate-800">{{ $row->pegawai?->nama_lengkap ?? $row->pegawai?->nama ?? '-' }}</div>
+                                    <div class="text-xs text-slate-500">{{ $row->pegawai?->nip ?? '' }}</div>
                                 </td>
                                 <td class="px-4 py-3 font-medium text-slate-700">
                                     {{ $row->jenjang }}

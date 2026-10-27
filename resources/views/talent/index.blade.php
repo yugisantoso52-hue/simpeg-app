@@ -227,8 +227,8 @@
                                     <div class="mt-3 space-y-2 max-h-48 overflow-y-auto pr-1">
                                         @forelse($b3['items']->take(5) as $m)
                                             <a href="{{ route('manajemen-talenta.show', $m->pegawai_id) }}" class="block p-2 rounded-lg bg-white border border-amber-200 hover:border-amber-400 transition text-xs group">
-                                                <div class="font-bold text-gray-900 group-hover:text-amber-800 truncate">{{ $m->pegawai->nama_lengkap ?? $m->pegawai->nama }}</div>
-                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai->jabatan->nama_jabatan ?? '-' }}</div>
+                                                <div class="font-bold text-gray-900 group-hover:text-amber-800 truncate">{{ $m->pegawai?->nama_lengkap ?? $m->pegawai?->nama ?? '-' }}</div>
+                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai?->jabatan?->nama_jabatan ?? '-' }}</div>
                                                 <div class="mt-1 flex items-center gap-2 text-[10px] font-mono text-gray-600">
                                                     <span>Kinerja: <b>{{ $m->sumbu_kinerja_nilai }}</b></span>
                                                     <span>Potensi: <b>{{ $m->sumbu_potensi_nilai }}</b></span>
@@ -259,8 +259,8 @@
                                     <div class="mt-3 space-y-2 max-h-48 overflow-y-auto pr-1">
                                         @forelse($b6['items']->take(5) as $m)
                                             <a href="{{ route('manajemen-talenta.show', $m->pegawai_id) }}" class="block p-2 rounded-lg bg-white border border-indigo-200 hover:border-indigo-400 transition text-xs group">
-                                                <div class="font-bold text-gray-900 group-hover:text-indigo-800 truncate">{{ $m->pegawai->nama_lengkap ?? $m->pegawai->nama }}</div>
-                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai->jabatan->nama_jabatan ?? '-' }}</div>
+                                                <div class="font-bold text-gray-900 group-hover:text-indigo-800 truncate">{{ $m->pegawai?->nama_lengkap ?? $m->pegawai?->nama ?? '-' }}</div>
+                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai?->jabatan?->nama_jabatan ?? '-' }}</div>
                                                 <div class="mt-1 flex items-center gap-2 text-[10px] font-mono text-gray-600">
                                                     <span>Kinerja: <b>{{ $m->sumbu_kinerja_nilai }}</b></span>
                                                     <span>Potensi: <b>{{ $m->sumbu_potensi_nilai }}</b></span>
@@ -295,10 +295,10 @@
                                         @forelse($b9['items']->take(5) as $m)
                                             <a href="{{ route('manajemen-talenta.show', $m->pegawai_id) }}" class="block p-2 rounded-lg bg-white border border-emerald-300 hover:border-emerald-500 transition text-xs group shadow-2xs">
                                                 <div class="font-black text-emerald-950 group-hover:text-emerald-700 truncate flex items-center justify-between">
-                                                    <span>{{ $m->pegawai->nama_lengkap ?? $m->pegawai->nama }}</span>
+                                                    <span>{{ $m->pegawai?->nama_lengkap ?? $m->pegawai?->nama ?? '-' }}</span>
                                                     <span class="text-[9px] px-1 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold">Siap Promosi</span>
                                                 </div>
-                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai->jabatan->nama_jabatan ?? '-' }}</div>
+                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai?->jabatan?->nama_jabatan ?? '-' }}</div>
                                                 <div class="mt-1 flex items-center gap-2 text-[10px] font-mono text-emerald-800">
                                                     <span>Kinerja: <b>{{ $m->sumbu_kinerja_nilai }}</b></span>
                                                     <span>Potensi: <b>{{ $m->sumbu_potensi_nilai }}</b></span>
@@ -342,8 +342,8 @@
                                     <div class="mt-3 space-y-2 max-h-48 overflow-y-auto pr-1">
                                         @forelse($b2['items']->take(5) as $m)
                                             <a href="{{ route('manajemen-talenta.show', $m->pegawai_id) }}" class="block p-2 rounded-lg bg-white border border-orange-200 hover:border-orange-400 transition text-xs group">
-                                                <div class="font-bold text-gray-900 group-hover:text-orange-800 truncate">{{ $m->pegawai->nama_lengkap ?? $m->pegawai->nama }}</div>
-                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai->jabatan->nama_jabatan ?? '-' }}</div>
+                                                <div class="font-bold text-gray-900 group-hover:text-orange-800 truncate">{{ $m->pegawai?->nama_lengkap ?? $m->pegawai?->nama ?? '-' }}</div>
+                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai?->jabatan?->nama_jabatan ?? '-' }}</div>
                                                 <div class="mt-1 flex items-center gap-2 text-[10px] font-mono text-gray-600">
                                                     <span>Kinerja: <b>{{ $m->sumbu_kinerja_nilai }}</b></span>
                                                     <span>Potensi: <b>{{ $m->sumbu_potensi_nilai }}</b></span>
@@ -374,8 +374,8 @@
                                     <div class="mt-3 space-y-2 max-h-48 overflow-y-auto pr-1">
                                         @forelse($b5['items']->take(5) as $m)
                                             <a href="{{ route('manajemen-talenta.show', $m->pegawai_id) }}" class="block p-2 rounded-lg bg-white border border-blue-200 hover:border-blue-400 transition text-xs group">
-                                                <div class="font-bold text-gray-900 group-hover:text-blue-800 truncate">{{ $m->pegawai->nama_lengkap ?? $m->pegawai->nama }}</div>
-                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai->jabatan->nama_jabatan ?? '-' }}</div>
+                                                <div class="font-bold text-gray-900 group-hover:text-blue-800 truncate">{{ $m->pegawai?->nama_lengkap ?? $m->pegawai?->nama ?? '-' }}</div>
+                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai?->jabatan?->nama_jabatan ?? '-' }}</div>
                                                 <div class="mt-1 flex items-center gap-2 text-[10px] font-mono text-gray-600">
                                                     <span>Kinerja: <b>{{ $m->sumbu_kinerja_nilai }}</b></span>
                                                     <span>Potensi: <b>{{ $m->sumbu_potensi_nilai }}</b></span>
@@ -409,8 +409,8 @@
                                     <div class="mt-3 space-y-2 max-h-48 overflow-y-auto pr-1">
                                         @forelse($b8['items']->take(5) as $m)
                                             <a href="{{ route('manajemen-talenta.show', $m->pegawai_id) }}" class="block p-2 rounded-lg bg-white border border-teal-200 hover:border-teal-400 transition text-xs group">
-                                                <div class="font-bold text-gray-900 group-hover:text-teal-800 truncate">{{ $m->pegawai->nama_lengkap ?? $m->pegawai->nama }}</div>
-                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai->jabatan->nama_jabatan ?? '-' }}</div>
+                                                <div class="font-bold text-gray-900 group-hover:text-teal-800 truncate">{{ $m->pegawai?->nama_lengkap ?? $m->pegawai?->nama ?? '-' }}</div>
+                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai?->jabatan?->nama_jabatan ?? '-' }}</div>
                                                 <div class="mt-1 flex items-center gap-2 text-[10px] font-mono text-teal-800">
                                                     <span>Kinerja: <b>{{ $m->sumbu_kinerja_nilai }}</b></span>
                                                     <span>Potensi: <b>{{ $m->sumbu_potensi_nilai }}</b></span>
@@ -454,8 +454,8 @@
                                     <div class="mt-3 space-y-2 max-h-48 overflow-y-auto pr-1">
                                         @forelse($b1['items']->take(5) as $m)
                                             <a href="{{ route('manajemen-talenta.show', $m->pegawai_id) }}" class="block p-2 rounded-lg bg-white border border-rose-200 hover:border-rose-400 transition text-xs group">
-                                                <div class="font-bold text-gray-900 group-hover:text-rose-800 truncate">{{ $m->pegawai->nama_lengkap ?? $m->pegawai->nama }}</div>
-                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai->jabatan->nama_jabatan ?? '-' }}</div>
+                                                <div class="font-bold text-gray-900 group-hover:text-rose-800 truncate">{{ $m->pegawai?->nama_lengkap ?? $m->pegawai?->nama ?? '-' }}</div>
+                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai?->jabatan?->nama_jabatan ?? '-' }}</div>
                                                 <div class="mt-1 flex items-center gap-2 text-[10px] font-mono text-gray-600">
                                                     <span>Kinerja: <b>{{ $m->sumbu_kinerja_nilai }}</b></span>
                                                     <span>Potensi: <b>{{ $m->sumbu_potensi_nilai }}</b></span>
@@ -486,8 +486,8 @@
                                     <div class="mt-3 space-y-2 max-h-48 overflow-y-auto pr-1">
                                         @forelse($b4['items']->take(5) as $m)
                                             <a href="{{ route('manajemen-talenta.show', $m->pegawai_id) }}" class="block p-2 rounded-lg bg-white border border-amber-200 hover:border-amber-400 transition text-xs group">
-                                                <div class="font-bold text-gray-900 group-hover:text-amber-800 truncate">{{ $m->pegawai->nama_lengkap ?? $m->pegawai->nama }}</div>
-                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai->jabatan->nama_jabatan ?? '-' }}</div>
+                                                <div class="font-bold text-gray-900 group-hover:text-amber-800 truncate">{{ $m->pegawai?->nama_lengkap ?? $m->pegawai?->nama ?? '-' }}</div>
+                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai?->jabatan?->nama_jabatan ?? '-' }}</div>
                                                 <div class="mt-1 flex items-center gap-2 text-[10px] font-mono text-gray-600">
                                                     <span>Kinerja: <b>{{ $m->sumbu_kinerja_nilai }}</b></span>
                                                     <span>Potensi: <b>{{ $m->sumbu_potensi_nilai }}</b></span>
@@ -518,8 +518,8 @@
                                     <div class="mt-3 space-y-2 max-h-48 overflow-y-auto pr-1">
                                         @forelse($b7['items']->take(5) as $m)
                                             <a href="{{ route('manajemen-talenta.show', $m->pegawai_id) }}" class="block p-2 rounded-lg bg-white border border-cyan-200 hover:border-cyan-400 transition text-xs group">
-                                                <div class="font-bold text-gray-900 group-hover:text-cyan-800 truncate">{{ $m->pegawai->nama_lengkap ?? $m->pegawai->nama }}</div>
-                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai->jabatan->nama_jabatan ?? '-' }}</div>
+                                                <div class="font-bold text-gray-900 group-hover:text-cyan-800 truncate">{{ $m->pegawai?->nama_lengkap ?? $m->pegawai?->nama ?? '-' }}</div>
+                                                <div class="text-[10px] text-gray-500 truncate">{{ $m->pegawai?->jabatan?->nama_jabatan ?? '-' }}</div>
                                                 <div class="mt-1 flex items-center gap-2 text-[10px] font-mono text-cyan-800">
                                                     <span>Kinerja: <b>{{ $m->sumbu_kinerja_nilai }}</b></span>
                                                     <span>Potensi: <b>{{ $m->sumbu_potensi_nilai }}</b></span>

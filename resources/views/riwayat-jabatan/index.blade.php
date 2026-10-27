@@ -93,14 +93,14 @@
                                     {{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}
                                 </td>
                                 <td class="px-4 py-3">
-                                    <div class="font-semibold text-slate-800">{{ $row->pegawai->nama_lengkap ?? $row->pegawai->nama ?? '-' }}</div>
-                                    <div class="text-xs text-slate-500 font-mono">NIP. {{ $row->pegawai->nip ?? '-' }}</div>
+                                    <div class="font-semibold text-slate-800">{{ $row->pegawai?->nama_lengkap ?? $row->pegawai?->nama ?? '-' }}</div>
+                                    <div class="text-xs text-slate-500 font-mono">NIP. {{ $row->pegawai?->nip ?? '-' }}</div>
                                 </td>
                                 <td class="px-4 py-3 font-medium text-slate-800">
-                                    {{ $row->jabatan->nama_jabatan ?? '-' }}
+                                    {{ $row->jabatan?->nama_jabatan ?? '-' }}
                                 </td>
                                 <td class="px-4 py-3 text-slate-700">
-                                    {{ $row->unitKerja->nama_unit ?? '-' }}
+                                    {{ $row->unitKerja?->nama_unit ?? '-' }}
                                 </td>
                                 <td class="px-4 py-3 text-slate-700 font-medium">
                                     {{ $row->nomor_sk ?? '-' }}

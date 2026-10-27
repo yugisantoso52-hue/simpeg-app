@@ -135,7 +135,7 @@
                                         </td>
                                         <td class="px-4 py-3 font-semibold text-gray-800">
                                             @if($row->unitKerja)
-                                                <span class="text-blue-700">{{ $row->unitKerja->nama_unit }}</span>
+                                                <span class="text-blue-700">{{ $row->unitKerja?->nama_unit }}</span>
                                             @else
                                                 <span class="text-gray-400 italic">Belum terhubung</span>
                                             @endif

@@ -93,8 +93,8 @@
                                     {{ ($data->currentPage()-1) * $data->perPage() + $loop->iteration }}
                                 </td>
                                 <td class="px-4 py-3">
-                                    <div class="font-semibold text-slate-800">{{ $row->pegawai->nama_lengkap ?? $row->pegawai->nama ?? '-' }}</div>
-                                    <div class="text-xs text-slate-500 font-mono">NIP. {{ $row->pegawai->nip ?? '-' }}</div>
+                                    <div class="font-semibold text-slate-800">{{ $row->pegawai?->nama_lengkap ?? $row->pegawai?->nama ?? '-' }}</div>
+                                    <div class="text-xs text-slate-500 font-mono">NIP. {{ $row->pegawai?->nip ?? '-' }}</div>
                                 </td>
                                 {{-- Perbaikan Tampilan Golongan (Bersih Tanpa Tanda Strip Melayang) --}}
                                 <td class="px-4 py-3">

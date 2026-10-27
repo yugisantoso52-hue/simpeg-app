@@ -1023,10 +1023,10 @@
                             <div class="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-slate-200">
                                 @if(Auth::user()->pegawai?->jabatan?->nama_jabatan)
                                     <span class="inline-flex items-center gap-1.5 font-medium text-emerald-300">
-                                        💼 {{ Auth::user()->pegawai->jabatan->nama_jabatan }}
+                                        💼 {{ Auth::user()->pegawai?->jabatan?->nama_jabatan }}
                                     </span>
                                     @if(Auth::user()->pegawai?->nip)
-                                        <span class="text-slate-400 font-mono">• NIP: {{ Auth::user()->pegawai->nip }}</span>
+                                        <span class="text-slate-400 font-mono">• NIP: {{ Auth::user()->pegawai?->nip }}</span>
                                     @endif
                                 @elseif(Auth::user()->hasRole('admin'))
                                     <span class="inline-flex items-center gap-1.5 font-semibold text-emerald-300">

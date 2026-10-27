@@ -182,12 +182,12 @@
                                         <input type="checkbox" name="mapping_ids[]" value="{{ $cand->id }}" class="mapping-chk rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                                     </td>
                                     <td class="px-4 py-3">
-                                        <div class="font-bold text-gray-900 text-xs">{{ $cand->pegawai->nama }}</div>
+                                        <div class="font-bold text-gray-900 text-xs">{{ $cand->pegawai?->nama_lengkap ?? $cand->pegawai?->nama ?? '-' }}</div>
                                         <div class="text-[11px] text-gray-500 mt-0.5">
-                                            NIP. {{ $cand->pegawai->nip }} &bull; Gol. <b>{{ $cand->pegawai->golongan->kode ?? '-' }}</b>
+                                            NIP. {{ $cand->pegawai?->nip ?? '-' }} &bull; Gol. <b>{{ $cand->pegawai?->golongan?->kode ?? $cand->pegawai?->golongan?->nama_golongan ?? '-' }}</b>
                                         </div>
                                         <div class="text-[10px] text-gray-400 mt-0.5">
-                                            {{ $cand->pegawai->jabatan->nama_jabatan ?? '-' }}
+                                            {{ $cand->pegawai?->jabatan?->nama_jabatan ?? '-' }}
                                         </div>
                                     </td>
                                     <td class="px-3 py-3 text-center">

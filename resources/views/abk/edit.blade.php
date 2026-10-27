@@ -8,7 +8,7 @@
                     <a href="{{ route('anjab.show', $anjab) }}" class="text-sm text-gray-600 hover:underline">Detail Anjab</a>
                 </div>
                 <h1 class="text-2xl font-bold text-gray-900 mt-1">
-                    Kelola Beban Kerja: {{ $anjab->jabatan->nama_jabatan ?? '-' }}
+                    Kelola Beban Kerja: {{ $anjab->jabatan?->nama_jabatan ?? '-' }}
                 </h1>
                 <p class="text-sm text-gray-600">
                     Standar WKE: 1.250 Jam / 75.000 Menit per Tahun (Peraturan BKN No. 19/2011 & PermenPAN-RB No. 1/2020)
@@ -57,7 +57,7 @@
                     <div class="text-2xl font-black text-gray-900 mt-1">
                         {{ $anjab->bezetting }} <span class="text-xs font-normal text-gray-500">Pegawai Aktif</span>
                     </div>
-                    <div class="text-xs text-gray-500 mt-0.5">{{ $anjab->unitKerja->nama_unit ?? 'FKP UNRI' }}</div>
+                    <div class="text-xs text-gray-500 mt-0.5">{{ $anjab->unitKerja?->nama_unit ?? 'FKP UNRI' }}</div>
                 </div>
 
                 <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">

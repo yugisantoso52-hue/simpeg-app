@@ -216,7 +216,7 @@
                                                 <div x-show="editNomor" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                                                     <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-4 text-left" @click.outside="editNomor = false">
                                                         <h4 class="text-sm font-bold text-slate-800 mb-1">Penomoran Surat (Khusus Admin)</h4>
-                                                        <p class="text-xs text-slate-500 mb-3">Tuliskan nomor urut manual resmi untuk pemohon <strong>{{ $item->pegawai->nama }}</strong>.</p>
+                                                        <p class="text-xs text-slate-500 mb-3">Tuliskan nomor urut manual resmi untuk pemohon <strong>{{ $item->pegawai?->nama ?? '-' }}</strong>.</p>
                                                         <form action="{{ route('layanan-surat.surat-aktif.update-nomor', $item->id) }}" method="POST">
                                                             @csrf
                                                             <div class="flex rounded-lg shadow-sm mb-3">
@@ -236,8 +236,8 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-3">
-                                            <div class="font-semibold text-slate-900">{{ $item->pegawai->nama_lengkap ?? $item->pegawai->nama }}</div>
-                                            <div class="text-xs text-slate-500">NIP: {{ $item->pegawai->nip }}</div>
+                                            <div class="font-semibold text-slate-900">{{ $item->pegawai?->nama_lengkap ?? $item->pegawai?->nama ?? '-' }}</div>
+                                            <div class="text-xs text-slate-500">NIP: {{ $item->pegawai?->nip ?? '-' }}</div>
                                         </td>
                                         <td class="px-4 py-3">
                                             @if(str_contains(strtolower($item->penandatangan_jabatan ?? ''), 'wakil dekan'))

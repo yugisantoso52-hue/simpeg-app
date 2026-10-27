@@ -235,17 +235,17 @@
         <tr>
             <td>Pangkat / Golongan</td>
             <td>:</td>
-            <td>{{ $pegawai->golongan->nama_golongan ?? '-' }} ({{ $pegawai->golongan->kode_golongan ?? '-' }})</td>
+            <td>{{ $pegawai->golongan?->nama_golongan ?? '-' }} ({{ $pegawai->golongan?->kode_golongan ?? '-' }})</td>
         </tr>
         <tr>
             <td>Jabatan</td>
             <td>:</td>
-            <td>{{ $pegawai->jabatan->nama_jabatan ?? '-' }}</td>
+            <td>{{ $pegawai->jabatan?->nama_jabatan ?? '-' }}</td>
         </tr>
         <tr>
             <td>Unit Kerja</td>
             <td>:</td>
-            <td>{{ $pegawai->unitKerja->nama_unit ?? 'Fakultas Keperawatan' }} Universitas Riau</td>
+            <td>{{ $pegawai->unitKerja?->nama_unit ?? 'Fakultas Keperawatan' }} Universitas Riau</td>
         </tr>
         <tr>
             <td>Status Kepegawaian</td>

@@ -136,8 +136,8 @@
                     return [
                         'no'            => $index + 1,
                         'id'            => $item->id,
-                        'nama_jabatan'  => $item->jabatan->nama_jabatan ?? '-',
-                        'nama_unit'     => $item->unitKerja->nama_unit ?? 'Fakultas Keperawatan',
+                        'nama_jabatan'  => $item->jabatan?->nama_jabatan ?? '-',
+                        'nama_unit'     => $item->unitKerja?->nama_unit ?? 'Fakultas Keperawatan',
                         'grade'         => $item->kelas_jabatan ?? $item->jabatan?->kelas_jabatan ?? '-',
                         'butir_count'   => $item->uraianTugas->count(),
                         'total_jam'     => number_format($item->total_jam_beban, 1),

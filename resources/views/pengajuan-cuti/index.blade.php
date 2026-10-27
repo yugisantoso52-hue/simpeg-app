@@ -221,11 +221,11 @@
                                     @if(!$isPegawaiOnly)
                                         <td class="py-3 px-4">
                                             <div class="font-bold text-gray-900">
-                                                <a href="{{ route('pegawai.show', $row->pegawai_id) }}" class="hover:text-emerald-600">
-                                                    {{ $row->pegawai->nama_lengkap ?? $row->pegawai->nama }}
+                                                <a href="{{ $row->pegawai_id ? route('pegawai.show', $row->pegawai_id) : '#' }}" class="hover:text-emerald-600">
+                                                    {{ $row->pegawai?->nama_lengkap ?? $row->pegawai?->nama ?? '-' }}
                                                 </a>
                                             </div>
-                                            <div class="text-xs text-gray-500 font-mono">NIP. {{ $row->pegawai->nip ?? '-' }}</div>
+                                            <div class="text-xs text-gray-500 font-mono">NIP. {{ $row->pegawai?->nip ?? '-' }}</div>
                                         </td>
                                     @endif
                                     <td class="py-3 px-4 font-semibold text-gray-800">

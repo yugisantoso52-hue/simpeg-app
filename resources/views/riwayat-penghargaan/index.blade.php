@@ -43,10 +43,10 @@
                     @forelse($data as $item)
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-3">
-                            <a href="{{ route('pegawai.show', $item->pegawai_id) }}" class="font-medium text-indigo-600 hover:underline">
-                                {{ $item->pegawai->nama ?? '-' }}
+                            <a href="{{ $item->pegawai_id ? route('pegawai.show', $item->pegawai_id) : '#' }}" class="font-medium text-indigo-600 hover:underline">
+                                {{ $item->pegawai?->nama_lengkap ?? $item->pegawai?->nama ?? '-' }}
                             </a>
-                            <div class="text-xs text-gray-400">{{ $item->pegawai->nip ?? '' }}</div>
+                            <div class="text-xs text-gray-400">{{ $item->pegawai?->nip ?? '' }}</div>
                         </td>
                         <td class="px-4 py-3 font-medium text-gray-900">{{ $item->nama_penghargaan }}</td>
                         <td class="px-4 py-3 text-gray-500">{{ $item->jenis_penghargaan ?? '-' }}</td>

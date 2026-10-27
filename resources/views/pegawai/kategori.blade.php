@@ -194,7 +194,7 @@
                                     <td class="px-4 py-3 text-slate-600">
                                         {{ $row->golongan?->nama_golongan ?? '-' }}
                                         @if(!empty($row->golongan?->nama_pangkat))
-                                            <div class="text-xs text-slate-500">{{ $row->golongan->nama_pangkat }}</div>
+                                            <div class="text-xs text-slate-500">{{ $row->golongan?->nama_pangkat }}</div>
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap">

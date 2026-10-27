@@ -44,7 +44,7 @@
                                 class="w-full rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500">
                             @foreach($pegawai as $p)
                                 <option value="{{ $p->id }}" @selected(old('pegawai_id', $data->pegawai_id) == $p->id)>
-                                    {{ $p->nama_lengkap ?? $p->nama }} (NIP: {{ $p->nip ?? '-' }}) - {{ $p->jabatan->nama_jabatan ?? '-' }}
+                                    {{ $p->nama_lengkap ?? $p->nama }} (NIP: {{ $p->nip ?? '-' }}) - {{ $p->jabatan?->nama_jabatan ?? '-' }}
                                 </option>
                             @endforeach
                         </select>
