@@ -53,7 +53,7 @@
                             </select>
                         </td>
                         <td class="px-3 py-2 text-xs">
-                            @if($rd->file_sertifikat)
+                            @if($rd->file_sertifikat && $rd->file_sertifikat !== '-')
                                 <div class="mb-1 text-slate-500 truncate max-w-xs">
                                     <a href="{{ route('document.preview', ['path' => $rd->file_sertifikat]) }}" target="_blank" class="text-blue-600 underline">Lihat Sertifikat</a>
                                 </div>

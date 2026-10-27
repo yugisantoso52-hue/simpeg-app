@@ -59,7 +59,7 @@
                             </select>
                         </td>
                         <td class="px-3 py-2 text-xs">
-                            @if($rj->file_sk)
+                            @if($rj->file_sk && $rj->file_sk !== '-')
                                 <div class="mb-1 text-slate-500 truncate max-w-xs">
                                     <a href="{{ route('document.preview', ['path' => $rj->file_sk]) }}" target="_blank" class="text-blue-600 underline">Lihat SK</a>
                                 </div>

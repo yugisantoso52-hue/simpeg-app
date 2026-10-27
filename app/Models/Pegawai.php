@@ -747,10 +747,11 @@ class Pegawai extends Model
     public function evaluasiSyaratKp(): array
     {
         // 1. SK Pangkat Terakhir
-        $hasSkPangkat = !empty($this->file_sk_pangkat_terakhir) || ($this->riwayatPangkat()->whereNotNull('file_sk')->exists());
+        $hasSkPangkat = (!empty($this->file_sk_pangkat_terakhir) && $this->file_sk_pangkat_terakhir !== '-') 
+            || ($this->riwayatPangkat()->whereNotNull('file_sk')->where('file_sk', '!=', '')->where('file_sk', '!=', '-')->exists());
         $skPangkatUrl = $this->file_sk_pangkat_terakhir_url;
         if (!$skPangkatUrl) {
-            $latestRp = $this->riwayatPangkat()->whereNotNull('file_sk')->latest('tmt')->first();
+            $latestRp = $this->riwayatPangkat()->whereNotNull('file_sk')->where('file_sk', '!=', '')->where('file_sk', '!=', '-')->latest('tmt')->first();
             if ($latestRp && $latestRp->file_sk) {
                 $skPangkatUrl = route('document.preview', ['path' => $latestRp->file_sk]);
             }
@@ -758,20 +759,20 @@ class Pegawai extends Model
 
         // 2. SKP 2 Tahun Terakhir (Evaluasi SKP tahun N dan N-1 atau minimal 2 arsip SKP dengan file)
         $skpRecords = $this->riwayatSkp()->orderBy('tahun', 'desc')->get();
-        $skpValid = $skpRecords->filter(fn($s) => !empty($s->file_evaluasi_skp) || !empty($s->file_rencana_skp));
+        $skpValid = $skpRecords->filter(fn($s) => (!empty($s->file_evaluasi_skp) && $s->file_evaluasi_skp !== '-') || (!empty($s->file_rencana_skp) && $s->file_rencana_skp !== '-'));
         $hasSkp2Tahun = $skpValid->count() >= 2;
 
         // 3. Surat KGB Terakhir
-        $hasSkKgb = !empty($this->file_sk_kgb_terakhir);
+        $hasSkKgb = !empty($this->file_sk_kgb_terakhir) && $this->file_sk_kgb_terakhir !== '-';
         $skKgbUrl = $this->file_sk_kgb_terakhir_url;
 
         // 4. Fotocopy KARPEG
-        $hasKarpeg = !empty($this->file_karpeg);
+        $hasKarpeg = !empty($this->file_karpeg) && $this->file_karpeg !== '-';
         $karpegUrl = $this->file_karpeg_url;
 
         // 5. PAK (Khusus Dosen & PLP)
         $isWajibPak = $this->wajibPak();
-        $hasPak = !empty($this->file_pak) || (!empty($this->angka_kredit) && (float)$this->angka_kredit > 0);
+        $hasPak = (!empty($this->file_pak) && $this->file_pak !== '-') || (!empty($this->angka_kredit) && (float)$this->angka_kredit > 0);
         $pakUrl = $this->file_pak_url;
 
         $isLengkap = $hasSkPangkat && $hasSkp2Tahun && $hasSkKgb && $hasKarpeg && (!$isWajibPak || $hasPak);

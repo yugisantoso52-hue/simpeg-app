@@ -175,10 +175,12 @@ class KelayakanKarirService
             }
         }
 
-        $hasSkPangkat = !empty($pegawai->file_sk_pangkat_terakhir) || ($pegawai->riwayatPangkat()->whereNotNull('file_sk')->exists());
-        $hasSkKgb = !empty($pegawai->file_sk_kgb_terakhir);
-        $skpValid = $pegawai->riwayatSkp()->where(fn($q) => $q->whereNotNull('file_evaluasi_skp')->orWhereNotNull('file_rencana_skp'))->count();
-        $hasSkp = $skpValid >= 2;
+        $hasSkPangkat = (!empty($pegawai->file_sk_pangkat_terakhir) && $pegawai->file_sk_pangkat_terakhir !== '-')
+            || ($pegawai->riwayatPangkat()->whereNotNull('file_sk')->where('file_sk', '!=', '')->where('file_sk', '!=', '-')->exists());
+        $hasSkKgb = !empty($pegawai->file_sk_kgb_terakhir) && $pegawai->file_sk_kgb_terakhir !== '-';
+        $skpRecords = $pegawai->riwayatSkp()->orderBy('tahun', 'desc')->get();
+        $skpValid = $skpRecords->filter(fn($s) => (!empty($s->file_evaluasi_skp) && $s->file_evaluasi_skp !== '-') || (!empty($s->file_rencana_skp) && $s->file_rencana_skp !== '-'));
+        $hasSkp = $skpValid->count() >= 2;
 
         $syaratBerkas = [
             'is_lengkap' => $hasSkPangkat && $hasSkKgb && $hasSkp,
@@ -201,7 +203,7 @@ class KelayakanKarirService
                     'status'      => $hasSkp,
                     'file_url'    => null,
                     'field'       => 'riwayat_skp',
-                    'count'       => $skpValid,
+                    'count'       => $skpValid->count(),
                 ],
             ]
         ];
@@ -265,12 +267,17 @@ class KelayakanKarirService
 
         $canSubmit = $isPns && !empty($kategoriLayak) && empty($usulanAktif);
 
-        $hasSkCpns = !empty($pegawai->file_sk_pertama);
-        $hasSkPangkat = !empty($pegawai->file_sk_pangkat_terakhir) || ($pegawai->riwayatPangkat()->whereNotNull('file_sk')->exists());
-        $hasSkJabatan = $pegawai->riwayatJabatan()->whereNotNull('file_sk')->exists();
-        $skpValid = $pegawai->riwayatSkp()->where(fn($q) => $q->whereNotNull('file_evaluasi_skp')->orWhereNotNull('file_rencana_skp'))->count();
-        $hasSkp = $skpValid >= 2;
-        $hasKarpeg = !empty($pegawai->file_karpeg);
+        $hasSkCpns = !empty($pegawai->file_sk_pertama) && $pegawai->file_sk_pertama !== '-';
+        $hasSkPangkat = (!empty($pegawai->file_sk_pangkat_terakhir) && $pegawai->file_sk_pangkat_terakhir !== '-') 
+            || ($pegawai->riwayatPangkat()->whereNotNull('file_sk')->where('file_sk', '!=', '')->where('file_sk', '!=', '-')->exists());
+        $latestRj = $pegawai->riwayatJabatan()->whereNotNull('file_sk')->where('file_sk', '!=', '')->where('file_sk', '!=', '-')->latest('tmt_jabatan')->first();
+        $hasSkJabatan = $latestRj !== null;
+        $skpRecords = $pegawai->riwayatSkp()->orderBy('tahun', 'desc')->get();
+        $skpValid = $skpRecords->filter(fn($s) => (!empty($s->file_evaluasi_skp) && $s->file_evaluasi_skp !== '-') || (!empty($s->file_rencana_skp) && $s->file_rencana_skp !== '-'));
+        $hasSkp = $skpValid->count() >= 2;
+        $hasKarpeg = !empty($pegawai->file_karpeg) && $pegawai->file_karpeg !== '-';
+
+        $skJabatanUrl = $latestRj?->file_sk ? route('document.preview', ['path' => $latestRj->file_sk]) : null;
 
         $syaratBerkas = [
             'is_lengkap' => $hasSkCpns && $hasSkPangkat && $hasSkJabatan && $hasSkp && $hasKarpeg,
@@ -291,7 +298,7 @@ class KelayakanKarirService
                 [
                     'label'    => 'SK Jabatan Terakhir',
                     'status'   => $hasSkJabatan,
-                    'file_url' => null,
+                    'file_url' => $skJabatanUrl,
                     'field'    => 'riwayat_jabatan',
                 ],
                 [
@@ -299,7 +306,7 @@ class KelayakanKarirService
                     'status'   => $hasSkp,
                     'file_url' => null,
                     'field'    => 'riwayat_skp',
-                    'count'    => $skpValid,
+                    'count'    => $skpValid->count(),
                 ],
                 [
                     'label'    => 'Fotocopy Karpeg / Identitas ASN',

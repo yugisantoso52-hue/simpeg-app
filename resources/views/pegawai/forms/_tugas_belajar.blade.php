@@ -86,7 +86,7 @@
                             </select>
                         </td>
                         <td class="px-3 py-2 text-xs">
-                            @if($fileVal)
+                            @if($fileVal && $fileVal !== '-')
                                 <div class="mb-1 text-slate-500 truncate max-w-xs">
                                     <a href="{{ route('document.preview', ['path' => $fileVal]) }}" target="_blank" class="text-blue-600 underline">Lihat SK</a>
                                 </div>

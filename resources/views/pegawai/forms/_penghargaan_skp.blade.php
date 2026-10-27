@@ -88,7 +88,7 @@
             <x-enterprise.forms.field>
                 <x-enterprise.form-group label="Upload 1. Rencana SKP (PDF/Gambar)">
                     <x-enterprise.file-upload name="riwayat_skp[0][file_rencana_skp]" accept=".pdf,.jpg,.jpeg,.png"/>
-                    @if(isset($skp1) && $skp1->file_rencana_skp)
+                    @if(isset($skp1) && $skp1->file_rencana_skp && $skp1->file_rencana_skp !== '-')
                         <p class="text-xs text-blue-700 mt-1 flex items-center gap-1 font-semibold">
                             <span>📄 Rencana SKP saat ini:</span>
                             <a href="{{ route('document.preview', ['path' => $skp1->file_rencana_skp]) }}" target="_blank" class="underline hover:text-blue-900">Lihat Rencana SKP {{ $skp1->tahun }}</a>
@@ -100,7 +100,7 @@
             <x-enterprise.forms.field>
                 <x-enterprise.form-group label="Upload 2. Evaluasi SKP (PDF/Gambar)">
                     <x-enterprise.file-upload name="riwayat_skp[0][file_evaluasi_skp]" accept=".pdf,.jpg,.jpeg,.png"/>
-                    @if(isset($skp1) && $skp1->file_evaluasi_skp)
+                    @if(isset($skp1) && $skp1->file_evaluasi_skp && $skp1->file_evaluasi_skp !== '-')
                         <p class="text-xs text-emerald-700 mt-1 flex items-center gap-1 font-semibold">
                             <span>📑 Evaluasi SKP saat ini:</span>
                             <a href="{{ route('document.preview', ['path' => $skp1->file_evaluasi_skp]) }}" target="_blank" class="underline hover:text-emerald-900">Lihat Evaluasi SKP {{ $skp1->tahun }}</a>
@@ -165,7 +165,7 @@
             <x-enterprise.forms.field>
                 <x-enterprise.form-group label="Upload 1. Rencana SKP (PDF/Gambar)">
                     <x-enterprise.file-upload name="riwayat_skp[1][file_rencana_skp]" accept=".pdf,.jpg,.jpeg,.png"/>
-                    @if(isset($skp2) && $skp2->file_rencana_skp)
+                    @if(isset($skp2) && $skp2->file_rencana_skp && $skp2->file_rencana_skp !== '-')
                         <p class="text-xs text-blue-700 mt-1 flex items-center gap-1 font-semibold">
                             <span>📄 Rencana SKP saat ini:</span>
                             <a href="{{ route('document.preview', ['path' => $skp2->file_rencana_skp]) }}" target="_blank" class="underline hover:text-blue-900">Lihat Rencana SKP {{ $skp2->tahun }}</a>
@@ -177,7 +177,7 @@
             <x-enterprise.forms.field>
                 <x-enterprise.form-group label="Upload 2. Evaluasi SKP (PDF/Gambar)">
                     <x-enterprise.file-upload name="riwayat_skp[1][file_evaluasi_skp]" accept=".pdf,.jpg,.jpeg,.png"/>
-                    @if(isset($skp2) && $skp2->file_evaluasi_skp)
+                    @if(isset($skp2) && $skp2->file_evaluasi_skp && $skp2->file_evaluasi_skp !== '-')
                         <p class="text-xs text-emerald-700 mt-1 flex items-center gap-1 font-semibold">
                             <span>📑 Evaluasi SKP saat ini:</span>
                             <a href="{{ route('document.preview', ['path' => $skp2->file_evaluasi_skp]) }}" target="_blank" class="underline hover:text-emerald-900">Lihat Evaluasi SKP {{ $skp2->tahun }}</a>
@@ -257,7 +257,7 @@
             <x-enterprise.forms.field>
                 <x-enterprise.form-group label="Upload Scan Piagam Satyalancana (PDF/Gambar)">
                     <x-enterprise.file-upload name="piagam_satyalancana[file_sk]" accept=".pdf,.jpg,.jpeg,.png"/>
-                    @if(isset($piagamTerakhir) && $piagamTerakhir->file_sk)
+                    @if(isset($piagamTerakhir) && $piagamTerakhir->file_sk && $piagamTerakhir->file_sk !== '-')
                         <p class="text-xs text-amber-900 mt-1 flex items-center gap-1 font-semibold">
                             <span>📜 File piagam saat ini:</span>
                             <a href="{{ route('document.preview', ['path' => $piagamTerakhir->file_sk]) }}" target="_blank" class="underline hover:text-amber-950">Lihat Berkas Piagam</a>
@@ -315,7 +315,7 @@
                                 <input type="date" name="riwayat_penghargaan[{{ $index }}][tanggal_terima]" value="{{ $p->tanggal_terima ? \Carbon\Carbon::parse($p->tanggal_terima)->format('Y-m-d') : '' }}" class="w-full border rounded px-2 py-1 text-xs text-center">
                             </td>
                             <td class="px-3 py-2 text-xs">
-                                @if($p->file_sk)
+                                @if($p->file_sk && $p->file_sk !== '-')
                                     <div class="mb-1 text-slate-500 truncate max-w-xs">
                                         <a href="{{ route('document.preview', ['path' => $p->file_sk]) }}" target="_blank" class="text-blue-600 underline">Lihat SK</a>
                                     </div>

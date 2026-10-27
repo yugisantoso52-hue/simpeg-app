@@ -180,7 +180,7 @@ class PegawaiImportExportAuditTest extends TestCase
         $this->assertStringContainsString('0075010101', $htmlProfil);
         $htmlTextOnly = preg_replace('/data:image\/[^;]+;base64,[^"\']+/i', '', $htmlProfil);
         $this->assertStringNotContainsString('DATA FISIK', $htmlTextOnly);
-        $this->assertStringNotContainsString('NIK', $htmlTextOnly);
+        $this->assertStringNotContainsString('Tinggi Badan', $htmlTextOnly);
 
         $pegawais = collect([$pegawai]);
         $htmlDuk = view('exports.pdf.duk', compact('pegawais'))->render();

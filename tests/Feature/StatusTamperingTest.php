@@ -37,6 +37,8 @@ class StatusTamperingTest extends TestCase
             'status_pegawai' => 'Aktif',
             'mkg_tahun' => 4,
             'mkg_bulan' => 0,
+            'tmt_kgb_terakhir' => now()->subYears(2)->format('Y-m-d'),
+            'kgb_berikutnya' => now()->addMonth()->format('Y-m-d'),
         ]);
 
         $this->pegawaiB = Pegawai::create([

@@ -96,7 +96,7 @@
                 <div class="mt-2">
                     <x-enterprise.form-group label="Upload Fotocopy KARPEG (PDF/Gambar)">
                         <x-enterprise.file-upload name="file_karpeg" accept=".pdf,.jpg,.jpeg,.png"/>
-                        @if(isset($pegawai->file_karpeg) && $pegawai->file_karpeg)
+                        @if(isset($pegawai->file_karpeg) && $pegawai->file_karpeg && $pegawai->file_karpeg !== '-')
                             <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ route('document.preview', ['path' => $pegawai->file_karpeg]) }}" target="_blank" class="text-blue-600 underline font-semibold">Lihat Berkas KARPEG</a></p>
                         @endif
                     </x-enterprise.form-group>

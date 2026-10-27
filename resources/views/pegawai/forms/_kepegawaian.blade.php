@@ -148,7 +148,7 @@
                 <x-enterprise.forms.field>
                     <x-enterprise.form-group label="Upload Dokumen STR (PDF/Gambar)">
                         <x-enterprise.file-upload name="file_str" accept=".pdf,.jpg,.jpeg,.png"/>
-                        @if(isset($pegawai->file_str) && $pegawai->file_str)
+                        @if(isset($pegawai->file_str) && $pegawai->file_str && $pegawai->file_str !== '-')
                             <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ route('document.preview', ['path' => $pegawai->file_str]) }}" target="_blank" class="text-blue-600 underline font-semibold">Lihat Berkas STR</a></p>
                         @endif
                     </x-enterprise.form-group>
@@ -177,7 +177,7 @@
                 <x-enterprise.forms.field>
                     <x-enterprise.form-group label="Upload Dokumen SIP (PDF/Gambar)">
                         <x-enterprise.file-upload name="file_sip" accept=".pdf,.jpg,.jpeg,.png"/>
-                        @if(isset($pegawai->file_sip) && $pegawai->file_sip)
+                        @if(isset($pegawai->file_sip) && $pegawai->file_sip && $pegawai->file_sip !== '-')
                             <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ route('document.preview', ['path' => $pegawai->file_sip]) }}" target="_blank" class="text-blue-600 underline font-semibold">Lihat Berkas SIP</a></p>
                         @endif
                     </x-enterprise.form-group>
@@ -250,7 +250,7 @@
             <x-enterprise.forms.field>
                 <x-enterprise.form-group label="Upload Dokumen/SK PAK (PDF/Gambar)">
                     <x-enterprise.file-upload name="file_pak" accept=".pdf,.jpg,.jpeg,.png"/>
-                    @if(isset($pegawai->file_pak) && $pegawai->file_pak)
+                    @if(isset($pegawai->file_pak) && $pegawai->file_pak && $pegawai->file_pak !== '-')
                         <p class="text-xs text-gray-500 mt-1">File saat ini: <a href="{{ route('document.preview', ['path' => $pegawai->file_pak]) }}" target="_blank" class="text-blue-600 underline font-semibold">Lihat Berkas PAK</a></p>
                     @endif
                 </x-enterprise.form-group>

@@ -47,7 +47,7 @@
                             <input type="number" name="riwayat_pendidikan[{{ $index }}][tahun_lulus]" value="{{ $rp->tahun_lulus }}" class="w-full border rounded px-2 py-1 text-xs text-center">
                         </td>
                         <td class="px-3 py-2 text-xs">
-                            @if($rp->ijazah)
+                            @if($rp->ijazah && $rp->ijazah !== '-')
                                 <div class="mb-1 text-slate-500 truncate max-w-xs">
                                     <a href="{{ route('document.preview', ['path' => $rp->ijazah]) }}" target="_blank" class="text-blue-600 underline">Lihat Ijazah</a>
                                 </div>

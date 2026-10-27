@@ -113,7 +113,7 @@ class ApprovalWorkflowTest extends TestCase
         $start = Carbon::now()->next(Carbon::MONDAY);
         $end = $start->copy()->addDays(2);
 
-        // Tahap 0: Pembuatan pengajuan cuti
+        // Tahap 0: Pembuatan pengajuan cuti (sudah lolos screening & paraf kapokja sesuai SOP)
         $cuti = PengajuanCuti::create([
             'pegawai_id' => $this->pemohonPegawai->id,
             'jenis_cuti' => 'Cuti Tahunan',
@@ -122,6 +122,7 @@ class ApprovalWorkflowTest extends TestCase
             'jumlah_hari' => 3,
             'alasan' => 'Keperluan keluarga',
             'status' => 'Menunggu Persetujuan',
+            'paraf_kapokja_at' => now(),
             'atasan_langsung_id' => $this->atasanUser->id,
             'pybmc_id' => $this->pybmcUser->id,
         ]);
@@ -175,6 +176,7 @@ class ApprovalWorkflowTest extends TestCase
             'jumlah_hari' => 3,
             'alasan' => 'Liburan',
             'status' => 'Menunggu Persetujuan',
+            'paraf_kapokja_at' => now(),
             'atasan_langsung_id' => $this->atasanUser->id,
             'pybmc_id' => $this->pybmcUser->id,
         ]);

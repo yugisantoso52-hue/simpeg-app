@@ -248,4 +248,103 @@ class PegawaiDocumentManagementTest extends TestCase
         $jsonResponse->assertStatus(404);
         $jsonResponse->assertJsonFragment(['success' => false]);
     }
+
+    /**
+     * 5. Test link preview pada halaman Edit Profil: link preview muncul saat file valid dan tidak muncul saat null / '-'
+     */
+    public function test_edit_profile_renders_document_preview_links_correctly_and_ignores_dash(): void
+    {
+        // Kondisi awal: file_sk_pertama adalah '-' (legacy placeholder) dan file_karpeg adalah file valid
+        $karpegPath = 'DOSEN/PNS/199001012022031001 - Dr. Siti Rahma/01_IDENTITAS/karpeg.pdf';
+        Storage::disk('local')->put($karpegPath, '%PDF-1.4 dummy karpeg');
+
+        $this->regularPegawai->update([
+            'file_sk_pertama' => '-',
+            'file_karpeg'     => $karpegPath,
+        ]);
+
+        $response = $this->actingAs($this->adminUser)->get(route('pegawai.edit', $this->regularPegawai->id));
+        $response->assertStatus(200);
+
+        // Preview untuk karpeg harus ada
+        $response->assertSee(route('document.preview', ['path' => $karpegPath]));
+        // Preview untuk '-' TIDAK boleh dirender
+        $response->assertDontSee(route('document.preview', ['path' => '-']));
+    }
+
+    /**
+     * 6. Test keterhubungan berkas lampiran Edit Profil ke modul KP, KGB, dan Satyalancana
+     */
+    public function test_attachment_files_in_profile_connect_to_kp_kgb_and_satyalancana(): void
+    {
+        $skPangkatPath = 'DOSEN/PNS/199001012022031001 - Dr. Siti Rahma/04_SK_PANGKAT/SK_PANGKAT.pdf';
+        $karpegPath = 'DOSEN/PNS/199001012022031001 - Dr. Siti Rahma/01_IDENTITAS/KARPEG.pdf';
+        $skKgbPath = 'DOSEN/PNS/199001012022031001 - Dr. Siti Rahma/05_SK_KGB/SK_KGB.pdf';
+
+        Storage::disk('local')->put($skPangkatPath, '%PDF-1.4 dummy sk pangkat');
+        Storage::disk('local')->put($karpegPath, '%PDF-1.4 dummy karpeg');
+        Storage::disk('local')->put($skKgbPath, '%PDF-1.4 dummy kgb');
+
+        $this->regularPegawai->update([
+            'file_sk_pangkat_terakhir' => $skPangkatPath,
+            'file_karpeg'              => $karpegPath,
+            'file_sk_kgb_terakhir'     => $skKgbPath,
+            'tmt_pangkat'              => now()->subYears(4)->format('Y-m-d'),
+            'tmt_kgb'                  => now()->subYears(2)->format('Y-m-d'),
+        ]);
+
+        // 1. Cek Kenaikan Pangkat (KP)
+        $evaluasiKp = $this->regularPegawai->evaluasiSyaratKp();
+        $this->assertIsArray($evaluasiKp);
+        $this->assertArrayHasKey('sk_pangkat', $evaluasiKp);
+        $this->assertTrue($evaluasiKp['sk_pangkat']['status']);
+        $this->assertEquals(route('document.preview', ['path' => $skPangkatPath]), $evaluasiKp['sk_pangkat']['file_url']);
+        $this->assertTrue($evaluasiKp['karpeg']['status']);
+        $this->assertEquals(route('document.preview', ['path' => $karpegPath]), $evaluasiKp['karpeg']['file_url']);
+
+        // 2. Cek KGB via KelayakanKarirService
+        $karirService = app(\App\Services\KelayakanKarirService::class);
+        $evaluasiKgb = $karirService->evaluasiKgb($this->regularPegawai);
+        $this->assertArrayHasKey('syarat_berkas', $evaluasiKgb);
+        $kgbItems = collect($evaluasiKgb['syarat_berkas']['items'])->keyBy('field');
+        $this->assertTrue($kgbItems['file_sk_kgb_terakhir']['status']);
+        $this->assertEquals(route('document.preview', ['path' => $skKgbPath]), $kgbItems['file_sk_kgb_terakhir']['file_url']);
+
+        // 3. Cek Satyalancana via KelayakanKarirService
+        $evaluasiSatya = $karirService->evaluasiSatyalancana($this->regularPegawai);
+        $this->assertArrayHasKey('syarat_berkas', $evaluasiSatya);
+        $satyaItems = collect($evaluasiSatya['syarat_berkas']['items'])->keyBy('field');
+        $this->assertTrue($satyaItems['file_sk_pangkat_terakhir']['status']);
+        $this->assertEquals(route('document.preview', ['path' => $skPangkatPath]), $satyaItems['file_sk_pangkat_terakhir']['file_url']);
+    }
+
+    /**
+     * 7. Test validasi unggahan berkas: penolakan ekstensi terlarang dan ukuran melebihi batas (10MB) dengan pesan error informatif
+     */
+    public function test_rejects_invalid_file_extension_and_oversized_file_with_informative_messages(): void
+    {
+        // File ekstensi terlarang (.exe atau .txt)
+        $invalidExtensionFile = UploadedFile::fake()->create('virus_script.exe', 100, 'application/x-msdownload');
+        // File melebihi batas 10MB (11MB = 11264 KB)
+        $oversizedFile = UploadedFile::fake()->create('buku_besar.pdf', 11500, 'application/pdf');
+
+        $payload = [
+            'nip'                      => $this->regularPegawai->nip,
+            'nama'                     => $this->regularPegawai->nama,
+            'file_sk_pertama'          => $invalidExtensionFile,
+            'file_sk_pangkat_terakhir' => $oversizedFile,
+        ];
+
+        $response = $this->actingAs($this->adminUser)->put(route('pegawai.update', $this->regularPegawai->id), $payload);
+
+        $response->assertSessionHasErrors([
+            'file_sk_pertama',
+            'file_sk_pangkat_terakhir',
+        ]);
+
+        $errors = session('errors')->getBag('default');
+        // Pesan error ramah Bahasa Indonesia
+        $this->assertStringContainsString('Format Berkas SK Pertama harus berupa dokumen PDF atau gambar', $errors->first('file_sk_pertama'));
+        $this->assertStringContainsString('Ukuran Berkas SK Pangkat Terakhir tidak boleh melebihi 10 MB', $errors->first('file_sk_pangkat_terakhir'));
+    }
 }
