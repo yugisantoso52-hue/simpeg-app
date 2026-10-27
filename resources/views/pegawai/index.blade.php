@@ -58,7 +58,7 @@
     </x-slot>
 
     <div class="py-6" x-data="{ openImportModal: false }">
-        <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+        <div class="w-full max-w-[1920px] mx-auto space-y-6 px-3 sm:px-6 lg:px-8 xl:px-10">
 
             {{-- Flash Message Success --}}
             @if(session('success'))
@@ -91,7 +91,7 @@
             @endif
 
             {{-- Kartu Statistik (7 Kartu Interaktif: Klik untuk Memfilter Data) --}}
-            <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-2.5 sm:gap-3 xl:gap-3.5">
                 <x-enterprise.stat-card
                     title="Total Pegawai"
                     :value="$statistics['total']"
@@ -138,7 +138,7 @@
                 />
 
                 <x-enterprise.stat-card
-                    title="PHL / Honor"
+                    title="PHL / Honorer"
                     :value="$statistics['phl']"
                     color="red"
                     icon="clipboard"
