@@ -21,6 +21,10 @@ class KgbController extends Controller
      */
     public function index(Request $request)
     {
+        if (!auth()->user()->canAccessExecutiveKepegawaianMenus()) {
+            return redirect()->route('pengajuan-karir.index', ['tab' => 'kgb', 'jenis' => 'KGB']);
+        }
+
         $allPegawai = Pegawai::with(['unitKerja', 'jabatan', 'golongan', 'pengajuanKarir'])
             ->where('status_pegawai', 'Aktif')
             ->get();

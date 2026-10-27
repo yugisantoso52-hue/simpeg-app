@@ -28,6 +28,197 @@
         </div>
     </div>
 
+    {{-- Status Kelayakan & Berkas Mandiri Pegawai --}}
+    @if(isset($statusSatya) && $userPegawai)
+        <div class="space-y-5">
+            {{-- Kartu Status Waktu & Periode Satyalancana --}}
+            <div class="rounded-2xl border {{ $statusSatya['can_submit'] ? 'border-indigo-300 bg-indigo-50/50' : 'border-slate-200 bg-white' }} p-6 shadow-sm">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div class="space-y-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider {{ $statusSatya['can_submit'] ? 'bg-indigo-100 text-indigo-800 border border-indigo-300' : 'bg-slate-100 text-slate-700 border border-slate-200' }}">
+                                {{ $statusSatya['can_submit'] ? '✓ Memenuhi Syarat Masa Pengabdian' : '🔒 Belum Memenuhi Kriteria Masa Kerja' }}
+                            </span>
+                            <span class="text-xs text-slate-500 font-mono">Dasar: UU No. 20/2009 &amp; PP No. 35/2010</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <span>🏆</span> Status Pengusulan Satyalancana Karya Satya
+                        </h3>
+                    </div>
+
+                    <div class="shrink-0">
+                        @if($statusSatya['usulan_aktif'])
+                            <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                <span>✓ Usulan Telah Diajukan ({{ ucwords(str_replace('_', ' ', $statusSatya['usulan_aktif']->status)) }})</span>
+                            </span>
+                        @elseif($statusSatya['can_submit'])
+                            <form action="{{ route('satyalancana.ajukan', $userPegawai->id) }}" method="POST" onsubmit="return confirm('Ajukan usulan resmi Satyalancana {{ $statusSatya['kategori_layak'] }} untuk diri Anda?')">
+                                @csrf
+                                <input type="hidden" name="kategori" value="{{ $statusSatya['kategori_layak'] }}">
+                                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition transform active:scale-95">
+                                    <span>🏆 Ajukan Satyalancana ({{ $statusSatya['kategori_layak'] }})</span>
+                                </button>
+                            </form>
+                        @else
+                            <button type="button" disabled class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-slate-200 text-slate-500 border border-slate-300 cursor-not-allowed">
+                                <span>🔒 Belum Memenuhi Syarat Pengusulan</span>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Indikator Parameter Kelayakan Satyalancana --}}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 my-4">
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                        <span class="text-[11px] text-slate-500 block font-medium">Status Kepegawaian:</span>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                            @if($statusSatya['is_pns'])
+                                <span class="text-emerald-600 font-bold text-xs">✓ PNS (Berhak Satyalancana)</span>
+                            @else
+                                <span class="text-rose-600 font-bold text-xs">⚠️ {{ $userPegawai->jenis_pegawai ?? 'Bukan PNS' }} (Khusus PNS)</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                        <span class="text-[11px] text-slate-500 block font-medium">Masa Kerja Pengabdian Riil:</span>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                            <span class="text-indigo-900 font-bold text-xs font-mono">
+                                {{ $statusSatya['masa_kerja_tahun'] }} Tahun {{ $statusSatya['masa_kerja_bulan'] }} Bulan
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                        <span class="text-[11px] text-slate-500 block font-medium">Kategori Kelayakan Nominasi:</span>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                            @if($statusSatya['kategori_layak'])
+                                <span class="text-emerald-700 font-bold text-xs">🏆 Satyalancana {{ $statusSatya['kategori_layak'] }}</span>
+                            @else
+                                <span class="text-slate-500 font-semibold text-xs">Belum Memenuhi (Min. 10 Tahun)</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                @if(!$statusSatya['can_submit'] && !$statusSatya['usulan_aktif'])
+                    <div class="rounded-xl bg-amber-50/80 border border-amber-300 p-4 text-xs text-amber-900 space-y-1.5">
+                        <div class="font-bold flex items-center gap-1.5 text-amber-950">
+                            <span>ℹ️</span> Keterangan Regulasi Mengapa Belum Bisa Mengajukan:
+                        </div>
+                        <ul class="list-disc list-inside space-y-1 text-[11px] text-amber-900 pl-1">
+                            @foreach($statusSatya['alasan_kunci'] as $alasan)
+                                <li>{{ $alasan }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @elseif($statusSatya['can_submit'])
+                    <div class="rounded-xl bg-indigo-50 border border-indigo-300 p-3.5 text-xs text-indigo-900 flex items-center gap-2">
+                        <span class="text-base shrink-0">🎖️</span>
+                        <span><strong>Selamat!</strong> Masa pengabdian Anda telah memenuhi syarat untuk tanda kehormatan <strong>Satyalancana Karya Satya {{ $statusSatya['kategori_layak'] }}</strong>. Silakan klik tombol ajukan di atas.</span>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Panel Kelengkapan Berkas Satyalancana --}}
+            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <span>📎</span> Kelengkapan Dokumen Persyaratan Satyalancana
+                        </h4>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Lengkapi dokumen pendukung di bawah ini agar berkas Anda siap diverifikasi oleh verifikator kepegawaian.
+                        </p>
+                    </div>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 shrink-0">
+                        Skor Kelengkapan: {{ $statusSatya['syarat_berkas']['skor'] }}
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-xs">
+                    {{-- 1. SK Pertama / CPNS --}}
+                    @php $sk1 = $statusSatya['syarat_berkas']['items'][0]; @endphp
+                    <div class="p-4 rounded-xl border {{ $sk1['status'] ? 'border-emerald-200 bg-emerald-50/30' : 'border-rose-200 bg-rose-50/20' }} flex flex-col justify-between gap-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <div class="font-bold text-slate-800">1. SK CPNS / Pengangkatan</div>
+                                <p class="text-[11px] text-slate-500">SK Pengangkatan Pertama CPNS/ASN</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 {{ $sk1['status'] ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
+                                {{ $sk1['status'] ? '✓ Lengkap' : '⚠️ Belum Ada' }}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                            @if($sk1['status'] && $sk1['file_url'])
+                                <a href="{{ $sk1['file_url'] }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800">
+                                    👁️ Lihat Berkas
+                                </a>
+                            @endif
+                            <button type="button" 
+                                    @click="$dispatch('open-upload-syarat', { title: 'SK Pengangkatan Pertama / CPNS', field: 'file_sk_pertama', tab: 'satyalancana' })"
+                                    class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg {{ $sk1['status'] ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-indigo-600 text-white hover:bg-indigo-700' }} transition">
+                                <span>{{ $sk1['status'] ? '✏️ Ganti File' : '📤 Unggah Berkas' }}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- 2. SK Pangkat Terakhir --}}
+                    @php $skP = $statusSatya['syarat_berkas']['items'][1]; @endphp
+                    <div class="p-4 rounded-xl border {{ $skP['status'] ? 'border-emerald-200 bg-emerald-50/30' : 'border-rose-200 bg-rose-50/20' }} flex flex-col justify-between gap-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <div class="font-bold text-slate-800">2. SK Pangkat Terakhir</div>
+                                <p class="text-[11px] text-slate-500">Salinan SK Pangkat terakhir yang dilegalisir</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 {{ $skP['status'] ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
+                                {{ $skP['status'] ? '✓ Lengkap' : '⚠️ Belum Ada' }}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                            @if($skP['status'] && $skP['file_url'])
+                                <a href="{{ $skP['file_url'] }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800">
+                                    👁️ Lihat Berkas
+                                </a>
+                            @endif
+                            <button type="button" 
+                                    @click="$dispatch('open-upload-syarat', { title: 'SK Pangkat Terakhir', field: 'file_sk_pangkat_terakhir', tab: 'satyalancana' })"
+                                    class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg {{ $skP['status'] ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-indigo-600 text-white hover:bg-indigo-700' }} transition">
+                                <span>{{ $skP['status'] ? '✏️ Ganti File' : '📤 Unggah Berkas' }}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- 3. Fotocopy Karpeg --}}
+                    @php $kpg = $statusSatya['syarat_berkas']['items'][4]; @endphp
+                    <div class="p-4 rounded-xl border {{ $kpg['status'] ? 'border-emerald-200 bg-emerald-50/30' : 'border-rose-200 bg-rose-50/20' }} flex flex-col justify-between gap-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <div class="font-bold text-slate-800">3. Fotocopy Karpeg</div>
+                                <p class="text-[11px] text-slate-500">Kartu Pegawai resmi BKN</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 {{ $kpg['status'] ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
+                                {{ $kpg['status'] ? '✓ Lengkap' : '⚠️ Belum Ada' }}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                            @if($kpg['status'] && $kpg['file_url'])
+                                <a href="{{ $kpg['file_url'] }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800">
+                                    👁️ Lihat Karpeg
+                                </a>
+                            @endif
+                            <button type="button" 
+                                    @click="$dispatch('open-upload-syarat', { title: 'Fotocopy Karpeg', field: 'file_karpeg', tab: 'satyalancana' })"
+                                    class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg {{ $kpg['status'] ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-indigo-600 text-white hover:bg-indigo-700' }} transition">
+                                <span>{{ $kpg['status'] ? '✏️ Ganti File' : '📤 Unggah Karpeg' }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- 1. Daftar Usulan yang Sedang Diverifikasi / Berjalan --}}
     <x-enterprise.card>
         <div class="p-6">

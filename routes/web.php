@@ -174,10 +174,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         // Mutasi Pegawai (Khusus Admin)
         Route::resource('mutasi-pegawai', MutasiPegawaiController::class)->parameters(['mutasi-pegawai' => 'mutasi_pegawai'])->except(['show']);
 
-        // KGB & KP (Khusus Admin)
-        Route::get('/kgb', [KgbController::class, 'index'])->name('kgb.index');
+        // KGB & KP (Khusus Eksekusi Admin)
         Route::post('/kgb/proses/{id}', [KgbController::class, 'proses'])->name('kgb.proses');
-        Route::get('/kenaikan-pangkat', [KpController::class, 'index'])->name('kp.index');
         Route::post('/kenaikan-pangkat/proses/{id}', [KpController::class, 'proses'])->name('kp.proses');
 
         // Impor & Template
@@ -226,6 +224,21 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         /* Unduh Berkas Persyaratan & Cetak DRH Satyalancana Karya Satya */
         Route::get('/satyalancana/download-syarat', [SatyalancanaController::class, 'downloadSyarat'])->name('satyalancana.download-syarat');
         Route::get('/satyalancana/{pegawai}/cetak-drh', [SatyalancanaController::class, 'cetakDrh'])->name('satyalancana.cetak-drh');
+
+        /* Modul Karir & Monitoring (Akses Cerdas: Admin memantau seluruh ASN, Pegawai diarahkan ke layanan mandiri) */
+        Route::get('/kgb', [KgbController::class, 'index'])->name('kgb.index');
+        Route::get('/kenaikan-pangkat', [KpController::class, 'index'])->name('kp.index');
+        Route::get('/satyalancana', [SatyalancanaController::class, 'index'])->name('satyalancana.index');
+        Route::post('/satyalancana/{pegawai}/ajukan', [SatyalancanaController::class, 'ajukan'])->name('satyalancana.ajukan');
+        Route::post('/pengajuan-karir/upload-syarat', [\App\Http\Controllers\PengajuanKarirController::class, 'uploadSyarat'])->name('pengajuan-karir.upload-syarat');
+
+        /* Read-Only Riwayat List (Pegawai otomatis difilter miliknya sendiri di Controller) */
+        Route::get('/riwayat-pendidikan', [RiwayatPendidikanController::class, 'index'])->name('riwayat-pendidikan.index');
+        Route::get('/riwayat-jabatan', [RiwayatJabatanController::class, 'index'])->name('riwayat-jabatan.index');
+        Route::get('/riwayat-pangkat', [RiwayatPangkatController::class, 'index'])->name('riwayat-pangkat.index');
+        Route::get('/riwayat-diklat', [RiwayatDiklatController::class, 'index'])->name('riwayat-diklat.index');
+        Route::get('/riwayat-str-sip', [RiwayatStrSipController::class, 'index'])->name('riwayat-str-sip.index');
+        Route::get('/riwayat-skp', [RiwayatSkpController::class, 'index'])->name('riwayat-skp.index');
 
         /* Transparansi Struktur Organisasi & Peta Jabatan Digital (Akses Semua Pegawai) */
         Route::get('/anjab/peta-jabatan', [\App\Http\Controllers\PetaJabatanController::class, 'index'])->name('anjab.peta-jabatan');
@@ -280,21 +293,11 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/reports/duk/pdf', [PegawaiController::class, 'exportDukPdf'])->name('reports.duk.pdf');
         Route::get('/reports/duk/excel', [PegawaiController::class, 'exportDukExcel'])->name('reports.duk.excel');
 
-        /* Modul Karir & Monitoring Kepegawaian */
-        Route::get('/satyalancana', [SatyalancanaController::class, 'index'])->name('satyalancana.index');
-        Route::post('/satyalancana/{pegawai}/ajukan', [SatyalancanaController::class, 'ajukan'])->name('satyalancana.ajukan');
+        /* Modul Karir & Monitoring Kepegawaian (Eksekutif & Verifikasi) */
         Route::post('/satyalancana/{id}/verifikasi', [SatyalancanaController::class, 'verifikasi'])->name('satyalancana.verifikasi');
         Route::post('/satyalancana/{id}/update-nomor', [SatyalancanaController::class, 'updateNomorSurat'])->name('satyalancana.update-nomor');
         Route::get('/satyalancana/cetak-surat-pengantar', [SatyalancanaController::class, 'cetakSuratPengantar'])->name('satyalancana.cetak-surat-pengantar');
         Route::get('/tugas-belajar', [TugasBelajarController::class, 'index'])->name('tugas-belajar.index');
-
-        /* Read-Only Riwayat List */
-        Route::get('/riwayat-pendidikan', [RiwayatPendidikanController::class, 'index'])->name('riwayat-pendidikan.index');
-        Route::get('/riwayat-jabatan', [RiwayatJabatanController::class, 'index'])->name('riwayat-jabatan.index');
-        Route::get('/riwayat-pangkat', [RiwayatPangkatController::class, 'index'])->name('riwayat-pangkat.index');
-        Route::get('/riwayat-diklat', [RiwayatDiklatController::class, 'index'])->name('riwayat-diklat.index');
-        Route::get('/riwayat-str-sip', [RiwayatStrSipController::class, 'index'])->name('riwayat-str-sip.index');
-        Route::get('/riwayat-skp', [RiwayatSkpController::class, 'index'])->name('riwayat-skp.index');
 
         Route::get('/reports/reminder/pdf', [ReportController::class, 'exportReminderPdf'])->name('reports.reminder.pdf');
         Route::get('/reports/reminder/excel', [ReportController::class, 'exportReminderExcel'])->name('reports.reminder.excel');

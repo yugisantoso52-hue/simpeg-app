@@ -26,6 +26,10 @@ class SatyalancanaController extends Controller
 
     public function index()
     {
+        if (!Auth::user()->canAccessExecutiveKepegawaianMenus()) {
+            return redirect()->route('pengajuan-karir.index', ['tab' => 'satyalancana']);
+        }
+
         $user = Auth::user();
         $allPegawai = Pegawai::with([
             'unitKerja', 'jabatan', 'golongan',
@@ -78,6 +82,10 @@ class SatyalancanaController extends Controller
      */
     public function ajukan(Pegawai $pegawai, StoreUsulanSatyalancanaRequest $request)
     {
+        if (!Auth::user()->canAccessExecutiveKepegawaianMenus() && (int)$pegawai->id !== (int)Auth::user()->pegawai_id) {
+            abort(403, 'Anda hanya dapat mengajukan usulan Satyalancana untuk diri sendiri.');
+        }
+
         $validated = $request->validated();
         $kategori = $validated['kategori'] ?? $this->satyalancanaService->cekKelayakanSatyalancana($pegawai);
 

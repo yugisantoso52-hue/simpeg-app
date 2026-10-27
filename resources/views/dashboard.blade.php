@@ -87,7 +87,14 @@
                         </div>
                     </a>
 
-                    <a href="{{ route('kp.index') }}" class="p-3.5 rounded-2xl border border-purple-200/80 bg-white hover:bg-purple-50/50 hover:border-purple-400 shadow-2xs hover:shadow-xs transition duration-150 flex items-center gap-3 group">
+                    @php
+                        $isExecKepeg = Auth::user()->canAccessExecutiveKepegawaianMenus();
+                        $targetKp = $isExecKepeg ? route('kp.index') : route('pengajuan-karir.index', ['tab' => 'kp', 'jenis' => 'KP']);
+                        $targetKgb = $isExecKepeg ? route('kgb.index') : route('pengajuan-karir.index', ['tab' => 'kgb', 'jenis' => 'KGB']);
+                        $targetSatya = $isExecKepeg ? route('satyalancana.index') : route('pengajuan-karir.index', ['tab' => 'satyalancana']);
+                    @endphp
+
+                    <a href="{{ $targetKp }}" class="p-3.5 rounded-2xl border border-purple-200/80 bg-white hover:bg-purple-50/50 hover:border-purple-400 shadow-2xs hover:shadow-xs transition duration-150 flex items-center gap-3 group">
                         <div class="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center shrink-0 group-hover:bg-purple-600 group-hover:text-white transition">
                             <x-icon name="award" class="w-5 h-5 stroke-[2]" />
                         </div>
@@ -97,7 +104,7 @@
                         </div>
                     </a>
 
-                    <a href="{{ route('kgb.index') }}" class="p-3.5 rounded-2xl border border-teal-200/80 bg-white hover:bg-teal-50/50 hover:border-teal-400 shadow-2xs hover:shadow-xs transition duration-150 flex items-center gap-3 group">
+                    <a href="{{ $targetKgb }}" class="p-3.5 rounded-2xl border border-teal-200/80 bg-white hover:bg-teal-50/50 hover:border-teal-400 shadow-2xs hover:shadow-xs transition duration-150 flex items-center gap-3 group">
                         <div class="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 text-teal-600 flex items-center justify-center shrink-0 group-hover:bg-teal-600 group-hover:text-white transition">
                             <x-icon name="banknote" class="w-5 h-5 stroke-[2]" />
                         </div>
@@ -107,7 +114,7 @@
                         </div>
                     </a>
 
-                    <a href="{{ route('satyalancana.index') }}" class="p-3.5 rounded-2xl border border-indigo-200/80 bg-white hover:bg-indigo-50/50 hover:border-indigo-400 shadow-2xs hover:shadow-xs transition duration-150 flex items-center gap-3 group">
+                    <a href="{{ $targetSatya }}" class="p-3.5 rounded-2xl border border-indigo-200/80 bg-white hover:bg-indigo-50/50 hover:border-indigo-400 shadow-2xs hover:shadow-xs transition duration-150 flex items-center gap-3 group">
                         <div class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition">
                             <x-icon name="award" class="w-5 h-5 stroke-[2]" />
                         </div>

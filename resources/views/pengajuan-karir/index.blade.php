@@ -6,7 +6,8 @@
         />
     </x-slot>
 
-    <div class="py-6">
+    <div class="py-6" x-data="{ uploadModalOpen: false, modalTitle: '', modalField: '', modalRedirectTab: '{{ $tab }}' }"
+         @open-upload-syarat.window="modalTitle = $event.detail.title; modalField = $event.detail.field; modalRedirectTab = $event.detail.tab || '{{ $tab }}'; uploadModalOpen = true">
         <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
 
             @if(session('success'))
@@ -75,67 +76,78 @@
                 @include('pengajuan-karir._tab_satyalancana')
             @elseif(($tab ?? '') === 'radar')
                 @include('pengajuan-karir._tab_radar')
+            @elseif(($tab ?? '') === 'kp' || request('jenis') === 'KP')
+                @include('pengajuan-karir._panel_kelayakan_kp')
+            @elseif(($tab ?? '') === 'kgb' || request('jenis') === 'KGB')
+                @include('pengajuan-karir._panel_kelayakan_kgb')
             @else
+                @if($userPegawai && !$isExecutive)
+                    <div class="space-y-6">
+                        @include('pengajuan-karir._panel_kelayakan_kp')
+                        @include('pengajuan-karir._panel_kelayakan_kgb')
+                    </div>
+                @else
+                    {{-- Kartu Aksi Buat Pengajuan Mandiri (Bagi Pegawai) --}}
+                    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+                        <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div>
+                                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    Layanan Karir Mandiri ASN
+                                </span>
+                                <h2 class="text-xl md:text-2xl font-black mt-2 tracking-tight">Form Pengajuan Kenaikan Gaji Berkala & Pangkat</h2>
+                                <p class="text-slate-300 text-xs md:text-sm mt-1 max-w-2xl leading-relaxed">
+                                    Diajukan oleh setiap pegawai (Dosen & Tendik PNS/PPPK) yang telah memenuhi syarat masa kerja dan evaluasi kinerja tahunan, diproses melalui verifikasi administrasi <strong>Ka Pokja Keu-Kepeg</strong>, paraf <strong>Kepala Bagian Umum</strong>, dan penetapan resmi oleh <strong>Wakil Dekan Bidang Keuangan dan Umum</strong>.
+                                </p>
+                            </div>
 
-            {{-- Kartu Aksi Buat Pengajuan Mandiri (Bagi Pegawai) --}}
-            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
-                <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div>
-                        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                            Layanan Karir Mandiri ASN
-                        </span>
-                        <h2 class="text-xl md:text-2xl font-black mt-2 tracking-tight">Form Pengajuan Kenaikan Gaji Berkala & Pangkat</h2>
-                        <p class="text-slate-300 text-xs md:text-sm mt-1 max-w-2xl leading-relaxed">
-                            Diajukan oleh setiap pegawai (Dosen & Tendik PNS/PPPK) yang telah memenuhi syarat masa kerja dan evaluasi kinerja tahunan, diproses melalui verifikasi administrasi <strong>Ka Pokja Keu-Kepeg</strong>, paraf <strong>Kepala Bagian Umum</strong>, dan penetapan resmi oleh <strong>Wakil Dekan Bidang Keuangan dan Umum</strong>.
-                        </p>
+                            <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+                                <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KGB']) }}" 
+                                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition transform active:scale-95">
+                                    <span>⚡ Ajukan KGB (PNS / PPPK)</span>
+                                </a>
+                                <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KP']) }}" 
+                                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition transform active:scale-95">
+                                    <span>🎖️ Ajukan Kenaikan Pangkat (PNS)</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-                        <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KGB']) }}" 
-                           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition transform active:scale-95">
-                            <span>⚡ Ajukan KGB (PNS / PPPK)</span>
-                        </a>
-                        <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KP']) }}" 
-                           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition transform active:scale-95">
-                            <span>🎖️ Ajukan Kenaikan Pangkat (PNS)</span>
-                        </a>
+                    {{-- Ringkasan 6 Periode Kenaikan Pangkat BKN --}}
+                    <div class="rounded-xl border border-indigo-100 bg-white p-4 shadow-xs">
+                        <div class="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            <span class="text-indigo-600">📅</span>
+                            <span>Jadwal 6 Periode Kenaikan Pangkat PNS (BKN No. 4/2023):</span>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-[11px]">
+                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                                <strong class="text-indigo-900 block">1. Februari</strong>
+                                <span class="text-slate-500 text-[10px]">15 Des - 15 Jan</span>
+                            </div>
+                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                                <strong class="text-indigo-900 block">2. April</strong>
+                                <span class="text-slate-500 text-[10px]">1 - 28 Feb</span>
+                            </div>
+                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                                <strong class="text-indigo-900 block">3. Juni</strong>
+                                <span class="text-slate-500 text-[10px]">1 - 30 Apr</span>
+                            </div>
+                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                                <strong class="text-indigo-900 block">4. Agustus</strong>
+                                <span class="text-slate-500 text-[10px]">1 - 30 Jun</span>
+                            </div>
+                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                                <strong class="text-indigo-900 block">5. Oktober</strong>
+                                <span class="text-slate-500 text-[10px]">1 - 31 Ags</span>
+                            </div>
+                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                                <strong class="text-indigo-900 block">6. Desember</strong>
+                                <span class="text-slate-500 text-[10px]">1 - 31 Okt</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-
-            {{-- Ringkasan 6 Periode Kenaikan Pangkat BKN --}}
-            <div class="rounded-xl border border-indigo-100 bg-white p-4 shadow-xs">
-                <div class="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                    <span class="text-indigo-600">📅</span>
-                    <span>Jadwal 6 Periode Kenaikan Pangkat PNS (BKN No. 4/2023):</span>
-                </div>
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-[11px]">
-                    <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
-                        <strong class="text-indigo-900 block">1. Februari</strong>
-                        <span class="text-slate-500 text-[10px]">15 Des - 15 Jan</span>
-                    </div>
-                    <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
-                        <strong class="text-indigo-900 block">2. April</strong>
-                        <span class="text-slate-500 text-[10px]">1 - 28 Feb</span>
-                    </div>
-                    <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
-                        <strong class="text-indigo-900 block">3. Juni</strong>
-                        <span class="text-slate-500 text-[10px]">1 - 30 Apr</span>
-                    </div>
-                    <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
-                        <strong class="text-indigo-900 block">4. Agustus</strong>
-                        <span class="text-slate-500 text-[10px]">1 - 30 Jun</span>
-                    </div>
-                    <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
-                        <strong class="text-indigo-900 block">5. Oktober</strong>
-                        <span class="text-slate-500 text-[10px]">1 - 31 Ags</span>
-                    </div>
-                    <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
-                        <strong class="text-indigo-900 block">6. Desember</strong>
-                        <span class="text-slate-500 text-[10px]">1 - 31 Okt</span>
-                    </div>
-                </div>
-            </div>
+                @endif
+            @endif
 
             {{-- Tabel Daftar Pengajuan --}}
             <x-enterprise.card>
@@ -367,7 +379,9 @@
                     </div>
                 </div>
             </x-enterprise.card>
-            @endif
+
+            {{-- Modal Upload / Lengkapi Berkas Mandiri --}}
+            @include('pengajuan-karir._modal_upload_syarat')
 
         </div>
     </div>

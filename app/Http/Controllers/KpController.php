@@ -18,6 +18,10 @@ class KpController extends Controller
 
     public function index(Request $request)
     {
+        if (!auth()->user()->canAccessExecutiveKepegawaianMenus()) {
+            return redirect()->route('pengajuan-karir.index', ['tab' => 'kp', 'jenis' => 'KP']);
+        }
+
         $filter = $request->query('filter', 'all');
 
         $hariIni = \Carbon\Carbon::now()->startOfDay();

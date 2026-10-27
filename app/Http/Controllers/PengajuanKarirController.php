@@ -12,6 +12,7 @@ use App\Models\UsulanSatyalancana;
 use App\Services\SatyalancanaService;
 use App\Services\KpService;
 use App\Services\KgbService;
+use App\Services\KelayakanKarirService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -149,12 +150,19 @@ class PengajuanKarirController extends Controller
         $isDekan   = $user->isDekan();
         $isAdmin   = $user->isScreeningAdmin();
 
+        // Evaluasi Kepatuhan Regulasi Waktu & Periode serta Kelengkapan Berkas Mandiri Pegawai
+        $kelayakanService = app(KelayakanKarirService::class);
+        $statusKp = $userPegawai ? $kelayakanService->evaluasiKp($userPegawai) : null;
+        $statusKgb = $userPegawai ? $kelayakanService->evaluasiKgb($userPegawai) : null;
+        $statusSatya = $userPegawai ? $kelayakanService->evaluasiSatyalancana($userPegawai) : null;
+
         return view('pengajuan-karir.index', compact(
             'pengajuans', 'isExecutive', 'userPegawai', 'tab',
             'countKpPending', 'countKgbPending', 'countSatyalancanaPending',
             'layakSatyalancana', 'daftarUsulanSatyalancana',
             'reminderKp', 'reminderKgb',
-            'isAdmin', 'isKaPokja', 'isKabag', 'isWd2', 'isDekan'
+            'isAdmin', 'isKaPokja', 'isKabag', 'isWd2', 'isDekan',
+            'statusKp', 'statusKgb', 'statusSatya'
         ));
     }
 
@@ -175,13 +183,22 @@ class PengajuanKarirController extends Controller
             $jenis = 'KGB';
         }
 
-        // Cek apakah pegawai PNS untuk KP (PPPK tidak memiliki KP reguler)
-        $isPns = str_contains(strtoupper($pegawai->jenis_pegawai ?? ''), 'PNS') || 
-                 (!str_contains(strtoupper($pegawai->jenis_pegawai ?? ''), 'PPPK') && !str_contains(strtoupper($pegawai->jenis_pegawai ?? ''), 'PHL'));
-
-        if ($jenis === 'KP' && !$isPns) {
-            return redirect()->route('pengajuan-karir.index')
-                ->with('error', 'Sesuai UU ASN No. 20/2023, Kenaikan Pangkat reguler hanya berlaku bagi PNS. PPPK dapat mengajukan Kenaikan Gaji Berkala (KGB).');
+        // Verifikasi kepatuhan waktu dan periode pengusulan sesuai peraturan perundangan
+        $kelayakanService = app(KelayakanKarirService::class);
+        if ($jenis === 'KP') {
+            $eval = $kelayakanService->evaluasiKp($pegawai);
+            if (!$eval['can_submit'] && !$user->canAccessExecutiveKepegawaianMenus()) {
+                $pesan = implode(' ', $eval['alasan_kunci']);
+                return redirect()->route('pengajuan-karir.index', ['tab' => 'kp', 'jenis' => 'KP'])
+                    ->with('error', "Pengajuan Kenaikan Pangkat belum dapat dibuka: {$pesan}");
+            }
+        } else {
+            $eval = $kelayakanService->evaluasiKgb($pegawai);
+            if (!$eval['can_submit'] && !$user->canAccessExecutiveKepegawaianMenus()) {
+                $pesan = implode(' ', $eval['alasan_kunci']);
+                return redirect()->route('pengajuan-karir.index', ['tab' => 'kgb', 'jenis' => 'KGB'])
+                    ->with('error', "Pengajuan Kenaikan Gaji Berkala (KGB) belum dapat dibuka: {$pesan}");
+            }
         }
 
         $golongans = Golongan::orderBy('id')->get();
@@ -224,6 +241,24 @@ class PengajuanKarirController extends Controller
             $formRequest->rules(),
             $formRequest->messages()
         )->validate();
+
+        // Verifikasi kepatuhan waktu dan periode pengusulan
+        $kelayakanService = app(KelayakanKarirService::class);
+        if ($jenisPengajuan === 'KP') {
+            $eval = $kelayakanService->evaluasiKp($pegawai);
+            if (!$eval['can_submit'] && !$user->canAccessExecutiveKepegawaianMenus()) {
+                $pesan = implode(' ', $eval['alasan_kunci']);
+                return redirect()->route('pengajuan-karir.index', ['tab' => 'kp', 'jenis' => 'KP'])
+                    ->with('error', "Pengajuan Kenaikan Pangkat tidak dapat diproses: {$pesan}");
+            }
+        } else {
+            $eval = $kelayakanService->evaluasiKgb($pegawai);
+            if (!$eval['can_submit'] && !$user->canAccessExecutiveKepegawaianMenus()) {
+                $pesan = implode(' ', $eval['alasan_kunci']);
+                return redirect()->route('pengajuan-karir.index', ['tab' => 'kgb', 'jenis' => 'KGB'])
+                    ->with('error', "Pengajuan Kenaikan Gaji Berkala (KGB) tidak dapat diproses: {$pesan}");
+            }
+        }
 
         $data = [
             'pegawai_id'       => $pegawai->id,
@@ -557,5 +592,50 @@ class PengajuanKarirController extends Controller
         $pengajuan->update(['nomor_surat' => $nomorSuratFormatted]);
 
         return back()->with('success', 'Nomor surat usulan karir berhasil disimpan oleh Admin: ' . ($nomorSuratFormatted ?? '(Dikosongkan)'));
+    }
+
+    /**
+     * Upload & Lengkapi Berkas Persyaratan Mandiri oleh Pegawai
+     */
+    public function uploadSyarat(Request $request)
+    {
+        $request->validate([
+            'jenis_berkas' => 'required|string|in:file_sk_pangkat_terakhir,file_sk_kgb_terakhir,file_karpeg,file_pak,file_sk_pertama',
+            'berkas_file'  => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'redirect_tab' => 'nullable|string',
+        ]);
+
+        $user = Auth::user();
+        $pegawai = $user->pegawai;
+
+        if (!$pegawai) {
+            return back()->with('error', 'Data induk pegawai Anda tidak ditemukan.');
+        }
+
+        $field = $request->input('jenis_berkas');
+        $path = $request->file('berkas_file')->store('pegawai/sk', 'local');
+
+        $pegawai->update([$field => $path]);
+
+        if ($field === 'file_sk_pangkat_terakhir') {
+            $pangkatTerakhir = $pegawai->riwayatPangkat()->latest('tmt')->first();
+            if ($pangkatTerakhir) {
+                $pangkatTerakhir->update(['file_sk' => $path]);
+            }
+        }
+
+        $labels = [
+            'file_sk_pangkat_terakhir' => 'SK Pangkat Terakhir',
+            'file_sk_kgb_terakhir'     => 'SK KGB Terakhir',
+            'file_karpeg'              => 'Fotocopy Karpeg / Identitas ASN',
+            'file_pak'                 => 'Dokumen PAK (Angka Kredit)',
+            'file_sk_pertama'          => 'SK Pengangkatan Pertama / CPNS',
+        ];
+
+        $label = $labels[$field] ?? 'Dokumen';
+        $tab = $request->input('redirect_tab', 'all');
+
+        return redirect()->route('pengajuan-karir.index', ['tab' => $tab])
+            ->with('success', "Berkas {$label} berhasil diunggah dan disimpan ke profil kepegawaian Anda.");
     }
 }
