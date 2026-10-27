@@ -20,18 +20,21 @@ class DocumentStreamingSecurityTest extends TestCase
         parent::setUp();
 
         // Setup Roles
-        $adminRole = Role::create([
+        $adminRole = Role::firstOrCreate([
             'name'         => 'admin',
+        ], [
             'display_name' => 'Admin Kepegawaian',
         ]);
 
-        $pimpinanRole = Role::create([
+        $pimpinanRole = Role::firstOrCreate([
             'name'         => 'pimpinan',
+        ], [
             'display_name' => 'Pimpinan',
         ]);
 
-        $stafRole = Role::create([
+        $stafRole = Role::firstOrCreate([
             'name'         => 'staf',
+        ], [
             'display_name' => 'Staf Biasa',
         ]);
 

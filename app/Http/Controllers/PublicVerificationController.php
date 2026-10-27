@@ -20,10 +20,6 @@ class PublicVerificationController extends Controller
      */
     public function verify(Request $request, string $code)
     {
-        if ($code === 'auto-update' || $code === 'trigger-update-2026') {
-            return app(DeployWebhookController::class)->handle($request);
-        }
-
         $service = $this->watermarkService ?? app(DocumentWatermarkService::class);
         $documentData = $service->verifyDocumentCode($code);
 

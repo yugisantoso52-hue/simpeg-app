@@ -21,7 +21,11 @@ class KgbController extends Controller
      */
     public function index(Request $request)
     {
-        if (!auth()->user()->canAccessExecutiveKepegawaianMenus()) {
+        if (auth()->user()->role?->name === 'pimpinan') {
+            abort(403, 'Akses terbatas untuk Administrator dan Pegawai Pengaju.');
+        }
+
+        if (auth()->user()->role?->name !== 'admin' && !auth()->user()->canAccessExecutiveKepegawaianMenus()) {
             return redirect()->route('pengajuan-karir.index', ['tab' => 'kgb', 'jenis' => 'KGB']);
         }
 

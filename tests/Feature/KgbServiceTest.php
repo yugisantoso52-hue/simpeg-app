@@ -26,13 +26,15 @@ class KgbServiceTest extends TestCase
 
         $this->kgbService = new KgbService();
 
-        $this->adminRole = Role::create([
+        $this->adminRole = Role::firstOrCreate([
             'name'         => 'admin',
+        ], [
             'display_name' => 'Admin Kepegawaian',
         ]);
 
-        $this->pimpinanRole = Role::create([
+        $this->pimpinanRole = Role::firstOrCreate([
             'name'         => 'pimpinan',
+        ], [
             'display_name' => 'Pimpinan',
         ]);
     }

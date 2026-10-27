@@ -10,6 +10,8 @@ jobs:
   build-and-test:
     name: Build & Verify
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout Code
@@ -25,9 +27,12 @@ jobs:
       - name: Validate composer.json and composer.lock
         run: composer validate --strict
 
+      - name: Security Vulnerability Audit (Composer Audit)
+        run: composer audit
+
       - name: Cache Composer packages
         id: composer-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: vendor
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
@@ -61,8 +66,8 @@ jobs:
       - name: Run Automated Test Suite
         env:
           APP_ENV: testing
-          APP_KEY: base64:2fl+Ktvkfl+Fuz4Qp/A75G2RTiWVA/ZoKZvp6fiiM10=
-          DEPLOY_WEBHOOK_KEY: sikap_deploy_sec_2026_unri
+          APP_KEY: ${{ secrets.CI_APP_KEY || 'base64:2fl+Ktvkfl+Fuz4Qp/A75G2RTiWVA/ZoKZvp6fiiM10=' }}
+          DEPLOY_WEBHOOK_KEY: ${{ secrets.DEPLOY_WEBHOOK_KEY || 'test_ci_mock_deploy_secret_key' }}
           DB_CONNECTION: sqlite
           DB_DATABASE: ':memory:'
         run: php artisan test

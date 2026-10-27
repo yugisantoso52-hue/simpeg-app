@@ -17,7 +17,11 @@ class DeployWebhookController extends Controller
      */
     public function handle(Request $request)
     {
-        $secret = config('services.deploy.webhook_secret') ?: env('DEPLOY_WEBHOOK_KEY', 'sikap_deploy_sec_2026_unri');
+        $secret = config('services.deploy.webhook_secret') ?: env('DEPLOY_WEBHOOK_KEY');
+        if (empty($secret)) {
+            Log::warning('Deploy webhook attempted but DEPLOY_WEBHOOK_KEY is not configured.');
+            abort(403, 'Akses ditolak. Token atau signature deploy tidak valid.');
+        }
 
         $inputKey  = $request->input('key') ?? $request->query('key') ?? $request->header('X-Deploy-Key');
         $signature = $request->header('X-Hub-Signature-256');
