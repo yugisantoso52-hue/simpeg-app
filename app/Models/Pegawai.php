@@ -451,49 +451,49 @@ class Pegawai extends Model
     protected function fileSkPertamaUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->file_sk_pertama ? route('document.preview', ['path' => $this->file_sk_pertama]) : null
+            get: fn () => (!empty($this->file_sk_pertama) && $this->file_sk_pertama !== '-') ? route('document.preview', ['path' => $this->file_sk_pertama]) : null
         );
     }
 
     protected function fileSkPangkatTerakhirUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->file_sk_pangkat_terakhir ? route('document.preview', ['path' => $this->file_sk_pangkat_terakhir]) : null
+            get: fn () => (!empty($this->file_sk_pangkat_terakhir) && $this->file_sk_pangkat_terakhir !== '-') ? route('document.preview', ['path' => $this->file_sk_pangkat_terakhir]) : null
         );
     }
 
     protected function fileSkKgbTerakhirUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->file_sk_kgb_terakhir ? route('document.preview', ['path' => $this->file_sk_kgb_terakhir]) : null
+            get: fn () => (!empty($this->file_sk_kgb_terakhir) && $this->file_sk_kgb_terakhir !== '-') ? route('document.preview', ['path' => $this->file_sk_kgb_terakhir]) : null
         );
     }
 
     protected function fileKarpegUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->file_karpeg ? route('document.preview', ['path' => $this->file_karpeg]) : null
+            get: fn () => (!empty($this->file_karpeg) && $this->file_karpeg !== '-') ? route('document.preview', ['path' => $this->file_karpeg]) : null
         );
     }
 
     protected function filePakUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->file_pak ? route('document.preview', ['path' => $this->file_pak]) : null
+            get: fn () => (!empty($this->file_pak) && $this->file_pak !== '-') ? route('document.preview', ['path' => $this->file_pak]) : null
         );
     }
 
     protected function fileStrUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->file_str ? route('document.preview', ['path' => $this->file_str]) : null
+            get: fn () => (!empty($this->file_str) && $this->file_str !== '-') ? route('document.preview', ['path' => $this->file_str]) : null
         );
     }
 
     protected function fileSipUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->file_sip ? route('document.preview', ['path' => $this->file_sip]) : null
+            get: fn () => (!empty($this->file_sip) && $this->file_sip !== '-') ? route('document.preview', ['path' => $this->file_sip]) : null
         );
     }
 

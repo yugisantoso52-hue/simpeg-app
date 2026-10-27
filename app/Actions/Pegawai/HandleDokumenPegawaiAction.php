@@ -21,17 +21,17 @@ class HandleDokumenPegawaiAction
      * Memproses berkas foto dan seluruh SK utama pegawai (upload, hapus berkas lama, dan sinkronisasi ke cloud drive)
      *
      * @param array $files Berkas dari request ($request->allFiles())
-     * @param Pegawai|null $pegawai Model pegawai saat ini (jika proses update)
+     * @param Pegawai|array|null $pegawai Model pegawai saat ini atau data array calon pegawai (jika proses create)
      * @return array Atribut path file yang telah diproses untuk disimpan ke database
      */
-    public function execute(array $files, ?Pegawai $pegawai = null): array
+    public function execute(array $files, Pegawai|array|null $pegawai = null): array
     {
         $processed = [];
-        $isUpdate = $pegawai !== null;
+        $isUpdate = $pegawai instanceof Pegawai;
 
         // 1. Foto Profil
         if (!empty($files['foto'])) {
-            if ($isUpdate && $pegawai->foto) {
+            if ($isUpdate && !empty($pegawai->foto)) {
                 $this->deleteFile($pegawai->foto);
             }
             $processed['foto'] = $this->uploadFoto($files['foto'], $pegawai);
@@ -57,7 +57,7 @@ class HandleDokumenPegawaiAction
                 $processed[$field] = $this->uploadSK($files[$field], $pegawai, $config['type'], $extra);
 
                 // Sinkronisasi otomatis ke Google Drive SIKAP-ARSIP
-                if ($pegawai) {
+                if ($isUpdate && $pegawai) {
                     $this->syncFileToDrive($pegawai, $files[$field], $config['doc_title'], $config['folder']);
                 }
             }
@@ -69,7 +69,7 @@ class HandleDokumenPegawaiAction
     /**
      * Upload foto profil pegawai
      */
-    protected function uploadFoto(UploadedFile $foto, ?Pegawai $pegawai = null): ?string
+    protected function uploadFoto(UploadedFile $foto, Pegawai|array|null $pegawai = null): ?string
     {
         return PegawaiStorageService::store($foto, $pegawai, 'foto');
     }
@@ -77,7 +77,7 @@ class HandleDokumenPegawaiAction
     /**
      * Upload SK/Dokumen pegawai
      */
-    protected function uploadSK(UploadedFile $file, $pegawai, string $tipe, ?string $extra = null): ?string
+    protected function uploadSK(UploadedFile $file, Pegawai|array|null $pegawai = null, string $tipe = 'sk_pertama', ?string $extra = null): ?string
     {
         return PegawaiStorageService::store($file, $pegawai, $tipe, $extra);
     }

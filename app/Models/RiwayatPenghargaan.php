@@ -32,4 +32,11 @@ class RiwayatPenghargaan extends Model
     {
         return $this->belongsTo(Pegawai::class, 'pegawai_id');
     }
+
+    public function getFileSkUrlAttribute(): ?string
+    {
+        return (!empty($this->file_sk) && $this->file_sk !== '-')
+            ? route('document.preview', ['path' => $this->file_sk])
+            : null;
+    }
 }

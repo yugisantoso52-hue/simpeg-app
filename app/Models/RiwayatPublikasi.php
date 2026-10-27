@@ -31,4 +31,11 @@ class RiwayatPublikasi extends Model
     {
         return $this->belongsTo(Pegawai::class, 'pegawai_id');
     }
+
+    public function getFilePublikasiUrlAttribute(): ?string
+    {
+        return (!empty($this->file_publikasi) && $this->file_publikasi !== '-')
+            ? route('document.preview', ['path' => $this->file_publikasi])
+            : null;
+    }
 }

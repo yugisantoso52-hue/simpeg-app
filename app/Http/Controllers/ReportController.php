@@ -297,7 +297,7 @@ class ReportController extends Controller
     }
 
     /**
-     * Layanan Stream / Preview Berkas Privat Terproteksi Autentikasi & Autorisasi (SEC-NEW-01 Fix)
+     * Layanan Stream / Preview & Download Berkas Privat Terproteksi Autentikasi & Autorisasi (SEC-NEW-01 Fix)
      */
     public function streamPrivateFile(Request $request, string $path)
     {
@@ -313,15 +313,16 @@ class ReportController extends Controller
         }
 
         $decodedPath = rawurldecode($path);
+        $trimmedPath = trim($decodedPath, " \t\n\r\0\x0B/\\");
 
-        // Tolak secara eksplisit jika mengandung komponen '..' atau karakter absolut
-        if (str_contains($decodedPath, '..') || str_starts_with($decodedPath, '/') || str_starts_with($decodedPath, '\\') || preg_match('/^[a-zA-Z]:[\\\\\/]/', $decodedPath)) {
+        // Tolak secara eksplisit jika mengandung komponen '..' atau karakter absolut drive letter
+        if (str_contains($trimmedPath, '..') || preg_match('/^[a-zA-Z]:[\\\\\/]/', $trimmedPath)) {
             abort(403);
         }
 
         // Normalisasi separator
-        $normalizedPath = ltrim(str_replace('\\', '/', $decodedPath), '/');
-        $relativePath   = ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $decodedPath), DIRECTORY_SEPARATOR);
+        $normalizedPath = str_replace('\\', '/', $trimmedPath);
+        $relativePath   = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $trimmedPath);
 
         // 3. Blokir Ekstensi & File Sensitif Sistem
         $forbiddenExtensions = ['env', 'php', 'htaccess', 'git', 'json', 'lock', 'yml', 'yaml', 'sqlite', 'log', 'key'];
@@ -333,9 +334,9 @@ class ReportController extends Controller
         }
 
         // 4. Otorisasi Hak Akses (IDOR Protection)
-        // Admin & Pimpinan memiliki hak akses membaca dokumen
+        // Admin & Pimpinan memiliki hak akses membaca seluruh berkas
         if (!$user->hasRole(['admin', 'pimpinan'])) {
-            $ownerPegawaiId = $this->resolveFileOwnerPegawaiId($path);
+            $ownerPegawaiId = $this->resolveFileOwnerPegawaiId($normalizedPath);
             if ($ownerPegawaiId) {
                 $userPegawaiId = $user->pegawai_id;
                 if (!$userPegawaiId) {
@@ -344,16 +345,25 @@ class ReportController extends Controller
                 }
 
                 // Pengguna dapat melihat dokumen jika miliknya sendiri, ATAU jika pengguna adalah atasan langsung pemilik dokumen
-                $isOwn = $userPegawaiId && $userPegawaiId === $ownerPegawaiId;
+                $isOwn = $userPegawaiId && (int)$userPegawaiId === (int)$ownerPegawaiId;
                 $isAtasan = $userPegawaiId && Pegawai::where('id', $ownerPegawaiId)->where('atasan_id', $userPegawaiId)->exists();
 
                 if (!$isOwn && !$isAtasan) {
                     abort(403, 'Anda tidak memiliki hak akses untuk membuka dokumen ini.');
                 }
             } else {
-                abort(403);
+                // Fallback cek kecocokan NIP pengguna dengan path
+                $userNip = $user->pegawai?->nip;
+                if ($userNip && str_contains($normalizedPath, $userNip)) {
+                    // Berkas berada di folder NIP pengguna
+                } else {
+                    abort(403, 'Anda tidak memiliki hak akses untuk membuka dokumen ini.');
+                }
             }
         }
+
+        $isDownload = $request->boolean('download') || $request->has('dl');
+        $disposition = $isDownload ? 'attachment' : 'inline';
 
         // 5. Cek via Storage Disks (kompatibel dengan Supabase, Cloudflare R2, S3 dan Local Storage)
         $defaultDiskName = config('filesystems.default', 'local');
@@ -361,50 +371,65 @@ class ReportController extends Controller
             try {
                 $cloudDisk = \Illuminate\Support\Facades\Storage::disk($defaultDiskName);
                 if ($cloudDisk->exists($normalizedPath)) {
-                    return $cloudDisk->response($normalizedPath);
+                    $headers = [
+                        'Content-Disposition' => "{$disposition}; filename=\"{$filename}\"",
+                    ];
+                    return $cloudDisk->response($normalizedPath, $isDownload ? $filename : null, $headers);
                 }
             } catch (\Throwable $e) {
                 // Fallback ke disk lokal apabila Cloud Storage sedang gangguan/paused
             }
         }
 
+        // Hilangkan kemungkinan duplikasi prefix folder disk ('private/', 'public/', 'storage/')
+        $strippedPath = preg_replace('#^(private|public|storage)[/\\\\]#i', '', $normalizedPath);
+        $strippedRelative = str_replace('/', DIRECTORY_SEPARATOR, $strippedPath);
+
         $localDisk = \Illuminate\Support\Facades\Storage::disk('local');
-        if ($localDisk->exists($normalizedPath)) {
-            if (config('filesystems.disks.local.driver') === 's3') {
-                return $localDisk->response($normalizedPath);
+        foreach (array_unique([$normalizedPath, $strippedPath]) as $p) {
+            if ($localDisk->exists($p)) {
+                if (config('filesystems.disks.local.driver') === 's3') {
+                    return $localDisk->response($p, $isDownload ? $filename : null, [
+                        'Content-Disposition' => "{$disposition}; filename=\"{$filename}\"",
+                    ]);
+                }
+                return $this->buildFileStreamResponse($localDisk->path($p), $filename, $isDownload);
             }
-            return response()->file($localDisk->path($normalizedPath));
         }
 
         try {
             $publicDisk = \Illuminate\Support\Facades\Storage::disk('public');
-            if ($publicDisk->exists($normalizedPath)) {
-                if (config('filesystems.disks.public.driver') === 's3') {
-                    return $publicDisk->response($normalizedPath);
+            foreach (array_unique([$normalizedPath, $strippedPath]) as $p) {
+                if ($publicDisk->exists($p)) {
+                    if (config('filesystems.disks.public.driver') === 's3') {
+                        return $publicDisk->response($p, $isDownload ? $filename : null, [
+                            'Content-Disposition' => "{$disposition}; filename=\"{$filename}\"",
+                        ]);
+                    }
+                    return $this->buildFileStreamResponse($publicDisk->path($p), $filename, $isDownload);
                 }
-                return response()->file($publicDisk->path($normalizedPath));
             }
         } catch (\Throwable $e) {
             // Fallback ke pemeriksaan file fisik lokal
         }
 
         // 6. Fallback direct file checks pada storage fisik lokal
-        $privateStorageRoot = realpath(storage_path('app/private'));
-        $publicStorageRoot  = realpath(storage_path('app/public'));
+        $candidatePaths = [
+            storage_path('app/private' . DIRECTORY_SEPARATOR . $relativePath),
+            storage_path('app/private' . DIRECTORY_SEPARATOR . $strippedRelative),
+            storage_path('app/public' . DIRECTORY_SEPARATOR . $relativePath),
+            storage_path('app/public' . DIRECTORY_SEPARATOR . $strippedRelative),
+            storage_path('app' . DIRECTORY_SEPARATOR . $relativePath),
+            storage_path('app' . DIRECTORY_SEPARATOR . $strippedRelative),
+            public_path('storage' . DIRECTORY_SEPARATOR . $relativePath),
+            public_path('storage' . DIRECTORY_SEPARATOR . $strippedRelative),
+        ];
 
-        $targetPath = storage_path('app/private' . DIRECTORY_SEPARATOR . $relativePath);
-        if (!file_exists($targetPath)) {
-            $targetPath = storage_path('app/public' . DIRECTORY_SEPARATOR . $relativePath);
-        }
-
-        if (file_exists($targetPath)) {
-            $realTarget = realpath($targetPath);
-            if ($realTarget !== false) {
-                $isInsidePrivate = $privateStorageRoot && (str_starts_with($realTarget, $privateStorageRoot . DIRECTORY_SEPARATOR) || $realTarget === $privateStorageRoot);
-                $isInsidePublic  = $publicStorageRoot && (str_starts_with($realTarget, $publicStorageRoot . DIRECTORY_SEPARATOR) || $realTarget === $publicStorageRoot);
-
-                if ($isInsidePrivate || $isInsidePublic) {
-                    return response()->file($realTarget);
+        foreach ($candidatePaths as $targetPath) {
+            if (file_exists($targetPath) && is_file($targetPath)) {
+                $realTarget = realpath($targetPath);
+                if ($realTarget !== false) {
+                    return $this->buildFileStreamResponse($realTarget, $filename, $isDownload);
                 }
             }
         }
@@ -423,67 +448,123 @@ class ReportController extends Controller
     }
 
     /**
+     * Membangun respons file dengan MIME type dan header Content-Disposition yang tepat
+     */
+    protected function buildFileStreamResponse(string $filePath, string $filename, bool $isDownload = false)
+    {
+        $mime = 'application/octet-stream';
+        if (function_exists('mime_content_type')) {
+            $detected = @mime_content_type($filePath);
+            if ($detected) $mime = $detected;
+        }
+
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $mimeMap = [
+            'pdf'  => 'application/pdf',
+            'png'  => 'image/png',
+            'jpg'  => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+            'gif'  => 'image/gif',
+            'svg'  => 'image/svg+xml',
+        ];
+        if (isset($mimeMap[$ext])) {
+            $mime = $mimeMap[$ext];
+        }
+
+        $disposition = $isDownload ? 'attachment' : 'inline';
+
+        return response()->file($filePath, [
+            'Content-Type' => $mime,
+            'Content-Disposition' => "{$disposition}; filename=\"{$filename}\"",
+            'Cache-Control' => 'private, max-age=3600',
+        ]);
+    }
+
+    /**
      * Helper untuk melacak ID Pegawai pemilik berkas berdasarkan record DB
      */
     private function resolveFileOwnerPegawaiId(string $path): ?int
     {
         $cleanPath = ltrim(str_replace('\\', '/', $path), '/');
+        $altPath   = str_replace('/', '\\', $cleanPath);
+        $strippedPath = preg_replace('#^(private|public|storage)/#i', '', $cleanPath);
+        $altStripped  = str_replace('/', '\\', $strippedPath);
 
-        $pegawai = Pegawai::where('file_sk_pertama', $cleanPath)
-            ->orWhere('file_sk_pangkat_terakhir', $cleanPath)
-            ->orWhere('file_sk_kgb_terakhir', $cleanPath)
-            ->orWhere('file_karpeg', $cleanPath)
-            ->orWhere('file_pak', $cleanPath)
-            ->orWhere('foto', $cleanPath)
-            ->first();
+        $pathVariants = array_unique([$cleanPath, $altPath, $strippedPath, $altStripped]);
+
+        $pegawai = Pegawai::where(function ($q) use ($pathVariants) {
+            $q->whereIn('file_sk_pertama', $pathVariants)
+              ->orWhereIn('file_sk_pangkat_terakhir', $pathVariants)
+              ->orWhereIn('file_sk_kgb_terakhir', $pathVariants)
+              ->orWhereIn('file_karpeg', $pathVariants)
+              ->orWhereIn('file_pak', $pathVariants)
+              ->orWhereIn('file_str', $pathVariants)
+              ->orWhereIn('file_sip', $pathVariants)
+              ->orWhereIn('foto', $pathVariants);
+        })->first();
         if ($pegawai) return $pegawai->id;
 
-        $rp = \App\Models\RiwayatPangkat::where('file_sk', $cleanPath)->first();
+        $rp = \App\Models\RiwayatPangkat::whereIn('file_sk', $pathVariants)->first();
         if ($rp) return $rp->pegawai_id;
 
-        $rj = \App\Models\RiwayatJabatan::where('file_sk', $cleanPath)->first();
+        $rj = \App\Models\RiwayatJabatan::whereIn('file_sk', $pathVariants)->first();
         if ($rj) return $rj->pegawai_id;
 
-        $rpend = \App\Models\RiwayatPendidikan::where('ijazah', $cleanPath)->first();
+        $rpend = \App\Models\RiwayatPendidikan::whereIn('ijazah', $pathVariants)->first();
         if ($rpend) return $rpend->pegawai_id;
 
-        $rd = \App\Models\RiwayatDiklat::where('file_sertifikat', $cleanPath)->first();
+        $rd = \App\Models\RiwayatDiklat::whereIn('file_sertifikat', $pathVariants)->first();
         if ($rd) return $rd->pegawai_id;
 
-        $mp = \App\Models\MutasiPegawai::where('file_sk', $cleanPath)->first();
+        $mp = \App\Models\MutasiPegawai::whereIn('file_sk', $pathVariants)->first();
         if ($mp) return $mp->pegawai_id;
 
-        $skp = \App\Models\RiwayatSkp::where('file_rencana_skp', $cleanPath)->orWhere('file_evaluasi_skp', $cleanPath)->first();
+        $skp = \App\Models\RiwayatSkp::whereIn('file_rencana_skp', $pathVariants)
+            ->orWhereIn('file_evaluasi_skp', $pathVariants)
+            ->first();
         if ($skp) return $skp->pegawai_id;
 
-        $str = \App\Models\RiwayatStrSip::where('file_dokumen', $cleanPath)->first();
+        $str = \App\Models\RiwayatStrSip::whereIn('file_dokumen', $pathVariants)->first();
         if ($str) return $str->pegawai_id;
 
-        $tb = \App\Models\TugasBelajar::where('file_sk', $cleanPath)->orWhere('file_laporan_progress', $cleanPath)->first();
+        $tb = \App\Models\TugasBelajar::whereIn('file_sk', $pathVariants)
+            ->orWhereIn('file_laporan_progress', $pathVariants)
+            ->first();
         if ($tb) return $tb->pegawai_id;
 
-        $cuti = \App\Models\PengajuanCuti::where('file_lampiran', $cleanPath)->first();
+        $cuti = \App\Models\PengajuanCuti::whereIn('file_lampiran', $pathVariants)->first();
         if ($cuti) return $cuti->pegawai_id;
 
-        $logbook = \App\Models\Logbook::where('file_lampiran', $cleanPath)->first();
+        $logbook = \App\Models\Logbook::whereIn('file_lampiran', $pathVariants)->first();
         if ($logbook) return $logbook->pegawai_id;
 
-        $pub = \App\Models\RiwayatPublikasi::where('file_publikasi', $cleanPath)->first();
+        $pub = \App\Models\RiwayatPublikasi::whereIn('file_publikasi', $pathVariants)->first();
         if ($pub) return $pub->pegawai_id;
 
-        $penghargaan = \App\Models\RiwayatPenghargaan::where('file_sk', $cleanPath)->first();
+        $penghargaan = \App\Models\RiwayatPenghargaan::whereIn('file_sk', $pathVariants)->first();
         if ($penghargaan) return $penghargaan->pegawai_id;
 
-        $karir = \App\Models\PengajuanKarir::where('file_sk_terakhir', $cleanPath)
-            ->orWhere('file_sk_pangkat_terakhir', $cleanPath)
-            ->orWhere('file_sk_kgb_terakhir', $cleanPath)
-            ->orWhere('file_skp_1', $cleanPath)
-            ->orWhere('file_skp_2', $cleanPath)
-            ->orWhere('file_karpeg', $cleanPath)
-            ->orWhere('file_pak', $cleanPath)
-            ->orWhere('file_pendukung', $cleanPath)
-            ->first();
+        $karir = \App\Models\PengajuanKarir::where(function ($q) use ($pathVariants) {
+            $q->whereIn('file_sk_terakhir', $pathVariants)
+              ->orWhereIn('file_sk_pangkat_terakhir', $pathVariants)
+              ->orWhereIn('file_sk_kgb_terakhir', $pathVariants)
+              ->orWhereIn('file_skp_1', $pathVariants)
+              ->orWhereIn('file_skp_2', $pathVariants)
+              ->orWhereIn('file_karpeg', $pathVariants)
+              ->orWhereIn('file_pak', $pathVariants)
+              ->orWhereIn('file_pendukung', $pathVariants);
+        })->first();
         if ($karir) return $karir->pegawai_id;
+
+        // Fallback: Ekstraksi NIP dari format nama folder arsip digital: /([0-9]{8,18})\s*-\s*/
+        if (preg_match('/(?:^|\/)([0-9]{8,18})\s*-\s*/', $cleanPath, $matches)) {
+            $nipFound = $matches[1];
+            $pegawaiByNip = Pegawai::where('nip', $nipFound)->first();
+            if ($pegawaiByNip) {
+                return $pegawaiByNip->id;
+            }
+        }
 
         return null;
     }

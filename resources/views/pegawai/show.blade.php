@@ -289,7 +289,7 @@
                                              @if($pegawai->tanggal_pak)
                                                  <span class="text-xs text-slate-500 ml-1 font-mono">(Tgl: {{ is_string($pegawai->tanggal_pak) ? \Carbon\Carbon::parse($pegawai->tanggal_pak)->format('d/m/Y') : $pegawai->tanggal_pak->format('d/m/Y') }})</span>
                                              @endif
-                                             @if($pegawai->file_pak)
+                                             @if($pegawai->file_pak && $pegawai->file_pak !== '-')
                                                  <a href="{{ route('document.preview', ['path' => $pegawai->file_pak]) }}" target="_blank" class="ml-2 inline-flex items-center text-xs text-emerald-600 hover:underline font-sans font-semibold">
                                                      📄 Lihat Berkas PAK
                                                  </a>
@@ -331,7 +331,7 @@
                                         <td class="py-1.5 font-medium text-gray-500 w-48">KARPEG / KARIS / KARSU</td>
                                         <td class="py-1.5 text-gray-900 font-mono">
                                             {{ $pegawai->karpeg_karis_karsu ?? '-' }}
-                                            @if($pegawai->file_karpeg)
+                                            @if($pegawai->file_karpeg && $pegawai->file_karpeg !== '-')
                                                 <a href="{{ route('document.preview', ['path' => $pegawai->file_karpeg]) }}" target="_blank" class="ml-2 inline-flex items-center text-xs text-blue-600 hover:underline font-sans font-semibold">
                                                     📄 Lihat Berkas KARPEG
                                                 </a>
@@ -350,7 +350,7 @@
                                                 @if($pegawai->tanggal_kadaluarsa_str)
                                                     <span class="text-xs text-gray-500 ml-2">(Berlaku s/d: {{ is_string($pegawai->tanggal_kadaluarsa_str) ? \Carbon\Carbon::parse($pegawai->tanggal_kadaluarsa_str)->translatedFormat('d F Y') : $pegawai->tanggal_kadaluarsa_str->translatedFormat('d F Y') }})</span>
                                                 @endif
-                                                @if($pegawai->file_str)
+                                                @if($pegawai->file_str && $pegawai->file_str !== '-')
                                                     <a href="{{ route('document.preview', ['path' => $pegawai->file_str]) }}" target="_blank" class="ml-2 inline-flex items-center text-xs text-emerald-600 hover:underline font-semibold">
                                                         📄 Lihat Berkas STR
                                                     </a>
@@ -368,7 +368,7 @@
                                                 @if($pegawai->tanggal_kadaluarsa_sip)
                                                     <span class="text-xs text-gray-500 ml-2">(Berlaku s/d: {{ is_string($pegawai->tanggal_kadaluarsa_sip) ? \Carbon\Carbon::parse($pegawai->tanggal_kadaluarsa_sip)->translatedFormat('d F Y') : $pegawai->tanggal_kadaluarsa_sip->translatedFormat('d F Y') }})</span>
                                                 @endif
-                                                @if($pegawai->file_sip)
+                                                @if($pegawai->file_sip && $pegawai->file_sip !== '-')
                                                     <a href="{{ route('document.preview', ['path' => $pegawai->file_sip]) }}" target="_blank" class="ml-2 inline-flex items-center text-xs text-emerald-600 hover:underline font-semibold">
                                                         📄 Lihat Berkas SIP
                                                     </a>
@@ -404,7 +404,7 @@
                                                     @if($pegawai->tanggal_sk_pertama)
                                                         <span>(Tgl: {{ is_string($pegawai->tanggal_sk_pertama) ? \Carbon\Carbon::parse($pegawai->tanggal_sk_pertama)->translatedFormat('d/m/Y') : $pegawai->tanggal_sk_pertama->translatedFormat('d/m/Y') }})</span>
                                                     @endif
-                                                    @if($pegawai->file_sk_pertama)
+                                                    @if($pegawai->file_sk_pertama && $pegawai->file_sk_pertama !== '-')
                                                         <a href="{{ route('document.preview', ['path' => $pegawai->file_sk_pertama]) }}" target="_blank" class="text-blue-600 hover:underline font-semibold text-[11px]">📄 Berkas SK Pertama</a>
                                                     @endif
                                                 </div>
@@ -423,7 +423,7 @@
                                                     @if($pegawai->tanggal_sk_pangkat_terakhir)
                                                         <span>(Tgl: {{ is_string($pegawai->tanggal_sk_pangkat_terakhir) ? \Carbon\Carbon::parse($pegawai->tanggal_sk_pangkat_terakhir)->translatedFormat('d/m/Y') : $pegawai->tanggal_sk_pangkat_terakhir->translatedFormat('d/m/Y') }})</span>
                                                     @endif
-                                                    @if($pegawai->file_sk_pangkat_terakhir)
+                                                    @if($pegawai->file_sk_pangkat_terakhir && $pegawai->file_sk_pangkat_terakhir !== '-')
                                                         <a href="{{ route('document.preview', ['path' => $pegawai->file_sk_pangkat_terakhir]) }}" target="_blank" class="text-blue-600 hover:underline font-semibold text-[11px]">📄 Berkas SK Pangkat</a>
                                                     @endif
                                                 </div>
@@ -435,7 +435,7 @@
                                         <td class="py-1.5 text-gray-900">
                                             <div class="flex items-center gap-3">
                                                 <span>{{ $pegawai->tmt_kgb_terakhir ? (is_string($pegawai->tmt_kgb_terakhir) ? \Carbon\Carbon::parse($pegawai->tmt_kgb_terakhir)->translatedFormat('d F Y') : $pegawai->tmt_kgb_terakhir->translatedFormat('d F Y')) : '-' }}</span>
-                                                @if($pegawai->file_sk_kgb_terakhir)
+                                                @if($pegawai->file_sk_kgb_terakhir && $pegawai->file_sk_kgb_terakhir !== '-')
                                                     <a href="{{ route('document.preview', ['path' => $pegawai->file_sk_kgb_terakhir]) }}" target="_blank" class="text-blue-600 hover:underline font-semibold text-[11px]">📄 Berkas SK KGB</a>
                                                 @endif
                                             </div>
@@ -517,7 +517,7 @@
                                                         </span>
                                                     </td>
                                                     <td class="py-1.5 px-3 text-center">
-                                                        @if($rp->file_sk)
+                                                        @if($rp->file_sk && $rp->file_sk !== '-')
                                                             <a href="{{ route('document.preview', ['path' => $rp->file_sk]) }}" target="_blank" class="text-blue-600 font-semibold text-xs hover:underline">Lihat SK</a>
                                                         @else
                                                             <span class="text-gray-400 text-xs">-</span>
@@ -574,7 +574,7 @@
                                                         </span>
                                                     </td>
                                                     <td class="py-1.5 px-3 text-center">
-                                                        @if($rj->file_sk)
+                                                        @if($rj->file_sk && $rj->file_sk !== '-')
                                                             <a href="{{ route('document.preview', ['path' => $rj->file_sk]) }}" target="_blank" class="text-blue-600 font-semibold text-xs hover:underline">Lihat SK</a>
                                                         @else
                                                             <span class="text-gray-400 text-xs">-</span>
@@ -625,7 +625,7 @@
                                                     <td class="py-1.5 px-3">{{ $pendidikan->jurusan ?? '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center font-mono">{{ $pendidikan->tahun_lulus ?? '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center">
-                                                        @if($pendidikan->ijazah)
+                                                        @if($pendidikan->ijazah && $pendidikan->ijazah !== '-')
                                                             <a href="{{ route('document.preview', ['path' => $pendidikan->ijazah]) }}" target="_blank" class="text-blue-600 font-semibold text-xs hover:underline">Lihat Ijazah</a>
                                                         @else
                                                             <span class="text-gray-400 text-xs">-</span>
@@ -686,7 +686,7 @@
                                                         </span>
                                                     </td>
                                                     <td class="py-1.5 px-3 text-center">
-                                                        @if($diklat->file_sertifikat)
+                                                        @if($diklat->file_sertifikat && $diklat->file_sertifikat !== '-')
                                                             <a href="{{ route('document.preview', ['path' => $diklat->file_sertifikat]) }}" target="_blank" class="text-blue-600 font-semibold text-xs hover:underline">Lihat</a>
                                                         @else
                                                             <span class="text-gray-400 text-xs">-</span>
@@ -993,7 +993,7 @@
                                                     <td class="py-1.5 px-3 font-mono text-xs">{{ $p->nomor_sk ?? '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $p->tanggal_terima ? $p->tanggal_terima->format('d/m/Y') : '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center">
-                                                        @if($p->file_sk)
+                                                        @if($p->file_sk && $p->file_sk !== '-')
                                                             <a href="{{ route('document.preview', ['path' => $p->file_sk]) }}" target="_blank" class="text-blue-600 font-semibold text-xs hover:underline">Lihat SK</a>
                                                         @else
                                                             <span class="text-gray-400 text-xs">-</span>
@@ -1102,7 +1102,7 @@
                                                     </td>
                                                     <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $pub->tahun_terbit ?? '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center">
-                                                        @if($pub->file_publikasi)
+                                                        @if($pub->file_publikasi && $pub->file_publikasi !== '-')
                                                             <a href="{{ route('document.preview', ['path' => $pub->file_publikasi]) }}" target="_blank" class="text-emerald-600 font-semibold text-xs hover:underline">PDF</a>
                                                         @else
                                                             <span class="text-gray-400 text-xs">-</span>

@@ -144,8 +144,8 @@ class PegawaiService
     public function createPegawai(array $data, array $files = []): Pegawai
     {
         return DB::transaction(function () use ($data, $files) {
-            // 1. Proses upload dokumen utama
-            $docPaths = $this->dokumenAction->execute($files);
+            // 1. Proses upload dokumen utama (gunakan array data calon pegawai agar penamaan folder sesuai NIP & Nama)
+            $docPaths = $this->dokumenAction->execute($files, $data);
             $data = array_merge($data, $docPaths);
 
             // 2. Simpan profil data diri pegawai
@@ -211,6 +211,8 @@ class PegawaiService
             $this->deleteSK($pegawai->file_sk_kgb_terakhir);
             $this->deleteSK($pegawai->file_karpeg);
             $this->deleteSK($pegawai->file_pak);
+            $this->deleteSK($pegawai->file_str);
+            $this->deleteSK($pegawai->file_sip);
 
             // Hapus akun user pegawai jika ada
             User::where('pegawai_id', $pegawai->id)->delete();

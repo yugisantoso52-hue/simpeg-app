@@ -48,7 +48,16 @@ class SyncRiwayatPegawaiAction
         if ($isUpdate) {
             $existingIds = $pegawai->riwayatPendidikan()->pluck('id')->toArray();
             $incomingIds = collect($incoming)->pluck('id')->filter()->toArray();
-            $pegawai->riwayatPendidikan()->whereIn('id', array_diff($existingIds, $incomingIds))->delete();
+            $deletedIds = array_diff($existingIds, $incomingIds);
+            if (!empty($deletedIds)) {
+                $toDelete = $pegawai->riwayatPendidikan()->whereIn('id', $deletedIds)->get();
+                foreach ($toDelete as $item) {
+                    if (!empty($item->ijazah)) {
+                        PegawaiStorageService::delete($item->ijazah);
+                    }
+                    $item->delete();
+                }
+            }
         }
 
         foreach ($incoming as $index => $row) {
@@ -101,7 +110,16 @@ class SyncRiwayatPegawaiAction
         if ($isUpdate) {
             $existingIds = $pegawai->riwayatDiklat()->pluck('id')->toArray();
             $incomingIds = collect($incoming)->pluck('id')->filter()->toArray();
-            $pegawai->riwayatDiklat()->whereIn('id', array_diff($existingIds, $incomingIds))->delete();
+            $deletedIds = array_diff($existingIds, $incomingIds);
+            if (!empty($deletedIds)) {
+                $toDelete = $pegawai->riwayatDiklat()->whereIn('id', $deletedIds)->get();
+                foreach ($toDelete as $item) {
+                    if (!empty($item->file_sertifikat)) {
+                        PegawaiStorageService::delete($item->file_sertifikat);
+                    }
+                    $item->delete();
+                }
+            }
         }
 
         foreach ($incoming as $index => $row) {
@@ -161,7 +179,16 @@ class SyncRiwayatPegawaiAction
         if ($isUpdate) {
             $existingIds = $pegawai->riwayatJabatan()->pluck('id')->toArray();
             $incomingIds = collect($incoming)->pluck('id')->filter()->toArray();
-            $pegawai->riwayatJabatan()->whereIn('id', array_diff($existingIds, $incomingIds))->delete();
+            $deletedIds = array_diff($existingIds, $incomingIds);
+            if (!empty($deletedIds)) {
+                $toDelete = $pegawai->riwayatJabatan()->whereIn('id', $deletedIds)->get();
+                foreach ($toDelete as $item) {
+                    if (!empty($item->file_sk)) {
+                        PegawaiStorageService::delete($item->file_sk);
+                    }
+                    $item->delete();
+                }
+            }
         }
 
         $activeIndices = [];
@@ -226,7 +253,16 @@ class SyncRiwayatPegawaiAction
         if ($isUpdate) {
             $existingIds = $pegawai->riwayatPangkat()->pluck('id')->toArray();
             $incomingIds = collect($incoming)->pluck('id')->filter()->toArray();
-            $pegawai->riwayatPangkat()->whereIn('id', array_diff($existingIds, $incomingIds))->delete();
+            $deletedIds = array_diff($existingIds, $incomingIds);
+            if (!empty($deletedIds)) {
+                $toDelete = $pegawai->riwayatPangkat()->whereIn('id', $deletedIds)->get();
+                foreach ($toDelete as $item) {
+                    if (!empty($item->file_sk)) {
+                        PegawaiStorageService::delete($item->file_sk);
+                    }
+                    $item->delete();
+                }
+            }
         }
 
         $activeIndices = [];
@@ -412,7 +448,16 @@ class SyncRiwayatPegawaiAction
                 ->pluck('id')
                 ->toArray();
             $incomingIds = collect($incoming)->pluck('id')->filter()->toArray();
-            $pegawai->riwayatPenghargaan()->whereIn('id', array_diff($existingIds, $incomingIds))->delete();
+            $deletedIds = array_diff($existingIds, $incomingIds);
+            if (!empty($deletedIds)) {
+                $toDelete = $pegawai->riwayatPenghargaan()->whereIn('id', $deletedIds)->get();
+                foreach ($toDelete as $item) {
+                    if (!empty($item->file_sk)) {
+                        PegawaiStorageService::delete($item->file_sk);
+                    }
+                    $item->delete();
+                }
+            }
         }
 
         foreach ($incoming as $index => $row) {
@@ -505,7 +550,16 @@ class SyncRiwayatPegawaiAction
         if ($isUpdate) {
             $existingIds = $pegawai->riwayatPublikasi()->pluck('id')->toArray();
             $incomingIds = collect($incoming)->pluck('id')->filter()->toArray();
-            $pegawai->riwayatPublikasi()->whereIn('id', array_diff($existingIds, $incomingIds))->delete();
+            $deletedIds = array_diff($existingIds, $incomingIds);
+            if (!empty($deletedIds)) {
+                $toDelete = $pegawai->riwayatPublikasi()->whereIn('id', $deletedIds)->get();
+                foreach ($toDelete as $item) {
+                    if (!empty($item->file_publikasi)) {
+                        PegawaiStorageService::delete($item->file_publikasi);
+                    }
+                    $item->delete();
+                }
+            }
         }
 
         foreach ($incoming as $index => $row) {
@@ -574,7 +628,19 @@ class SyncRiwayatPegawaiAction
         if ($isUpdate) {
             $existingIds = $pegawai->tugasBelajar()->pluck('id')->toArray();
             $incomingIds = collect($incoming)->pluck('id')->filter()->toArray();
-            $pegawai->tugasBelajar()->whereIn('id', array_diff($existingIds, $incomingIds))->delete();
+            $deletedIds = array_diff($existingIds, $incomingIds);
+            if (!empty($deletedIds)) {
+                $toDelete = $pegawai->tugasBelajar()->whereIn('id', $deletedIds)->get();
+                foreach ($toDelete as $item) {
+                    if (!empty($item->file_sk)) {
+                        PegawaiStorageService::delete($item->file_sk);
+                    }
+                    if (!empty($item->file_laporan_progress)) {
+                        PegawaiStorageService::delete($item->file_laporan_progress);
+                    }
+                    $item->delete();
+                }
+            }
         }
 
         foreach ($incoming as $index => $row) {
