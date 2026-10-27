@@ -139,6 +139,7 @@ class Pegawai extends Model
             \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_pendidikan');
             \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_unit');
             \Illuminate\Support\Facades\Cache::forget('dashboard_reminder');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_faculty_completeness');
             \Illuminate\Support\Facades\Cache::forget('pegawai_statistics');
         });
 
@@ -149,6 +150,7 @@ class Pegawai extends Model
             \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_pendidikan');
             \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_unit');
             \Illuminate\Support\Facades\Cache::forget('dashboard_reminder');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_faculty_completeness');
             \Illuminate\Support\Facades\Cache::forget('pegawai_statistics');
         });
     }

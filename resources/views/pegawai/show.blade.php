@@ -208,12 +208,12 @@
                                  <tbody>
                                      <tr class="border-b border-gray-50">
                                          <td class="py-1.5 font-medium text-gray-500 w-48">Unit Kerja</td>
-                                         <td class="py-1.5 text-gray-900 font-semibold">{{ $pegawai->unitKerja->nama_unit ?? $pegawai->unitKerja->nama_unit_kerja ?? $pegawai->unit_kerja ?? '-' }}</td>
+                                         <td class="py-1.5 text-gray-900 font-semibold">{{ $pegawai->unitKerja?->nama_unit ?? $pegawai->unit_kerja ?? '-' }}</td>
                                      </tr>
                                      <tr class="border-b border-gray-50">
                                          <td class="py-1.5 font-medium text-gray-500">Jabatan</td>
                                          <td class="py-1.5 text-gray-900 font-semibold">
-                                             {{ $pegawai->jabatan->nama_jabatan ?? $pegawai->jabatan->nama ?? $pegawai->jabatan ?? '-' }}
+                                             {{ $pegawai->jabatan?->nama_jabatan ?? $pegawai->jabatan ?? '-' }}
                                          </td>
                                      </tr>
                                      <tr class="border-b border-gray-50">
@@ -222,8 +222,8 @@
                                              @if($pegawai->atasan)
                                                  <a href="{{ route('pegawai.show', $pegawai->atasan->id) }}" class="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-800 hover:underline">
                                                      <span>👤</span>
-                                                     <span>{{ $pegawai->atasan->nama_lengkap ?? $pegawai->atasan->nama }}</span>
-                                                     <span class="text-xs text-gray-500 font-normal">({{ $pegawai->atasan->jabatan->nama_jabatan ?? 'Pejabat' }})</span>
+                                                     <span>{{ $pegawai->atasan?->nama_lengkap ?? $pegawai->atasan?->nama }}</span>
+                                                     <span class="text-xs text-gray-500 font-normal">({{ $pegawai->atasan?->jabatan?->nama_jabatan ?? 'Pejabat' }})</span>
                                                  </a>
                                              @else
                                                  <span class="text-gray-400 italic">Otomatis Sesuai Matriks Jabatan</span>
@@ -236,8 +236,8 @@
                                              @if($pegawai->pejabatPenilai)
                                                  <a href="{{ route('pegawai.show', $pegawai->pejabatPenilai->id) }}" class="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-800 hover:underline">
                                                      <span>👤</span>
-                                                     <span>{{ $pegawai->pejabatPenilai->nama_lengkap ?? $pegawai->pejabatPenilai->nama }}</span>
-                                                     <span class="text-xs text-gray-500 font-normal">({{ $pegawai->pejabatPenilai->jabatan->nama_jabatan ?? 'Pejabat Penilai' }})</span>
+                                                     <span>{{ $pegawai->pejabatPenilai?->nama_lengkap ?? $pegawai->pejabatPenilai?->nama }}</span>
+                                                     <span class="text-xs text-gray-500 font-normal">({{ $pegawai->pejabatPenilai?->jabatan?->nama_jabatan ?? 'Pejabat Penilai' }})</span>
                                                  </a>
                                              @else
                                                  <span class="text-gray-400 italic">Mengikuti Atasan Langsung / Matriks Resmi</span>
@@ -250,8 +250,8 @@
                                              @if($pegawai->atasanCuti)
                                                  <a href="{{ route('pegawai.show', $pegawai->atasanCuti->id) }}" class="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-800 hover:underline">
                                                      <span>👤</span>
-                                                     <span>{{ $pegawai->atasanCuti->nama_lengkap ?? $pegawai->atasanCuti->nama }}</span>
-                                                     <span class="text-xs text-gray-500 font-normal">({{ $pegawai->atasanCuti->jabatan->nama_jabatan ?? 'Atasan Cuti' }})</span>
+                                                     <span>{{ $pegawai->atasanCuti?->nama_lengkap ?? $pegawai->atasanCuti?->nama }}</span>
+                                                     <span class="text-xs text-gray-500 font-normal">({{ $pegawai->atasanCuti?->jabatan?->nama_jabatan ?? 'Atasan Cuti' }})</span>
                                                  </a>
                                              @else
                                                  <span class="text-gray-400 italic">Mengikuti Regulasi Ketetapan Cuti</span>
@@ -261,9 +261,9 @@
                                      <tr class="border-b border-gray-50">
                                          <td class="py-1.5 font-medium text-gray-500">Golongan / Pangkat</td>
                                          <td class="py-1.5 text-gray-900">
-                                             {{ $pegawai->golongan->nama_golongan ?? $pegawai->golongan->nama ?? $pegawai->golongan ?? '-' }}
-                                             @if(!empty($pegawai->golongan->nama_pangkat))
-                                                 ({{ $pegawai->golongan->nama_pangkat }})
+                                             {{ $pegawai->golongan?->nama_golongan ?? $pegawai->golongan ?? '-' }}
+                                             @if(!empty($pegawai->golongan?->nama_pangkat))
+                                                 ({{ $pegawai->golongan?->nama_pangkat }})
                                              @endif
                                          </td>
                                      </tr>
@@ -506,7 +506,7 @@
                                             @foreach($pegawai->riwayatPangkat as $rp)
                                                 <tr class="border-b border-gray-50 hover:bg-gray-50/50">
                                                     <td class="py-1.5 px-3 font-semibold text-gray-800">
-                                                        {{ $rp->golongan->nama_golongan ?? '-' }} ({{ $rp->golongan->nama_pangkat ?? '-' }})
+                                                        {{ $rp->golongan?->nama_golongan ?? '-' }} ({{ $rp->golongan?->nama_pangkat ?? '-' }})
                                                     </td>
                                                     <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $rp->tmt ? \Carbon\Carbon::parse($rp->tmt)->format('d/m/Y') : '-' }}</td>
                                                     <td class="py-1.5 px-3 font-mono text-xs">{{ $rp->nomor_sk ?? '-' }}</td>
@@ -563,8 +563,8 @@
                                         <tbody>
                                             @foreach($pegawai->riwayatJabatan as $rj)
                                                 <tr class="border-b border-gray-50 hover:bg-gray-50/50">
-                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $rj->jabatan->nama_jabatan ?? $rj->nama_jabatan ?? '-' }}</td>
-                                                    <td class="py-1.5 px-3 text-xs">{{ $rj->unitKerja->nama_unit ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $rj->jabatan?->nama_jabatan ?? $rj->nama_jabatan ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-xs">{{ $rj->unitKerja?->nama_unit ?? '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $rj->tmt_jabatan ? \Carbon\Carbon::parse($rj->tmt_jabatan)->format('d/m/Y') : '-' }}</td>
                                                     <td class="py-1.5 px-3 font-mono text-xs">{{ $rj->nomor_sk ?? '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $rj->tanggal_sk ? \Carbon\Carbon::parse($rj->tanggal_sk)->format('d/m/Y') : '-' }}</td>
@@ -1228,8 +1228,8 @@
                                             @foreach($pegawai->mutasi as $m)
                                                 <tr class="border-b border-gray-50 hover:bg-gray-50/50">
                                                     <td class="py-1.5 px-3 font-semibold text-gray-800">{{ $m->jenis_mutasi ?? 'Mutasi Internal' }}</td>
-                                                    <td class="py-1.5 px-3 text-xs">{{ $m->unitKerjaAsal->nama_unit ?? $m->instansi_asal ?? '-' }}</td>
-                                                    <td class="py-1.5 px-3 text-xs font-semibold text-blue-700">{{ $m->unitKerjaTujuan->nama_unit ?? $m->instansi_tujuan ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-xs">{{ $m->unitKerjaAsal?->nama_unit ?? $m->instansi_asal ?? '-' }}</td>
+                                                    <td class="py-1.5 px-3 text-xs font-semibold text-blue-700">{{ $m->unitKerjaTujuan?->nama_unit ?? $m->instansi_tujuan ?? '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $m->tmt_mutasi ? \Carbon\Carbon::parse($m->tmt_mutasi)->format('d/m/Y') : '-' }}</td>
                                                     <td class="py-1.5 px-3 text-center font-mono text-xs">{{ $m->nomor_sk ?? '-' }}</td>
                                                 </tr>

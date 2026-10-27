@@ -109,7 +109,11 @@ class RiwayatPangkatService
             if (!empty($riwayat->file_sk)) {
                 $updatePegawai['file_sk_pangkat_terakhir'] = $riwayat->file_sk;
             }
-            Pegawai::where('id', $data['pegawai_id'])->update($updatePegawai);
+            $pegawai = Pegawai::find($data['pegawai_id']);
+            if ($pegawai) {
+                $pegawai->update($updatePegawai);
+                app(PegawaiService::class)->syncPegawaiFromHistories($pegawai);
+            }
 
             return $riwayat;
         });
@@ -169,7 +173,11 @@ class RiwayatPangkatService
             if (!empty($riwayatUpdated->file_sk)) {
                 $updatePegawai['file_sk_pangkat_terakhir'] = $riwayatUpdated->file_sk;
             }
-            Pegawai::where('id', $riwayatUpdated->pegawai_id)->update($updatePegawai);
+            $pegawai = Pegawai::find($riwayatUpdated->pegawai_id);
+            if ($pegawai) {
+                $pegawai->update($updatePegawai);
+                app(PegawaiService::class)->syncPegawaiFromHistories($pegawai);
+            }
 
             return $riwayatUpdated;
         });
@@ -203,30 +211,11 @@ class RiwayatPangkatService
             if ($pangkatTerbaru) {
                 // Aktifkan kembali pangkat terakhir yang tersisa
                 $pangkatTerbaru->update(['status' => 'aktif']);
+            }
 
-                $kpBerikutnya = !empty($pangkatTerbaru->tmt) 
-                    ? Carbon::parse($pangkatTerbaru->tmt)->addYears(4) 
-                    : null;
-
-                $updatePegawai = [
-                    'golongan_id'                 => $pangkatTerbaru->golongan_id,
-                    'tmt_pangkat_terakhir'        => $pangkatTerbaru->tmt,
-                    'nomor_sk_pangkat_terakhir'   => $pangkatTerbaru->nomor_sk ?? null,
-                    'tanggal_sk_pangkat_terakhir' => $pangkatTerbaru->tanggal_sk ?? null,
-                    'file_sk_pangkat_terakhir'    => $pangkatTerbaru->file_sk ?? null,
-                    'kp_berikutnya'               => $kpBerikutnya,
-                ];
-                Pegawai::where('id', $pegawaiId)->update($updatePegawai);
-            } else {
-                // Jika tidak ada riwayat pangkat sama sekali, kosongkan di tabel pegawai
-                Pegawai::where('id', $pegawaiId)->update([
-                    'golongan_id'                 => null,
-                    'tmt_pangkat_terakhir'        => null,
-                    'nomor_sk_pangkat_terakhir'   => null,
-                    'tanggal_sk_pangkat_terakhir' => null,
-                    'file_sk_pangkat_terakhir'    => null,
-                    'kp_berikutnya'               => null,
-                ]);
+            $pegawai = Pegawai::find($pegawaiId);
+            if ($pegawai) {
+                app(PegawaiService::class)->syncPegawaiFromHistories($pegawai);
             }
 
             return $deleted;

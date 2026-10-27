@@ -188,9 +188,9 @@
                                     <tr class="hover:bg-slate-50/80 transition">
                                         <td class="py-3 px-3 font-mono text-slate-400">{{ $loop->iteration }}</td>
                                         <td class="py-3 px-3">
-                                             <div class="font-bold text-slate-900 text-sm">{{ $item->pegawai->nama_lengkap ?? $item->pegawai->nama }}</div>
-                                            <div class="text-[11px] text-slate-500 font-mono">NIP: {{ $item->pegawai->nip }}</div>
-                                            <div class="text-[11px] text-slate-600">{{ $item->pegawai->jabatan->nama_jabatan ?? '-' }}</div>
+                                             <div class="font-bold text-slate-900 text-sm">{{ $item->pegawai?->nama_lengkap ?? $item->pegawai?->nama ?? '-' }}</div>
+                                            <div class="text-[11px] text-slate-500 font-mono">NIP: {{ $item->pegawai?->nip ?? '-' }}</div>
+                                            <div class="text-[11px] text-slate-600">{{ $item->pegawai?->jabatan?->nama_jabatan ?? '-' }}</div>
                                         </td>
                                         <td class="py-3 px-3">
                                             <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold {{ $item->jenis_pengajuan === 'KP' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">

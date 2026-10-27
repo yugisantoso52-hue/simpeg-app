@@ -28,7 +28,14 @@ class PegawaiRepository extends BaseRepository implements PegawaiRepositoryInter
     public function searchFiltered(?string $search, ?string $filter = null, int $perPage = 10): LengthAwarePaginator
     {
         return $this->model
-            ->with(['unitKerja', 'jabatan', 'golongan'])
+            ->with([
+                'unitKerja',
+                'jabatan',
+                'golongan',
+                'riwayatJabatan.unitKerja',
+                'riwayatJabatan.jabatan',
+                'riwayatPangkat.golongan',
+            ])
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('nip', 'like', "%{$search}%")

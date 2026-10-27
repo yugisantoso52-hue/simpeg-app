@@ -333,7 +333,9 @@ class PegawaiService
         // 1. Sinkronisasi Jabatan Terakhir
         $activeJabatan = $pegawai->riwayatJabatan()
             ->whereIn('status', ['aktif', 'Aktif'])
-            ->first();
+            ->orderByDesc('tmt_jabatan')
+            ->first() 
+            ?? $pegawai->riwayatJabatan()->orderByDesc('tmt_jabatan')->first();
 
         if ($activeJabatan) {
             $pegawai->jabatan_id = $activeJabatan->jabatan_id;
@@ -381,12 +383,17 @@ class PegawaiService
                 'status'        => 'aktif',
                 'keterangan'    => 'Sinkronisasi otomatis dari data utama pegawai',
             ]);
+        } elseif ($pegawai->riwayatJabatan()->count() === 0) {
+            $pegawai->jabatan_id = null;
+            $pegawai->unit_kerja_id = null;
         }
 
         // 2. Sinkronisasi Pangkat Terakhir
         $activePangkat = $pegawai->riwayatPangkat()
             ->whereIn('status', ['aktif', 'Aktif'])
-            ->first();
+            ->orderByDesc('tmt')
+            ->first()
+            ?? $pegawai->riwayatPangkat()->orderByDesc('tmt')->first();
 
         if ($activePangkat) {
             $pegawai->golongan_id = $activePangkat->golongan_id;
@@ -416,6 +423,10 @@ class PegawaiService
             if (!empty($pegawai->tmt_pangkat_terakhir)) {
                 $pegawai->kp_berikutnya = Carbon::parse($pegawai->tmt_pangkat_terakhir)->addYears(4)->toDateString();
             }
+        } elseif ($pegawai->riwayatPangkat()->count() === 0) {
+            $pegawai->golongan_id = null;
+            $pegawai->tmt_pangkat_terakhir = null;
+            $pegawai->kp_berikutnya = null;
         }
 
         // 3. Sinkronisasi Pendidikan Terakhir (Kualifikasi Tertinggi)

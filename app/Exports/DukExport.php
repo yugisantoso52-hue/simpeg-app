@@ -171,8 +171,8 @@ class DukExport implements FromCollection, WithMapping, WithHeadings, ShouldAuto
 
     private function formatRow(int $no, Pegawai $row, string $kategori): array
     {
-        $golongan   = $row->golongan->nama_golongan ?? '-';
-        $pangkat    = $row->golongan->nama_pangkat ?? '';
+        $golongan   = $row->golongan?->nama_golongan ?? '-';
+        $pangkat    = $row->golongan?->nama_pangkat ?? '';
         $golPangkat = $golongan . ($pangkat ? ' - ' . $pangkat : '');
 
         $tglMasuk           = $row->tanggal_masuk ? $row->tanggal_masuk->format('d/m/Y') : '-';
@@ -188,8 +188,8 @@ class DukExport implements FromCollection, WithMapping, WithHeadings, ShouldAuto
             'nama'                 => $row->nama_lengkap ?? $row->nama,
             'nip'                  => "'" . $row->nip . ($row->nidn_nuptk ? ' (NIDN: ' . $row->nidn_nuptk . ')' : ''),
             'gol_pangkat'          => $golPangkat,
-            'jabatan'              => $row->jabatan->nama_jabatan ?? '-',
-            'unit_kerja'           => $row->unitKerja->nama_unit ?? '-',
+            'jabatan'              => $row->jabatan?->nama_jabatan ?? '-',
+            'unit_kerja'           => $row->unitKerja?->nama_unit ?? '-',
             'pendidikan'           => $row->pendidikan_tampil,
             'kategori'             => $kategori,
             'tgl_masuk'            => $tglMasuk,

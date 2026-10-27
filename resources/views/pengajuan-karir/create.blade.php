@@ -31,11 +31,11 @@
                     </div>
                     <div>
                         <span class="text-slate-400 block font-medium">Jabatan & Unit Kerja:</span>
-                        <span class="text-slate-800">{{ $pegawai->jabatan->nama_jabatan ?? '-' }} / {{ $pegawai->unitKerja->nama_unit ?? 'Fakultas Keperawatan' }}</span>
+                        <span class="text-slate-800">{{ $pegawai->jabatan?->nama_jabatan ?? '-' }} / {{ $pegawai->unitKerja?->nama_unit ?? 'Fakultas Keperawatan' }}</span>
                     </div>
                     <div>
                         <span class="text-slate-400 block font-medium">Pangkat / Golongan Saat Ini:</span>
-                        <span class="text-slate-800 font-semibold">{{ $pegawai->golongan->nama_pangkat ?? '-' }} ({{ $pegawai->golongan->nama_golongan ?? '-' }})</span>
+                        <span class="text-slate-800 font-semibold">{{ $pegawai->golongan?->nama_pangkat ?? '-' }} ({{ $pegawai->golongan?->nama_golongan ?? '-' }})</span>
                     </div>
                 </div>
             </div>

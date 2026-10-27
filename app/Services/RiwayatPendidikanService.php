@@ -39,7 +39,13 @@ class RiwayatPendidikanService
                 $data['ijazah'] = PegawaiStorageService::store($ijazah, $data['pegawai_id'] ?? null, 'ijazah', $data['jenjang'] ?? 'ijazah');
             }
 
-            return $this->repository->create($data);
+            $created = $this->repository->create($data);
+            $pegawai = Pegawai::find($data['pegawai_id'] ?? null);
+            if ($pegawai) {
+                app(PegawaiService::class)->syncPegawaiFromHistories($pegawai);
+            }
+
+            return $created;
 
         });
     }
@@ -61,7 +67,13 @@ class RiwayatPendidikanService
                 $data['ijazah'] = PegawaiStorageService::store($ijazah, $pegawaiTarget, 'ijazah', $jenjangTarget);
             }
 
-            return $this->repository->update($id, $data);
+            $updated = $this->repository->update($id, $data);
+            $pegawai = Pegawai::find($data['pegawai_id'] ?? $model->pegawai_id);
+            if ($pegawai) {
+                app(PegawaiService::class)->syncPegawaiFromHistories($pegawai);
+            }
+
+            return $updated;
 
         });
     }
@@ -76,7 +88,14 @@ class RiwayatPendidikanService
                 PegawaiStorageService::delete($model->ijazah);
             }
 
-            return $this->repository->delete($id);
+            $pegawaiId = $model->pegawai_id;
+            $deleted = $this->repository->delete($id);
+            $pegawai = Pegawai::find($pegawaiId);
+            if ($pegawai) {
+                app(PegawaiService::class)->syncPegawaiFromHistories($pegawai);
+            }
+
+            return $deleted;
 
         });
     }

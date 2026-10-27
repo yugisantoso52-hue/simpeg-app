@@ -24,9 +24,9 @@
                             Usulan {{ $pengajuan->jenis_pengajuan === 'KP' ? 'Kenaikan Pangkat (PNS)' : 'Kenaikan Gaji Berkala' }}
                         </span>
                         <h2 class="text-xl font-bold text-slate-900 mt-2">
-                            {{ $pengajuan->pegawai->nama_lengkap ?? $pengajuan->pegawai->nama }}
+                            {{ $pengajuan->pegawai?->nama_lengkap ?? $pengajuan->pegawai?->nama ?? '-' }}
                         </h2>
-                        <p class="text-xs text-slate-500 font-mono">NIP: {{ $pengajuan->pegawai->nip }} | {{ $pengajuan->pegawai->jabatan->nama_jabatan ?? '-' }}</p>
+                        <p class="text-xs text-slate-500 font-mono">NIP: {{ $pengajuan->pegawai?->nip ?? '-' }} | {{ $pengajuan->pegawai?->jabatan?->nama_jabatan ?? '-' }}</p>
                         <div class="mt-1">
                             @if($pengajuan->nomor_surat)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">

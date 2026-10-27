@@ -63,11 +63,11 @@
                                 <td class="py-3 px-3">
                                     <div class="font-bold text-slate-900">{{ $row->nama_lengkap ?? $row->nama }}</div>
                                     <div class="text-[11px] text-slate-500 font-mono">{{ $row->nip }}</div>
-                                    <div class="text-[11px] text-slate-600">{{ $row->jabatan->nama_jabatan ?? '-' }}</div>
+                                    <div class="text-[11px] text-slate-600">{{ $row->jabatan?->nama_jabatan ?? '-' }}</div>
                                 </td>
                                 <td class="py-3 px-3">
-                                    <div class="font-semibold text-slate-800">{{ $row->golongan->nama_golongan ?? '-' }}</div>
-                                    <div class="text-[11px] text-slate-500">{{ $row->golongan->nama_pangkat ?? '' }}</div>
+                                    <div class="font-semibold text-slate-800">{{ $row->golongan?->nama_golongan ?? '-' }}</div>
+                                    <div class="text-[11px] text-slate-500">{{ $row->golongan?->nama_pangkat ?? '' }}</div>
                                 </td>
                                 <td class="py-3 px-3 text-center font-mono">
                                     {{ $row->tmt_pangkat_terakhir ? \Carbon\Carbon::parse($row->tmt_pangkat_terakhir)->format('d-m-Y') : '-' }}
@@ -147,8 +147,8 @@
                                     <div class="text-[11px] text-slate-500 font-mono">{{ $row->nip }}</div>
                                 </td>
                                 <td class="py-3 px-3">
-                                    <div class="text-slate-800">{{ $row->unitKerja->nama_unit ?? '-' }}</div>
-                                    <div class="text-[11px] text-slate-500 font-semibold">{{ $row->golongan->nama_golongan ?? '-' }}</div>
+                                    <div class="text-slate-800">{{ $row->unitKerja?->nama_unit ?? '-' }}</div>
+                                    <div class="text-[11px] text-slate-500 font-semibold">{{ $row->golongan?->nama_golongan ?? '-' }}</div>
                                 </td>
                                 <td class="py-3 px-3 text-center font-mono">
                                     {{ $row->tmt_kgb_terakhir ? \Carbon\Carbon::parse($row->tmt_kgb_terakhir)->format('d-m-Y') : '-' }}

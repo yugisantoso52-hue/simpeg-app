@@ -115,11 +115,10 @@ class RiwayatJabatanService
             $riwayat = $this->repository->createRiwayat($data);
 
             // 2. Sinkronisasi data jabatan terkini ke tabel pegawai (tanpa menimpa SK Pertama CPNS)
-            $updatePegawai = [
-                'jabatan_id'    => $data['jabatan_id'],
-                'unit_kerja_id' => $data['unit_kerja_id'],
-            ];
-            Pegawai::where('id', $data['pegawai_id'])->update($updatePegawai);
+            $pegawai = Pegawai::find($data['pegawai_id']);
+            if ($pegawai) {
+                app(PegawaiService::class)->syncPegawaiFromHistories($pegawai);
+            }
 
             return $riwayat;
 
@@ -173,11 +172,10 @@ class RiwayatJabatanService
             );
 
             // 3. Sinkronisasi data jabatan terkini ke tabel pegawai (tanpa menimpa SK Pertama CPNS)
-            $updatePegawai = [
-                'jabatan_id'    => $riwayatUpdated->jabatan_id,
-                'unit_kerja_id' => $riwayatUpdated->unit_kerja_id,
-            ];
-            Pegawai::where('id', $riwayatUpdated->pegawai_id)->update($updatePegawai);
+            $pegawai = Pegawai::find($riwayatUpdated->pegawai_id);
+            if ($pegawai) {
+                app(PegawaiService::class)->syncPegawaiFromHistories($pegawai);
+            }
 
             return $riwayatUpdated;
 
@@ -215,17 +213,11 @@ class RiwayatJabatanService
 
             if ($jabatanTerbaru) {
                 $jabatanTerbaru->update(['status' => 'Aktif']);
+            }
 
-                $updatePegawai = [
-                    'jabatan_id'    => $jabatanTerbaru->jabatan_id,
-                    'unit_kerja_id' => $jabatanTerbaru->unit_kerja_id,
-                ];
-                Pegawai::where('id', $pegawaiId)->update($updatePegawai);
-            } else {
-                Pegawai::where('id', $pegawaiId)->update([
-                    'jabatan_id'    => null,
-                    'unit_kerja_id' => null,
-                ]);
+            $pegawai = Pegawai::find($pegawaiId);
+            if ($pegawai) {
+                app(PegawaiService::class)->syncPegawaiFromHistories($pegawai);
             }
 
             return $deleted;

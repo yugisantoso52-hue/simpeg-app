@@ -253,9 +253,9 @@
                             <tr class="hover:bg-slate-50/70 transition">
                                 <td class="py-3 px-3 font-medium text-slate-500">{{ $loop->iteration }}</td>
                                 <td class="py-3 px-3">
-                                    <div class="font-bold text-slate-900">{{ $usl->pegawai->nama_lengkap ?? $usl->pegawai->nama }}</div>
-                                    <div class="text-[11px] text-slate-500 font-mono">{{ $usl->pegawai->nip }}</div>
-                                    <div class="text-[11px] text-slate-600">{{ $usl->pegawai->jabatan->nama_jabatan ?? '-' }}</div>
+                                    <div class="font-bold text-slate-900">{{ $usl->pegawai?->nama_lengkap ?? $usl->pegawai?->nama ?? '-' }}</div>
+                                    <div class="text-[11px] text-slate-500 font-mono">{{ $usl->pegawai?->nip ?? '-' }}</div>
+                                    <div class="text-[11px] text-slate-600">{{ $usl->pegawai?->jabatan?->nama_jabatan ?? '-' }}</div>
                                 </td>
                                 <td class="py-3 px-3">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold {{ $usl->kategori == '30 Tahun' ? 'bg-amber-100 text-amber-900 border border-amber-300' : ($usl->kategori == '20 Tahun' ? 'bg-slate-200 text-slate-800 border border-slate-300' : 'bg-orange-100 text-orange-900 border border-orange-300') }}">
@@ -268,7 +268,7 @@
                                             <div x-show="editNomorTab" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                                                 <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-4 text-left" @click.outside="editNomorTab = false">
                                                     <h4 class="text-sm font-bold text-slate-800 mb-1">Penomoran Satyalancana (Admin)</h4>
-                                                    <p class="text-xs text-slate-500 mb-3">Tuliskan nomor urut dinas resmi untuk usulan <strong>{{ $usl->pegawai->nama }}</strong>.</p>
+                                                    <p class="text-xs text-slate-500 mb-3">Tuliskan nomor urut dinas resmi untuk usulan <strong>{{ $usl->pegawai?->nama ?? '-' }}</strong>.</p>
                                                     <form action="{{ route('satyalancana.update-nomor', $usl->id) }}" method="POST">
                                                         @csrf
                                                         <div class="flex rounded-lg shadow-sm mb-3">
@@ -467,8 +467,8 @@
                                     <div class="text-[11px] text-slate-500 font-mono">{{ $peg->nip }}</div>
                                 </td>
                                 <td class="py-3 px-3">
-                                    <div class="text-slate-800">{{ $peg->unitKerja->nama_unit ?? '-' }}</div>
-                                    <div class="text-[11px] text-slate-500">{{ $peg->jabatan->nama_jabatan ?? '-' }}</div>
+                                    <div class="text-slate-800">{{ $peg->unitKerja?->nama_unit ?? '-' }}</div>
+                                    <div class="text-[11px] text-slate-500">{{ $peg->jabatan?->nama_jabatan ?? '-' }}</div>
                                 </td>
                                 <td class="py-3 px-3 font-mono">
                                     {{ $peg->tmt_sk_pertama ? \Carbon\Carbon::parse($peg->tmt_sk_pertama)->format('d-m-Y') : ($peg->tanggal_masuk ? \Carbon\Carbon::parse($peg->tanggal_masuk)->format('d-m-Y') : '-') }}

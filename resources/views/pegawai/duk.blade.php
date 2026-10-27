@@ -180,12 +180,12 @@
                                                 @endif
                                             </td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">
-                                                <div class="font-bold text-slate-800">{{ $row->golongan->nama_golongan ?? '-' }}</div>
-                                                <div class="text-[10px] text-slate-500">{{ $row->golongan->nama_pangkat ?? '' }}</div>
+                                                <div class="font-bold text-slate-800">{{ $row->golongan?->nama_golongan ?? '-' }}</div>
+                                                <div class="text-[10px] text-slate-500">{{ $row->golongan?->nama_pangkat ?? '' }}</div>
                                             </td>
                                             <td class="px-3 py-3 border-r border-slate-200">
-                                                <div class="font-semibold text-slate-800">{{ $row->jabatan->nama_jabatan ?? '-' }}</div>
-                                                <div class="text-[11px] text-slate-500">{{ $row->unitKerja->nama_unit ?? '-' }}</div>
+                                                <div class="font-semibold text-slate-800">{{ $row->jabatan?->nama_jabatan ?? '-' }}</div>
+                                                <div class="text-[11px] text-slate-500">{{ $row->unitKerja?->nama_unit ?? '-' }}</div>
                                             </td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">{{ $row->pendidikan_tampil }}</td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">
@@ -260,12 +260,12 @@
                                                 @endif
                                             </td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">
-                                                <div class="font-bold text-slate-800">{{ $row->golongan->nama_golongan ?? '-' }}</div>
-                                                <div class="text-[10px] text-slate-500">{{ $row->golongan->nama_pangkat ?? '' }}</div>
+                                                <div class="font-bold text-slate-800">{{ $row->golongan?->nama_golongan ?? '-' }}</div>
+                                                <div class="text-[10px] text-slate-500">{{ $row->golongan?->nama_pangkat ?? '' }}</div>
                                             </td>
                                             <td class="px-3 py-3 border-r border-slate-200">
-                                                <div class="font-semibold text-slate-800">{{ $row->jabatan->nama_jabatan ?? '-' }}</div>
-                                                <div class="text-[11px] text-slate-500">{{ $row->unitKerja->nama_unit ?? '-' }}</div>
+                                                <div class="font-semibold text-slate-800">{{ $row->jabatan?->nama_jabatan ?? '-' }}</div>
+                                                <div class="text-[11px] text-slate-500">{{ $row->unitKerja?->nama_unit ?? '-' }}</div>
                                             </td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">{{ $row->pendidikan_tampil }}</td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">
@@ -337,12 +337,12 @@
                                                 <div class="text-[11px] text-slate-500">NIP. {{ $row->nip ?? '-' }}</div>
                                             </td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">
-                                                <div class="font-bold text-slate-800">{{ $row->golongan->nama_golongan ?? '-' }}</div>
-                                                <div class="text-[10px] text-slate-500">{{ $row->golongan->nama_pangkat ?? '' }}</div>
+                                                <div class="font-bold text-slate-800">{{ $row->golongan?->nama_golongan ?? '-' }}</div>
+                                                <div class="text-[10px] text-slate-500">{{ $row->golongan?->nama_pangkat ?? '' }}</div>
                                             </td>
                                             <td class="px-3 py-3 border-r border-slate-200">
-                                                <div class="font-semibold text-slate-800">{{ $row->jabatan->nama_jabatan ?? '-' }}</div>
-                                                <div class="text-[11px] text-slate-500">{{ $row->unitKerja->nama_unit ?? '-' }}</div>
+                                                <div class="font-semibold text-slate-800">{{ $row->jabatan?->nama_jabatan ?? '-' }}</div>
+                                                <div class="text-[11px] text-slate-500">{{ $row->unitKerja?->nama_unit ?? '-' }}</div>
                                             </td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">{{ $row->pendidikan_tampil }}</td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">
@@ -414,12 +414,12 @@
                                                 <div class="text-[11px] text-slate-500">NIP. {{ $row->nip ?? '-' }}</div>
                                             </td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">
-                                                <div class="font-bold text-slate-800">{{ $row->golongan->nama_golongan ?? '-' }}</div>
-                                                <div class="text-[10px] text-slate-500">{{ $row->golongan->nama_pangkat ?? '' }}</div>
+                                                <div class="font-bold text-slate-800">{{ $row->golongan?->nama_golongan ?? '-' }}</div>
+                                                <div class="text-[10px] text-slate-500">{{ $row->golongan?->nama_pangkat ?? '' }}</div>
                                             </td>
                                             <td class="px-3 py-3 border-r border-slate-200">
-                                                <div class="font-semibold text-slate-800">{{ $row->jabatan->nama_jabatan ?? '-' }}</div>
-                                                <div class="text-[11px] text-slate-500">{{ $row->unitKerja->nama_unit ?? '-' }}</div>
+                                                <div class="font-semibold text-slate-800">{{ $row->jabatan?->nama_jabatan ?? '-' }}</div>
+                                                <div class="text-[11px] text-slate-500">{{ $row->unitKerja?->nama_unit ?? '-' }}</div>
                                             </td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">{{ $row->pendidikan_tampil }}</td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">
@@ -489,10 +489,10 @@
                                                 <div class="text-[11px] text-slate-500">ID/NIP: {{ $row->nip ?? '-' }}</div>
                                             </td>
                                             <td class="px-3 py-3 border-r border-slate-200">
-                                                <div class="font-semibold text-slate-800">{{ $row->jabatan->nama_jabatan ?? 'Tenaga Penunjang / PHL' }}</div>
+                                                <div class="font-semibold text-slate-800">{{ $row->jabatan?->nama_jabatan ?? 'Tenaga Penunjang / PHL' }}</div>
                                                 <div class="text-[11px] text-amber-700 font-medium">{{ $row->jenis_kontrak ?? 'Kontrak Harian / Tahunan' }}</div>
                                             </td>
-                                            <td class="px-3 py-3 border-r border-slate-200">{{ $row->unitKerja->nama_unit ?? '-' }}</td>
+                                            <td class="px-3 py-3 border-r border-slate-200">{{ $row->unitKerja?->nama_unit ?? '-' }}</td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">{{ $row->pendidikan_tampil }}</td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">
                                                 <span class="text-slate-700">{{ $row->tanggal_kontrak_mulai ? $row->tanggal_kontrak_mulai->format('d/m/Y') : ($row->tanggal_masuk ? $row->tanggal_masuk->format('d/m/Y') : '-') }}</span>

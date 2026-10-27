@@ -220,35 +220,35 @@
         <tr>
             <td style="width: 32%;" class="bold">Unit Kerja</td>
             <td style="width: 3%;">:</td>
-            <td>{{ $pegawai->unitKerja->nama_unit ?? $pegawai->unitKerja->nama_unit_kerja ?? $pegawai->unit_kerja ?? '-' }}</td>
+            <td>{{ $pegawai->unitKerja?->nama_unit ?? $pegawai->unit_kerja ?? '-' }}</td>
         </tr>
         <tr>
             <td class="bold">Jabatan</td>
             <td>:</td>
-            <td>{{ $pegawai->jabatan->nama_jabatan ?? $pegawai->jabatan->nama ?? $pegawai->jabatan ?? '-' }}</td>
+            <td>{{ $pegawai->jabatan?->nama_jabatan ?? $pegawai->jabatan ?? '-' }}</td>
         </tr>
         <tr>
             <td class="bold">Atasan Langsung Utama</td>
             <td>:</td>
-            <td>{{ $pegawai->atasan ? ($pegawai->atasan->nama_lengkap ?? $pegawai->atasan->nama) : 'Otomatis Sesuai Matriks Jabatan' }}</td>
+            <td>{{ $pegawai->atasan ? ($pegawai->atasan?->nama_lengkap ?? $pegawai->atasan?->nama) : 'Otomatis Sesuai Matriks Jabatan' }}</td>
         </tr>
         <tr>
             <td class="bold">Pejabat Penilai Kinerja</td>
             <td>:</td>
-            <td>{{ $pegawai->pejabatPenilai ? ($pegawai->pejabatPenilai->nama_lengkap ?? $pegawai->pejabatPenilai->nama) : 'Mengikuti Atasan Langsung / Matriks Resmi' }}</td>
+            <td>{{ $pegawai->pejabatPenilai ? ($pegawai->pejabatPenilai?->nama_lengkap ?? $pegawai->pejabatPenilai?->nama) : 'Mengikuti Atasan Langsung / Matriks Resmi' }}</td>
         </tr>
         <tr>
             <td class="bold">Atasan Pertimbangan Cuti</td>
             <td>:</td>
-            <td>{{ $pegawai->atasanCuti ? ($pegawai->atasanCuti->nama_lengkap ?? $pegawai->atasanCuti->nama) : 'Mengikuti Regulasi Ketetapan Cuti' }}</td>
+            <td>{{ $pegawai->atasanCuti ? ($pegawai->atasanCuti?->nama_lengkap ?? $pegawai->atasanCuti?->nama) : 'Mengikuti Regulasi Ketetapan Cuti' }}</td>
         </tr>
         <tr>
             <td class="bold">Golongan / Pangkat</td>
             <td>:</td>
             <td>
-                {{ $pegawai->golongan->nama_golongan ?? $pegawai->golongan->nama ?? $pegawai->golongan ?? '-' }}
-                @if(!empty($pegawai->golongan->nama_pangkat))
-                    ({{ $pegawai->golongan->nama_pangkat }})
+                {{ $pegawai->golongan?->nama_golongan ?? $pegawai->golongan ?? '-' }}
+                @if(!empty($pegawai->golongan?->nama_pangkat))
+                    ({{ $pegawai->golongan?->nama_pangkat }})
                 @endif
             </td>
         </tr>
@@ -381,7 +381,7 @@
             <tbody>
                 @foreach($pegawai->riwayatPangkat as $rp)
                     <tr>
-                        <td class="bold">{{ $rp->golongan->nama_golongan ?? '-' }} ({{ $rp->golongan->nama_pangkat ?? '-' }})</td>
+                        <td class="bold">{{ $rp->golongan?->nama_golongan ?? '-' }} ({{ $rp->golongan?->nama_pangkat ?? '-' }})</td>
                         <td class="text-center">{{ $rp->tmt ? \Carbon\Carbon::parse($rp->tmt)->format('d/m/Y') : '-' }}</td>
                         <td>{{ $rp->nomor_sk ?? '-' }}</td>
                         <td class="text-center">{{ $rp->tanggal_sk ? \Carbon\Carbon::parse($rp->tanggal_sk)->format('d/m/Y') : '-' }}</td>
@@ -411,8 +411,8 @@
             <tbody>
                 @foreach($pegawai->riwayatJabatan as $rj)
                     <tr>
-                        <td class="bold">{{ $rj->jabatan->nama_jabatan ?? $rj->nama_jabatan ?? '-' }}</td>
-                        <td>{{ $rj->unitKerja->nama_unit ?? '-' }}</td>
+                        <td class="bold">{{ $rj->jabatan?->nama_jabatan ?? $rj->nama_jabatan ?? '-' }}</td>
+                        <td>{{ $rj->unitKerja?->nama_unit ?? '-' }}</td>
                         <td class="text-center">{{ $rj->tmt_jabatan ? \Carbon\Carbon::parse($rj->tmt_jabatan)->format('d/m/Y') : '-' }}</td>
                         <td>{{ $rj->nomor_sk ?? '-' }}</td>
                         <td class="text-center">{{ $rj->tanggal_sk ? \Carbon\Carbon::parse($rj->tanggal_sk)->format('d/m/Y') : '-' }}</td>

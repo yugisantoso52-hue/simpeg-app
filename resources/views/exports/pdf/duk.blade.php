@@ -132,11 +132,11 @@
                         @endif
                     </td>
                     <td class="text-center">
-                        <strong>{{ $row->golongan->nama_golongan ?? '-' }}</strong><br>
-                        <small>{{ $row->golongan->nama_pangkat ?? '' }}</small>
+                        <strong>{{ $row->golongan?->nama_golongan ?? '-' }}</strong><br>
+                        <small>{{ $row->golongan?->nama_pangkat ?? '' }}</small>
                     </td>
-                    <td>{{ $row->jabatan->nama_jabatan ?? '-' }}</td>
-                    <td>{{ $row->unitKerja->nama_unit ?? '-' }}</td>
+                    <td>{{ $row->jabatan?->nama_jabatan ?? '-' }}</td>
+                    <td>{{ $row->unitKerja?->nama_unit ?? '-' }}</td>
                     <td class="text-center">{{ $row->pendidikan_tampil }}</td>
                     <td class="text-center">{{ $tglMasuk }}</td>
                     <td class="text-center">
@@ -201,11 +201,11 @@
                         @endif
                     </td>
                     <td class="text-center">
-                        <strong>{{ $row->golongan->nama_golongan ?? '-' }}</strong><br>
-                        <small>{{ $row->golongan->nama_pangkat ?? '' }}</small>
+                        <strong>{{ $row->golongan?->nama_golongan ?? '-' }}</strong><br>
+                        <small>{{ $row->golongan?->nama_pangkat ?? '' }}</small>
                     </td>
-                    <td>{{ $row->jabatan->nama_jabatan ?? '-' }}</td>
-                    <td>{{ $row->unitKerja->nama_unit ?? '-' }}</td>
+                    <td>{{ $row->jabatan?->nama_jabatan ?? '-' }}</td>
+                    <td>{{ $row->unitKerja?->nama_unit ?? '-' }}</td>
                     <td class="text-center">{{ $row->pendidikan_tampil }}</td>
                     <td class="text-center">{{ $tglMasuk }}</td>
                     <td class="text-center">
@@ -267,11 +267,11 @@
                         NIP. {{ $row->nip ?? '-' }}
                     </td>
                     <td class="text-center">
-                        <strong>{{ $row->golongan->nama_golongan ?? '-' }}</strong><br>
-                        <small>{{ $row->golongan->nama_pangkat ?? '' }}</small>
+                        <strong>{{ $row->golongan?->nama_golongan ?? '-' }}</strong><br>
+                        <small>{{ $row->golongan?->nama_pangkat ?? '' }}</small>
                     </td>
-                    <td>{{ $row->jabatan->nama_jabatan ?? '-' }}</td>
-                    <td>{{ $row->unitKerja->nama_unit ?? '-' }}</td>
+                    <td>{{ $row->jabatan?->nama_jabatan ?? '-' }}</td>
+                    <td>{{ $row->unitKerja?->nama_unit ?? '-' }}</td>
                     <td class="text-center">{{ $row->pendidikan_tampil }}</td>
                     <td class="text-center">{{ $tglMasuk }}</td>
                     <td class="text-center">
@@ -333,11 +333,11 @@
                         NIP. {{ $row->nip ?? '-' }}
                     </td>
                     <td class="text-center">
-                        <strong>{{ $row->golongan->nama_golongan ?? '-' }}</strong><br>
-                        <small>{{ $row->golongan->nama_pangkat ?? '' }}</small>
+                        <strong>{{ $row->golongan?->nama_golongan ?? '-' }}</strong><br>
+                        <small>{{ $row->golongan?->nama_pangkat ?? '' }}</small>
                     </td>
-                    <td>{{ $row->jabatan->nama_jabatan ?? '-' }}</td>
-                    <td>{{ $row->unitKerja->nama_unit ?? '-' }}</td>
+                    <td>{{ $row->jabatan?->nama_jabatan ?? '-' }}</td>
+                    <td>{{ $row->unitKerja?->nama_unit ?? '-' }}</td>
                     <td class="text-center">{{ $row->pendidikan_tampil }}</td>
                     <td class="text-center">{{ $tglMasuk }}</td>
                     <td class="text-center">
@@ -392,10 +392,10 @@
                         ID: {{ $row->nip ?? '-' }}
                     </td>
                     <td>
-                        <strong>{{ $row->jabatan->nama_jabatan ?? 'Tenaga Penunjang / PHL' }}</strong><br>
+                        <strong>{{ $row->jabatan?->nama_jabatan ?? 'Tenaga Penunjang / PHL' }}</strong><br>
                         <small style="color: #b45309;">{{ $row->jenis_kontrak ?? 'Kontrak Kerja' }}</small>
                     </td>
-                    <td>{{ $row->unitKerja->nama_unit ?? '-' }}</td>
+                    <td>{{ $row->unitKerja?->nama_unit ?? '-' }}</td>
                     <td class="text-center">{{ $row->pendidikan_tampil }}</td>
                     <td class="text-center">{{ $kontrakMulai }} s/d {{ $kontrakSelesai }}</td>
                     <td class="text-center">{{ $row->masa_kerja_formatted }}</td>
