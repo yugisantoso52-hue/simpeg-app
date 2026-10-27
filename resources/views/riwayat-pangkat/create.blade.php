@@ -7,7 +7,7 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+        <div class="w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10">
             <div class="bg-white shadow-xl rounded-xl overflow-hidden">
                 <div class="px-6 py-4 border-b bg-gradient-to-r from-indigo-600 to-blue-600">
                     <h3 class="text-lg font-semibold text-white">

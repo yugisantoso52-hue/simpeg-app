@@ -87,7 +87,7 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div class="w-full max-w-[1920px] mx-auto space-y-6 px-3 sm:px-6 lg:px-8 xl:px-10">
 
             <!-- 1. KARTU KPI EKSEKUTIF UTAMA (INTERAKTIF & DAPAT DIKLIK) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -177,7 +177,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="relative h-56">
+                    <div class="relative h-64 sm:h-72">
                         <canvas id="chartWorkload"></canvas>
                     </div>
                     @if(collect($logbookWorkload['hours'])->sum() == 0)
@@ -202,7 +202,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="relative h-56">
+                    <div class="relative h-64 sm:h-72">
                         <canvas id="chartAttendance"></canvas>
                     </div>
                     <p class="text-[10px] text-slate-400 mt-2.5 pt-2 border-t border-slate-100 leading-tight">
@@ -221,7 +221,7 @@
                         </h3>
                         <p class="text-[11px] text-slate-500">Distribusi Guru Besar s/d Asisten Ahli & Tenaga Pengajar</p>
                     </div>
-                    <div class="relative h-52 flex items-center justify-center">
+                    <div class="relative h-60 sm:h-64 flex items-center justify-center">
                         <canvas id="chartJafung"></canvas>
                     </div>
                     <p class="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 leading-tight">
@@ -237,7 +237,7 @@
                         </h3>
                         <p class="text-[11px] text-slate-500">Proporsi jenjang S3 (Doktor) vs S2 (Magister)</p>
                     </div>
-                    <div class="relative h-52 flex items-center justify-center">
+                    <div class="relative h-60 sm:h-64 flex items-center justify-center">
                         <canvas id="chartPendidikan"></canvas>
                     </div>
                     <p class="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100 leading-tight">

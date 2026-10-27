@@ -47,7 +47,7 @@
     <div class="py-6" x-data="{
         kategori: '{{ in_array($kategori, ['dosen', 'tendik', 'phl']) ? $kategori : strtolower($pegawai->kategori_kepegawaian ?? 'dosen') }}'
     }">
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="w-full max-w-[1920px] mx-auto space-y-6 px-3 sm:px-6 lg:px-8 xl:px-10">
 
             {{-- Flash Messages --}}
             @if(session('error'))

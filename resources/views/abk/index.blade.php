@@ -63,7 +63,7 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+        <div class="w-full max-w-[1920px] mx-auto space-y-6 px-3 sm:px-6 lg:px-8 xl:px-10">
 
             {{-- 4 Kartu Statistik Agregat Formasi --}}
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">

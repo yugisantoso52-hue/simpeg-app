@@ -25,7 +25,7 @@
         </div>
     </x-slot>
 
-    <div class="py-6 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div class="py-6 w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 space-y-6">
 
         {{-- Profil Singkat Pegawai --}}
         <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">

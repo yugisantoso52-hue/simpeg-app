@@ -16,7 +16,7 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div class="w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 space-y-6">
 
             <!-- Filter Card -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">

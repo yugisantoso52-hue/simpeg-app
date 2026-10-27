@@ -21,7 +21,7 @@
     </x-slot>
 
     <div class="py-6" x-data="{ editingTugas: null }">
-        <div class="mx-auto max-w-6xl space-y-6 sm:px-6 lg:px-8">
+        <div class="w-full max-w-[1920px] mx-auto space-y-6 px-3 sm:px-6 lg:px-8 xl:px-10">
 
             {{-- Flash Messages --}}
             @if(session('success'))

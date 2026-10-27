@@ -34,7 +34,7 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+        <div class="w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10">
             <div class="bg-white shadow-sm rounded-lg p-6">
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">

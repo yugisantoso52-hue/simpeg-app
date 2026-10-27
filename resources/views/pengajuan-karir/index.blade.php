@@ -8,7 +8,7 @@
 
     <div class="py-6" x-data="{ uploadModalOpen: false, modalTitle: '', modalField: '', modalRedirectTab: '{{ $tab }}' }"
          @open-upload-syarat.window="modalTitle = $event.detail.title; modalField = $event.detail.field; modalRedirectTab = $event.detail.tab || '{{ $tab }}'; uploadModalOpen = true">
-        <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+        <div class="w-full max-w-[1920px] mx-auto space-y-6 px-3 sm:px-6 lg:px-8 xl:px-10">
 
             @if(session('success'))
                 <div class="rounded-xl border border-green-200 bg-green-50 p-4 flex items-center justify-between shadow-xs">

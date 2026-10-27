@@ -92,7 +92,7 @@
     </x-slot>
 
     <div class="py-6" x-data="{ modalOpen: false, modalImgSrc: '', modalTitle: '', detailOpen: false, detailData: {} }">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div class="w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 space-y-6">
 
             <!-- Flash Message -->
             @if(session('success'))

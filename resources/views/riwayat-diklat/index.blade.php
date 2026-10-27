@@ -20,7 +20,7 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 space-y-6">
 
             @if(session('success'))
                 <div id="success-alert" class="mb-5 rounded-lg border border-green-300 bg-green-50 px-5 py-4 text-green-700 flex items-center justify-between">
