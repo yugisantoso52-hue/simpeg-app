@@ -56,9 +56,25 @@
             <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
                 Layanan Karir Mandiri
             </div>
-            <x-dropdown-link :href="route('pengajuan-karir.index', Auth::user()->canAccessExecutiveKepegawaianMenus() ? ['scope' => 'saya'] : [])" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
+            <x-dropdown-link :href="route('pengajuan-karir.index', ['tab' => 'kp', 'jenis' => 'KP'])" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') && request('tab') === 'kp' ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
                 <x-icon name="award" class="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Usulan Karir & Satyalancana</span>
+                <span>Kenaikan Pangkat (KP)</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('pengajuan-karir.index', ['tab' => 'kgb', 'jenis' => 'KGB'])" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') && request('tab') === 'kgb' ? 'bg-amber-50 text-amber-700 font-semibold' : '' }}">
+                <x-icon name="banknote" class="w-4 h-4 text-amber-600 shrink-0" />
+                <span>Kenaikan Gaji Berkala (KGB)</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('pengajuan-karir.index', ['tab' => 'satyalancana'])" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') && request('tab') === 'satyalancana' ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
+                <x-icon name="award" class="w-4 h-4 text-indigo-600 shrink-0" />
+                <span>Satyalancana Karya Satya</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('pengajuan-karir.index', Auth::user()->canAccessExecutiveKepegawaianMenus() ? ['scope' => 'saya'] : [])" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') && !request()->has('tab') ? 'bg-teal-50 text-teal-700 font-semibold' : '' }}">
+                <x-icon name="clipboard-check" class="w-4 h-4 text-teal-600 shrink-0" />
+                <span>Riwayat Usulan Karir Saya</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('tugas-belajar.index')" class="flex items-center gap-2 {{ request()->routeIs('tugas-belajar.*') ? 'bg-sky-50 text-sky-700 font-semibold' : '' }}">
+                <x-icon name="graduation-cap" class="w-4 h-4 text-sky-600 shrink-0" />
+                <span>Tugas Belajar & Studi Saya</span>
             </x-dropdown-link>
             <x-dropdown-link :href="route('manajemen-talenta.my-talent')" class="flex items-center gap-2 {{ request()->routeIs('manajemen-talenta.my-talent') ? 'bg-rose-50 text-rose-700 font-semibold' : '' }}">
                 <x-icon name="sparkles" class="w-4 h-4 text-rose-500 shrink-0" />
@@ -174,14 +190,16 @@
                 <x-icon name="clipboard-check" class="w-4 h-4 text-indigo-600 shrink-0" />
                 <span>Verifikasi Usulan Karir & SLKS</span>
             </x-dropdown-link>
-            <x-dropdown-link :href="route('kp.index')" class="flex items-center gap-2 {{ request()->routeIs('kp.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
-                <x-icon name="award" class="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Kenaikan Pangkat (KP)</span>
-            </x-dropdown-link>
-            <x-dropdown-link :href="route('kgb.index')" class="flex items-center gap-2 {{ request()->routeIs('kgb.*') ? 'bg-amber-50 text-amber-700 font-semibold' : '' }}">
-                <x-icon name="banknote" class="w-4 h-4 text-amber-600 shrink-0" />
-                <span>Kenaikan Gaji Berkala (KGB)</span>
-            </x-dropdown-link>
+            @if(Auth::user()->hasRole('admin'))
+                <x-dropdown-link :href="route('kp.index')" class="flex items-center gap-2 {{ request()->routeIs('kp.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
+                    <x-icon name="award" class="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Kenaikan Pangkat (KP)</span>
+                </x-dropdown-link>
+                <x-dropdown-link :href="route('kgb.index')" class="flex items-center gap-2 {{ request()->routeIs('kgb.*') ? 'bg-amber-50 text-amber-700 font-semibold' : '' }}">
+                    <x-icon name="banknote" class="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Kenaikan Gaji Berkala (KGB)</span>
+                </x-dropdown-link>
+            @endif
             <x-dropdown-link :href="route('satyalancana.index')" class="flex items-center gap-2 {{ request()->routeIs('satyalancana.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
                 <x-icon name="award" class="w-4 h-4 text-indigo-600 shrink-0" />
                 <span>Satyalancana Karya Satya</span>
@@ -191,10 +209,12 @@
             <div class="px-3.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
                 Mutasi & Pengembangan
             </div>
-            <x-dropdown-link :href="route('mutasi-pegawai.index')" class="flex items-center gap-2 {{ request()->routeIs('mutasi-pegawai.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                <x-icon name="git-branch" class="w-4 h-4 text-blue-600 shrink-0" />
-                <span>Mutasi Pegawai</span>
-            </x-dropdown-link>
+            @if(Auth::user()->hasRole('admin'))
+                <x-dropdown-link :href="route('mutasi-pegawai.index')" class="flex items-center gap-2 {{ request()->routeIs('mutasi-pegawai.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                    <x-icon name="git-branch" class="w-4 h-4 text-blue-600 shrink-0" />
+                    <span>Mutasi Pegawai</span>
+                </x-dropdown-link>
+            @endif
             <x-dropdown-link :href="route('tugas-belajar.index')" class="flex items-center gap-2 {{ request()->routeIs('tugas-belajar.*') ? 'bg-rose-50 text-rose-700 font-semibold' : '' }}">
                 <x-icon name="graduation-cap" class="w-4 h-4 text-rose-600 shrink-0" />
                 <span>Tugas Belajar & Studi</span>
@@ -315,7 +335,7 @@
                 <span>{{ Auth::user()->hasRole('admin') ? 'Monitoring Seluruh Cuti' : 'Persetujuan Cuti Bawahan' }}</span>
             </x-dropdown-link>
         @endif
-        <x-dropdown-link :href="route('pengajuan-cuti.index')" class="flex items-center gap-2">
+        <x-dropdown-link :href="route('pengajuan-cuti.index', (Auth::user()->isAtasan() || Auth::user()->hasRole('admin')) ? ['mine' => 1] : [])" class="flex items-center gap-2 {{ (request()->routeIs('pengajuan-cuti.index') && (request()->has('mine') || (!Auth::user()->isAtasan() && !Auth::user()->hasRole('admin')))) ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
             <x-icon name="calendar-off" class="w-4 h-4 text-emerald-600 shrink-0" />
             <span>Permohonan Cuti Saya</span>
         </x-dropdown-link>

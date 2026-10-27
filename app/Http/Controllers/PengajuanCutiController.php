@@ -58,7 +58,8 @@ class PengajuanCutiController extends Controller
         $isAdmin = $user->hasRole('admin');
         $isAtasan = $user->isAtasan() || $user->hasRole('pimpinan');
         $isPegawaiOnly = !$isAdmin && !$isAtasan;
-        $pegawaiId = $isPegawaiOnly ? ($user->pegawai_id ?? $pegawai?->id) : null;
+        $showMine = $request->boolean('mine');
+        $pegawaiId = ($isPegawaiOnly || $showMine) ? ($user->pegawai_id ?? $pegawai?->id) : null;
 
         if ($isPegawaiOnly && !$pegawaiId) {
             return redirect()->route('dashboard')->with('error', 'Akun Anda belum terhubung dengan data pegawai.');
@@ -66,7 +67,7 @@ class PengajuanCutiController extends Controller
 
         // Scoping daftar cuti berdasarkan Matriks Hierarki E-Cuti:
         $scopedPegawaiIds = null;
-        if (!$isAdmin && $isAtasan) {
+        if (!$isAdmin && $isAtasan && !$showMine) {
             if ($pegawai) {
                 $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
                 $scopedPegawaiIds = $hierarchyService->getScopedCutiPegawaiIds($pegawai);

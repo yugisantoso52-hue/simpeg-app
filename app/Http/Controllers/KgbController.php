@@ -25,7 +25,7 @@ class KgbController extends Controller
             abort(403, 'Akses terbatas untuk Administrator dan Pegawai Pengaju.');
         }
 
-        if (auth()->user()->role?->name !== 'admin' && !auth()->user()->canAccessExecutiveKepegawaianMenus()) {
+        if (!auth()->user()->canAccessExecutiveKepegawaianMenus()) {
             return redirect()->route('pengajuan-karir.index', ['tab' => 'kgb', 'jenis' => 'KGB']);
         }
 

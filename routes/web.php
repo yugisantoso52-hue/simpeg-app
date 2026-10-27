@@ -243,6 +243,14 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         /* Transparansi Struktur Organisasi & Peta Jabatan Digital (Akses Semua Pegawai) */
         Route::get('/anjab/peta-jabatan', [\App\Http\Controllers\PetaJabatanController::class, 'index'])->name('anjab.peta-jabatan');
         Route::get('/anjab/peta-jabatan/{jabatan}', [\App\Http\Controllers\PetaJabatanController::class, 'getJabatanDetail'])->name('anjab.peta-jabatan.detail');
+
+        /* Transparansi DUK (Daftar Urut Kepangkatan) & Cetak Resmi (Akses Semua Pegawai, Pimpinan & Admin) */
+        Route::get('/duk', [PegawaiController::class, 'duk'])->name('duk.index');
+        Route::get('/reports/duk/pdf', [PegawaiController::class, 'exportDukPdf'])->name('reports.duk.pdf');
+        Route::get('/reports/duk/excel', [PegawaiController::class, 'exportDukExcel'])->name('reports.duk.excel');
+
+        /* Tugas Belajar & Izin Belajar (Pegawai memantau status studinya, Admin & Pimpinan memantau seluruh ASN) */
+        Route::get('/tugas-belajar', [TugasBelajarController::class, 'index'])->name('tugas-belajar.index');
     });
 
     // ======================================================================
@@ -289,15 +297,11 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         });
 
         Route::get('/pegawai', [PegawaiController::class, 'index'])->name('pegawai.index');
-        Route::get('/duk', [PegawaiController::class, 'duk'])->name('duk.index');
-        Route::get('/reports/duk/pdf', [PegawaiController::class, 'exportDukPdf'])->name('reports.duk.pdf');
-        Route::get('/reports/duk/excel', [PegawaiController::class, 'exportDukExcel'])->name('reports.duk.excel');
 
         /* Modul Karir & Monitoring Kepegawaian (Eksekutif & Verifikasi) */
         Route::post('/satyalancana/{id}/verifikasi', [SatyalancanaController::class, 'verifikasi'])->name('satyalancana.verifikasi');
         Route::post('/satyalancana/{id}/update-nomor', [SatyalancanaController::class, 'updateNomorSurat'])->name('satyalancana.update-nomor');
         Route::get('/satyalancana/cetak-surat-pengantar', [SatyalancanaController::class, 'cetakSuratPengantar'])->name('satyalancana.cetak-surat-pengantar');
-        Route::get('/tugas-belajar', [TugasBelajarController::class, 'index'])->name('tugas-belajar.index');
 
         Route::get('/reports/reminder/pdf', [ReportController::class, 'exportReminderPdf'])->name('reports.reminder.pdf');
         Route::get('/reports/reminder/excel', [ReportController::class, 'exportReminderExcel'])->name('reports.reminder.excel');

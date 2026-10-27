@@ -2873,9 +2873,11 @@
 
                             <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                                 <span class="text-slate-400">Data kelengkapan diperbarui otomatis secara real-time.</span>
-                                <a href="{{ route('pegawai.index') }}" class="font-bold text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1">
-                                    Buka Seluruh Data di Master Pegawai &rarr;
-                                </a>
+                                @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
+                                    <a href="{{ route('pegawai.index') }}" class="font-bold text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1">
+                                        Buka Seluruh Data di Master Pegawai &rarr;
+                                    </a>
+                                @endif
                             </div>
 
                         </div>

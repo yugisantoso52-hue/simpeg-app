@@ -64,9 +64,25 @@
                 </x-responsive-nav-link>
 
                 <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Layanan Karir Mandiri</div>
-                <x-responsive-nav-link :href="route('pengajuan-karir.index', Auth::user()->canAccessExecutiveKepegawaianMenus() ? ['scope' => 'saya'] : [])" :active="request()->routeIs('pengajuan-karir.*')" class="flex items-center gap-2 text-xs rounded-lg">
+                <x-responsive-nav-link :href="route('pengajuan-karir.index', ['tab' => 'kp', 'jenis' => 'KP'])" :active="request()->routeIs('pengajuan-karir.*') && request('tab') === 'kp'" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="award" class="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Usulan Karir & Satyalancana</span>
+                    <span>Kenaikan Pangkat (KP)</span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('pengajuan-karir.index', ['tab' => 'kgb', 'jenis' => 'KGB'])" :active="request()->routeIs('pengajuan-karir.*') && request('tab') === 'kgb'" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="banknote" class="w-3.5 h-3.5 text-amber-600" />
+                    <span>Kenaikan Gaji Berkala (KGB)</span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('pengajuan-karir.index', ['tab' => 'satyalancana'])" :active="request()->routeIs('pengajuan-karir.*') && request('tab') === 'satyalancana'" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="award" class="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Satyalancana Karya Satya</span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('pengajuan-karir.index', Auth::user()->canAccessExecutiveKepegawaianMenus() ? ['scope' => 'saya'] : [])" :active="request()->routeIs('pengajuan-karir.*') && !request()->has('tab')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="clipboard-check" class="w-3.5 h-3.5 text-teal-600" />
+                    <span>Riwayat Usulan Karir Saya</span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('tugas-belajar.index')" :active="request()->routeIs('tugas-belajar.*')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="graduation-cap" class="w-3.5 h-3.5 text-sky-600" />
+                    <span>Tugas Belajar & Studi Saya</span>
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('manajemen-talenta.my-talent')" :active="request()->routeIs('manajemen-talenta.my-talent')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="sparkles" class="w-3.5 h-3.5 text-rose-500" />
@@ -174,24 +190,28 @@
                     <x-icon name="clipboard-check" class="w-3.5 h-3.5 text-indigo-600" />
                     <span>Verifikasi Usulan Karir & SLKS</span>
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('kp.index')" :active="request()->routeIs('kp.*')" class="flex items-center gap-2 text-xs rounded-lg">
-                    <x-icon name="award" class="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Kenaikan Pangkat (KP)</span>
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('kgb.index')" :active="request()->routeIs('kgb.*')" class="flex items-center gap-2 text-xs rounded-lg">
-                    <x-icon name="banknote" class="w-3.5 h-3.5 text-amber-600" />
-                    <span>Kenaikan Gaji Berkala (KGB)</span>
-                </x-responsive-nav-link>
+                @if(Auth::user()->hasRole('admin'))
+                    <x-responsive-nav-link :href="route('kp.index')" :active="request()->routeIs('kp.*')" class="flex items-center gap-2 text-xs rounded-lg">
+                        <x-icon name="award" class="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Kenaikan Pangkat (KP)</span>
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('kgb.index')" :active="request()->routeIs('kgb.*')" class="flex items-center gap-2 text-xs rounded-lg">
+                        <x-icon name="banknote" class="w-3.5 h-3.5 text-amber-600" />
+                        <span>Kenaikan Gaji Berkala (KGB)</span>
+                    </x-responsive-nav-link>
+                @endif
                 <x-responsive-nav-link :href="route('satyalancana.index')" :active="request()->routeIs('satyalancana.*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="award" class="w-3.5 h-3.5 text-indigo-600" />
                     <span>Satyalancana Karya Satya</span>
                 </x-responsive-nav-link>
 
                 <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mutasi & Pengembangan</div>
-                <x-responsive-nav-link :href="route('mutasi-pegawai.index')" :active="request()->routeIs('mutasi-pegawai.*')" class="flex items-center gap-2 text-xs rounded-lg">
-                    <x-icon name="git-branch" class="w-3.5 h-3.5 text-blue-600" />
-                    <span>Mutasi Pegawai</span>
-                </x-responsive-nav-link>
+                @if(Auth::user()->hasRole('admin'))
+                    <x-responsive-nav-link :href="route('mutasi-pegawai.index')" :active="request()->routeIs('mutasi-pegawai.*')" class="flex items-center gap-2 text-xs rounded-lg">
+                        <x-icon name="git-branch" class="w-3.5 h-3.5 text-blue-600" />
+                        <span>Mutasi Pegawai</span>
+                    </x-responsive-nav-link>
+                @endif
                 <x-responsive-nav-link :href="route('tugas-belajar.index')" :active="request()->routeIs('tugas-belajar.*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="graduation-cap" class="w-3.5 h-3.5 text-rose-600" />
                     <span>Tugas Belajar & Studi</span>
@@ -301,7 +321,7 @@
                     <span>{{ Auth::user()->hasRole('admin') ? 'Monitoring Seluruh Cuti' : 'Persetujuan Cuti Bawahan' }}</span>
                 </x-responsive-nav-link>
             @endif
-            <x-responsive-nav-link :href="route('pengajuan-cuti.index')" :active="request()->routeIs('pengajuan-cuti.index') && request()->has('mine')" class="flex items-center gap-2 text-xs rounded-lg">
+            <x-responsive-nav-link :href="route('pengajuan-cuti.index', (Auth::user()->isAtasan() || Auth::user()->hasRole('admin')) ? ['mine' => 1] : [])" :active="request()->routeIs('pengajuan-cuti.index') && (request()->has('mine') || (!Auth::user()->isAtasan() && !Auth::user()->hasRole('admin')))" class="flex items-center gap-2 text-xs rounded-lg">
                 <x-icon name="calendar-off" class="w-3.5 h-3.5 text-emerald-600" />
                 <span>Permohonan Cuti Saya</span>
             </x-responsive-nav-link>
