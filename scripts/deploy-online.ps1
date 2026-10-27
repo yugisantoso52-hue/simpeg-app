@@ -11,6 +11,8 @@ try {
     }
     $body = @{
         key = $secret
+        mode = "fast"
+        commits = 10
     }
 
     $resp = Invoke-RestMethod -Uri $url -Method POST -Body $body -Headers $headers -TimeoutSec 180
