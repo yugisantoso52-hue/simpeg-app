@@ -35,20 +35,24 @@ echo [1/3] Mengecek file perbaikan di PC lokal...
 set HAS_CHANGES=
 for /f "tokens=*" %%i in (%TEMP%\git_status.txt) do set HAS_CHANGES=1
 
-if defined HAS_CHANGES (
-    echo [INFO] Ditemukan perubahan kode baru di PC lokal.
-    echo.
-    set /p COMMIT_MSG="Ketik catatan perbaikan (Atau tekan ENTER untuk otomatis): "
-    
-    if "%COMMIT_MSG%"=="" set COMMIT_MSG=Pembaruan sistem SIKAP FKp UNRI
-
-    echo.
-    echo [PACKAGING] Menyimpan kode baru...
-    "%GIT%" add .
-    "%GIT%" commit -m "%COMMIT_MSG%"
-) else (
+if not defined HAS_CHANGES (
     echo [INFO] Tidak ada file baru yang diubah. Memproses pengiriman...
+    goto AFTER_CHANGES
 )
+
+echo [INFO] Ditemukan perubahan kode baru di PC lokal.
+echo.
+set COMMIT_MSG=
+set /p COMMIT_MSG="Ketik catatan perbaikan (Atau tekan ENTER untuk otomatis): "
+
+if not defined COMMIT_MSG set COMMIT_MSG=Pembaruan sistem SIKAP FKp UNRI
+
+echo.
+echo [PACKAGING] Menyimpan kode baru...
+"%GIT%" add .
+"%GIT%" commit -m "%COMMIT_MSG%"
+
+:AFTER_CHANGES
 
 echo.
 echo [2/3] Mengunggah kode ke GitHub Repository...
@@ -73,22 +77,17 @@ echo.
 echo [3/3] Menghubungi Server Online (https://sikap.fkp.unri.ac.id)...
 echo [INFO] Mengaktifkan sinkronisasi kode dan migrasi otomatis di server UNRI...
 
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "try { " ^
-  "  $secret = 'sikap_deploy_sec_2026_unri'; " ^
-  "  $sess = New-Object Microsoft.PowerShell.Commands.WebRequestSession; " ^
-  "  $csrf = ''; " ^
-  "  try { $lp = Invoke-WebRequest -Uri 'https://sikap.fkp.unri.ac.id/login' -WebSession $sess -UseBasicParsing -TimeoutSec 20; if ($lp.Content -match 'name=\"_token\"\s+value=\"([^\"]+)\"') { $csrf = $Matches[1] } } catch {}; " ^
-  "  $body = \"key=$secret&_token=$([uri]::EscapeDataString($csrf))\"; " ^
-  "  $hmac = New-Object System.Security.Cryptography.HMACSHA256; $hmac.Key = [Text.Encoding]::UTF8.GetBytes($secret); " ^
-  "  $sig = 'sha256=' + ([BitConverter]::ToString($hmac.ComputeHash([Text.Encoding]::UTF8.GetBytes($body))) -replace '-','').ToLower(); " ^
-  "  $hdr = @{ 'X-Hub-Signature-256' = $sig; 'X-Deploy-Key' = $secret; 'Accept' = 'application/json' }; " ^
-  "  $r = Invoke-RestMethod -Uri 'https://sikap.fkp.unri.ac.id/deploy-webhook' -Method POST -Body $body -ContentType 'application/x-www-form-urlencoded' -Headers $hdr -WebSession $sess -TimeoutSec 180; " ^
-  "  Write-Host ('[SERVER RESPONSE] ' + $r.message) -ForegroundColor Green; " ^
-  "  if ($r.logs -and $r.logs.code_update) { Write-Host ('[DETAIL UPDATE]   ' + $r.logs.code_update) -ForegroundColor Cyan }; " ^
-  "} catch { " ^
-  "  Write-Host ('[SERVER ERROR] ' + $_.Exception.Message) -ForegroundColor Red; " ^
-  "}"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0deploy-online.ps1"
+
+if %errorlevel% neq 0 (
+    echo.
+    color 0C
+    echo ==============================================================================
+    echo [GAGAL] Terjadi kendala saat menghubungi Server Online UNRI.
+    echo ==============================================================================
+    pause
+    exit /b
+)
 
 echo.
 echo ==============================================================================
