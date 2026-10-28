@@ -76,25 +76,70 @@ class DeployWebhookController extends Controller
             $mode = $request->input('mode', 'auto');
 
             if ($mode === 'inspect') {
-                $yandriwita = \App\Models\Pegawai::with(['jabatan', 'unitKerja', 'penugasan'])->where('nama', 'like', '%Yandriwita%')->first();
-                $sri = \App\Models\Pegawai::with(['jabatan', 'unitKerja', 'penugasan'])->where('nama', 'like', '%Sri Wahyuni%')->first();
+                $yandriwita = \App\Models\Pegawai::where('nama', 'like', '%Yandriwita%')->first();
+                $sri = \App\Models\Pegawai::where('nama', 'like', '%Sri Wahyuni%')->first();
+                $bakhtiar = \App\Models\Pegawai::where('nama', 'like', '%Bakhtiar%')->first();
+                $dolli = \App\Models\Pegawai::where('nama', 'like', '%Dolli%')->first();
+                $safri = \App\Models\Pegawai::where('nama', 'like', '%Safri%')->first();
+
                 $allJabatans = \App\Models\Jabatan::where('nama_jabatan', 'like', '%Pokja%')
                     ->orWhere('nama_jabatan', 'like', '%Wakil Dekan%')
-                    ->orWhere('nama_jabatan', 'like', '%Kepala Bagian%')
-                    ->orWhere('nama_jabatan', 'like', '%Kabag%')
-                    ->get(['id', 'nama_jabatan', 'unit_kerja_id']);
-                
-                $anjabItems = \App\Models\AnjabJabatan::where('nama_jabatan', 'like', '%Pokja%')
                     ->orWhere('nama_jabatan', 'like', '%Bagian%')
-                    ->orWhere('nama_jabatan', 'like', '%Wakil Dekan%')
-                    ->get(['id', 'nama_jabatan', 'bezetting', 'jumlah_kebutuhan', 'kelebihan_kekurangan', 'status_pegawai']);
+                    ->orWhere('nama_jabatan', 'like', '%Dekan%')
+                    ->get(['id', 'nama_jabatan', 'unit_kerja_id']);
+
+                $allAnjabs = \App\Models\AnalisisJabatan::with('jabatan')->get()->map(function($a) {
+                    return [
+                        'id' => $a->id,
+                        'jabatan_id' => $a->jabatan_id,
+                        'nama_jabatan' => $a->jabatan->nama_jabatan ?? null,
+                        'unit_kerja_id' => $a->unit_kerja_id,
+                        'bezetting' => $a->bezetting,
+                        'formasi' => $a->formasi_pembulatan,
+                    ];
+                });
 
                 return response()->json([
                     'status' => 'success',
-                    'yandriwita' => $yandriwita,
-                    'sri' => $sri,
+                    'yandriwita' => $yandriwita ? [
+                        'id' => $yandriwita->id,
+                        'nama' => $yandriwita->nama,
+                        'jabatan_id' => $yandriwita->jabatan_id,
+                        'jabatan_nama' => $yandriwita->jabatan?->nama_jabatan,
+                        'unit_kerja_id' => $yandriwita->unit_kerja_id,
+                        'status_pegawai' => $yandriwita->status_pegawai,
+                    ] : null,
+                    'sri' => $sri ? [
+                        'id' => $sri->id,
+                        'nama' => $sri->nama,
+                        'jabatan_id' => $sri->jabatan_id,
+                        'jabatan_nama' => $sri->jabatan?->nama_jabatan,
+                        'unit_kerja_id' => $sri->unit_kerja_id,
+                    ] : null,
+                    'bakhtiar' => $bakhtiar ? [
+                        'id' => $bakhtiar->id,
+                        'nama' => $bakhtiar->nama,
+                        'jabatan_id' => $bakhtiar->jabatan_id,
+                        'jabatan_nama' => $bakhtiar->jabatan?->nama_jabatan,
+                        'unit_kerja_id' => $bakhtiar->unit_kerja_id,
+                        'status_pegawai' => $bakhtiar->status_pegawai,
+                    ] : null,
+                    'dolli' => $dolli ? [
+                        'id' => $dolli->id,
+                        'nama' => $dolli->nama,
+                        'jabatan_id' => $dolli->jabatan_id,
+                        'jabatan_nama' => $dolli->jabatan?->nama_jabatan,
+                        'unit_kerja_id' => $dolli->unit_kerja_id,
+                    ] : null,
+                    'safri' => $safri ? [
+                        'id' => $safri->id,
+                        'nama' => $safri->nama,
+                        'jabatan_id' => $safri->jabatan_id,
+                        'jabatan_nama' => $safri->jabatan?->nama_jabatan,
+                        'unit_kerja_id' => $safri->unit_kerja_id,
+                    ] : null,
                     'jabatans' => $allJabatans,
-                    'anjab_items' => $anjabItems,
+                    'anjabs' => $allAnjabs,
                 ]);
             }
 
