@@ -90,17 +90,24 @@ class AnalisisJabatan extends Model
      */
     public function getBezettingAttribute(): int
     {
-        $query = Pegawai::where('jabatan_id', $this->jabatan_id)
+        $baseQuery = Pegawai::where('jabatan_id', $this->jabatan_id)
             ->where('status_pegawai', 'Aktif');
 
         if ($this->unit_kerja_id) {
-            $query->where(function($q) {
+            $count = (clone $baseQuery)->where(function($q) {
                 $q->where('unit_kerja_id', $this->unit_kerja_id)
                   ->orWhereNull('unit_kerja_id');
-            });
+            })->count();
+
+            // Jika tidak ditemukan di unit_kerja_id spesifik tetapi ada pegawai aktif yang memegang jabatan_id ini
+            if ($count === 0) {
+                return $baseQuery->count();
+            }
+
+            return $count;
         }
 
-        return $query->count();
+        return $baseQuery->count();
     }
 
     /**

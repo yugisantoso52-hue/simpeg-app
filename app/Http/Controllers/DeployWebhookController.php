@@ -75,14 +75,6 @@ class DeployWebhookController extends Controller
         try {
             $mode = $request->input('mode', 'auto');
 
-            if ($mode === 'inspect') {
-                $unitKerjas = \App\Models\UnitKerja::all(['id', 'nama_unit', 'parent_id']);
-                return response()->json([
-                    'status' => 'success',
-                    'unit_kerjas' => $unitKerjas
-                ]);
-            }
-
             // 1. Update code from GitHub (Fast API Sync atau Full Zip Sync)
             if ($mode === 'fast') {
                 $logs['code_update'] = $this->updateCodeFromGithubApi((int) $request->input('commits', 5));
