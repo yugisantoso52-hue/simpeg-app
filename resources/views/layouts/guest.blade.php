@@ -15,9 +15,8 @@
         <link rel="manifest" href="/manifest.json">
         <meta name="theme-color" content="#0b3b7c">
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800,900|playfair-display:700,800,900&display=swap" rel="stylesheet" />
+        <!-- Self-Hosted Fonts (Local & Zero External CDN Leak) -->
+        <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}">
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])

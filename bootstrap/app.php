@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         
+        // Middleware Keamanan Global (Security Hardening Headers: CSP, HSTS, X-Content-Type, X-Frame)
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         // Dukungan Reverse Proxy / Ingress Kubernetes UNRI (SSL Termination)
         $trustedProxies = env('TRUSTED_PROXIES', '127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16');
         $middleware->trustProxies(at: $trustedProxies === '*' ? '*' : explode(',', $trustedProxies));

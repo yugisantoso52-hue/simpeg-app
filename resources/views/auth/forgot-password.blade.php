@@ -3,13 +3,13 @@
         {{ __('Lupa password Anda? Tidak masalah. Beritahukan NIP atau alamat email Anda, dan kami akan mengirimkan tautan reset password ke email yang terdaftar.') }}
     </div>
 
-    <!-- Session Status -->
+    {{-- Session Status --}}
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <form method="POST" action="{{ route('password.email') }}">
         @csrf
 
-        <!-- NIP atau Email -->
+        {{-- NIP atau Email --}}
         <div>
             <x-input-label for="login" :value="__('NIP atau Email')" />
             <x-text-input id="login" class="block mt-1 w-full" type="text" name="login" :value="old('login')" required autofocus />

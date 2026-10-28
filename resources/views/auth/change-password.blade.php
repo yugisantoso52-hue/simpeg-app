@@ -1,7 +1,7 @@
 <x-guest-layout>
-    <!-- ========================================== -->
-    <!-- 1. HEADER & BRANDING                       -->
-    <!-- ========================================== -->
+    {{-- ========================================== --}}
+    {{-- 1. HEADER & BRANDING --}}
+    {{-- ========================================== --}}
     <div class="text-center mb-6">
         <a href="/" class="inline-block transition transform hover:scale-105 duration-200">
             <img src="{{ asset('logo-unri.png') }}" alt="Logo UNRI" class="h-[65px] w-auto mx-auto object-contain">
@@ -24,7 +24,7 @@
         </p>
     </div>
 
-    <!-- Alert / Warning Message -->
+    {{-- Alert / Warning Message --}}
     @if(session('warning'))
         <div class="mb-4 bg-amber-50 border border-amber-200 p-3 rounded-lg text-amber-900 text-xs flex items-start gap-2">
             <span class="text-base leading-none select-none">⚠️</span>
@@ -42,7 +42,7 @@
     <form method="POST" action="{{ route('password.change') }}" class="space-y-4">
         @csrf
 
-        <!-- Password Saat Ini -->
+        {{-- Password Saat Ini --}}
         <div>
             <label for="current_password" class="block font-semibold text-xs text-slate-700 uppercase tracking-wider mb-1">
                 Password Saat Ini (Password Default)
@@ -57,7 +57,7 @@
             <x-input-error :messages="$errors->get('current_password')" class="mt-1" />
         </div>
 
-        <!-- Password Baru -->
+        {{-- Password Baru --}}
         <div>
             <label for="password" class="block font-semibold text-xs text-slate-700 uppercase tracking-wider mb-1">
                 Password Baru
@@ -71,7 +71,7 @@
             <x-input-error :messages="$errors->get('password')" class="mt-1" />
         </div>
 
-        <!-- Konfirmasi Password Baru -->
+        {{-- Konfirmasi Password Baru --}}
         <div>
             <label for="password_confirmation" class="block font-semibold text-xs text-slate-700 uppercase tracking-wider mb-1">
                 Konfirmasi Password Baru
@@ -91,7 +91,7 @@
                 {{ __('Perbarui Password') }}
             </button>
 
-            <!-- Opsi Lewati / Nanti Saja (Bypass untuk Pengujian) -->
+            {{-- Opsi Lewati / Nanti Saja (Bypass untuk Pengujian) --}}
             <button type="button"
                     onclick="event.preventDefault(); document.getElementById('skip-form').submit();"
                     class="w-full inline-flex items-center justify-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold text-xs transition">

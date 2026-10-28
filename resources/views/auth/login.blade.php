@@ -7,18 +7,18 @@
          }" 
          class="min-h-screen w-full flex flex-col lg:flex-row text-slate-800 antialiased selection:bg-[#0b3b7c] selection:text-white">
 
-        <!-- ======================================================== -->
-        <!-- SISI KIRI: BRANDING, VISUAL & SECURITY SHOWCASE (DESKTOP) -->
-        <!-- ======================================================== -->
+        {{-- ======================================================== --}}
+        {{-- SISI KIRI: BRANDING, VISUAL & SECURITY SHOWCASE (DESKTOP) --}}
+        {{-- ======================================================== --}}
         <div class="hidden lg:flex lg:w-7/12 xl:w-3/5 text-white p-8 xl:p-14 relative flex-col justify-between overflow-hidden shadow-2xl"
              style="background: linear-gradient(135deg, #031530 0%, #072552 40%, #0a3875 100%);">
             
-            <!-- Ornamen Tekstur & Glow Latar Belakang -->
+            {{-- Ornamen Tekstur & Glow Latar Belakang --}}
             <div class="absolute inset-0 opacity-40 pointer-events-none bg-cover bg-center" style="background-image: url('{{ asset('images/bg-blue-regal.jpg') }}'); mix-blend-mode: overlay;"></div>
             <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-400/20 blur-3xl pointer-events-none"></div>
             <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-amber-400/15 blur-3xl pointer-events-none"></div>
 
-            <!-- Bingkai Linework Geometris Emas Mewah (Vector Art Deco / Regal Certificate) -->
+            {{-- Bingkai Linework Geometris Emas Mewah (Vector Art Deco / Regal Certificate) --}}
             <svg class="absolute inset-0 w-full h-full pointer-events-none z-0" style="opacity: 0.65;" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 1000 1000">
                 <defs>
                     <linearGradient id="goldLineworkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -28,25 +28,25 @@
                         <stop offset="100%" stop-color="#fcedc0" />
                     </linearGradient>
                 </defs>
-                <!-- Bingkai luar bersudut miring (chamfered) -->
+                {{-- Bingkai luar bersudut miring (chamfered) --}}
                 <polygon points="35,20 965,20 980,35 980,965 965,980 35,980 20,965 20,35" fill="none" stroke="url(#goldLineworkGrad)" stroke-width="1.6"/>
-                <!-- Garis paralel dalam -->
+                {{-- Garis paralel dalam --}}
                 <polygon points="45,30 955,30 970,45 970,955 955,970 45,970 30,955 30,45" fill="none" stroke="url(#goldLineworkGrad)" stroke-width="0.8" stroke-dasharray="8 4"/>
                 
-                <!-- Garis diagonal sudut khas desain geometris mewah -->
+                {{-- Garis diagonal sudut khas desain geometris mewah --}}
                 <line x1="20" y1="35" x2="160" y2="175" stroke="url(#goldLineworkGrad)" stroke-width="1.2"/>
                 <line x1="980" y1="35" x2="840" y2="175" stroke="url(#goldLineworkGrad)" stroke-width="1.2"/>
                 <line x1="20" y1="965" x2="160" y2="825" stroke="url(#goldLineworkGrad)" stroke-width="1.2"/>
                 <line x1="980" y1="965" x2="840" y2="825" stroke="url(#goldLineworkGrad)" stroke-width="1.2"/>
 
-                <!-- Aksen diamond / intan di setiap sudut -->
+                {{-- Aksen diamond / intan di setiap sudut --}}
                 <polygon points="90,90 105,75 120,90 105,105" fill="none" stroke="url(#goldLineworkGrad)" stroke-width="1"/>
                 <polygon points="910,90 925,75 910,90 895,105" fill="none" stroke="url(#goldLineworkGrad)" stroke-width="1"/>
                 <polygon points="90,910 105,895 120,910 105,925" fill="none" stroke="url(#goldLineworkGrad)" stroke-width="1"/>
                 <polygon points="910,910 925,895 910,910 895,925" fill="none" stroke="url(#goldLineworkGrad)" stroke-width="1"/>
             </svg>
 
-            <!-- 1. Header Instansi -->
+            {{-- 1. Header Instansi --}}
             <div class="relative z-10">
                 <div class="flex items-center gap-4">
                     <a href="/" class="shrink-0 transition transform hover:scale-105 duration-200">
@@ -66,9 +66,9 @@
                 </div>
             </div>
 
-            <!-- 2. Hero Headline & Informasi Utama -->
+            {{-- 2. Hero Headline & Informasi Utama --}}
             <div class="relative z-10 my-auto py-8">
-                <!-- Badge Kategori -->
+                {{-- Badge Kategori --}}
                 <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#072450]/80 border border-[#d4af37]/50 text-xs font-semibold text-[#f1c97a] uppercase tracking-wider mb-5 shadow-xs">
                     <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
                     SISTEM INFORMASI KEPEGAWAIAN (SIKAP)
@@ -82,7 +82,7 @@
                     Mewujudkan tata kelola kepegawaian Fakultas Keperawatan Universitas Riau yang transparan, akuntabel, dan berbasis digital untuk seluruh Dosen dan Tenaga Kependidikan.
                 </p>
 
-                <!-- Box Peringatan Keamanan & Pembaruan -->
+                {{-- Box Peringatan Keamanan & Pembaruan --}}
                 <div class="mt-8 bg-[#061e47]/70 backdrop-blur-md border border-[#d4af37]/45 rounded-2xl p-5 shadow-xl max-w-2xl text-left">
                     <div class="flex items-center gap-2.5 text-amber-300 font-bold text-xs uppercase tracking-wider mb-3">
                         <span class="text-sm">⚠️</span>
@@ -107,7 +107,7 @@
                     </ul>
                 </div>
 
-                <!-- Tautan Cepat Layanan Publik -->
+                {{-- Tautan Cepat Layanan Publik --}}
                 <div class="mt-7 flex flex-wrap items-center gap-3">
                     <button type="button"
                             @click="openExecutiveModal = true"
@@ -129,7 +129,7 @@
                 </div>
             </div>
 
-            <!-- 3. Footer Kiri -->
+            {{-- 3. Footer Kiri --}}
             <div class="relative z-10 pt-4 border-t border-white/15 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-blue-200/80 gap-2">
                 <div>
                     <span>&copy; {{ date('Y') }} Fakultas Keperawatan Universitas Riau</span>
@@ -139,20 +139,20 @@
             </div>
         </div>
 
-        <!-- ======================================================== -->
-        <!-- SISI KANAN: FORMULIR LOGIN CALACATTA MARBLE             -->
-        <!-- ======================================================== -->
+        {{-- ======================================================== --}}
+        {{-- SISI KANAN: FORMULIR LOGIN CALACATTA MARBLE --}}
+        {{-- ======================================================== --}}
         <div class="w-full lg:w-5/12 xl:w-2/5 flex flex-col justify-between p-6 sm:p-10 xl:p-12 relative z-10 min-h-screen lg:min-h-0 bg-cover bg-center"
              style="background-image: url('{{ asset('images/bg-marble.jpg') }}'); background-color: #faf8f5;">
             
-            <!-- Lapisan Translusen Sangat Halus -->
+            {{-- Lapisan Translusen Sangat Halus --}}
             <div class="absolute inset-0 bg-white/10 pointer-events-none"></div>
 
-            <!-- Ornamen Sudut Kristal Biru-Emas (Khusus Tampilan Mobile di Pojok Atas) -->
-            <img src="{{ asset('images/facet-top-left-trans.png') }}?v={{ file_exists(public_path('images/facet-top-left-trans.png')) ? filemtime(public_path('images/facet-top-left-trans.png')) : 2 }}" alt="" class="lg:hidden absolute top-0 left-0 w-28 sm:w-36 pointer-events-none z-0">
-            <img src="{{ asset('images/facet-top-right-trans.png') }}?v={{ file_exists(public_path('images/facet-top-right-trans.png')) ? filemtime(public_path('images/facet-top-right-trans.png')) : 2 }}" alt="" class="lg:hidden absolute top-0 right-0 w-28 sm:w-36 pointer-events-none z-0">
+            {{-- Ornamen Sudut Kristal Biru-Emas (Khusus Tampilan Mobile di Pojok Atas) --}}
+            <img src="{{ asset('images/facet-top-left-trans.png') }}?v={{ file_exists(public_path('images/facet-top-left-trans.png')) ? substr(md5(filemtime(public_path('images/facet-top-left-trans.png'))), 0, 8) : 'v2' }}" alt="" class="lg:hidden absolute top-0 left-0 w-28 sm:w-36 pointer-events-none z-0">
+            <img src="{{ asset('images/facet-top-right-trans.png') }}?v={{ file_exists(public_path('images/facet-top-right-trans.png')) ? substr(md5(filemtime(public_path('images/facet-top-right-trans.png'))), 0, 8) : 'v2' }}" alt="" class="lg:hidden absolute top-0 right-0 w-28 sm:w-36 pointer-events-none z-0">
 
-            <!-- Mobile Header (Muncul Ketika Layar Browser Dikecilkan / Mobile Screen) -->
+            {{-- Mobile Header (Muncul Ketika Layar Browser Dikecilkan / Mobile Screen) --}}
             <div class="flex lg:hidden flex-col items-center text-center pt-2 pb-5 relative z-10">
                 <a href="/" class="shrink-0 transition transform hover:scale-105 duration-200">
                     <img src="{{ asset('logo-unri.png') }}" alt="Logo UNRI" class="h-16 w-auto object-contain drop-shadow-md mx-auto mb-2">
@@ -179,11 +179,11 @@
                         </button>
                     </div>
                 </div>
-                <!-- Garis Pemisah Elegan Mobile -->
+                {{-- Garis Pemisah Elegan Mobile --}}
                 <div class="w-full max-w-sm mx-auto h-[1px] bg-gradient-to-r from-transparent via-slate-300 to-transparent mt-5 mb-1"></div>
             </div>
 
-            <!-- Bagian Tengah: Kartu Formulir Login -->
+            {{-- Bagian Tengah: Kartu Formulir Login --}}
             <div class="my-auto py-2 max-w-md w-full mx-auto relative z-10">
                 <div class="mb-7">
                     <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#fdfaf2]/95 border border-[#c59b27]/80 text-[#5c4314] text-[11px] font-bold uppercase tracking-wider mb-2.5 shadow-xs">
@@ -197,14 +197,14 @@
                     </p>
                 </div>
 
-                <!-- Notifikasi Status Sesi -->
+                {{-- Notifikasi Status Sesi --}}
                 <x-auth-session-status class="mb-4" :status="session('status')" />
 
-                <!-- Formulir Login -->
+                {{-- Formulir Login --}}
                 <form method="POST" action="{{ route('login') }}" class="space-y-4">
                     @csrf
 
-                    <!-- Field NIP / Username (Input Pill Berbingkai Emas Mewah) -->
+                    {{-- Field NIP / Username (Input Pill Berbingkai Emas Mewah) --}}
                     <div>
                         <label for="login" class="block font-bold text-xs text-slate-800 uppercase tracking-wider mb-1.5">
                             NIP / USERNAME
@@ -229,7 +229,7 @@
                         <x-input-error :messages="$errors->get('login')" class="mt-1" />
                     </div>
 
-                    <!-- Field Password (Input Pill Berbingkai Emas Mewah dengan Toggle Show/Hide) -->
+                    {{-- Field Password (Input Pill Berbingkai Emas Mewah dengan Toggle Show/Hide) --}}
                     <div>
                         <label for="password" class="block font-bold text-xs text-slate-800 uppercase tracking-wider mb-1.5">
                             KATA SANDI
@@ -249,7 +249,7 @@
                                    required
                                    autocomplete="current-password" />
 
-                            <!-- Tombol Show/Hide Password -->
+                            {{-- Tombol Show/Hide Password --}}
                             <button type="button"
                                     @click="showPassword = !showPassword"
                                     class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
@@ -266,7 +266,7 @@
                         <x-input-error :messages="$errors->get('password')" class="mt-1" />
                     </div>
 
-                    <!-- Petunjuk Akun Baru (Box Bernuansa Soft Blue & Gold) -->
+                    {{-- Petunjuk Akun Baru (Box Bernuansa Soft Blue & Gold) --}}
                     <div class="p-3 rounded-2xl text-slate-800 text-xs leading-relaxed flex items-center gap-2.5 shadow-xs"
                          style="background: linear-gradient(90deg, rgba(219, 234, 254, 0.9) 0%, rgba(240, 249, 255, 0.85) 50%, rgba(254, 243, 199, 0.9) 100%); border: 1px solid rgba(197, 155, 39, 0.7);">
                         <span class="text-base select-none shrink-0">🔑</span>
@@ -275,7 +275,7 @@
                         </div>
                     </div>
 
-                    <!-- Ingat Saya & Lupa Sandi -->
+                    {{-- Ingat Saya & Lupa Sandi --}}
                     <div class="flex items-center justify-between pt-1">
                         <label for="remember_me" class="inline-flex items-center cursor-pointer select-none">
                             <input id="remember_me" type="checkbox" class="w-4 h-4 rounded border-slate-400 text-[#0b3b7c] focus:ring-[#0b3b7c] cursor-pointer" name="remember">
@@ -289,7 +289,7 @@
                         @endif
                     </div>
 
-                    <!-- Tombol Masuk ke SIKAP (Pill Mewah Gradasi Royal Blue & Glow Emas) -->
+                    {{-- Tombol Masuk ke SIKAP (Pill Mewah Gradasi Royal Blue & Glow Emas) --}}
                     <div class="pt-2">
                         <button type="submit" 
                                 class="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-full text-white font-extrabold text-sm uppercase tracking-wider transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0b3b7c]"
@@ -300,7 +300,7 @@
                     </div>
                 </form>
 
-                <!-- Layanan Cepat untuk Layar Mobile -->
+                {{-- Layanan Cepat untuk Layar Mobile --}}
                 <div class="mt-8 pt-5 border-t border-slate-300/80 flex flex-col gap-2.5 lg:hidden text-center">
                     <span class="text-[11px] font-extrabold uppercase tracking-widest text-slate-600">LAYANAN PUBLIK</span>
                     <div class="flex items-center justify-center gap-3 text-xs font-semibold text-slate-800">
@@ -315,7 +315,7 @@
                 </div>
             </div>
 
-            <!-- Bagian Bawah Form (Footer Status & Info Pengembang) -->
+            {{-- Bagian Bawah Form (Footer Status & Info Pengembang) --}}
             <div class="pt-6 border-t border-slate-300/80 flex flex-col gap-2 text-[11px] text-slate-600 relative z-10">
                 <div class="flex items-center justify-between font-medium">
                     <span class="flex items-center gap-1.5">
@@ -330,9 +330,9 @@
             </div>
         </div>
 
-        <!-- ======================================================== -->
-        <!-- MODAL VERIFIKASI KEASLIAN DOKUMEN PUBLIK                -->
-        <!-- ======================================================== -->
+        {{-- ======================================================== --}}
+        {{-- MODAL VERIFIKASI KEASLIAN DOKUMEN PUBLIK --}}
+        {{-- ======================================================== --}}
         <div x-show="openVerifyModal" 
              class="fixed inset-0 z-50 overflow-y-auto" 
              style="display: none;"
@@ -396,9 +396,9 @@
             </div>
         </div>
 
-        <!-- ======================================================== -->
-        <!-- MODAL PAPARAN EKSEKUTIF & RINGKASAN SISTEM (LOGIN)      -->
-        <!-- ======================================================== -->
+        {{-- ======================================================== --}}
+        {{-- MODAL PAPARAN EKSEKUTIF & RINGKASAN SISTEM (LOGIN) --}}
+        {{-- ======================================================== --}}
         <div x-show="openExecutiveModal" 
              class="fixed inset-0 z-50 overflow-y-auto" 
              style="display: none;"

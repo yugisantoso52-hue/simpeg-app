@@ -4,8 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mode Offline - SIKAP FKP UNRI</title>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/fonts/fonts.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 font-sans antialiased text-slate-800 min-h-screen flex items-center justify-center p-4">
