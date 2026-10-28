@@ -76,8 +76,8 @@ class DeployWebhookController extends Controller
             $mode = $request->input('mode', 'auto');
 
             if ($mode === 'inspect') {
-                $yandriwita = \App\Models\Pegawai::with(['jabatan', 'unitKerja', 'penugasans.jabatan'])->where('nama', 'like', '%Yandriwita%')->first();
-                $sri = \App\Models\Pegawai::with(['jabatan', 'unitKerja', 'penugasans.jabatan'])->where('nama', 'like', '%Sri Wahyuni%')->first();
+                $yandriwita = \App\Models\Pegawai::with(['jabatan', 'unitKerja', 'penugasan'])->where('nama', 'like', '%Yandriwita%')->first();
+                $sri = \App\Models\Pegawai::with(['jabatan', 'unitKerja', 'penugasan'])->where('nama', 'like', '%Sri Wahyuni%')->first();
                 $allJabatans = \App\Models\Jabatan::where('nama_jabatan', 'like', '%Pokja%')
                     ->orWhere('nama_jabatan', 'like', '%Wakil Dekan%')
                     ->orWhere('nama_jabatan', 'like', '%Kepala Bagian%')
