@@ -39,7 +39,7 @@
                                     <span>•</span>
                                     <span>{{ $p->jenis_pegawai ?? 'Pegawai' }}</span>
                                 </div>
-                                <h1 class="text-xl md:text-2xl font-bold tracking-tight" style="color: #ffffff !important;">Selamat Datang, {{ $p->nama_lengkap ?? $p->nama ?? Auth::user()->name }}!</h1>
+                                <h1 class="text-xl md:text-2xl font-bold tracking-tight" style="color: #ffffff !important;">Selamat Datang, {{ $p->nama_lengkap ?? $p->nama ?? Auth::user()->name }}</h1>
                                 <p class="text-xs md:text-sm mt-1" style="color: #dbeafe !important;">
                                     NIP: <strong class="font-mono" style="color: #ffffff !important;">{{ $p->nip ?? '-' }}</strong> | {{ $p->jabatan?->nama_jabatan ?? 'Pegawai' }} - {{ $p->unitKerja?->nama_unit ?? 'Fakultas Keperawatan' }}
                                 </p>
@@ -1017,7 +1017,7 @@
                             </div>
 
                             <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-white">
-                                Selamat Datang, {{ Auth::user()->name }}! 👋
+                                Selamat Datang, {{ Auth::user()->name }} 👋
                             </h1>
 
                             <div class="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-slate-200">
