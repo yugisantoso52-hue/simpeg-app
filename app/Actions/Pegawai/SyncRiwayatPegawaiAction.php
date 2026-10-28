@@ -170,7 +170,28 @@ class SyncRiwayatPegawaiAction
      */
     protected function syncJabatan(Pegawai $pegawai, array $data, array $files, bool $isUpdate): void
     {
-        if (!array_key_exists('riwayat_jabatan', $data)) {
+        if (!array_key_exists('riwayat_jabatan', $data) || empty($data['riwayat_jabatan'])) {
+            $activeJabatan = $pegawai->riwayatJabatan()->whereIn('status', ['aktif', 'Aktif'])->first();
+            if ($activeJabatan) {
+                $updates = [];
+                if (!empty($data['unit_kerja_id'])) {
+                    $updates['unit_kerja_id'] = $data['unit_kerja_id'];
+                }
+                if (!empty($data['jabatan_id'])) {
+                    $updates['jabatan_id'] = $data['jabatan_id'];
+                }
+                if (!empty($updates)) {
+                    $activeJabatan->update($updates);
+                }
+            } elseif (!empty($data['jabatan_id']) && !empty($data['unit_kerja_id'])) {
+                $pegawai->riwayatJabatan()->create([
+                    'jabatan_id'    => $data['jabatan_id'],
+                    'unit_kerja_id' => $data['unit_kerja_id'],
+                    'tmt_jabatan'   => now(),
+                    'status'        => 'aktif',
+                    'keterangan'    => 'Sinkronisasi otomatis data pegawai',
+                ]);
+            }
             return;
         }
         $incoming = $data['riwayat_jabatan'] ?? [];
@@ -218,9 +239,21 @@ class SyncRiwayatPegawaiAction
 
             $status = ($lastActiveIndex !== null && $index === $lastActiveIndex) ? 'aktif' : 'nonaktif';
 
+            // Jika baris riwayat ini aktif, utamakan unit_kerja_id dan jabatan_id dari form induk
+            $finalUnitKerja = $row['unit_kerja_id'];
+            $finalJabatan   = $row['jabatan_id'];
+            if ($status === 'aktif') {
+                if (!empty($data['unit_kerja_id'])) {
+                    $finalUnitKerja = $data['unit_kerja_id'];
+                }
+                if (!empty($data['jabatan_id'])) {
+                    $finalJabatan = $data['jabatan_id'];
+                }
+            }
+
             $payload = [
-                'jabatan_id'    => $row['jabatan_id'],
-                'unit_kerja_id' => $row['unit_kerja_id'],
+                'jabatan_id'    => $finalJabatan,
+                'unit_kerja_id' => $finalUnitKerja,
                 'tmt_jabatan'   => !empty($row['tmt_jabatan']) ? $row['tmt_jabatan'] : now(),
                 'nomor_sk'      => $row['nomor_sk'] ?? null,
                 'tanggal_sk'    => $row['tanggal_sk'] ?? null,
@@ -244,7 +277,18 @@ class SyncRiwayatPegawaiAction
      */
     protected function syncPangkat(Pegawai $pegawai, array $data, array $files, bool $isUpdate): void
     {
-        if (!array_key_exists('riwayat_pangkat', $data)) {
+        if (!array_key_exists('riwayat_pangkat', $data) || empty($data['riwayat_pangkat'])) {
+            $activePangkat = $pegawai->riwayatPangkat()->whereIn('status', ['aktif', 'Aktif'])->first();
+            if ($activePangkat && !empty($data['golongan_id'])) {
+                $activePangkat->update(['golongan_id' => $data['golongan_id']]);
+            } elseif (!empty($data['golongan_id'])) {
+                $pegawai->riwayatPangkat()->create([
+                    'golongan_id' => $data['golongan_id'],
+                    'tmt'         => now(),
+                    'status'      => 'aktif',
+                    'keterangan'  => 'Sinkronisasi otomatis data pegawai',
+                ]);
+            }
             return;
         }
         $incoming = $data['riwayat_pangkat'] ?? [];
@@ -292,8 +336,14 @@ class SyncRiwayatPegawaiAction
 
             $status = ($lastActiveIndex !== null && $index === $lastActiveIndex) ? 'aktif' : 'nonaktif';
 
+            // Jika baris riwayat ini aktif, utamakan golongan_id dari form induk
+            $finalGolongan = $row['golongan_id'];
+            if ($status === 'aktif' && !empty($data['golongan_id'])) {
+                $finalGolongan = $data['golongan_id'];
+            }
+
             $payload = [
-                'golongan_id' => $row['golongan_id'],
+                'golongan_id' => $finalGolongan,
                 'tmt'         => !empty($row['tmt']) ? $row['tmt'] : now(),
                 'nomor_sk'    => $row['nomor_sk'] ?? null,
                 'tanggal_sk'  => $row['tanggal_sk'] ?? null,

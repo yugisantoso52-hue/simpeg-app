@@ -5,7 +5,7 @@
     <x-enterprise.forms.row cols="3">
         <x-enterprise.forms.field>
             <x-enterprise.form-group label="Unit Kerja / Program Studi" required>
-                <x-enterprise.select name="unit_kerja_id" id="field_unit_kerja_id" required>
+                <x-enterprise.select name="unit_kerja_id" id="field_unit_kerja_id" onchange="syncActiveRiwayatJabatan()" required>
                     <option value="">-- Pilih Unit Kerja --</option>
                     @foreach($unitKerja as $item)
                         <option value="{{ $item->id }}" @selected(old('unit_kerja_id', $pegawai->unit_kerja_id ?? '')==$item->id)>
@@ -334,8 +334,43 @@
         if (!selectedOpt) return;
         const unitId = selectedOpt.getAttribute('data-unit-id');
         const unitSelect = document.getElementById('field_unit_kerja_id');
-        if (unitId && unitSelect && !unitSelect.value) {
+        if (unitId && unitSelect) {
             unitSelect.value = unitId;
         }
+        syncActiveRiwayatJabatan();
     }
+
+    function syncActiveRiwayatJabatan() {
+        const unitSelect = document.getElementById('field_unit_kerja_id');
+        const jabatanSelect = document.getElementById('field_jabatan_id');
+        const unitId = unitSelect ? unitSelect.value : null;
+        const jabId = jabatanSelect ? jabatanSelect.value : null;
+
+        // Cari baris riwayat jabatan yang berstatus 'aktif' di tabel Riwayat Jabatan
+        const rows = document.querySelectorAll('#jabatan-tbody tr.jabatan-row');
+        rows.forEach(row => {
+            const statusSelect = row.querySelector('select[name$="[status]"]');
+            if (statusSelect && statusSelect.value.toLowerCase() === 'aktif') {
+                if (unitId) {
+                    const rUnit = row.querySelector('select[name$="[unit_kerja_id]"]');
+                    if (rUnit) rUnit.value = unitId;
+                }
+                if (jabId) {
+                    const rJab = row.querySelector('select[name$="[jabatan_id]"]');
+                    if (rJab) rJab.value = jabId;
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const unitSelect = document.getElementById('field_unit_kerja_id');
+        if (unitSelect) {
+            unitSelect.addEventListener('change', syncActiveRiwayatJabatan);
+        }
+        const jabSelect = document.getElementById('field_jabatan_id');
+        if (jabSelect) {
+            jabSelect.addEventListener('change', syncActiveRiwayatJabatan);
+        }
+    });
 </script>

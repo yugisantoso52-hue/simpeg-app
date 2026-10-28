@@ -31,16 +31,36 @@ class UpdatePegawaiRequest extends FormRequest
                 'nama_lengkap' => $this->input('nama'),
             ]);
         }
+
+        if ($this->filled('jenis_kelamin')) {
+            $jk = strtoupper(trim((string)$this->input('jenis_kelamin')));
+            $this->merge([
+                'jenis_kelamin' => str_starts_with($jk, 'P') ? 'P' : 'L',
+            ]);
+        }
+
+        if ($this->filled('kategori') && !$this->filled('kategori_kepegawaian')) {
+            $katMap = [
+                'dosen' => 'Dosen',
+                'tendik' => 'Tendik',
+                'phl' => 'PHL',
+            ];
+            $katVal = strtolower((string)$this->input('kategori'));
+            $this->merge([
+                'kategori_kepegawaian' => $katMap[$katVal] ?? ucfirst($katVal),
+            ]);
+        }
     }
 
     public function validated($key = null, $default = null)
     {
         $data = parent::validated($key, $default);
 
-        // Keamanan: Jika pengguna bukan Admin, cegah privilege escalation
-        // Pegawai biasa hanya boleh memperbarui identitas pribadi, kontak, domisili, keluarga & foto
+        // Keamanan: Cegah privilege escalation untuk pegawai biasa (Employee Self-Service)
+        // Admin dan Pimpinan Struktural (Executive Kepegawaian) diizinkan mengelola data kepegawaian
         $user = auth()->user();
-        if ($user && !$user->hasRole('admin')) {
+        $canManageKepegawaian = $user && ($user->hasRole('admin') || $user->canAccessExecutiveKepegawaianMenus());
+        if (!$canManageKepegawaian) {
             unset(
                 $data['nip'],
                 $data['unit_kerja_id'],
@@ -103,15 +123,17 @@ class UpdatePegawaiRequest extends FormRequest
             'gelar_belakang'       => 'nullable|string|max:100',
             'tempat_lahir'         => 'nullable|string|max:100',
             'tanggal_lahir'        => 'nullable|date',
-            'jenis_kelamin'        => 'nullable|in:L,P',
+            'jenis_kelamin'        => 'nullable|string|in:L,P,Laki-laki,Perempuan',
             'agama'                => 'nullable|string|max:30',
             'email'                => 'nullable|email|max:100',
             'no_hp'                => 'nullable|string|max:20',
             'alamat'               => 'nullable|string',
             'pendidikan_terakhir'  => 'nullable|string|max:100',
             'jenis_pegawai'        => 'nullable|in:Dosen,PNS,PPPK,PHL',
+            'kategori'             => 'nullable|string',
+            'kategori_kepegawaian' => 'nullable|string|in:Dosen,Tendik,PHL',
             'status_asn'           => 'nullable|in:ASN,Non ASN',
-            'status_pernikahan'    => 'nullable|in:Belum Menikah,Menikah,Cerai',
+            'status_pernikahan'    => 'nullable|string|max:50',
             'nama_pasangan'        => 'nullable|string|max:150',
             'jumlah_anak'          => 'nullable|integer|min:0',
             'mkg_tahun'            => 'nullable|integer|min:0|max:40',
