@@ -292,7 +292,11 @@
                         <div class="h-0.5 w-12" style="background-color: #0284c7 !important;"></div>
 
                         {{-- Pusat Puncak: KOTAK DEKAN --}}
-                        @php $dekanAnjab = $getAnjab('Dekan'); @endphp
+                        @php
+                            $dekanAnjab = $getAnjab('Dekan');
+                            $dekanPejabat = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->whereRaw('LOWER(nama_jabatan) = ?', ['dekan']))->first();
+                            $dekanList = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->whereRaw('LOWER(nama_jabatan) = ?', ['dekan']))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                        @endphp
                         <div class="w-80">
                             <div class="p-4 rounded-2xl shadow-xl hover:scale-105 transition cursor-pointer"
                                  style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%) !important; color: #ffffff !important; border: 2.5px solid #fbbf24 !important; box-shadow: 0 6px 15px rgba(30, 58, 138, 0.4) !important;"
@@ -302,7 +306,7 @@
                                      {{ $dekanAnjab->bezetting }},
                                      {{ $dekanAnjab->kebutuhan }},
                                      '{{ $dekanAnjab->status }}',
-                                     {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'Dekan'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                     {{ $dekanList }},
                                      '{{ addslashes($dekanAnjab->ikhtisar) }}',
                                      '{{ $dekanAnjab->anjab_url }}',
                                      '{{ $dekanAnjab->abk_url }}'
@@ -314,6 +318,11 @@
                                 <div class="text-lg font-black tracking-wider uppercase mt-2 text-center" style="color: #ffffff !important; letter-spacing: 1px;">
                                     DEKAN
                                 </div>
+                                @if($dekanPejabat)
+                                    <div class="text-[11px] text-amber-300 font-bold text-center truncate mt-0.5" title="{{ $dekanPejabat->nama_lengkap }}">
+                                        👤 {{ $dekanPejabat->nama_lengkap }}
+                                    </div>
+                                @endif
                                 <div class="text-xs text-center font-semibold mt-0.5" style="color: #93c5fd !important;">
                                     Fakultas Keperawatan UNRI
                                 </div>
@@ -377,7 +386,19 @@
                                 <div class="w-0.5 h-4" style="background-color: #1e3a8a !important;"></div>
 
                                 {{-- Kartu WD I --}}
-                                @php $wd1Anjab = $getAnjab('Wakil Dekan I (Bid. Akademik)'); @endphp
+                                @php
+                                    $wd1Anjab = $getAnjab('Wakil Dekan I (Bid. Akademik)');
+                                    $wd1Pejabat = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
+                                        $q->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Wakil Dekan I%')
+                                                                ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Bidang Akademik%')
+                                                                ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Akedemik%'))
+                                    )->first();
+                                    $wd1List = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
+                                        $q->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Wakil Dekan I%')
+                                                                ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Bidang Akademik%')
+                                                                ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Akedemik%'))
+                                    )->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                                @endphp
                                 <div class="w-full p-4 rounded-xl shadow-lg hover:scale-[1.02] transition cursor-pointer"
                                      style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important; color: #ffffff !important; border: 2px solid #60a5fa !important; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3) !important;"
                                      @click="openDetail(
@@ -386,7 +407,7 @@
                                          {{ $wd1Anjab->bezetting }},
                                          {{ $wd1Anjab->kebutuhan }},
                                          '{{ $wd1Anjab->status }}',
-                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan I%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                         {{ $wd1List }},
                                          '{{ addslashes($wd1Anjab->ikhtisar) }}',
                                          '{{ $wd1Anjab->anjab_url }}',
                                          '{{ $wd1Anjab->abk_url }}'
@@ -398,6 +419,15 @@
                                     <div class="font-black text-xs uppercase mt-2 text-center" style="color: #ffffff !important; letter-spacing: 0.3px; font-size: 12.5px;">
                                         WAKIL DEKAN BIDANG AKADEMIK
                                     </div>
+                                    @if($wd1Pejabat)
+                                        <div class="text-[10.5px] text-sky-200 font-bold text-center truncate mt-1" title="{{ $wd1Pejabat->nama_lengkap }}">
+                                            👤 {{ $wd1Pejabat->nama_lengkap }}
+                                        </div>
+                                    @else
+                                        <div class="text-[9.5px] text-sky-200/80 italic text-center mt-0.5">
+                                            (Menunggu SK Penetapan)
+                                        </div>
+                                    @endif
                                     <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
                                         <span>Bezetting: <strong style="color: #ffffff !important;">{{ $wd1Anjab->bezetting }}</strong> / Butuh: <strong style="color: #ffffff !important;">{{ $wd1Anjab->kebutuhan }}</strong></span>
                                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background-color: {{ $wd1Anjab->selisih < 0 ? '#e11d48' : '#10b981' }} !important; color: #ffffff !important;">
@@ -413,6 +443,10 @@
                                 @php
                                     $kajurAnjab = $getAnjab('Ketua Jurusan (Kajur)');
                                     $sekjurAnjab = $getAnjab('Sekretaris Jurusan');
+                                    $kajurPejabat = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%'))->first();
+                                    $kajurList = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                                    $sekjurPejabat = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->first();
+                                    $sekjurList = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
                                 @endphp
                                 <div class="w-full grid grid-cols-2 gap-2">
                                     {{-- Ketua Jurusan --}}
@@ -424,7 +458,7 @@
                                              {{ $kajurAnjab->bezetting }},
                                              {{ $kajurAnjab->kebutuhan }},
                                              '{{ $kajurAnjab->status }}',
-                                             {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Ketua Jurusan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             {{ $kajurList }},
                                              '{{ addslashes($kajurAnjab->ikhtisar) }}',
                                              '{{ $kajurAnjab->anjab_url }}',
                                              '{{ $kajurAnjab->abk_url }}'
@@ -436,6 +470,11 @@
                                         <div class="font-black text-[11px] uppercase tracking-wide" style="color: #ffffff !important;">
                                             KETUA JURUSAN
                                         </div>
+                                        @if($kajurPejabat)
+                                            <div class="text-[9.5px] text-teal-100 font-bold truncate mt-0.5" title="{{ $kajurPejabat->nama_lengkap }}">
+                                                👤 {{ $kajurPejabat->nama_lengkap }}
+                                            </div>
+                                        @endif
                                         <div class="text-[9.5px] mt-1 pt-1 border-t border-white/20 text-teal-100 flex justify-between items-center">
                                             <span>Bezetting: <strong>{{ $kajurAnjab->bezetting }}</strong>/{{ $kajurAnjab->kebutuhan }}</span>
                                             <span class="text-[8.5px] px-1.5 py-0.2 rounded font-bold {{ $kajurAnjab->bezetting > 0 ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900' }}">
@@ -453,7 +492,7 @@
                                              {{ $sekjurAnjab->bezetting }},
                                              {{ $sekjurAnjab->kebutuhan }},
                                              '{{ $sekjurAnjab->status }}',
-                                             {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Sekretaris Jurusan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             {{ $sekjurList }},
                                              '{{ addslashes($sekjurAnjab->ikhtisar) }}',
                                              '{{ $sekjurAnjab->anjab_url }}',
                                              '{{ $sekjurAnjab->abk_url }}'
@@ -465,6 +504,11 @@
                                         <div class="font-black text-[11px] uppercase tracking-wide" style="color: #ffffff !important;">
                                             SEKRETARIS JURUSAN
                                         </div>
+                                        @if($sekjurPejabat)
+                                            <div class="text-[9.5px] text-teal-100 font-bold truncate mt-0.5" title="{{ $sekjurPejabat->nama_lengkap }}">
+                                                👤 {{ $sekjurPejabat->nama_lengkap }}
+                                            </div>
+                                        @endif
                                         <div class="text-[9.5px] mt-1 pt-1 border-t border-white/20 text-teal-100 flex justify-between items-center">
                                             <span>Bezetting: <strong>{{ $sekjurAnjab->bezetting }}</strong>/{{ $sekjurAnjab->kebutuhan }}</span>
                                             <span class="text-[8.5px] px-1.5 py-0.2 rounded font-bold {{ $sekjurAnjab->bezetting > 0 ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900' }}">
@@ -602,6 +646,18 @@
                                 <div class="w-0.5 h-4" style="background-color: #1e3a8a !important;"></div>
 
                                 {{-- Kartu WD II --}}
+                                @php
+                                    $wd2Pejabat = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
+                                        $q->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Wakil Dekan II%')
+                                                                ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Keuangan%')
+                                                                ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Bidang Keuangan%'))
+                                    )->first();
+                                    $wd2List = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
+                                        $q->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Wakil Dekan II%')
+                                                                ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Keuangan%')
+                                                                ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Bidang Keuangan%'))
+                                    )->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                                @endphp
                                 <div class="w-full p-4 rounded-xl shadow-lg hover:scale-[1.02] transition cursor-pointer"
                                      style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important; color: #ffffff !important; border: 2px solid #60a5fa !important; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3) !important;"
                                      @click="openDetail(
@@ -610,7 +666,7 @@
                                          {{ $wd2Anjab->bezetting }},
                                          {{ $wd2Anjab->kebutuhan }},
                                          '{{ $wd2Anjab->status }}',
-                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan II%')->orWhere('nama_jabatan', 'like', '%Keuangan dan Umum%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                         {{ $wd2List }},
                                          '{{ addslashes($wd2Anjab->ikhtisar) }}',
                                          '{{ $wd2Anjab->anjab_url }}',
                                          '{{ $wd2Anjab->abk_url }}'
@@ -622,6 +678,15 @@
                                     <div class="font-black text-xs uppercase mt-2 text-center" style="color: #ffffff !important; letter-spacing: 0.3px; font-size: 12.5px;">
                                         WAKIL DEKAN BIDANG KEUANGAN DAN UMUM
                                     </div>
+                                    @if($wd2Pejabat)
+                                        <div class="text-[10.5px] text-sky-200 font-bold text-center truncate mt-1" title="{{ $wd2Pejabat->nama_lengkap }}">
+                                            👤 {{ $wd2Pejabat->nama_lengkap }}
+                                        </div>
+                                    @else
+                                        <div class="text-[9.5px] text-sky-200/80 italic text-center mt-0.5">
+                                            (Menunggu SK Penetapan)
+                                        </div>
+                                    @endif
                                     <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
                                         <span>Bezetting: <strong style="color: #ffffff !important;">{{ $wd2Anjab->bezetting }}</strong> / Butuh: <strong style="color: #ffffff !important;">{{ $wd2Anjab->kebutuhan }}</strong></span>
                                         <span class="text-[10px] px-2 py-0.5 rounded-full font-bold {{ $wd2Anjab->selisih < 0 ? 'bg-rose-500 text-white' : ($wd2Anjab->selisih > 0 ? 'bg-amber-400 text-amber-950' : 'bg-emerald-500 text-white') }}">
@@ -635,8 +700,13 @@
 
                                 {{-- Kotak KEPALA BAGIAN UMUM --}}
                                 @php
-                                    $kabagPejabat = \App\Models\Pegawai::where('jabatan_id', 1)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Kepala Bagian Umum%'))->first();
-                                    $kabagList = \App\Models\Pegawai::where('jabatan_id', 1)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Kepala Bagian Umum%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                                    $kabagPejabat = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
+                                        $q->where('nama_jabatan', 'like', '%Kepala Bagian Umum%')
+                                          ->orWhere('nama_jabatan', 'like', '%Kabag Umum%')
+                                    )->first();
+                                    $kabagList = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Bagian Umum%'))
+                                        ->orWhereHas('unitKerja', fn($q) => $q->where('nama_unit', 'like', '%Bagian Umum%'))
+                                        ->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
                                 @endphp
                                 <div class="w-full p-2.5 rounded-lg shadow-sm cursor-pointer hover:opacity-95 transition"
                                      style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important; color: #ffffff !important; border: 1.5px solid #fde68a !important;"
@@ -676,14 +746,38 @@
 
                                 {{-- 3 Kotak Ka. POKJA --}}
                                 @php
-                                    $pokjaAkadPejabat = \App\Models\Pegawai::whereIn('jabatan_id', [4, 21])->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Akademik%'))->first();
-                                    $pokjaAkadList = \App\Models\Pegawai::where('unit_kerja_id', 1)->orWhereIn('jabatan_id', [4, 21])->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Akademik%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                                    // 1. Pokja Akademik
+                                    $pokjaAkadPejabat = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
+                                        $q->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Ketua Pokja%')
+                                                                ->orWhere('nama_jabatan', 'like', '%Ka Pokja%')
+                                                                ->orWhere('nama_jabatan', 'like', '%Ka. Pokja%'))
+                                          ->where('nama_jabatan', 'like', '%Akademik%')
+                                    )->first();
+                                    $pokjaAkadList = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja%')->where('nama_jabatan', 'like', '%Akademik%'))
+                                        ->orWhereHas('unitKerja', fn($q) => $q->where('nama_unit', 'like', '%Pokja%')->where('nama_unit', 'like', '%Akademik%'))
+                                        ->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
 
-                                    $pokjaKeuPejabat = \App\Models\Pegawai::where('jabatan_id', 2)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Keuangan%'))->first();
-                                    $pokjaKeuList = \App\Models\Pegawai::where('unit_kerja_id', 2)->orWhere('jabatan_id', 2)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Keuangan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                                    // 2. Pokja Keuangan & Kepegawaian
+                                    $pokjaKeuPejabat = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
+                                        $q->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Ketua Pokja%')
+                                                                ->orWhere('nama_jabatan', 'like', '%Ka Pokja%')
+                                                                ->orWhere('nama_jabatan', 'like', '%Ka. Pokja%'))
+                                          ->where(fn($sq2) => $sq2->where('nama_jabatan', 'like', '%Keuangan%')->orWhere('nama_jabatan', 'like', '%Keu%'))
+                                    )->first();
+                                    $pokjaKeuList = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja%')->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Keuangan%')->orWhere('nama_jabatan', 'like', '%Keu%')))
+                                        ->orWhereHas('unitKerja', fn($q) => $q->where('nama_unit', 'like', '%Pokja%')->where(fn($sq) => $sq->where('nama_unit', 'like', '%Keuangan%')->orWhere('nama_unit', 'like', '%Keu%')))
+                                        ->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
 
-                                    $pokjaUmumPejabat = \App\Models\Pegawai::where('jabatan_id', 3)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Umum%'))->first();
-                                    $pokjaUmumList = \App\Models\Pegawai::where('unit_kerja_id', 3)->orWhere('jabatan_id', 3)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Umum%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                                    // 3. Pokja Umum & Sarana Akademik
+                                    $pokjaUmumPejabat = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
+                                        $q->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Ketua Pokja%')
+                                                                ->orWhere('nama_jabatan', 'like', '%Ka Pokja%')
+                                                                ->orWhere('nama_jabatan', 'like', '%Ka. Pokja%'))
+                                          ->where(fn($sq2) => $sq2->where('nama_jabatan', 'like', '%Sarana%')->orWhere('nama_jabatan', 'like', '%Umum Sarana%'))
+                                    )->first();
+                                    $pokjaUmumList = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja%')->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Sarana%')->orWhere('nama_jabatan', 'like', '%Umum Sarana%')))
+                                        ->orWhereHas('unitKerja', fn($q) => $q->where('nama_unit', 'like', '%Pokja%')->where(fn($sq) => $sq->where('nama_unit', 'like', '%Sarana%')->orWhere('nama_unit', 'like', '%Umum Sarana%')))
+                                        ->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
                                 @endphp
                                 <div class="w-full space-y-2 mt-1">
                                     {{-- Pokja 1: Akademik & Kemahasiswaan --}}
@@ -783,6 +877,16 @@
                             {{-- ================================================================= --}}
                             @php
                                 $wd3Anjab = $getAnjab('Wakil Dekan Bidang Kemahasiswaan');
+                                $wd3Pejabat = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
+                                    $q->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Wakil Dekan III%')
+                                                            ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Kemahasiswaan%')
+                                                            ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Bidang Kemahasiswaan%'))
+                                )->first();
+                                $wd3List = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
+                                    $q->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Wakil Dekan III%')
+                                                            ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Kemahasiswaan%')
+                                                            ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Bidang Kemahasiswaan%'))
+                                )->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
                             @endphp
                             <div class="flex flex-col items-center">
                                 <div class="w-0.5 h-4" style="background-color: #1e3a8a !important;"></div>
@@ -796,7 +900,7 @@
                                          {{ $wd3Anjab->bezetting }},
                                          {{ $wd3Anjab->kebutuhan }},
                                          '{{ $wd3Anjab->status }}',
-                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Wakil Dekan III%')->orWhere('nama_jabatan', 'like', '%Kemahasiswaan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                         {{ $wd3List }},
                                          '{{ addslashes($wd3Anjab->ikhtisar) }}',
                                          '{{ $wd3Anjab->anjab_url }}',
                                          '{{ $wd3Anjab->abk_url }}'
@@ -808,6 +912,15 @@
                                     <div class="font-black text-xs uppercase mt-2 text-center" style="color: #ffffff !important; letter-spacing: 0.3px; font-size: 12px; line-height: 1.3;">
                                         WAKIL DEKAN BIDANG KEMAHASISWAAN, ALUMNI DAN KERJASAMA
                                     </div>
+                                    @if($wd3Pejabat)
+                                        <div class="text-[10.5px] text-sky-200 font-bold text-center truncate mt-1" title="{{ $wd3Pejabat->nama_lengkap }}">
+                                            👤 {{ $wd3Pejabat->nama_lengkap }}
+                                        </div>
+                                    @else
+                                        <div class="text-[9.5px] text-sky-200/80 italic text-center mt-0.5">
+                                            (Menunggu SK Penetapan)
+                                        </div>
+                                    @endif
                                     <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
                                         <span>Bezetting: <strong style="color: #ffffff !important;">{{ $wd3Anjab->bezetting }}</strong> / Butuh: <strong style="color: #ffffff !important;">{{ $wd3Anjab->kebutuhan }}</strong></span>
                                         <span class="text-[10px] px-2 py-0.5 rounded-full font-bold {{ $wd3Anjab->selisih < 0 ? 'bg-rose-500 text-white' : ($wd3Anjab->selisih > 0 ? 'bg-amber-400 text-amber-950' : 'bg-emerald-500 text-white') }}">
