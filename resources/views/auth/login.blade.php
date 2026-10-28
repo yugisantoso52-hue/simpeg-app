@@ -149,8 +149,8 @@
             <div class="absolute inset-0 bg-white/10 pointer-events-none"></div>
 
             {{-- Ornamen Sudut Kristal Biru-Emas (Khusus Tampilan Mobile di Pojok Atas) --}}
-            <img src="{{ asset('images/facet-top-left-trans.png') }}?v={{ file_exists(public_path('images/facet-top-left-trans.png')) ? substr(md5(filemtime(public_path('images/facet-top-left-trans.png'))), 0, 8) : 'v2' }}" alt="" class="lg:hidden absolute top-0 left-0 w-28 sm:w-36 pointer-events-none z-0">
-            <img src="{{ asset('images/facet-top-right-trans.png') }}?v={{ file_exists(public_path('images/facet-top-right-trans.png')) ? substr(md5(filemtime(public_path('images/facet-top-right-trans.png'))), 0, 8) : 'v2' }}" alt="" class="lg:hidden absolute top-0 right-0 w-28 sm:w-36 pointer-events-none z-0">
+            <img src="{{ asset('images/facet-top-left-trans.png') }}" alt="" class="lg:hidden absolute top-0 left-0 w-28 sm:w-36 pointer-events-none z-0">
+            <img src="{{ asset('images/facet-top-right-trans.png') }}" alt="" class="lg:hidden absolute top-0 right-0 w-28 sm:w-36 pointer-events-none z-0">
 
             {{-- Mobile Header (Muncul Ketika Layar Browser Dikecilkan / Mobile Screen) --}}
             <div class="flex lg:hidden flex-col items-center text-center pt-2 pb-5 relative z-10">

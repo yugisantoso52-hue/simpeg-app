@@ -15,24 +15,19 @@ class SecurityHeaders
     {
         $response = $next($request);
 
-        // 1. Strict Transport Security (HSTS)
-        if ($request->isSecure() || $request->header('X-Forwarded-Proto') === 'https') {
-            $response->headers->set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
-        }
-
-        // 2. MIME type sniffing prevention
+        // 1. MIME type sniffing prevention
         $response->headers->set('X-Content-Type-Options', 'nosniff');
 
-        // 3. Clickjacking prevention
+        // 2. Clickjacking prevention
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
 
-        // 4. Referrer policy
+        // 3. Referrer policy
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-        // 5. Permissions policy
+        // 4. Permissions policy
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
 
-        // 6. Content Security Policy (CSP)
+        // 5. Content Security Policy (CSP)
         $csp = [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.tailwindcss.com",
