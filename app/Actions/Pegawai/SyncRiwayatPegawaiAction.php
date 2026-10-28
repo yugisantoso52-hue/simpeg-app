@@ -224,12 +224,16 @@ class SyncRiwayatPegawaiAction
         }
 
         $activeIndices = [];
+        $validIndices = [];
         foreach ($incoming as $index => $row) {
+            if (!empty($row['jabatan_id']) || !empty($row['unit_kerja_id'])) {
+                $validIndices[] = $index;
+            }
             if (!empty($row['jabatan_id']) && !empty($row['unit_kerja_id']) && in_array(strtolower($row['status'] ?? ''), ['aktif'])) {
                 $activeIndices[] = $index;
             }
         }
-        $lastActiveIndex = !empty($activeIndices) ? end($activeIndices) : null;
+        $lastActiveIndex = !empty($activeIndices) ? end($activeIndices) : (!empty($validIndices) ? end($validIndices) : null);
 
         foreach ($incoming as $index => $row) {
             if (empty($row['jabatan_id']) || empty($row['unit_kerja_id'])) {
@@ -333,12 +337,16 @@ class SyncRiwayatPegawaiAction
         }
 
         $activeIndices = [];
+        $validIndices = [];
         foreach ($incoming as $index => $row) {
+            if (!empty($row['golongan_id'])) {
+                $validIndices[] = $index;
+            }
             if (!empty($row['golongan_id']) && in_array(strtolower($row['status'] ?? ''), ['aktif'])) {
                 $activeIndices[] = $index;
             }
         }
-        $lastActiveIndex = !empty($activeIndices) ? end($activeIndices) : null;
+        $lastActiveIndex = !empty($activeIndices) ? end($activeIndices) : (!empty($validIndices) ? end($validIndices) : null);
 
         foreach ($incoming as $index => $row) {
             if (empty($row['golongan_id'])) {

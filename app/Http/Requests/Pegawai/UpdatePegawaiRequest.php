@@ -63,7 +63,6 @@ class UpdatePegawaiRequest extends FormRequest
         if (!$canManageKepegawaian) {
             unset(
                 $data['nip'],
-                $data['unit_kerja_id'],
                 $data['jabatan_id'],
                 $data['golongan_id'],
                 $data['atasan_id'],

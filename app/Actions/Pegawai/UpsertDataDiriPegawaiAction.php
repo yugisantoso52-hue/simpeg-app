@@ -79,12 +79,16 @@ class UpsertDataDiriPegawaiAction
     {
         if (!empty($pegawai->nomor_str)) {
             $existingStr = RiwayatStrSip::where('pegawai_id', $pegawai->id)->where('jenis_dokumen', 'STR')->first();
+            $tglTerbitStr = $existingStr?->tanggal_terbit 
+                ?: (!empty($pegawai->tanggal_kadaluarsa_str) ? Carbon::parse($pegawai->tanggal_kadaluarsa_str)->subYears(5)->format('Y-m-d') : now()->format('Y-m-d'));
+
             RiwayatStrSip::updateOrCreate(
                 ['pegawai_id' => $pegawai->id, 'jenis_dokumen' => 'STR'],
                 [
                     'nomor_registrasi'  => $pegawai->nomor_str,
                     'nama_dokumen'      => $existingStr?->nama_dokumen ?: 'Surat Tanda Registrasi (STR)',
                     'instansi_penerbit' => $existingStr?->instansi_penerbit ?: 'KTKI / Kemenkes RI',
+                    'tanggal_terbit'    => $tglTerbitStr,
                     'tanggal_berakhir'  => $pegawai->tanggal_kadaluarsa_str,
                     'status'            => 'aktif',
                     'file_dokumen'      => $pegawai->file_str ?: $existingStr?->file_dokumen,
@@ -95,12 +99,16 @@ class UpsertDataDiriPegawaiAction
 
         if (!empty($pegawai->nomor_sip)) {
             $existingSip = RiwayatStrSip::where('pegawai_id', $pegawai->id)->where('jenis_dokumen', 'SIP')->first();
+            $tglTerbitSip = $existingSip?->tanggal_terbit 
+                ?: (!empty($pegawai->tanggal_kadaluarsa_sip) ? Carbon::parse($pegawai->tanggal_kadaluarsa_sip)->subYears(5)->format('Y-m-d') : now()->format('Y-m-d'));
+
             RiwayatStrSip::updateOrCreate(
                 ['pegawai_id' => $pegawai->id, 'jenis_dokumen' => 'SIP'],
                 [
                     'nomor_registrasi'  => $pegawai->nomor_sip,
                     'nama_dokumen'      => $existingSip?->nama_dokumen ?: 'Surat Izin Praktik (SIP)',
                     'instansi_penerbit' => $existingSip?->instansi_penerbit ?: 'DPMPTSP / Dinas Kesehatan',
+                    'tanggal_terbit'    => $tglTerbitSip,
                     'tanggal_berakhir'  => $pegawai->tanggal_kadaluarsa_sip,
                     'status'            => 'aktif',
                     'file_dokumen'      => $pegawai->file_sip ?: $existingSip?->file_dokumen,

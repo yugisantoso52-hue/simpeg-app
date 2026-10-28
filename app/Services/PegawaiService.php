@@ -385,9 +385,6 @@ class PegawaiService
                 'status'        => 'aktif',
                 'keterangan'    => 'Sinkronisasi otomatis dari data utama pegawai',
             ]);
-        } elseif ($pegawai->riwayatJabatan()->count() === 0) {
-            $pegawai->jabatan_id = null;
-            $pegawai->unit_kerja_id = null;
         }
 
         // 2. Sinkronisasi Pangkat Terakhir
