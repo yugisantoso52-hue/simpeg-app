@@ -340,16 +340,6 @@ class PegawaiService
             ?? $pegawai->riwayatJabatan()->orderByDesc('tmt_jabatan')->first();
 
         if ($activeJabatan) {
-            // Sinkronkan riwayat aktif jika unit_kerja_id atau jabatan_id diubah pada data induk pegawai
-            if ($pegawai->unit_kerja_id && (int)$activeJabatan->unit_kerja_id !== (int)$pegawai->unit_kerja_id) {
-                $activeJabatan->unit_kerja_id = $pegawai->unit_kerja_id;
-                $activeJabatan->save();
-            }
-            if ($pegawai->jabatan_id && (int)$activeJabatan->jabatan_id !== (int)$pegawai->jabatan_id) {
-                $activeJabatan->jabatan_id = $pegawai->jabatan_id;
-                $activeJabatan->save();
-            }
-
             $pegawai->jabatan_id = $activeJabatan->jabatan_id;
             $pegawai->unit_kerja_id = $activeJabatan->unit_kerja_id;
             if (!empty($activeJabatan->tmt_jabatan)) {
@@ -408,12 +398,6 @@ class PegawaiService
             ?? $pegawai->riwayatPangkat()->orderByDesc('tmt')->first();
 
         if ($activePangkat) {
-            // Sinkronkan riwayat pangkat aktif jika golongan_id diubah pada data induk pegawai
-            if ($pegawai->golongan_id && (int)$activePangkat->golongan_id !== (int)$pegawai->golongan_id) {
-                $activePangkat->golongan_id = $pegawai->golongan_id;
-                $activePangkat->save();
-            }
-
             $pegawai->golongan_id = $activePangkat->golongan_id;
             $pegawai->tmt_pangkat_terakhir = $activePangkat->tmt;
             if (!empty($activePangkat->nomor_sk) && $this->hasPegawaiColumn('nomor_sk_pangkat_terakhir', $columns)) {
@@ -473,9 +457,7 @@ class PegawaiService
             ->first();
 
         if ($highestPendidikan && !empty($highestPendidikan->jenjang)) {
-            if (empty($pegawai->pendidikan_terakhir)) {
-                $pegawai->pendidikan_terakhir = $highestPendidikan->jenjang;
-            }
+            $pegawai->pendidikan_terakhir = $highestPendidikan->jenjang;
         }
 
         $pegawai->save();

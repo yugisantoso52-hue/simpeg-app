@@ -180,6 +180,15 @@ class SyncRiwayatPegawaiAction
                 if (!empty($data['jabatan_id'])) {
                     $updates['jabatan_id'] = $data['jabatan_id'];
                 }
+                if (!empty($data['nomor_sk_pertama'])) {
+                    $updates['nomor_sk'] = $data['nomor_sk_pertama'];
+                }
+                if (!empty($data['tanggal_sk_pertama'])) {
+                    $updates['tanggal_sk'] = $data['tanggal_sk_pertama'];
+                }
+                if (!empty($data['tmt_sk_pertama'])) {
+                    $updates['tmt_jabatan'] = $data['tmt_sk_pertama'];
+                }
                 if (!empty($updates)) {
                     $activeJabatan->update($updates);
                 }
@@ -187,7 +196,9 @@ class SyncRiwayatPegawaiAction
                 $pegawai->riwayatJabatan()->create([
                     'jabatan_id'    => $data['jabatan_id'],
                     'unit_kerja_id' => $data['unit_kerja_id'],
-                    'tmt_jabatan'   => now(),
+                    'tmt_jabatan'   => !empty($data['tmt_sk_pertama']) ? $data['tmt_sk_pertama'] : (!empty($data['tanggal_masuk']) ? $data['tanggal_masuk'] : now()),
+                    'nomor_sk'      => $data['nomor_sk_pertama'] ?? null,
+                    'tanggal_sk'    => $data['tanggal_sk_pertama'] ?? null,
                     'status'        => 'aktif',
                     'keterangan'    => 'Sinkronisasi otomatis data pegawai',
                 ]);
@@ -280,11 +291,23 @@ class SyncRiwayatPegawaiAction
         if (!array_key_exists('riwayat_pangkat', $data) || empty($data['riwayat_pangkat'])) {
             $activePangkat = $pegawai->riwayatPangkat()->whereIn('status', ['aktif', 'Aktif'])->first();
             if ($activePangkat && !empty($data['golongan_id'])) {
-                $activePangkat->update(['golongan_id' => $data['golongan_id']]);
+                $updates = ['golongan_id' => $data['golongan_id']];
+                if (!empty($data['tmt_pangkat_terakhir'])) {
+                    $updates['tmt'] = $data['tmt_pangkat_terakhir'];
+                }
+                if (!empty($data['nomor_sk_pangkat_terakhir'])) {
+                    $updates['nomor_sk'] = $data['nomor_sk_pangkat_terakhir'];
+                }
+                if (!empty($data['tanggal_sk_pangkat_terakhir'])) {
+                    $updates['tanggal_sk'] = $data['tanggal_sk_pangkat_terakhir'];
+                }
+                $activePangkat->update($updates);
             } elseif (!empty($data['golongan_id'])) {
                 $pegawai->riwayatPangkat()->create([
                     'golongan_id' => $data['golongan_id'],
-                    'tmt'         => now(),
+                    'tmt'         => !empty($data['tmt_pangkat_terakhir']) ? $data['tmt_pangkat_terakhir'] : now(),
+                    'nomor_sk'    => $data['nomor_sk_pangkat_terakhir'] ?? null,
+                    'tanggal_sk'  => $data['tanggal_sk_pangkat_terakhir'] ?? null,
                     'status'      => 'aktif',
                     'keterangan'  => 'Sinkronisasi otomatis data pegawai',
                 ]);
