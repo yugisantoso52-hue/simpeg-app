@@ -80,6 +80,10 @@
                     <x-icon name="clipboard-check" class="w-3.5 h-3.5 text-teal-600" />
                     <span>Riwayat Usulan Karir Saya</span>
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('pengajuan-jabatan.index')" :active="request()->routeIs('pengajuan-jabatan.*')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="briefcase" class="w-3.5 h-3.5 text-blue-600" />
+                    <span>Pengajuan Jabatan Struktural</span>
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('tugas-belajar.index')" :active="request()->routeIs('tugas-belajar.*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="graduation-cap" class="w-3.5 h-3.5 text-sky-600" />
                     <span>Tugas Belajar & Studi Saya</span>

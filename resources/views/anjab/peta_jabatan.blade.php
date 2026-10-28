@@ -118,6 +118,44 @@
                 'id'             => $anjab?->id,
             ];
         };
+
+        $getKelompok = function($cleanName) use ($kelompokMap) {
+            $k = strtolower(trim(preg_replace('/^\d+\.\s*/', '', (string)$cleanName)));
+            $found = $kelompokMap[$k] ?? null;
+            if (!$found) {
+                foreach ($kelompokMap as $name => $item) {
+                    if (str_contains($name, $k) || str_contains($k, $name)) {
+                        $found = $item;
+                        break;
+                    }
+                }
+            }
+            $pegawaiList = $found ? $found->penugasan->map(function($p) {
+                $peg = $p->pegawai;
+                if (!$peg) return null;
+                return [
+                    'id' => $peg->id,
+                    'nama' => $peg->nama,
+                    'gelar_depan' => $peg->gelar_depan,
+                    'gelar_belakang' => $peg->gelar_belakang,
+                    'nip' => $peg->nip,
+                    'foto' => $peg->foto,
+                    'peran' => $p->peran ?: 'Anggota',
+                    'keterangan' => $p->keterangan,
+                ];
+            })->filter()->values() : collect();
+            $bezetting = $pegawaiList->count();
+            $kebutuhan = $found?->kebutuhan ?? 1;
+            $selisih = $bezetting - $kebutuhan;
+            $status = $selisih < 0 ? ('🔴 Kurang ' . abs($selisih)) : ($selisih > 0 ? ('🟡 Lebih +' . $selisih) : '🟢 Ideal');
+            return (object) [
+                'item'        => $found,
+                'bezetting'   => $bezetting,
+                'kebutuhan'   => $kebutuhan,
+                'status'      => $status,
+                'pegawaiList' => $pegawaiList,
+            ];
+        };
     @endphp
 
     <div class="py-6" x-data="{
@@ -159,6 +197,24 @@
                     💡 <span class="italic">Klik pada kotak jabatan atau unit untuk melihat daftar pejabat, foto, NIP & rincian tugas</span>
                 </div>
             </div>
+
+            {{-- Alert Pengajuan Jabatan Struktural Menunggu Verifikasi --}}
+            @if(isset($pengajuanMenunggu) && $pengajuanMenunggu->isNotEmpty())
+                <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs text-amber-900 shadow-2xs">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-xl">⏳</span>
+                        <div>
+                            <strong>Terdapat {{ $pengajuanMenunggu->count() }} pengajuan jabatan struktural</strong> yang sedang menunggu verifikasi SK.
+                            Posisi struktur organisasi akan otomatis terisi dan bezetting bertambah setelah berkas SK disetujui.
+                        </div>
+                    </div>
+                    @if(auth()->user()->canVerifyJabatan())
+                        <a href="{{ route('pengajuan-jabatan.index', ['status' => 'menunggu']) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition shrink-0">
+                            Verifikasi Sekarang ➔
+                        </a>
+                    @endif
+                </div>
+            @endif
 
             {{-- KANVAS BAGAN STRUKTUR ORGANISASI (SESUAI DOKUMEN RESMI TERBARU FKP UNRI) --}}
             <div class="bg-gradient-to-b from-sky-50/50 via-white to-gray-50 rounded-2xl border-2 border-blue-200/80 p-6 md:p-8 shadow-md overflow-x-auto">
@@ -578,6 +634,10 @@
                                 <div class="w-0.5 h-4" style="background-color: #d97706 !important;"></div>
 
                                 {{-- Kotak KEPALA BAGIAN UMUM --}}
+                                @php
+                                    $kabagPejabat = \App\Models\Pegawai::where('jabatan_id', 1)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Kepala Bagian Umum%'))->first();
+                                    $kabagList = \App\Models\Pegawai::where('jabatan_id', 1)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Kepala Bagian Umum%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                                @endphp
                                 <div class="w-full p-2.5 rounded-lg shadow-sm cursor-pointer hover:opacity-95 transition"
                                      style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important; color: #ffffff !important; border: 1.5px solid #fde68a !important;"
                                      @click="openDetail(
@@ -586,7 +646,7 @@
                                          {{ $kabagAnjab->bezetting }},
                                          {{ $kabagAnjab->kebutuhan }},
                                          '{{ $kabagAnjab->status }}',
-                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Kepala Bagian Umum%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                         {{ $kabagList }},
                                          '{{ addslashes($kabagAnjab->ikhtisar) }}',
                                          '{{ $kabagAnjab->anjab_url }}',
                                          '{{ $kabagAnjab->abk_url }}'
@@ -594,6 +654,15 @@
                                     <div class="text-center font-black text-xs uppercase tracking-wide" style="color: #ffffff !important;">
                                         KEPALA BAGIAN UMUM
                                     </div>
+                                    @if($kabagPejabat)
+                                        <div class="text-[10px] text-amber-100 font-bold text-center truncate mt-0.5" title="{{ $kabagPejabat->nama_lengkap }}">
+                                            👤 {{ $kabagPejabat->nama_lengkap }}
+                                        </div>
+                                    @else
+                                        <div class="text-[9.5px] text-amber-200/80 italic text-center mt-0.5">
+                                            (Menunggu SK Penetapan)
+                                        </div>
+                                    @endif
                                     <div class="text-[9.5px] mt-1.5 pt-1 border-t border-white/20 text-amber-100 flex justify-between items-center px-1">
                                         <span>Bezetting: <strong>{{ $kabagAnjab->bezetting }}</strong>/{{ $kabagAnjab->kebutuhan }}</span>
                                         <span class="text-[8.5px] px-1.5 py-0.2 rounded font-bold {{ $kabagAnjab->selisih < 0 ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white' }}">
@@ -606,6 +675,16 @@
                                 <div class="w-0.5 h-3" style="background-color: #d97706 !important;"></div>
 
                                 {{-- 3 Kotak Ka. POKJA --}}
+                                @php
+                                    $pokjaAkadPejabat = \App\Models\Pegawai::whereIn('jabatan_id', [4, 21])->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Akademik%'))->first();
+                                    $pokjaAkadList = \App\Models\Pegawai::where('unit_kerja_id', 1)->orWhereIn('jabatan_id', [4, 21])->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Akademik%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+
+                                    $pokjaKeuPejabat = \App\Models\Pegawai::where('jabatan_id', 2)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Keuangan%'))->first();
+                                    $pokjaKeuList = \App\Models\Pegawai::where('unit_kerja_id', 2)->orWhere('jabatan_id', 2)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Keuangan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+
+                                    $pokjaUmumPejabat = \App\Models\Pegawai::where('jabatan_id', 3)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Umum%'))->first();
+                                    $pokjaUmumList = \App\Models\Pegawai::where('unit_kerja_id', 3)->orWhere('jabatan_id', 3)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Umum%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                                @endphp
                                 <div class="w-full space-y-2 mt-1">
                                     {{-- Pokja 1: Akademik & Kemahasiswaan --}}
                                     <div class="p-2.5 rounded-lg cursor-pointer hover:opacity-90 transition"
@@ -616,14 +695,23 @@
                                              {{ $pokjaAkadAnjab->bezetting }},
                                              {{ $pokjaAkadAnjab->kebutuhan }},
                                              '{{ $pokjaAkadAnjab->status }}',
-                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 11)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Akademik%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             {{ $pokjaAkadList }},
                                              '{{ addslashes($pokjaAkadAnjab->ikhtisar) }}',
                                              '{{ $pokjaAkadAnjab->anjab_url }}',
                                              '{{ $pokjaAkadAnjab->abk_url }}'
                                          )">
                                         <div class="font-black text-[11px]" style="color: #78350f !important;">Ka. POKJA AKADEMIK DAN KEMAHASISWAAN</div>
+                                        @if($pokjaAkadPejabat)
+                                            <div class="text-[10px] text-amber-900 font-bold truncate mt-0.5" title="{{ $pokjaAkadPejabat->nama_lengkap }}">
+                                                👤 {{ $pokjaAkadPejabat->nama_lengkap }}
+                                            </div>
+                                        @else
+                                            <div class="text-[9px] text-amber-700/80 italic mt-0.5">
+                                                (Belum ada pejabat definitif - Butuh SK)
+                                            </div>
+                                        @endif
                                         <div class="text-[9.5px] text-gray-600 mt-0.5 flex justify-between items-center">
-                                            <span>Bezetting: <strong>{{ $pokjaAkadAnjab->bezetting }}</strong>/{{ $pokjaAkadAnjab->kebutuhan }}</span>
+                                            <span>Bezetting: <strong>{{ $pokjaAkadAnjab->bezetting }}</strong>/{{ $pokjaAkadAnjab->kebutuhan }} ({{ $pokjaAkadList->count() }} staf)</span>
                                             <span class="text-[8.5px] font-bold px-1.5 rounded {{ $pokjaAkadAnjab->selisih < 0 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800' }}">{{ $pokjaAkadAnjab->status }}</span>
                                         </div>
                                     </div>
@@ -637,14 +725,23 @@
                                              {{ $pokjaKeuAnjab->bezetting }},
                                              {{ $pokjaKeuAnjab->kebutuhan }},
                                              '{{ $pokjaKeuAnjab->status }}',
-                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 12)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Keuangan%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             {{ $pokjaKeuList }},
                                              '{{ addslashes($pokjaKeuAnjab->ikhtisar) }}',
                                              '{{ $pokjaKeuAnjab->anjab_url }}',
                                              '{{ $pokjaKeuAnjab->abk_url }}'
                                          )">
                                         <div class="font-black text-[11px]" style="color: #78350f !important;">Ka. POKJA KEUANGAN DAN KEPEGAWAIAN</div>
+                                        @if($pokjaKeuPejabat)
+                                            <div class="text-[10px] text-amber-900 font-bold truncate mt-0.5" title="{{ $pokjaKeuPejabat->nama_lengkap }}">
+                                                👤 {{ $pokjaKeuPejabat->nama_lengkap }}
+                                            </div>
+                                        @else
+                                            <div class="text-[9px] text-amber-700/80 italic mt-0.5">
+                                                (Belum ada pejabat definitif - Butuh SK)
+                                            </div>
+                                        @endif
                                         <div class="text-[9.5px] text-gray-600 mt-0.5 flex justify-between items-center">
-                                            <span>Bezetting: <strong>{{ $pokjaKeuAnjab->bezetting }}</strong>/{{ $pokjaKeuAnjab->kebutuhan }}</span>
+                                            <span>Bezetting: <strong>{{ $pokjaKeuAnjab->bezetting }}</strong>/{{ $pokjaKeuAnjab->kebutuhan }} ({{ $pokjaKeuList->count() }} staf)</span>
                                             <span class="text-[8.5px] font-bold px-1.5 rounded {{ $pokjaKeuAnjab->selisih < 0 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800' }}">{{ $pokjaKeuAnjab->status }}</span>
                                         </div>
                                     </div>
@@ -658,14 +755,23 @@
                                              {{ $pokjaUmumAnjab->bezetting }},
                                              {{ $pokjaUmumAnjab->kebutuhan }},
                                              '{{ $pokjaUmumAnjab->status }}',
-                                             {{ \App\Models\Pegawai::where('unit_kerja_id', 13)->orWhereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Pokja Umum%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             {{ $pokjaUmumList }},
                                              '{{ addslashes($pokjaUmumAnjab->ikhtisar) }}',
                                              '{{ $pokjaUmumAnjab->anjab_url }}',
                                              '{{ $pokjaUmumAnjab->abk_url }}'
                                          )">
                                         <div class="font-black text-[11px]" style="color: #78350f !important;">Ka. POKJA UMUM DAN SARANA AKADEMIK</div>
+                                        @if($pokjaUmumPejabat)
+                                            <div class="text-[10px] text-amber-900 font-bold truncate mt-0.5" title="{{ $pokjaUmumPejabat->nama_lengkap }}">
+                                                👤 {{ $pokjaUmumPejabat->nama_lengkap }}
+                                            </div>
+                                        @else
+                                            <div class="text-[9px] text-amber-700/80 italic mt-0.5">
+                                                (Belum ada pejabat definitif - Butuh SK)
+                                            </div>
+                                        @endif
                                         <div class="text-[9.5px] text-gray-600 mt-0.5 flex justify-between items-center">
-                                            <span>Bezetting: <strong>{{ $pokjaUmumAnjab->bezetting }}</strong>/{{ $pokjaUmumAnjab->kebutuhan }}</span>
+                                            <span>Bezetting: <strong>{{ $pokjaUmumAnjab->bezetting }}</strong>/{{ $pokjaUmumAnjab->kebutuhan }} ({{ $pokjaUmumList->count() }} staf)</span>
                                             <span class="text-[8.5px] font-bold px-1.5 rounded {{ $pokjaUmumAnjab->selisih < 0 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800' }}">{{ $pokjaUmumAnjab->status }}</span>
                                         </div>
                                     </div>
@@ -815,21 +921,31 @@
                                     ];
                                 @endphp
                                 @foreach($kjfds as $idx => $k)
+                                    @php
+                                        $kInfo = $getKelompok($k);
+                                    @endphp
                                     <div class="p-2 rounded flex items-center justify-between cursor-pointer hover:opacity-90 transition"
                                          style="background-color: #f0fdf4 !important; border: 1px solid #86efac !important; font-weight: 800;"
                                          @click="openDetail(
                                              'KJFD Keperawatan: {{ $k }}',
                                              'Kelompok Jabatan Fungsional Dosen (Grade 9-14)',
-                                             {{ $dosenAnjab->bezetting }},
-                                             {{ $dosenAnjab->kebutuhan }},
-                                             '{{ $dosenAnjab->status }}',
-                                             {{ \App\Models\Pegawai::where('jenis_pegawai', 'like', '%Dosen%')->take(6)->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             {{ $kInfo->bezetting }},
+                                             {{ $kInfo->kebutuhan }},
+                                             '{{ $kInfo->status }}',
+                                             {{ $kInfo->pegawaiList }},
                                              'Melaksanakan tridharma perguruan tinggi pada rumpun keahlian {{ $k }}, pembimbingan tugas akhir, praktikum klinik dan riset keperawatan. {{ addslashes($dosenAnjab->ikhtisar) }}',
                                              '{{ $dosenAnjab->anjab_url }}',
                                              '{{ $dosenAnjab->abk_url }}'
                                          )">
-                                        <span style="color: #064e3b !important; font-size: 11px;">{{ $k }}</span>
-                                        <span style="color: #059669 !important; font-weight: 800; font-size: 9.5px; font-family: monospace;">Detail ➔</span>
+                                        <div class="flex flex-col text-left">
+                                            <span style="color: #064e3b !important; font-size: 11px;">{{ $k }}</span>
+                                            <span class="text-[9.5px] font-semibold text-emerald-700">
+                                                Terisi: <strong>{{ $kInfo->bezetting }}</strong> dosen
+                                            </span>
+                                        </div>
+                                        <span class="text-[9.5px] px-1.5 py-0.5 rounded font-bold {{ $kInfo->bezetting > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500' }}">
+                                            {{ $kInfo->bezetting > 0 ? $kInfo->bezetting . ' Dosen ➔' : 'Detail ➔' }}
+                                        </span>
                                     </div>
                                 @endforeach
                             </div>
@@ -861,21 +977,31 @@
                                     ];
                                 @endphp
                                 @foreach($unitFung as $uf)
+                                    @php
+                                        $ufInfo = $getKelompok($uf);
+                                    @endphp
                                     <div class="p-2 rounded flex items-center justify-between cursor-pointer hover:opacity-90 transition"
                                          style="background-color: #f0f9ff !important; border: 1px solid #bae6fd !important; font-weight: 800;"
                                          @click="openDetail(
                                              '{{ $uf }}',
                                              'Unit Fungsional Khusus Fakultas',
-                                             {{ $unitKhususAnjab->bezetting }},
-                                             {{ $unitKhususAnjab->kebutuhan }},
-                                             '{{ $unitKhususAnjab->status }}',
-                                             [],
+                                             {{ $ufInfo->bezetting }},
+                                             {{ $ufInfo->kebutuhan }},
+                                             '{{ $ufInfo->status }}',
+                                             {{ $ufInfo->pegawaiList }},
                                              'Melaksanakan fungsi penunjang akademik, kepatuhan etik, pengujian CBT, kemitraan institusi, bimbingan konseling dan layanan keterbukaan informasi publik. {{ addslashes($unitKhususAnjab->ikhtisar) }}',
                                              '{{ $unitKhususAnjab->anjab_url }}',
                                              '{{ $unitKhususAnjab->abk_url }}'
                                          )">
-                                        <span style="color: #0c4a6e !important; font-size: 11px;">{{ $uf }}</span>
-                                        <span style="color: #0284c7 !important; font-weight: 800; font-size: 9.5px; font-family: monospace;">Detail ➔</span>
+                                        <div class="flex flex-col text-left">
+                                            <span style="color: #0c4a6e !important; font-size: 11px;">{{ $uf }}</span>
+                                            <span class="text-[9.5px] font-semibold text-sky-700">
+                                                Terisi: <strong>{{ $ufInfo->bezetting }}</strong> personil
+                                            </span>
+                                        </div>
+                                        <span class="text-[9.5px] px-1.5 py-0.5 rounded font-bold {{ $ufInfo->bezetting > 0 ? 'bg-sky-100 text-sky-800' : 'bg-gray-100 text-gray-500' }}">
+                                            {{ $ufInfo->bezetting > 0 ? $ufInfo->bezetting . ' Orang ➔' : 'Detail ➔' }}
+                                        </span>
                                     </div>
                                 @endforeach
                             </div>
@@ -924,21 +1050,31 @@
                                     ];
                                 @endphp
                                 @foreach($labs as $lb)
+                                    @php
+                                        $lbInfo = $getKelompok($lb);
+                                    @endphp
                                     <div class="p-2 rounded flex items-center justify-between cursor-pointer hover:opacity-90 transition"
                                          style="background-color: #f8fafc !important; border: 1px solid #e2e8f0 !important; font-weight: 800;"
                                          @click="openDetail(
                                              '{{ $lb }}',
                                              'Ruang Praktikum Laboratorium Keperawatan',
-                                             {{ $plpAnjab->bezetting }},
-                                             {{ $plpAnjab->kebutuhan }},
-                                             '{{ $plpAnjab->status }}',
-                                             {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Laboran%')->orWhere('nama_jabatan', 'like', '%PLP%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                             {{ $lbInfo->bezetting }},
+                                             {{ $lbInfo->kebutuhan }},
+                                             '{{ $lbInfo->status }}',
+                                             {{ $lbInfo->pegawaiList }},
                                              'Fasilitas praktikum simulasi medis, manikin keperawatan, dan ujian Objective Structured Clinical Examination (OSCE). {{ addslashes($kepalaLabAnjab->ikhtisar) }}',
                                              '{{ $kepalaLabAnjab->anjab_url }}',
                                              '{{ $kepalaLabAnjab->abk_url }}'
                                          )">
-                                        <span style="color: #1e1b4b !important; font-size: 11px;">{{ $lb }}</span>
-                                        <span style="color: #4f46e5 !important; font-weight: 800; font-size: 9.5px; font-family: monospace;">Detail ➔</span>
+                                        <div class="flex flex-col text-left">
+                                            <span style="color: #1e1b4b !important; font-size: 11px;">{{ $lb }}</span>
+                                            <span class="text-[9.5px] font-semibold text-indigo-700">
+                                                Terisi: <strong>{{ $lbInfo->bezetting }}</strong> personil
+                                            </span>
+                                        </div>
+                                        <span class="text-[9.5px] px-1.5 py-0.5 rounded font-bold {{ $lbInfo->bezetting > 0 ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-500' }}">
+                                            {{ $lbInfo->bezetting > 0 ? $lbInfo->bezetting . ' Orang ➔' : 'Detail ➔' }}
+                                        </span>
                                     </div>
                                 @endforeach
                             </div>
@@ -995,14 +1131,26 @@
                 <div class="mt-4">
                     <h4 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Pejabat / Pegawai yang Menduduki:</h4>
                     <template x-if="activeNode && activeNode.pegawaiList && activeNode.pegawaiList.length > 0">
-                        <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                        <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
                             <template x-for="p in activeNode.pegawaiList" :key="p.nip">
                                 <div class="flex items-center gap-3 p-2 rounded-lg bg-gray-50 border border-gray-200 text-xs">
-                                    <div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs">
-                                        <span x-text="(p.nama || p.nama_lengkap || '').substring(0, 1)"></span>
+                                    <div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0 overflow-hidden">
+                                        <template x-if="p.foto">
+                                            <img :src="'/storage/' + p.foto" class="w-full h-full object-cover">
+                                        </template>
+                                        <template x-if="!p.foto">
+                                            <span x-text="(p.nama || p.nama_lengkap || '').substring(0, 1)"></span>
+                                        </template>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <div class="font-bold text-gray-900 truncate" x-text="(p.gelar_depan ? p.gelar_depan + ' ' : '') + (p.nama || p.nama_lengkap || '') + (p.gelar_belakang ? ', ' + p.gelar_belakang : '')"></div>
+                                        <div class="flex items-center justify-between gap-1">
+                                            <span class="font-bold text-gray-900 truncate" x-text="(p.gelar_depan ? p.gelar_depan + ' ' : '') + (p.nama || p.nama_lengkap || '') + (p.gelar_belakang ? ', ' + p.gelar_belakang : '')"></span>
+                                            <template x-if="p.peran">
+                                                <span class="px-2 py-0.5 text-[9.5px] font-bold rounded shrink-0"
+                                                      :class="p.peran === 'Koordinator' || p.peran === 'Ketua' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-200'"
+                                                      x-text="p.peran"></span>
+                                            </template>
+                                        </div>
                                         <div class="text-[11px] text-gray-500 font-mono" x-text="'NIP: ' + p.nip"></div>
                                     </div>
                                 </div>

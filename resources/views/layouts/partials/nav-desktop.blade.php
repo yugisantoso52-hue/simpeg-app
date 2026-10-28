@@ -72,6 +72,10 @@
                 <x-icon name="clipboard-check" class="w-4 h-4 text-teal-600 shrink-0" />
                 <span>Riwayat Usulan Karir Saya</span>
             </x-dropdown-link>
+            <x-dropdown-link :href="route('pengajuan-jabatan.index')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-jabatan.*') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+                <x-icon name="briefcase" class="w-4 h-4 text-blue-600 shrink-0" />
+                <span>Pengajuan Jabatan Struktural</span>
+            </x-dropdown-link>
             <x-dropdown-link :href="route('tugas-belajar.index')" class="flex items-center gap-2 {{ request()->routeIs('tugas-belajar.*') ? 'bg-sky-50 text-sky-700 font-semibold' : '' }}">
                 <x-icon name="graduation-cap" class="w-4 h-4 text-sky-600 shrink-0" />
                 <span>Tugas Belajar & Studi Saya</span>
@@ -189,6 +193,10 @@
             <x-dropdown-link :href="route('pengajuan-karir.index')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
                 <x-icon name="clipboard-check" class="w-4 h-4 text-indigo-600 shrink-0" />
                 <span>Verifikasi Usulan Karir & SLKS</span>
+            </x-dropdown-link>
+            <x-dropdown-link :href="route('pengajuan-jabatan.index')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-jabatan.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
+                <x-icon name="briefcase" class="w-4 h-4 text-indigo-600 shrink-0" />
+                <span>Verifikasi SK Jabatan Struktural</span>
             </x-dropdown-link>
             @if(Auth::user()->hasRole('admin'))
                 <x-dropdown-link :href="route('kp.index')" class="flex items-center gap-2 {{ request()->routeIs('kp.*') ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">

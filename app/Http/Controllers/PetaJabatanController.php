@@ -39,13 +39,31 @@ class PetaJabatanController extends Controller
             return strtolower(trim($a->jabatan->nama_jabatan ?? ''));
         });
 
+        // Data Penugasan & Keanggotaan Unit Riil (KJFD, Unit Fungsional, Laboratorium)
+        $kelompokPenugasan = \App\Models\KelompokPenugasan::with([
+            'penugasan.pegawai' => function ($q) {
+                $q->where('status_pegawai', 'Aktif')
+                  ->select('id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto');
+            }
+        ])->orderBy('urutan')->get();
+
+        $kelompokMap = $kelompokPenugasan->keyBy(fn($k) => strtolower(trim($k->nama)));
+
+        // Data pengajuan jabatan struktural yang menunggu verifikasi SK
+        $pengajuanMenunggu = \App\Models\PengajuanJabatan::menunggu()->with('pegawai')->get();
+        $pendingByJabatanId = $pengajuanMenunggu->groupBy('jabatan_id');
+
         return view('anjab.peta_jabatan', compact(
             'unitKerjas',
             'totalKebutuhan',
             'totalPegawaiAktif',
             'totalJabatan',
             'totalUnitKerja',
-            'anjabMap'
+            'anjabMap',
+            'kelompokPenugasan',
+            'kelompokMap',
+            'pengajuanMenunggu',
+            'pendingByJabatanId'
         ));
     }
 

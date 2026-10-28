@@ -265,6 +265,15 @@ class User extends Authenticatable
     }
 
     /**
+     * Cek apakah user berhak memverifikasi pengajuan jabatan struktural berdasarkan SK.
+     * Diizinkan untuk: Admin dan Ka Pokja Keuangan & Kepegawaian.
+     */
+    public function canVerifyJabatan(): bool
+    {
+        return $this->hasRole('admin') || $this->isKaPokjaKepeg();
+    }
+
+    /**
      * Cek apakah user berhak mengakses menu Analitik Eksekutif, Data Kepegawaian, dan Riwayat Pegawai.
      * Diizinkan untuk:
      * 1. Admin

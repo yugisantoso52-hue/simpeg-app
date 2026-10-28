@@ -193,11 +193,40 @@ class PegawaiService
             // 4. Sinkronisasikan seluruh riwayat terkait
             $this->riwayatAction->execute($pegawaiUpdated, $data, $files, true);
 
+            // 4b. Simpan penugasan / keanggotaan non-struktural (KJFD, Unit Fungsional, Laboratorium)
+            $this->syncPenugasan($pegawaiUpdated, $data);
+
             // 5. Sinkronisasi data induk dari riwayat aktif
             $this->syncPegawaiFromHistories($pegawaiUpdated);
 
             return $pegawaiUpdated;
         });
+    }
+
+    /**
+     * Simpan penugasan / keanggotaan pegawai. Hanya dijalankan jika form mengirim bagian penugasan
+     * (penugasan_submitted), sehingga update parsial tidak menghapus data yang sudah ada.
+     */
+    protected function syncPenugasan(Pegawai $pegawai, array $data): void
+    {
+        if (empty($data['penugasan_submitted'])) {
+            return;
+        }
+
+        $incoming = collect($data['penugasan'] ?? [])
+            ->filter(fn ($row) => !empty($row['kelompok_penugasan_id']))
+            ->keyBy(fn ($row) => (int) $row['kelompok_penugasan_id']);
+
+        $pegawai->penugasan()
+            ->whereNotIn('kelompok_penugasan_id', $incoming->keys()->all())
+            ->delete();
+
+        foreach ($incoming as $kelompokId => $row) {
+            $pegawai->penugasan()->updateOrCreate(
+                ['kelompok_penugasan_id' => $kelompokId],
+                ['peran' => $row['peran'] ?? 'Anggota']
+            );
+        }
     }
 
     public function deletePegawai(int|string $id): bool

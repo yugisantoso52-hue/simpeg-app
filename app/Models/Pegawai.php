@@ -217,6 +217,23 @@ class Pegawai extends Model
         return $this->hasMany(RiwayatJabatan::class, 'pegawai_id');
     }
 
+    /**
+     * Penugasan / keanggotaan non-struktural (KJFD, Unit Fungsional, Laboratorium).
+     * Satu pegawai boleh memiliki lebih dari satu penugasan.
+     */
+    public function penugasan(): HasMany
+    {
+        return $this->hasMany(PegawaiPenugasan::class, 'pegawai_id');
+    }
+
+    /**
+     * Pengajuan jabatan struktural yang menunggu / sudah diverifikasi.
+     */
+    public function pengajuanJabatan(): HasMany
+    {
+        return $this->hasMany(PengajuanJabatan::class, 'pegawai_id');
+    }
+
     public function mutasi(): HasMany
     {
         return $this->hasMany(MutasiPegawai::class, 'pegawai_id');

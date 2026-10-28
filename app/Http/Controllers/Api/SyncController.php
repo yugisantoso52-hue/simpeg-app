@@ -22,6 +22,9 @@ class SyncController extends Controller
         'riwayat_penghargaan' => \App\Models\RiwayatPenghargaan::class,
         'riwayat_organisasi' => \App\Models\RiwayatOrganisasi::class,
         'riwayat_publikasi' => \App\Models\RiwayatPublikasi::class,
+        'kelompok_penugasan' => \App\Models\KelompokPenugasan::class,
+        'pegawai_penugasan' => \App\Models\PegawaiPenugasan::class,
+        'pengajuan_jabatan' => \App\Models\PengajuanJabatan::class,
     ];
 
     public function receive(Request $request)

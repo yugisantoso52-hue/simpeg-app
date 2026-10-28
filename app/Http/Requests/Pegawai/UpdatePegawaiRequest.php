@@ -60,6 +60,12 @@ class UpdatePegawaiRequest extends FormRequest
         // Admin dan Pimpinan Struktural (Executive Kepegawaian) diizinkan mengelola data kepegawaian
         $user = auth()->user();
         $canManageKepegawaian = $user && ($user->hasRole('admin') || $user->canAccessExecutiveKepegawaianMenus());
+        // Jabatan struktural hanya boleh ditetapkan lewat verifikasi (Admin / Ka Pokja Keu-Kepeg) berdasarkan SK.
+        // Tabel riwayat_jabatan di form tidak boleh dipakai pegawai biasa untuk menetapkan jabatan sendiri.
+        if (!($user && $user->hasRole('admin'))) {
+            unset($data['riwayat_jabatan'], $data['jabatan_id']);
+        }
+
         if (!$canManageKepegawaian) {
             unset(
                 $data['nip'],
@@ -105,9 +111,14 @@ class UpdatePegawaiRequest extends FormRequest
         $pegawai = $this->route('pegawai');
         $pegawaiId = is_object($pegawai) ? $pegawai->id : $pegawai;
 
+        $user = auth()->user();
+        $canManageKepegawaian = $user && ($user->hasRole('admin') || $user->canAccessExecutiveKepegawaianMenus());
+
         return [
-            // Wajib (Required): Hanya NIP dan Nama Lengkap / Nama
-            'nip'                  => ['required', 'string', 'max:50', Rule::unique('pegawai', 'nip')->ignore($pegawaiId)],
+            // Wajib (Required): NIP required untuk Admin/Pengelola, opsional diabaikan untuk pegawai mandiri
+            'nip'                  => $canManageKepegawaian
+                ? ['required', 'string', 'max:50', Rule::unique('pegawai', 'nip')->ignore($pegawaiId)]
+                : ['nullable', 'string', 'max:50'],
             'nama'                 => 'required|string|max:150',
             'nama_lengkap'         => 'nullable|string|max:150',
 
@@ -194,6 +205,12 @@ class UpdatePegawaiRequest extends FormRequest
             'file_pak'                 => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'nomor_pak'                => 'nullable|string|max:100',
             'tanggal_pak'              => 'nullable|date',
+
+            // Penugasan / keanggotaan non-struktural (KJFD, Unit Fungsional, Laboratorium) - boleh diisi mandiri
+            'penugasan_submitted'                      => 'nullable|boolean',
+            'penugasan'                                => 'nullable|array|max:30',
+            'penugasan.*.kelompok_penugasan_id'        => 'required|integer|exists:kelompok_penugasan,id',
+            'penugasan.*.peran'                        => 'nullable|string|in:Koordinator,Anggota,Staf',
 
             // Validasi Input Multi-Riwayat Pendidikan (Opsional)
             'riwayat_pendidikan'                       => 'nullable|array',

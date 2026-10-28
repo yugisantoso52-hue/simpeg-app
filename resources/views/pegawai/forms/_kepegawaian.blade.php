@@ -17,8 +17,9 @@
         </x-enterprise.forms.field>
 
         <x-enterprise.forms.field>
-            <x-enterprise.form-group label="Jabatan Struktural / Fungsional / Pelaksana">
-                <x-enterprise.select name="jabatan_id" id="field_jabatan_id" onchange="autoSyncUnitKerja(this)">
+            <x-enterprise.form-group label="Jabatan Struktural / Fungsional / Pelaksana"
+                :hint="auth()->user()?->hasRole('admin') ? null : 'Jabatan ditetapkan melalui pengajuan + verifikasi SK resmi.'">
+                <x-enterprise.select name="jabatan_id" id="field_jabatan_id" onchange="autoSyncUnitKerja(this)" :disabled="!auth()->user()?->hasRole('admin')">
                     <option value="">-- Pilih Jabatan --</option>
                     @php
                         $groupedJabatan = $jabatan->groupBy(fn($j) => $j->kelompok_jabatan ?: 'Jabatan Lainnya');

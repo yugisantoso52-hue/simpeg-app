@@ -251,6 +251,11 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
 
         /* Tugas Belajar & Izin Belajar (Pegawai memantau status studinya, Admin & Pimpinan memantau seluruh ASN) */
         Route::get('/tugas-belajar', [TugasBelajarController::class, 'index'])->name('tugas-belajar.index');
+
+        /* Pengajuan & Verifikasi Jabatan Struktural Berbasis SK */
+        Route::get('/pengajuan-jabatan', [\App\Http\Controllers\PengajuanJabatanController::class, 'index'])->name('pengajuan-jabatan.index');
+        Route::post('/pengajuan-jabatan', [\App\Http\Controllers\PengajuanJabatanController::class, 'store'])->name('pengajuan-jabatan.store');
+        Route::post('/pengajuan-jabatan/{id}/verifikasi', [\App\Http\Controllers\PengajuanJabatanController::class, 'verifikasi'])->name('pengajuan-jabatan.verifikasi');
     });
 
     // ======================================================================

@@ -166,8 +166,15 @@
                         {{-- 7. RIWAYAT PANGKAT / GOLONGAN --}}
                         @include('pegawai.forms._pangkat')
 
-                        {{-- 8. RIWAYAT JABATAN --}}
-                        @include('pegawai.forms._jabatan')
+                        {{-- 8. RIWAYAT JABATAN (Admin: editable; lainnya: read-only, perubahan via pengajuan + verifikasi SK) --}}
+                        @if(auth()->user()->hasRole('admin'))
+                            @include('pegawai.forms._jabatan')
+                        @else
+                            @include('pegawai.forms._jabatan_readonly')
+                        @endif
+
+                        {{-- 8b. PENUGASAN & KEANGGOTAAN UNIT (KJFD / UNIT FUNGSIONAL / LABORATORIUM) --}}
+                        @include('pegawai.forms._penugasan')
 
                         {{-- 9. RIWAYAT PENDIDIKAN --}}
                         @include('pegawai.forms._pendidikan')
