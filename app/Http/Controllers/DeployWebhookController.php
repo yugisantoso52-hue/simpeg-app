@@ -75,6 +75,29 @@ class DeployWebhookController extends Controller
         try {
             $mode = $request->input('mode', 'auto');
 
+            if ($mode === 'inspect') {
+                $jabatans = \App\Models\Jabatan::where('nama_jabatan', 'like', '%Pokja%')
+                    ->orWhere('nama_jabatan', 'like', '%Bagian%')
+                    ->orWhere('nama_jabatan', 'like', '%Dekan%')
+                    ->get(['id', 'nama_jabatan', 'unit_kerja_id']);
+
+                $unitKerjas = \App\Models\UnitKerja::all(['id', 'nama_unit']);
+
+                $pegawais = \App\Models\Pegawai::where('nama', 'like', '%Reni%')
+                    ->orWhere('nama', 'like', '%Safri%')
+                    ->orWhere('nama', 'like', '%Zumi%')
+                    ->orWhere('nama', 'like', '%Bakhtiar%')
+                    ->orWhere('nama', 'like', '%Dolli%')
+                    ->get(['id', 'nama', 'nip', 'jabatan_id', 'unit_kerja_id']);
+
+                return response()->json([
+                    'status' => 'success',
+                    'jabatans' => $jabatans,
+                    'unitKerjas' => $unitKerjas,
+                    'pegawais' => $pegawais,
+                ]);
+            }
+
             // 1. Update code from GitHub (Fast API Sync atau Full Zip Sync)
             if ($mode === 'fast') {
                 $logs['code_update'] = $this->updateCodeFromGithubApi((int) $request->input('commits', 5));
