@@ -75,6 +75,29 @@ class DeployWebhookController extends Controller
         try {
             $mode = $request->input('mode', 'auto');
 
+            if ($mode === 'inspect') {
+                $yandriwita = \App\Models\Pegawai::with(['jabatan', 'unitKerja', 'penugasans.jabatan'])->where('nama', 'like', '%Yandriwita%')->first();
+                $sri = \App\Models\Pegawai::with(['jabatan', 'unitKerja', 'penugasans.jabatan'])->where('nama', 'like', '%Sri Wahyuni%')->first();
+                $allJabatans = \App\Models\Jabatan::where('nama_jabatan', 'like', '%Pokja%')
+                    ->orWhere('nama_jabatan', 'like', '%Wakil Dekan%')
+                    ->orWhere('nama_jabatan', 'like', '%Kepala Bagian%')
+                    ->orWhere('nama_jabatan', 'like', '%Kabag%')
+                    ->get(['id', 'nama_jabatan', 'unit_kerja_id']);
+                
+                $anjabItems = \App\Models\AnjabJabatan::where('nama_jabatan', 'like', '%Pokja%')
+                    ->orWhere('nama_jabatan', 'like', '%Bagian%')
+                    ->orWhere('nama_jabatan', 'like', '%Wakil Dekan%')
+                    ->get(['id', 'nama_jabatan', 'bezetting', 'jumlah_kebutuhan', 'kelebihan_kekurangan', 'status_pegawai']);
+
+                return response()->json([
+                    'status' => 'success',
+                    'yandriwita' => $yandriwita,
+                    'sri' => $sri,
+                    'jabatans' => $allJabatans,
+                    'anjab_items' => $anjabItems,
+                ]);
+            }
+
             // 1. Update code from GitHub (Fast API Sync atau Full Zip Sync)
             if ($mode === 'fast') {
                 $logs['code_update'] = $this->updateCodeFromGithubApi((int) $request->input('commits', 5));
