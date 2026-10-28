@@ -533,9 +533,6 @@
                                             </span>
                                         </div>
                                     </div>
-                                            </span>
-                                        </div>
-                                    </div>
                                 </div>
 
                                 {{-- Garis Turun Bercabang ke 2 Jurusan --}}
