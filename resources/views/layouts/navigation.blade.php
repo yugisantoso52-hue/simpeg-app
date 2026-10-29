@@ -85,13 +85,6 @@
                         <div class="text-[10px] text-gray-400 font-mono truncate mt-0.5">NIP: {{ Auth::user()->pegawai?->nip ?? '-' }}</div>
                     </div>
 
-                    @if(Auth::user()->pegawai_id || Auth::user()->hasRole(['pegawai', 'pimpinan']))
-                        <x-dropdown-link :href="route('pegawai.my-profile')" class="flex items-center gap-2">
-                            <x-icon name="user" class="w-4 h-4 text-blue-600" />
-                            <span>{{ __('Profil Saya (Biodata & Karir)') }}</span>
-                        </x-dropdown-link>
-                    @endif
-
                     <x-dropdown-link :href="route('profile.edit')" class="flex items-center gap-2">
                         <x-icon name="settings" class="w-4 h-4 text-slate-500" />
                         <span>{{ __('Profile & Pengaturan Akun') }}</span>
@@ -230,13 +223,6 @@
             </div>
 
             <div class="mt-3 px-3 space-y-2">
-                @if(Auth::user()->pegawai_id || Auth::user()->hasRole(['pegawai', 'pimpinan']))
-                    <a href="{{ route('pegawai.my-profile') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-blue-700 bg-blue-50/70 hover:bg-blue-100 border border-blue-200 transition shadow-2xs">
-                        <x-icon name="user" class="w-4 h-4 text-blue-600" />
-                        <span>{{ __('Profil Saya (Biodata & Karir)') }}</span>
-                    </a>
-                @endif
-
                 <a href="{{ route('profile.edit') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 transition shadow-2xs">
                     <x-icon name="settings" class="w-4 h-4 text-slate-500" />
                     <span>{{ __('Profile & Pengaturan Akun') }}</span>
