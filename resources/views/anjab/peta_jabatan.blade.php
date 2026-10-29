@@ -199,13 +199,13 @@
                 <div class="flex items-center gap-2">
                     <span class="font-bold text-gray-700 uppercase tracking-wider">Status Formasi ABK:</span>
                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 🟢 Ideal (Cukup)
+                        🟢 Ideal (Cukup)
                     </span>
                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-800 border border-rose-300">
-                        <span class="w-2 h-2 rounded-full bg-rose-500"></span> 🔴 Kurang Pegawai
+                        🔴 Kurang Pegawai
                     </span>
                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                        <span class="w-2 h-2 rounded-full bg-amber-500"></span> 🟡 Kelebihan Pegawai
+                        🟡 Kelebihan Pegawai
                     </span>
                 </div>
                 <div class="text-gray-500 font-medium">
@@ -237,10 +237,10 @@
                 {{-- Header Resmi Bagan --}}
                 <div class="text-center pb-6 border-b-2 border-blue-200 mb-8 flex items-center justify-between px-4">
                     {{-- Logo UNRI --}}
-                    <div class="flex items-center gap-3">
-                        <div style="background-color: #047857 !important; color: #ffffff !important; width: 48px; height: 48px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; border: 2px solid #a7f3d0; box-shadow: 0 2px 6px rgba(4, 120, 87, 0.3);">
-                            UNRI
-                        </div>
+                    <div class="shrink-0 flex items-center">
+                        <img src="{{ asset('logo-unri.png') }}" 
+                             alt="Logo UNRI" 
+                             class="h-14 sm:h-16 md:h-20 w-auto object-contain drop-shadow-sm">
                     </div>
 
                     {{-- Judul Tengah --}}
@@ -253,11 +253,11 @@
                         </h3>
                     </div>
 
-                    {{-- Tut Wuri Handayani Badge --}}
-                    <div class="flex items-center gap-3">
-                        <div style="background-color: #0284c7 !important; color: #ffffff !important; width: 48px; height: 48px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 11px; border: 2px solid #bae6fd; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3); text-align: center; line-height: 1.1;">
-                            KEMDIK<br>TI
-                        </div>
+                    {{-- Logo KEMDIKTI (Kemendiktisaintek) --}}
+                    <div class="shrink-0 flex items-center">
+                        <img src="{{ asset('logo-kemendiktisaintek.png') }}" 
+                             alt="Logo Kemendiktisaintek" 
+                             class="h-14 sm:h-16 md:h-20 w-auto object-contain drop-shadow-sm">
                     </div>
                 </div>
 
