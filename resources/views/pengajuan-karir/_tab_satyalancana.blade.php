@@ -495,7 +495,7 @@
                                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                                             ✓ Sudah Diajukan ({{ $peg->usulan_aktif->status }})
                                         </span>
-                                    @else
+                                    @elseif($isAdmin ?? false)
                                         <form action="{{ route('satyalancana.ajukan', $peg->id) }}" method="POST" class="inline">
                                             @csrf
                                             <input type="hidden" name="kategori" value="{{ $peg->kategori_satyalancana }}">
@@ -505,6 +505,10 @@
                                                 <span>⚡ Ajukan Usulan</span>
                                             </button>
                                         </form>
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-1 rounded text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                                            Menunggu Usulan Admin
+                                        </span>
                                     @endif
                                 </td>
                             </tr>

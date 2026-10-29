@@ -264,13 +264,13 @@
                                             Cetak DRH
                                         </a>
 
-                                        {{-- AJUKAN USULAN RESMI OLEH ADMIN KEPEGAWAIAN --}}
+                                        {{-- AJUKAN USULAN RESMI HANYA OLEH ADMIN KEPEGAWAIAN --}}
                                         @if($row->usulan_aktif)
                                             <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-100 text-emerald-800">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                                 {{ ucfirst($row->usulan_aktif->status) }}
                                             </span>
-                                        @else
+                                        @elseif($isAdmin)
                                             <form method="POST" action="{{ route('satyalancana.ajukan', $row->id) }}" onsubmit="return confirm('Ajukan usulan resmi tanda kehormatan Satyalancana {{ $row->kategori_satyalancana }} untuk {{ $row->nama }}?')">
                                                 @csrf
                                                 <input type="hidden" name="kategori" value="{{ $row->kategori_satyalancana }}">
@@ -280,6 +280,10 @@
                                                     Ajukan Usulan
                                                 </button>
                                             </form>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-100 text-slate-500 border border-slate-200">
+                                                Belum Diusulkan
+                                            </span>
                                         @endif
                                     </div>
                                 </td>
@@ -1057,17 +1061,25 @@
                             {{-- Tombol Aksi Langsung Berdasarkan Tahap & Peran Pengguna --}}
                             <div class="pt-2 border-t border-slate-200 flex items-center justify-between flex-wrap gap-2">
                                 <div class="flex items-center gap-2 flex-wrap">
-                                    {{-- 1. AKSI BELUM DIAJUKAN -> AJUKAN SEKARANG --}}
-                                    <template x-if="!currentPegawai?.usulan_id && {{ ($isAdmin || $isExecutive) ? 'true' : 'false' }}">
-                                        <form method="POST" :action="'{{ url('satyalancana') }}/' + currentPegawai?.id + '/ajukan'" onsubmit="return confirm('Ajukan usulan resmi tanda kehormatan Satyalancana untuk pegawai ini?')">
-                                            @csrf
-                                            <input type="hidden" name="kategori" :value="currentPegawai?.kategori">
-                                            <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                                Ajukan Usulan Resmi Sekarang
-                                            </button>
-                                        </form>
-                                    </template>
+                                    {{-- 1. AKSI BELUM DIAJUKAN -> HANYA ADMIN YANG DAPAT MENGAJUKAN USULAN PEGAWAI LAIN --}}
+                                    @if($isAdmin ?? false)
+                                        <template x-if="!currentPegawai?.usulan_id">
+                                            <form method="POST" :action="'{{ url('satyalancana') }}/' + currentPegawai?.id + '/ajukan'" onsubmit="return confirm('Ajukan usulan resmi tanda kehormatan Satyalancana untuk pegawai ini?')">
+                                                @csrf
+                                                <input type="hidden" name="kategori" :value="currentPegawai?.kategori">
+                                                <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                    Ajukan Usulan Resmi Sekarang (Admin)
+                                                </button>
+                                            </form>
+                                        </template>
+                                    @else
+                                        <template x-if="!currentPegawai?.usulan_id">
+                                            <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 border border-slate-200">
+                                                Status: Memenuhi kriteria masa kerja, menunggu pengusulan resmi oleh Admin Kepegawaian.
+                                            </span>
+                                        </template>
+                                    @endif
 
                                     {{-- 2. AKSI DIAJUKAN -> VERIFIKASI ADMIN --}}
                                     <template x-if="currentPegawai?.usulan_id && currentPegawai?.usulan_status_raw === 'diajukan' && {{ ($isAdmin ?? false) ? 'true' : 'false' }}">
