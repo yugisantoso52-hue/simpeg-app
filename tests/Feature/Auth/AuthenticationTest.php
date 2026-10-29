@@ -79,4 +79,22 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
         $response->assertRedirect('/');
     }
+
+    public function test_login_rate_limit_redirects_with_friendly_error(): void
+    {
+        $user = User::factory()->create(['must_change_password' => false]);
+
+        $response = null;
+        for ($i = 0; $i < 12; $i++) {
+            $response = $this->from('/login')->post('/login', [
+                'login' => 'rate_test_' . $i . '@example.com',
+                'password' => 'wrong-password',
+            ]);
+        }
+
+        $this->assertGuest();
+        $response->assertStatus(302);
+        $response->assertRedirect('/login');
+        $response->assertSessionHasErrors('login');
+    }
 }

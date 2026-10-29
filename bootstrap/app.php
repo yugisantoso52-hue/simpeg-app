@@ -56,4 +56,20 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->withInput()
                 ->with('error', 'Ukuran berkas yang Anda unggah melebihi batas maksimal (maksimal total unggahan 25MB).');
         });
+
+        // Penanganan Rate Limiting: Kembalikan respons redirect bersahabat dan cegah false positive scanner (HTTP 429)
+        $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return null;
+            }
+
+            $headers = $e->getHeaders();
+            $seconds = $headers['Retry-After'] ?? 60;
+
+            return redirect()->back(fallback: route('login'))
+                ->withInput($request->except('password'))
+                ->withErrors([
+                    'login' => "Terlalu banyak upaya masuk. Silakan coba lagi dalam {$seconds} detik.",
+                ]);
+        });
     })->create();
