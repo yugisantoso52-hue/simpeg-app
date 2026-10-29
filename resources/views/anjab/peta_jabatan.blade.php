@@ -188,6 +188,7 @@
                         $p = $pen->pegawai;
                         if ($p && ($p->status_pegawai === 'Aktif' || empty($p->status_pegawai))) {
                             $namaGelar = trim(($p->gelar_depan ? $p->gelar_depan . ' ' : '') . $p->nama . ($p->gelar_belakang ? ', ' . $p->gelar_belakang : ''));
+                            $rJab = method_exists($p, 'riwayatJabatan') ? $p->riwayatJabatan()->where('status', 'aktif')->latest('tmt_jabatan')->first() : null;
                             $fromKelompok->push([
                                 'id'             => $p->id,
                                 'nama'           => $p->nama,
@@ -197,6 +198,8 @@
                                 'nip'            => $p->nip,
                                 'foto'           => $p->foto,
                                 'peran'          => $pen->peran ?: 'Anggota',
+                                'nomor_sk'       => $rJab?->nomor_sk,
+                                'tmt_jabatan'    => $rJab?->tmt_jabatan ? $rJab->tmt_jabatan->format('d/m/Y') : null,
                                 'keterangan'     => $pen->keterangan,
                             ]);
                         }
@@ -226,6 +229,7 @@
                 ->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto'])
                 ->map(function($p) {
                     $namaGelar = trim(($p->gelar_depan ? $p->gelar_depan . ' ' : '') . $p->nama . ($p->gelar_belakang ? ', ' . $p->gelar_belakang : ''));
+                    $rJab = method_exists($p, 'riwayatJabatan') ? $p->riwayatJabatan()->where('status', 'aktif')->latest('tmt_jabatan')->first() : null;
                     return [
                         'id'             => $p->id,
                         'nama'           => $p->nama,
@@ -235,6 +239,8 @@
                         'nip'            => $p->nip,
                         'foto'           => $p->foto,
                         'peran'          => 'Pejabat',
+                        'nomor_sk'       => $rJab?->nomor_sk,
+                        'tmt_jabatan'    => $rJab?->tmt_jabatan ? $rJab->tmt_jabatan->format('d/m/Y') : null,
                         'keterangan'     => null,
                     ];
                 });
@@ -253,6 +259,35 @@
                 'pegawaiList'  => $pegawaiList,
                 'pejabatUtama' => $pegawaiList->first(),
             ];
+        };
+
+        $formatPegawaiWithSk = function($pegawais, $peranDefault = 'Pejabat') {
+            if (!$pegawais) return collect();
+            $collection = $pegawais instanceof \Illuminate\Support\Collection ? $pegawais : collect([$pegawais]);
+            return $collection->filter()->map(function($p) use ($peranDefault) {
+                if (is_array($p)) {
+                    return array_merge([
+                        'peran' => $peranDefault,
+                        'nomor_sk' => null,
+                        'tmt_jabatan' => null,
+                    ], $p);
+                }
+                $namaGelar = trim(($p->gelar_depan ? $p->gelar_depan . ' ' : '') . $p->nama . ($p->gelar_belakang ? ', ' . $p->gelar_belakang : ''));
+                $rJab = method_exists($p, 'riwayatJabatan') ? $p->riwayatJabatan()->where('status', 'aktif')->latest('tmt_jabatan')->first() : null;
+                return [
+                    'id'             => $p->id,
+                    'nama'           => $p->nama,
+                    'gelar_depan'    => $p->gelar_depan,
+                    'gelar_belakang' => $p->gelar_belakang,
+                    'nama_lengkap'   => $namaGelar ?: $p->nama,
+                    'nip'            => $p->nip,
+                    'foto'           => $p->foto,
+                    'peran'          => $peranDefault,
+                    'nomor_sk'       => $rJab?->nomor_sk,
+                    'tmt_jabatan'    => $rJab?->tmt_jabatan ? $rJab->tmt_jabatan->format('d/m/Y') : null,
+                    'keterangan'     => null,
+                ];
+            })->values();
         };
     @endphp
 
@@ -395,15 +430,15 @@
                                          )">
                                         <div class="flex items-center justify-between">
                                             <span class="font-black text-[11px]" style="color: #0369a1 !important;">GPM S1</span>
-                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $gpmS1->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
-                                                {{ $gpmS1->status }}
+                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $gpmS1->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300' }}">
+                                                {{ $gpmS1->bezetting >= 1 ? 'Terisi' : 'Butuh SK' }}
                                             </span>
                                         </div>
                                         <div class="mt-1 text-[10.5px] font-medium text-slate-700 truncate">
                                             @if($gpmS1->pejabatUtama)
                                                 <span class="text-blue-700 font-bold">👤 {{ $gpmS1->pejabatUtama['nama_lengkap'] }}</span>
                                             @else
-                                                <span class="italic text-slate-400">👤 (Belum diisi / Butuh 1 org)</span>
+                                                <span class="italic text-slate-400">👤 (Menunggu SK Penetapan)</span>
                                             @endif
                                         </div>
                                         <div class="mt-0.5 text-[9.5px] text-slate-500">
@@ -425,15 +460,15 @@
                                          )">
                                         <div class="flex items-center justify-between">
                                             <span class="font-black text-[11px]" style="color: #0369a1 !important;">GPM S2</span>
-                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $gpmS2->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
-                                                {{ $gpmS2->status }}
+                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $gpmS2->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300' }}">
+                                                {{ $gpmS2->bezetting >= 1 ? 'Terisi' : 'Butuh SK' }}
                                             </span>
                                         </div>
                                         <div class="mt-1 text-[10.5px] font-medium text-slate-700 truncate">
                                             @if($gpmS2->pejabatUtama)
                                                 <span class="text-blue-700 font-bold">👤 {{ $gpmS2->pejabatUtama['nama_lengkap'] }}</span>
                                             @else
-                                                <span class="italic text-slate-400">👤 (Belum diisi / Butuh 1 org)</span>
+                                                <span class="italic text-slate-400">👤 (Menunggu SK Penetapan)</span>
                                             @endif
                                         </div>
                                         <div class="mt-0.5 text-[9.5px] text-slate-500">
@@ -455,15 +490,15 @@
                                          )">
                                         <div class="flex items-center justify-between">
                                             <span class="font-black text-[11px]" style="color: #0369a1 !important;">GPM NERS</span>
-                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $gpmNers->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
-                                                {{ $gpmNers->status }}
+                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $gpmNers->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300' }}">
+                                                {{ $gpmNers->bezetting >= 1 ? 'Terisi' : 'Butuh SK' }}
                                             </span>
                                         </div>
                                         <div class="mt-1 text-[10.5px] font-medium text-slate-700 truncate">
                                             @if($gpmNers->pejabatUtama)
                                                 <span class="text-blue-700 font-bold">👤 {{ $gpmNers->pejabatUtama['nama_lengkap'] }}</span>
                                             @else
-                                                <span class="italic text-slate-400">👤 (Belum diisi / Butuh 1 org)</span>
+                                                <span class="italic text-slate-400">👤 (Menunggu SK Penetapan)</span>
                                             @endif
                                         </div>
                                         <div class="mt-0.5 text-[9.5px] text-slate-500">
@@ -475,8 +510,8 @@
                                 {{-- Footer Total Bezetting SPMF --}}
                                 <div class="mt-2.5 pt-2 flex items-center justify-between text-[10px] border-t border-sky-100 text-slate-600">
                                     <span>Total: <strong>{{ $spmfTotalBezetting }}</strong> / Butuh: <strong>3</strong></span>
-                                    <span class="font-bold px-2 py-0.5 rounded-full {{ $spmfTotalBezetting >= 3 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
-                                        {{ $spmfStatus }}
+                                    <span class="font-bold px-2 py-0.5 rounded-full {{ $spmfTotalBezetting >= 3 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800 border border-amber-300' }}">
+                                        {{ $spmfTotalBezetting >= 3 ? 'Terisi Lengkap' : ($spmfTotalBezetting > 0 ? 'Terisi Sebagian' : 'Butuh SK') }}
                                     </span>
                                 </div>
                             </div>
@@ -489,7 +524,8 @@
                         @php
                             $dekanAnjab = $getAnjab('Dekan');
                             $dekanPejabat = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->whereRaw('LOWER(nama_jabatan) = ?', ['dekan']))->first();
-                            $dekanList = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->whereRaw('LOWER(nama_jabatan) = ?', ['dekan']))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                            $rawDekanList = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->whereRaw('LOWER(nama_jabatan) = ?', ['dekan']))->get();
+                            $dekanList = $formatPegawaiWithSk($rawDekanList, 'Dekan');
                             $dekanBezetting = $dekanPejabat ? 1 : ($dekanAnjab->bezetting > 0 ? 1 : 0);
                             $dekanStatus = $dekanBezetting >= 1 ? 'Ideal' : 'Kurang 1';
                         @endphp
@@ -518,14 +554,18 @@
                                     <div class="text-[11px] text-amber-300 font-bold text-center truncate mt-0.5" title="{{ $dekanPejabat->nama_lengkap }}">
                                         👤 {{ $dekanPejabat->nama_lengkap }}
                                     </div>
+                                @else
+                                    <div class="text-[10px] text-amber-200/80 italic text-center mt-0.5">
+                                        (Menunggu SK Penetapan)
+                                    </div>
                                 @endif
                                 <div class="text-xs text-center font-semibold mt-0.5" style="color: #93c5fd !important;">
                                     Fakultas Keperawatan UNRI
                                 </div>
                                 <div class="mt-3 pt-2 flex items-center justify-between text-xs" style="border-top: 1px solid rgba(255,255,255,0.2) !important; color: #e0e7ff !important;">
                                     <span>Bezetting: <strong style="color: #ffffff !important;">{{ $dekanBezetting }}</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background-color: {{ $dekanBezetting < 1 ? '#e11d48' : '#10b981' }} !important; color: #ffffff !important;">
-                                        {{ $dekanStatus }}
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background-color: {{ $dekanBezetting < 1 ? '#f59e0b' : '#10b981' }} !important; color: {{ $dekanBezetting < 1 ? '#78350f' : '#ffffff' }} !important;">
+                                        {{ $dekanBezetting >= 1 ? 'Terisi' : 'Butuh SK' }}
                                     </span>
                                 </div>
                             </div>
@@ -577,15 +617,15 @@
                                          )">
                                         <div class="flex items-center justify-between">
                                             <span class="font-black text-[11px]" style="color: #1e293b !important;">KETUA SENAT</span>
-                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $ketuaSenat->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
-                                                {{ $ketuaSenat->status }}
+                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $ketuaSenat->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300' }}">
+                                                {{ $ketuaSenat->bezetting >= 1 ? 'Terisi' : 'Butuh SK' }}
                                             </span>
                                         </div>
                                         <div class="mt-1 text-[10.5px] font-medium text-slate-700 truncate">
                                             @if($ketuaSenat->pejabatUtama)
                                                 <span class="text-indigo-900 font-bold">👤 {{ $ketuaSenat->pejabatUtama['nama_lengkap'] }}</span>
                                             @else
-                                                <span class="italic text-slate-400">👤 (Belum diisi / Butuh 1 org)</span>
+                                                <span class="italic text-slate-400">👤 (Menunggu SK Penetapan)</span>
                                             @endif
                                         </div>
                                         <div class="mt-0.5 text-[9.5px] text-slate-500">
@@ -607,15 +647,15 @@
                                          )">
                                         <div class="flex items-center justify-between">
                                             <span class="font-black text-[11px]" style="color: #1e293b !important;">SEKRETARIS SENAT</span>
-                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $sekretarisSenat->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
-                                                {{ $sekretarisSenat->status }}
+                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $sekretarisSenat->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300' }}">
+                                                {{ $sekretarisSenat->bezetting >= 1 ? 'Terisi' : 'Butuh SK' }}
                                             </span>
                                         </div>
                                         <div class="mt-1 text-[10.5px] font-medium text-slate-700 truncate">
                                             @if($sekretarisSenat->pejabatUtama)
                                                 <span class="text-indigo-900 font-bold">👤 {{ $sekretarisSenat->pejabatUtama['nama_lengkap'] }}</span>
                                             @else
-                                                <span class="italic text-slate-400">👤 (Belum diisi / Butuh 1 org)</span>
+                                                <span class="italic text-slate-400">👤 (Menunggu SK Penetapan)</span>
                                             @endif
                                         </div>
                                         <div class="mt-0.5 text-[9.5px] text-slate-500">
@@ -637,15 +677,15 @@
                                          )">
                                         <div class="flex items-center justify-between">
                                             <span class="font-black text-[11px]" style="color: #1e293b !important;">KOMISI AKADEMIK &amp; ETIK</span>
-                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $komisiSenat->selisih >= 0 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
-                                                {{ $komisiSenat->status }}
+                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $komisiSenat->bezetting >= $komisiSenat->kebutuhan ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : ($komisiSenat->bezetting > 0 ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-amber-100 text-amber-800 border border-amber-300') }}">
+                                                {{ $komisiSenat->bezetting >= $komisiSenat->kebutuhan ? 'Terisi' : ($komisiSenat->bezetting > 0 ? 'Terisi Sebagian' : 'Butuh SK') }}
                                             </span>
                                         </div>
                                         <div class="mt-1 text-[10.5px] font-medium text-slate-700 truncate">
                                             @if($komisiSenat->bezetting > 0)
                                                 <span class="text-indigo-900 font-bold">👥 {{ $komisiSenat->pegawaiList->pluck('nama_lengkap')->join(', ') }}</span>
                                             @else
-                                                <span class="italic text-slate-400">👥 (Belum ada anggota / Butuh {{ $komisiSenat->kebutuhan }} org)</span>
+                                                <span class="italic text-slate-400">👥 (Menunggu SK Penetapan)</span>
                                             @endif
                                         </div>
                                         <div class="mt-0.5 text-[9.5px] text-slate-500">
@@ -657,8 +697,8 @@
                                 {{-- Footer Total Bezetting Senat --}}
                                 <div class="mt-2.5 pt-2 flex items-center justify-between text-[10px] border-t border-slate-200 text-slate-600">
                                     <span>Total: <strong>{{ $senatTotalBezetting }}</strong> / Butuh: <strong>{{ $senatTotalKebutuhan }}</strong></span>
-                                    <span class="font-bold px-2 py-0.5 rounded-full {{ $senatTotalBezetting >= $senatTotalKebutuhan ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
-                                        {{ $senatStatus }}
+                                    <span class="font-bold px-2 py-0.5 rounded-full {{ $senatTotalBezetting >= $senatTotalKebutuhan ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800 border border-amber-300' }}">
+                                        {{ $senatTotalBezetting >= $senatTotalKebutuhan ? 'Terisi Lengkap' : ($senatTotalBezetting > 0 ? 'Terisi Sebagian' : 'Butuh SK') }}
                                     </span>
                                 </div>
                             </div>
@@ -693,11 +733,12 @@
                                                                 ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Bidang Akademik%')
                                                                 ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Akedemik%'))
                                     )->first();
-                                    $wd1List = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
+                                                                        $rawWd1List = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
                                         $q->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Wakil Dekan I%')
                                                                 ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Bidang Akademik%')
                                                                 ->orWhere('nama_jabatan', 'like', '%Wakil Dekan Akedemik%'))
-                                    )->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                                    )->get();
+                                    $wd1List = $formatPegawaiWithSk($rawWd1List, 'Wakil Dekan I');
                                 @endphp
                                 <div class="w-full p-4 rounded-xl shadow-lg hover:scale-[1.02] transition cursor-pointer"
                                      style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important; color: #ffffff !important; border: 2px solid #60a5fa !important; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3) !important;"
@@ -730,8 +771,8 @@
                                     @endif
                                     <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
                                         <span>Bezetting: <strong style="color: #ffffff !important;">{{ $wd1Anjab->bezetting }}</strong> / Butuh: <strong style="color: #ffffff !important;">{{ $wd1Anjab->kebutuhan }}</strong></span>
-                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background-color: {{ $wd1Anjab->selisih < 0 ? '#e11d48' : '#10b981' }} !important; color: #ffffff !important;">
-                                            {{ $wd1Anjab->status }}
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background-color: {{ $wd1Anjab->bezetting < 1 ? '#f59e0b' : '#10b981' }} !important; color: {{ $wd1Anjab->bezetting < 1 ? '#78350f' : '#ffffff' }} !important;">
+                                            {{ $wd1Anjab->bezetting >= 1 ? 'Terisi' : 'Butuh SK' }}
                                         </span>
                                     </div>
                                 </div>
@@ -772,6 +813,8 @@
                                             $sekjurList = collect([$fallbackSekjur]);
                                         }
                                     }
+                                    $kajurListFormatted = $formatPegawaiWithSk($kajurList, 'Ketua Jurusan');
+                                    $sekjurListFormatted = $formatPegawaiWithSk($sekjurList, 'Sekretaris Jurusan');
                                 @endphp
                                 <div class="w-full p-3 rounded-xl shadow-md transition"
                                      style="background: linear-gradient(135deg, #0f766e 0%, #115e59 100%) !important; color: #ffffff !important; border: 2px solid #2dd4bf !important; box-shadow: 0 4px 10px rgba(15, 118, 110, 0.3) !important;">
@@ -789,7 +832,7 @@
                                                  {{ $kajurBezetting }},
                                                  1,
                                                  '{{ $kajurBezetting > 0 ? 'Ideal' : 'Kurang 1' }}',
-                                                 {{ $kajurList }},
+                                                 {{ $kajurListFormatted }},
                                                  '{{ addslashes($kajurAnjab->ikhtisar) }}',
                                                  '{{ $kajurAnjab->anjab_url }}',
                                                  '{{ $kajurAnjab->abk_url }}'
@@ -831,7 +874,7 @@
                                                  {{ $sekjurBezetting }},
                                                  1,
                                                  '{{ $sekjurBezetting > 0 ? 'Ideal' : 'Kurang 1' }}',
-                                                 {{ $sekjurList }},
+                                                 {{ $sekjurListFormatted }},
                                                  '{{ addslashes($sekjurAnjab->ikhtisar) }}',
                                                  '{{ $sekjurAnjab->anjab_url }}',
                                                  '{{ $sekjurAnjab->abk_url }}'
@@ -872,6 +915,22 @@
                                     $prodiS2Anjab = $getAnjab('Koordinator Prodi S2 Keperawatan');
                                     $prodiS3Anjab = $getAnjab('Koordinator Prodi S3 Keperawatan');
                                     $prodiNersAnjab = $getAnjab('Koordinator Prodi Ners');
+
+                                    $prodiS1Pegawais = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S1%'))->get();
+                                    $prodiS1List = $formatPegawaiWithSk($prodiS1Pegawais, 'Koordinator Prodi S1');
+                                    $prodiS1Pejabat = $prodiS1Pegawais->first();
+
+                                    $prodiS2Pegawais = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S2%'))->get();
+                                    $prodiS2List = $formatPegawaiWithSk($prodiS2Pegawais, 'Koordinator Prodi S2');
+                                    $prodiS2Pejabat = $prodiS2Pegawais->first();
+
+                                    $prodiS3Pegawais = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S3%'))->get();
+                                    $prodiS3List = $formatPegawaiWithSk($prodiS3Pegawais, 'Koordinator Prodi S3');
+                                    $prodiS3Pejabat = $prodiS3Pegawais->first();
+
+                                    $prodiNersPegawais = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi Ners%'))->get();
+                                    $prodiNersList = $formatPegawaiWithSk($prodiNersPegawais, 'Koordinator Prodi Ners');
+                                    $prodiNersPejabat = $prodiNersPegawais->first();
                                 @endphp
                                 <div class="w-full grid grid-cols-2 gap-3 mt-1.5">
 
@@ -895,13 +954,25 @@
                                                          {{ $prodiS1Anjab->bezetting }},
                                                          {{ $prodiS1Anjab->kebutuhan }},
                                                          '{{ $prodiS1Anjab->status }}',
-                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S1%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                                         {{ $prodiS1List }},
                                                          '{{ addslashes($prodiS1Anjab->ikhtisar) }}',
                                                          '{{ $prodiS1Anjab->anjab_url }}',
                                                          '{{ $prodiS1Anjab->abk_url }}'
                                                      )">
-                                                    <div class="font-black text-[10.5px]" style="color: #064e3b !important;">1. S1 KEPERAWATAN</div>
-                                                    <div class="text-[9.5px] text-gray-600">Bezetting: {{ $prodiS1Anjab->bezetting }} / Butuh: {{ $prodiS1Anjab->kebutuhan }} ({{ $prodiS1Anjab->status }})</div>
+                                                    <div class="flex items-center justify-between">
+                                                        <span class="font-black text-[10.5px]" style="color: #064e3b !important;">1. S1 KEPERAWATAN</span>
+                                                        <span class="text-[8px] font-bold px-1.5 py-0.2 rounded {{ $prodiS1Anjab->bezetting > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800 border border-amber-300' }}">
+                                                            {{ $prodiS1Anjab->bezetting > 0 ? 'Terisi' : 'Butuh SK' }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="text-[9.5px] truncate mt-0.5">
+                                                        @if($prodiS1Pejabat)
+                                                            <span class="text-emerald-800 font-bold">👤 {{ $prodiS1Pejabat->nama_lengkap }}</span>
+                                                        @else
+                                                            <span class="text-gray-400 italic">👤 (Menunggu SK Penetapan)</span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="text-[9px] text-gray-500 mt-0.5">Bezetting: <strong>{{ $prodiS1Anjab->bezetting }}</strong> / Butuh: {{ $prodiS1Anjab->kebutuhan }}</div>
                                                 </div>
                                                 {{-- S2 --}}
                                                 <div class="p-1.5 rounded cursor-pointer hover:opacity-90 transition"
@@ -912,13 +983,25 @@
                                                          {{ $prodiS2Anjab->bezetting }},
                                                          {{ $prodiS2Anjab->kebutuhan }},
                                                          '{{ $prodiS2Anjab->status }}',
-                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S2%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                                         {{ $prodiS2List }},
                                                          '{{ addslashes($prodiS2Anjab->ikhtisar) }}',
                                                          '{{ $prodiS2Anjab->anjab_url }}',
                                                          '{{ $prodiS2Anjab->abk_url }}'
                                                      )">
-                                                    <div class="font-black text-[10.5px]" style="color: #064e3b !important;">2. S2 KEPERAWATAN</div>
-                                                    <div class="text-[9.5px] text-gray-600">Bezetting: {{ $prodiS2Anjab->bezetting }} / Butuh: {{ $prodiS2Anjab->kebutuhan }} ({{ $prodiS2Anjab->status }})</div>
+                                                    <div class="flex items-center justify-between">
+                                                        <span class="font-black text-[10.5px]" style="color: #064e3b !important;">2. S2 KEPERAWATAN</span>
+                                                        <span class="text-[8px] font-bold px-1.5 py-0.2 rounded {{ $prodiS2Anjab->bezetting > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800 border border-amber-300' }}">
+                                                            {{ $prodiS2Anjab->bezetting > 0 ? 'Terisi' : 'Butuh SK' }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="text-[9.5px] truncate mt-0.5">
+                                                        @if($prodiS2Pejabat)
+                                                            <span class="text-emerald-800 font-bold">👤 {{ $prodiS2Pejabat->nama_lengkap }}</span>
+                                                        @else
+                                                            <span class="text-gray-400 italic">👤 (Menunggu SK Penetapan)</span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="text-[9px] text-gray-500 mt-0.5">Bezetting: <strong>{{ $prodiS2Anjab->bezetting }}</strong> / Butuh: {{ $prodiS2Anjab->kebutuhan }}</div>
                                                 </div>
                                                 {{-- S3 --}}
                                                 <div class="p-1.5 rounded cursor-pointer hover:opacity-90 transition"
@@ -929,13 +1012,25 @@
                                                          {{ $prodiS3Anjab->bezetting }},
                                                          {{ $prodiS3Anjab->kebutuhan }},
                                                          '{{ $prodiS3Anjab->status }}',
-                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi S3%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                                         {{ $prodiS3List }},
                                                          '{{ addslashes($prodiS3Anjab->ikhtisar) }}',
                                                          '{{ $prodiS3Anjab->anjab_url }}',
                                                          '{{ $prodiS3Anjab->abk_url }}'
                                                      )">
-                                                    <div class="font-black text-[10.5px]" style="color: #064e3b !important;">3. S3 KEPERAWATAN</div>
-                                                    <div class="text-[9.5px] text-gray-600">Bezetting: {{ $prodiS3Anjab->bezetting }} / Butuh: {{ $prodiS3Anjab->kebutuhan }} ({{ $prodiS3Anjab->status }})</div>
+                                                    <div class="flex items-center justify-between">
+                                                        <span class="font-black text-[10.5px]" style="color: #064e3b !important;">3. S3 KEPERAWATAN</span>
+                                                        <span class="text-[8px] font-bold px-1.5 py-0.2 rounded {{ $prodiS3Anjab->bezetting > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800 border border-amber-300' }}">
+                                                            {{ $prodiS3Anjab->bezetting > 0 ? 'Terisi' : 'Butuh SK' }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="text-[9.5px] truncate mt-0.5">
+                                                        @if($prodiS3Pejabat)
+                                                            <span class="text-emerald-800 font-bold">👤 {{ $prodiS3Pejabat->nama_lengkap }}</span>
+                                                        @else
+                                                            <span class="text-gray-400 italic">👤 (Menunggu SK Penetapan)</span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="text-[9px] text-gray-500 mt-0.5">Bezetting: <strong>{{ $prodiS3Anjab->bezetting }}</strong> / Butuh: {{ $prodiS3Anjab->kebutuhan }}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -961,13 +1056,25 @@
                                                          {{ $prodiNersAnjab->bezetting }},
                                                          {{ $prodiNersAnjab->kebutuhan }},
                                                          '{{ $prodiNersAnjab->status }}',
-                                                         {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Koordinator Prodi Ners%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
+                                                         {{ $prodiNersList }},
                                                          '{{ addslashes($prodiNersAnjab->ikhtisar) }}',
                                                          '{{ $prodiNersAnjab->anjab_url }}',
                                                          '{{ $prodiNersAnjab->abk_url }}'
                                                      )">
-                                                    <div class="font-black text-[11px]" style="color: #115e59 !important;">1. NERS</div>
-                                                    <div class="text-[9.5px] text-gray-600 mt-0.5">Bezetting: {{ $prodiNersAnjab->bezetting }} / Butuh: {{ $prodiNersAnjab->kebutuhan }} ({{ $prodiNersAnjab->status }})</div>
+                                                    <div class="flex items-center justify-between">
+                                                        <span class="font-black text-[11px]" style="color: #115e59 !important;">1. NERS</span>
+                                                        <span class="text-[8px] font-bold px-1.5 py-0.2 rounded {{ $prodiNersAnjab->bezetting > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800 border border-amber-300' }}">
+                                                            {{ $prodiNersAnjab->bezetting > 0 ? 'Terisi' : 'Butuh SK' }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="text-[9.5px] truncate mt-0.5">
+                                                        @if($prodiNersPejabat)
+                                                            <span class="text-teal-900 font-bold">👤 {{ $prodiNersPejabat->nama_lengkap }}</span>
+                                                        @else
+                                                            <span class="text-gray-400 italic">👤 (Menunggu SK Penetapan)</span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="text-[9.5px] text-gray-500 mt-0.5">Bezetting: <strong>{{ $prodiNersAnjab->bezetting }}</strong> / Butuh: {{ $prodiNersAnjab->kebutuhan }}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -998,13 +1105,14 @@
                                                                 ->orWhere('nama_jabatan', 'like', '%Keu%'))
                                           ->where('nama_jabatan', 'not like', '%Kemahasiswaan%')
                                     )->first();
-                                    $wd2List = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
+                                    $rawWd2List = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
                                         $q->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Wakil Dekan%')
                                                                 ->orWhere('nama_jabatan', 'like', '%WD%'))
                                           ->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Keuangan%')
                                                                 ->orWhere('nama_jabatan', 'like', '%Keu%'))
                                           ->where('nama_jabatan', 'not like', '%Kemahasiswaan%')
-                                    )->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                                    )->get();
+                                    $wd2List = $formatPegawaiWithSk($rawWd2List, 'Wakil Dekan II');
                                     $wd2Bezetting = $wd2Pejabat ? 1 : ($wd2Anjab->bezetting > 0 ? 1 : 0);
                                     $wd2Status = $wd2Bezetting >= 1 ? 'Ideal' : 'Kurang 1';
                                 @endphp
@@ -1039,8 +1147,8 @@
                                     @endif
                                     <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
                                         <span>Bezetting: <strong style="color: #ffffff !important;">{{ $wd2Bezetting }}</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
-                                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold {{ $wd2Bezetting < 1 ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white' }}">
-                                            {{ $wd2Status }}
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold {{ $wd2Bezetting < 1 ? 'bg-amber-400 text-amber-900' : 'bg-emerald-500 text-white' }}">
+                                            {{ $wd2Bezetting >= 1 ? 'Terisi' : 'Butuh SK' }}
                                         </span>
                                     </div>
                                 </div>
@@ -1054,9 +1162,10 @@
                                         $q->where('nama_jabatan', 'like', '%Kepala Bagian Umum%')
                                           ->orWhere('nama_jabatan', 'like', '%Kabag Umum%')
                                     )->first();
-                                    $kabagList = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Bagian Umum%'))
+                                    $rawKabagList = \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Bagian Umum%'))
                                         ->orWhereHas('unitKerja', fn($q) => $q->where('nama_unit', 'like', '%Bagian Umum%'))
-                                        ->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                                        ->get();
+                                    $kabagList = $formatPegawaiWithSk($rawKabagList, 'Kepala Bagian Umum');
                                     $kabagBezetting = $kabagPejabat ? 1 : ($kabagAnjab->bezetting > 0 ? 1 : 0);
                                     $kabagStatus = $kabagBezetting >= 1 ? 'Ideal' : 'Kurang 1';
                                 @endphp
@@ -1087,8 +1196,8 @@
                                     @endif
                                     <div class="text-[9.5px] mt-1.5 pt-1 border-t border-white/20 text-amber-100 flex justify-between items-center px-1">
                                         <span>Bezetting: <strong>{{ $kabagBezetting }}</strong>/1</span>
-                                        <span class="text-[8.5px] px-1.5 py-0.2 rounded font-bold {{ $kabagBezetting < 1 ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white' }}">
-                                            {{ $kabagStatus }}
+                                        <span class="text-[8.5px] px-1.5 py-0.2 rounded font-bold {{ $kabagBezetting < 1 ? 'bg-amber-400 text-amber-900' : 'bg-emerald-500 text-white' }}">
+                                            {{ $kabagBezetting >= 1 ? 'Terisi' : 'Butuh SK' }}
                                         </span>
                                     </div>
                                 </div>
@@ -1167,7 +1276,7 @@
                                              {{ $pokjaAkadBezetting }},
                                              1,
                                              '{{ $pokjaAkadStatus }}',
-                                             {{ $pokjaAkadList }},
+                                             {{ $formatPegawaiWithSk($pokjaAkadList, 'Pokja Akademik') }},
                                              '{{ addslashes($pokjaAkadAnjab->ikhtisar) }}',
                                              '{{ $pokjaAkadAnjab->anjab_url }}',
                                              '{{ $pokjaAkadAnjab->abk_url }}'
@@ -1179,12 +1288,12 @@
                                             </div>
                                         @else
                                             <div class="text-[9px] text-amber-700/80 italic mt-0.5">
-                                                (Belum ada pejabat definitif - Butuh SK)
+                                                (Menunggu SK Penetapan)
                                             </div>
                                         @endif
                                         <div class="text-[9.5px] text-gray-600 mt-0.5 flex justify-between items-center">
                                             <span>Bezetting: <strong>{{ $pokjaAkadBezetting }}</strong>/1 ({{ $pokjaAkadList->count() }} staf)</span>
-                                            <span class="text-[8.5px] font-bold px-1.5 rounded {{ $pokjaAkadBezetting < 1 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800' }}">{{ $pokjaAkadStatus }}</span>
+                                            <span class="text-[8.5px] font-bold px-1.5 rounded {{ $pokjaAkadBezetting < 1 ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-emerald-100 text-emerald-800' }}">{{ $pokjaAkadBezetting >= 1 ? 'Terisi' : 'Butuh SK' }}</span>
                                         </div>
                                     </div>
 
@@ -1197,7 +1306,7 @@
                                              {{ $pokjaKeuBezetting }},
                                              1,
                                              '{{ $pokjaKeuStatus }}',
-                                             {{ $pokjaKeuList }},
+                                             {{ $formatPegawaiWithSk($pokjaKeuList, 'Pokja Keuangan') }},
                                              '{{ addslashes($pokjaKeuAnjab->ikhtisar) }}',
                                              '{{ $pokjaKeuAnjab->anjab_url }}',
                                              '{{ $pokjaKeuAnjab->abk_url }}'
@@ -1209,12 +1318,12 @@
                                             </div>
                                         @else
                                             <div class="text-[9px] text-amber-700/80 italic mt-0.5">
-                                                (Belum ada pejabat definitif - Butuh SK)
+                                                (Menunggu SK Penetapan)
                                             </div>
                                         @endif
                                         <div class="text-[9.5px] text-gray-600 mt-0.5 flex justify-between items-center">
                                             <span>Bezetting: <strong>{{ $pokjaKeuBezetting }}</strong>/1 ({{ $pokjaKeuList->count() }} staf)</span>
-                                            <span class="text-[8.5px] font-bold px-1.5 rounded {{ $pokjaKeuBezetting < 1 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800' }}">{{ $pokjaKeuStatus }}</span>
+                                            <span class="text-[8.5px] font-bold px-1.5 rounded {{ $pokjaKeuBezetting < 1 ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-emerald-100 text-emerald-800' }}">{{ $pokjaKeuBezetting >= 1 ? 'Terisi' : 'Butuh SK' }}</span>
                                         </div>
                                     </div>
 
@@ -1227,7 +1336,7 @@
                                              {{ $pokjaUmumBezetting }},
                                              1,
                                              '{{ $pokjaUmumStatus }}',
-                                             {{ $pokjaUmumList }},
+                                             {{ $formatPegawaiWithSk($pokjaUmumList, 'Pokja Umum') }},
                                              '{{ addslashes($pokjaUmumAnjab->ikhtisar) }}',
                                              '{{ $pokjaUmumAnjab->anjab_url }}',
                                              '{{ $pokjaUmumAnjab->abk_url }}'
@@ -1239,12 +1348,12 @@
                                             </div>
                                         @else
                                             <div class="text-[9px] text-amber-700/80 italic mt-0.5">
-                                                (Belum ada pejabat definitif - Butuh SK)
+                                                (Menunggu SK Penetapan)
                                             </div>
                                         @endif
                                         <div class="text-[9.5px] text-gray-600 mt-0.5 flex justify-between items-center">
                                             <span>Bezetting: <strong>{{ $pokjaUmumBezetting }}</strong>/1 ({{ $pokjaUmumList->count() }} staf)</span>
-                                            <span class="text-[8.5px] font-bold px-1.5 rounded {{ $pokjaUmumBezetting < 1 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800' }}">{{ $pokjaUmumStatus }}</span>
+                                            <span class="text-[8.5px] font-bold px-1.5 rounded {{ $pokjaUmumBezetting < 1 ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-emerald-100 text-emerald-800' }}">{{ $pokjaUmumBezetting >= 1 ? 'Terisi' : 'Butuh SK' }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1262,13 +1371,14 @@
                                                             ->orWhere('nama_jabatan', 'like', '%Alumni%')
                                                             ->orWhere('nama_jabatan', 'like', '%Kerjasama%'))
                                 )->first();
-                                $wd3List = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
+                                $rawWd3List = \App\Models\Pegawai::whereHas('jabatan', fn($q) => 
                                     $q->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Wakil Dekan%')
                                                             ->orWhere('nama_jabatan', 'like', '%WD%'))
                                       ->where(fn($sq) => $sq->where('nama_jabatan', 'like', '%Kemahasiswaan%')
                                                             ->orWhere('nama_jabatan', 'like', '%Alumni%')
                                                             ->orWhere('nama_jabatan', 'like', '%Kerjasama%'))
-                                )->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']);
+                                )->get();
+                                $wd3List = $formatPegawaiWithSk($rawWd3List, 'Wakil Dekan III');
                                 $wd3Bezetting = $wd3Pejabat ? 1 : ($wd3Anjab->bezetting > 0 ? 1 : 0);
                                 $wd3Status = $wd3Bezetting >= 1 ? 'Ideal' : 'Kurang 1';
                             @endphp
@@ -1307,8 +1417,8 @@
                                     @endif
                                     <div class="mt-3 pt-2 flex justify-between items-center text-[11px]" style="border-top: 1px solid rgba(255,255,255,0.3) !important; color: #e0e7ff !important;">
                                         <span>Bezetting: <strong style="color: #ffffff !important;">{{ $wd3Bezetting }}</strong> / Butuh: <strong style="color: #ffffff !important;">1</strong></span>
-                                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold {{ $wd3Bezetting < 1 ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white' }}">
-                                            {{ $wd3Status }}
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold {{ $wd3Bezetting < 1 ? 'bg-amber-400 text-amber-900' : 'bg-emerald-500 text-white' }}">
+                                            {{ $wd3Bezetting >= 1 ? 'Terisi' : 'Butuh SK' }}
                                         </span>
                                     </div>
                                 </div>
@@ -1628,36 +1738,55 @@
                 <div class="mt-4">
                     <h4 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Pejabat / Pegawai yang Menduduki:</h4>
                     <template x-if="activeNode && activeNode.pegawaiList && activeNode.pegawaiList.length > 0">
-                        <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        <div class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
                             <template x-for="p in activeNode.pegawaiList" :key="p.nip">
-                                <div class="flex items-center gap-3 p-2 rounded-lg bg-gray-50 border border-gray-200 text-xs">
-                                    <div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0 overflow-hidden">
-                                        <template x-if="p.foto">
-                                            <img :src="'/storage/' + p.foto" class="w-full h-full object-cover">
-                                        </template>
-                                        <template x-if="!p.foto">
-                                            <span x-text="(p.nama || p.nama_lengkap || '').substring(0, 1)"></span>
-                                        </template>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center justify-between gap-1">
-                                            <span class="font-bold text-gray-900 truncate" x-text="(p.gelar_depan ? p.gelar_depan + ' ' : '') + (p.nama || p.nama_lengkap || '') + (p.gelar_belakang ? ', ' + p.gelar_belakang : '')"></span>
-                                            <template x-if="p.peran">
-                                                <span class="px-2 py-0.5 text-[9.5px] font-bold rounded shrink-0"
-                                                      :class="p.peran === 'Koordinator' || p.peran === 'Ketua' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-200'"
-                                                      x-text="p.peran"></span>
+                                <div class="p-2.5 rounded-xl bg-gray-50 border border-gray-200 text-xs shadow-2xs">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0 overflow-hidden shadow-xs">
+                                            <template x-if="p.foto">
+                                                <img :src="'/storage/' + p.foto" class="w-full h-full object-cover">
+                                            </template>
+                                            <template x-if="!p.foto">
+                                                <span x-text="(p.nama || p.nama_lengkap || '').substring(0, 1)"></span>
                                             </template>
                                         </div>
-                                        <div class="text-[11px] text-gray-500 font-mono" x-text="'NIP: ' + p.nip"></div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center justify-between gap-1">
+                                                <span class="font-bold text-gray-900 truncate" x-text="(p.gelar_depan ? p.gelar_depan + ' ' : '') + (p.nama || p.nama_lengkap || '') + (p.gelar_belakang ? ', ' + p.gelar_belakang : '')"></span>
+                                                <template x-if="p.peran">
+                                                    <span class="px-2 py-0.5 text-[9.5px] font-bold rounded shrink-0"
+                                                          :class="p.peran === 'Koordinator' || p.peran === 'Ketua' || p.peran === 'Pejabat' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-200'"
+                                                          x-text="p.peran"></span>
+                                                </template>
+                                            </div>
+                                            <div class="text-[11px] text-gray-500 font-mono" x-text="'NIP: ' + p.nip"></div>
+                                        </div>
+                                    </div>
+
+                                    {{-- Dokumen SK Penetapan Pejabat --}}
+                                    <div class="mt-2 pt-2 border-t border-gray-200/80 flex flex-wrap items-center justify-between gap-1.5 text-[10.5px]">
+                                        <div class="flex items-center gap-1.5 text-slate-700 min-w-0">
+                                            <span class="text-xs">📜</span>
+                                            <span class="font-semibold text-slate-500 shrink-0">SK:</span>
+                                            <span class="font-mono font-bold text-indigo-900 truncate" x-text="p.nomor_sk ? p.nomor_sk : (p.keterangan ? p.keterangan : 'SK Definitif Pejabat')"></span>
+                                        </div>
+                                        <template x-if="p.tmt_jabatan">
+                                            <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-mono text-[9.5px] shrink-0" x-text="'TMT: ' + p.tmt_jabatan"></span>
+                                        </template>
                                     </div>
                                 </div>
                             </template>
                         </div>
                     </template>
                     <template x-if="!activeNode || !activeNode.pegawaiList || activeNode.pegawaiList.length === 0">
-                        <p class="text-xs text-gray-500 italic p-2 bg-gray-50 rounded border border-gray-200">
-                            Pegawai terdata di pangkalan data SIMPEG sesuai formasi ini.
-                        </p>
+                        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-xs">
+                            <div class="flex items-center gap-2 font-bold text-amber-950">
+                                <span class="text-base">⏳</span> Status: Menunggu SK Penetapan
+                            </div>
+                            <p class="text-[11px] text-amber-800 mt-1 leading-relaxed">
+                                Formasi jabatan ini saat ini belum terisi pejabat definitif aktif di pangkalan data SIMPEG. Menunggu penerbitan/verifikasi SK Penetapan Pejabat dari Rektor / Dekan.
+                            </p>
+                        </div>
                     </template>
                 </div>
 
