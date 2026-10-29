@@ -9,7 +9,7 @@ class PegawaiPenugasan extends Model
 {
     use RecordsSyncOutbox;
 
-    public const PERAN = ['Koordinator', 'Anggota', 'Staf'];
+    public const PERAN = ['Ketua', 'Sekretaris', 'Koordinator', 'Anggota', 'Staf'];
 
     protected $table = 'pegawai_penugasan';
 

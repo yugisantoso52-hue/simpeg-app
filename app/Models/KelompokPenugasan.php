@@ -10,6 +10,8 @@ class KelompokPenugasan extends Model
     use RecordsSyncOutbox;
 
     public const KATEGORI = [
+        'spmf'            => 'Satuan Penjaminan Mutu (SPMF / GPM)',
+        'senat'           => 'Senat Fakultas',
         'kjfd'            => 'Kelompok Jabatan Fungsional Dosen (KJFD)',
         'unit_fungsional' => 'Unit Fungsional',
         'laboratorium'    => 'Laboratorium / Ruang Keperawatan',
@@ -35,6 +37,8 @@ class KelompokPenugasan extends Model
     public function getLabelAttribute(): string
     {
         $prefix = match ($this->kategori) {
+            'spmf'            => 'SPMF',
+            'senat'           => 'Senat',
             'kjfd'            => 'KJFD',
             'unit_fungsional' => 'Unit',
             'laboratorium'    => 'Lab',

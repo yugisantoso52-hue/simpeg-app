@@ -171,6 +171,89 @@
                 'pegawaiList' => $pegawaiList,
             ];
         };
+
+        $getPejabatFormasi = function(array $jabatanKeywords, array $kelompokKeywords, int $targetKebutuhan = 1) use ($kelompokPenugasan) {
+            $fromKelompok = collect();
+            foreach ($kelompokPenugasan as $kel) {
+                $kName = strtolower(trim($kel->nama));
+                $match = false;
+                foreach ($kelompokKeywords as $kw) {
+                    if (str_contains($kName, strtolower(trim($kw)))) {
+                        $match = true;
+                        break;
+                    }
+                }
+                if ($match) {
+                    foreach ($kel->penugasan as $pen) {
+                        $p = $pen->pegawai;
+                        if ($p && ($p->status_pegawai === 'Aktif' || empty($p->status_pegawai))) {
+                            $namaGelar = trim(($p->gelar_depan ? $p->gelar_depan . ' ' : '') . $p->nama . ($p->gelar_belakang ? ', ' . $p->gelar_belakang : ''));
+                            $fromKelompok->push([
+                                'id'             => $p->id,
+                                'nama'           => $p->nama,
+                                'gelar_depan'    => $p->gelar_depan,
+                                'gelar_belakang' => $p->gelar_belakang,
+                                'nama_lengkap'   => $namaGelar ?: $p->nama,
+                                'nip'            => $p->nip,
+                                'foto'           => $p->foto,
+                                'peran'          => $pen->peran ?: 'Anggota',
+                                'keterangan'     => $pen->keterangan,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            $fromJabatan = \App\Models\Pegawai::where('status_pegawai', 'Aktif')
+                ->where(function($q) use ($jabatanKeywords) {
+                    $q->whereHas('jabatan', function($sq) use ($jabatanKeywords) {
+                        $sq->where(function($ssq) use ($jabatanKeywords) {
+                            foreach ($jabatanKeywords as $kw) {
+                                $ssq->orWhere('nama_jabatan', 'like', "%{$kw}%");
+                            }
+                        });
+                    })->orWhereHas('riwayatJabatan', function($sq) use ($jabatanKeywords) {
+                        $sq->where('status', 'aktif')
+                           ->whereHas('jabatan', function($ssq) use ($jabatanKeywords) {
+                               $ssq->where(function($sssq) use ($jabatanKeywords) {
+                                   foreach ($jabatanKeywords as $kw) {
+                                       $sssq->orWhere('nama_jabatan', 'like', "%{$kw}%");
+                                   }
+                               });
+                           });
+                    });
+                })
+                ->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto'])
+                ->map(function($p) {
+                    $namaGelar = trim(($p->gelar_depan ? $p->gelar_depan . ' ' : '') . $p->nama . ($p->gelar_belakang ? ', ' . $p->gelar_belakang : ''));
+                    return [
+                        'id'             => $p->id,
+                        'nama'           => $p->nama,
+                        'gelar_depan'    => $p->gelar_depan,
+                        'gelar_belakang' => $p->gelar_belakang,
+                        'nama_lengkap'   => $namaGelar ?: $p->nama,
+                        'nip'            => $p->nip,
+                        'foto'           => $p->foto,
+                        'peran'          => 'Pejabat',
+                        'keterangan'     => null,
+                    ];
+                });
+
+            $pegawaiList = $fromKelompok->concat($fromJabatan)->unique('id')->values();
+            $bezetting = $pegawaiList->count();
+            $kebutuhan = $targetKebutuhan;
+            $selisih = $bezetting - $kebutuhan;
+            $status = $selisih < 0 ? ('🔴 Kurang ' . abs($selisih)) : ($selisih > 0 ? ('🟡 Lebih +' . $selisih) : '🟢 Ideal');
+
+            return (object) [
+                'bezetting'    => $bezetting,
+                'kebutuhan'    => $kebutuhan,
+                'selisih'      => $selisih,
+                'status'       => $status,
+                'pegawaiList'  => $pegawaiList,
+                'pejabatUtama' => $pegawaiList->first(),
+            ];
+        };
     @endphp
 
     <div class="py-6" x-data="{
@@ -270,35 +353,131 @@
                     <div class="w-full flex items-center justify-center gap-4 relative">
 
                         {{-- Sayap Kiri: SATUAN PENJAMINAN MUTU (SPMF) dengan GPM S1, S2, NERS --}}
-                        {{-- Sayap Kiri: SATUAN PENJAMINAN MUTU (SPMF) dengan GPM S1, S2, NERS --}}
-                        @php $spmfAnjab = $getAnjab('Kepala SPMF / GPM'); @endphp
-                        <div class="w-72">
-                            <div class="p-3.5 rounded-xl shadow-md cursor-pointer hover:scale-[1.02] transition"
-                                 style="background-color: #ffffff !important; border: 2px solid #0284c7 !important;"
-                                 @click="openDetail(
-                                     'SATUAN PENJAMINAN MUTU (SPMF)',
-                                     'Unsur Penjaminan Mutu & Gugus Penjamin Mutu (GPM) (Grade 11)',
-                                     {{ $spmfAnjab->bezetting }},
-                                     {{ $spmfAnjab->kebutuhan }},
-                                     '{{ $spmfAnjab->status }}',
-                                     {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%SPMF%')->orWhere('nama_jabatan', 'like', '%GPM%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                     '{{ addslashes($spmfAnjab->ikhtisar) }}',
-                                     '{{ $spmfAnjab->anjab_url }}',
-                                     '{{ $spmfAnjab->abk_url }}'
-                                 )">
-                                <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11px; letter-spacing: 0.3px; padding: 6px 8px; border-radius: 6px; text-align: center; text-transform: uppercase;">
+                        @php
+                            $gpmS1 = $getPejabatFormasi(['GPM S1', 'GPM%S1', 'GPM S1 Keperawatan'], ['GPM S1'], 1);
+                            $gpmS2 = $getPejabatFormasi(['GPM S2', 'GPM%S2', 'GPM S2 Keperawatan'], ['GPM S2'], 1);
+                            $gpmNers = $getPejabatFormasi(['GPM Profesi Ners', 'GPM NERS', 'GPM%Ners', 'GPM%Profesi Ners'], ['GPM NERS', 'GPM-NERS', 'GPM Profesi Ners'], 1);
+
+                            $spmfTotalBezetting = $gpmS1->bezetting + $gpmS2->bezetting + $gpmNers->bezetting;
+                            $spmfTotalKebutuhan = 3;
+                            $spmfSelisih = $spmfTotalBezetting - $spmfTotalKebutuhan;
+                            $spmfStatus = $spmfSelisih < 0 ? ('🔴 Kurang ' . abs($spmfSelisih)) : ($spmfSelisih > 0 ? ('🟡 Lebih +' . $spmfSelisih) : '🟢 Ideal');
+                            $spmfListAll = $gpmS1->pegawaiList->concat($gpmS2->pegawaiList)->concat($gpmNers->pegawaiList)->unique('id')->values();
+                        @endphp
+                        <div class="w-80">
+                            <div class="p-3.5 rounded-xl shadow-md transition"
+                                 style="background-color: #ffffff !important; border: 2px solid #0284c7 !important;">
+                                <div class="cursor-pointer hover:opacity-95 transition"
+                                     style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11px; letter-spacing: 0.3px; padding: 6px 8px; border-radius: 6px; text-align: center; text-transform: uppercase;"
+                                     @click="openDetail(
+                                         'SATUAN PENJAMINAN MUTU (SPMF)',
+                                         'Unsur Penjaminan Mutu & Gugus Penjamin Mutu (GPM S1, S2, Profesi Ners)',
+                                         {{ $spmfTotalBezetting }},
+                                         {{ $spmfTotalKebutuhan }},
+                                         '{{ $spmfStatus }}',
+                                         {{ $spmfListAll }},
+                                         'Menyelenggarakan penjaminan mutu akademik secara konsisten dan berkelanjutan di tingkat program studi S1, S2, dan Profesi Ners.'
+                                     )">
                                     SATUAN PENJAMINAN MUTU (SPMF)
                                 </div>
-                                <div class="mt-2 space-y-1 text-xs">
-                                    <div class="py-1 px-2 rounded font-bold text-center text-[10.5px]" style="background-color: #f0f9ff !important; border: 1px solid #bae6fd !important; color: #0369a1 !important;">
-                                        GPM S1
+                                <div class="mt-2.5 space-y-2 text-xs">
+                                    {{-- GPM S1 (1 org) --}}
+                                    <div class="p-2 rounded-lg cursor-pointer hover:scale-[1.01] transition"
+                                         style="background-color: #f0f9ff !important; border: 1.5px solid #bae6fd !important;"
+                                         @click.stop="openDetail(
+                                             'Gugus Penjamin Mutu (GPM) S1 Keperawatan',
+                                             'Petugas Penjaminan Mutu Program Studi S1 Keperawatan (Formasi: 1 Org)',
+                                             {{ $gpmS1->bezetting }},
+                                             1,
+                                             '{{ $gpmS1->status }}',
+                                             {{ $gpmS1->pegawaiList }},
+                                             'Melaksanakan penjaminan mutu proses pembelajaran, kurikulum, dan evaluasi capaian pembelajaran lulusan Prodi S1.'
+                                         )">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-black text-[11px]" style="color: #0369a1 !important;">GPM S1</span>
+                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $gpmS1->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
+                                                {{ $gpmS1->status }}
+                                            </span>
+                                        </div>
+                                        <div class="mt-1 text-[10.5px] font-medium text-slate-700 truncate">
+                                            @if($gpmS1->pejabatUtama)
+                                                <span class="text-blue-700 font-bold">👤 {{ $gpmS1->pejabatUtama['nama_lengkap'] }}</span>
+                                            @else
+                                                <span class="italic text-slate-400">👤 (Belum diisi / Butuh 1 org)</span>
+                                            @endif
+                                        </div>
+                                        <div class="mt-0.5 text-[9.5px] text-slate-500">
+                                            Bezetting: <strong class="text-slate-800">{{ $gpmS1->bezetting }}</strong> / Butuh: <strong>1</strong> org
+                                        </div>
                                     </div>
-                                    <div class="py-1 px-2 rounded font-bold text-center text-[10.5px]" style="background-color: #f0f9ff !important; border: 1px solid #bae6fd !important; color: #0369a1 !important;">
-                                        GPM S2
+
+                                    {{-- GPM S2 (1 org) --}}
+                                    <div class="p-2 rounded-lg cursor-pointer hover:scale-[1.01] transition"
+                                         style="background-color: #f0f9ff !important; border: 1.5px solid #bae6fd !important;"
+                                         @click.stop="openDetail(
+                                             'Gugus Penjamin Mutu (GPM) S2 Keperawatan',
+                                             'Petugas Penjaminan Mutu Program Studi Magister (S2) Keperawatan (Formasi: 1 Org)',
+                                             {{ $gpmS2->bezetting }},
+                                             1,
+                                             '{{ $gpmS2->status }}',
+                                             {{ $gpmS2->pegawaiList }},
+                                             'Melaksanakan penjaminan mutu proses pembelajaran, riset tesis, dan kurikulum Prodi S2 Keperawatan.'
+                                         )">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-black text-[11px]" style="color: #0369a1 !important;">GPM S2</span>
+                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $gpmS2->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
+                                                {{ $gpmS2->status }}
+                                            </span>
+                                        </div>
+                                        <div class="mt-1 text-[10.5px] font-medium text-slate-700 truncate">
+                                            @if($gpmS2->pejabatUtama)
+                                                <span class="text-blue-700 font-bold">👤 {{ $gpmS2->pejabatUtama['nama_lengkap'] }}</span>
+                                            @else
+                                                <span class="italic text-slate-400">👤 (Belum diisi / Butuh 1 org)</span>
+                                            @endif
+                                        </div>
+                                        <div class="mt-0.5 text-[9.5px] text-slate-500">
+                                            Bezetting: <strong class="text-slate-800">{{ $gpmS2->bezetting }}</strong> / Butuh: <strong>1</strong> org
+                                        </div>
                                     </div>
-                                    <div class="py-1 px-2 rounded font-bold text-center text-[10.5px]" style="background-color: #f0f9ff !important; border: 1px solid #bae6fd !important; color: #0369a1 !important;">
-                                        GPM NERS
+
+                                    {{-- GPM NERS (1 org) --}}
+                                    <div class="p-2 rounded-lg cursor-pointer hover:scale-[1.01] transition"
+                                         style="background-color: #f0f9ff !important; border: 1.5px solid #bae6fd !important;"
+                                         @click.stop="openDetail(
+                                             'Gugus Penjamin Mutu (GPM) Profesi Ners',
+                                             'Petugas Penjaminan Mutu Program Studi Profesi Ners (Formasi: 1 Org)',
+                                             {{ $gpmNers->bezetting }},
+                                             1,
+                                             '{{ $gpmNers->status }}',
+                                             {{ $gpmNers->pegawaiList }},
+                                             'Melaksanakan penjaminan mutu stase klinik, uji kompetensi, dan evaluasi praktik Profesi Ners.'
+                                         )">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-black text-[11px]" style="color: #0369a1 !important;">GPM NERS</span>
+                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $gpmNers->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
+                                                {{ $gpmNers->status }}
+                                            </span>
+                                        </div>
+                                        <div class="mt-1 text-[10.5px] font-medium text-slate-700 truncate">
+                                            @if($gpmNers->pejabatUtama)
+                                                <span class="text-blue-700 font-bold">👤 {{ $gpmNers->pejabatUtama['nama_lengkap'] }}</span>
+                                            @else
+                                                <span class="italic text-slate-400">👤 (Belum diisi / Butuh 1 org)</span>
+                                            @endif
+                                        </div>
+                                        <div class="mt-0.5 text-[9.5px] text-slate-500">
+                                            Bezetting: <strong class="text-slate-800">{{ $gpmNers->bezetting }}</strong> / Butuh: <strong>1</strong> org
+                                        </div>
                                     </div>
+                                </div>
+
+                                {{-- Footer Total Bezetting SPMF --}}
+                                <div class="mt-2.5 pt-2 flex items-center justify-between text-[10px] border-t border-sky-100 text-slate-600">
+                                    <span>Total: <strong>{{ $spmfTotalBezetting }}</strong> / Butuh: <strong>3</strong></span>
+                                    <span class="font-bold px-2 py-0.5 rounded-full {{ $spmfTotalBezetting >= 3 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
+                                        {{ $spmfStatus }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -353,28 +532,132 @@
                         {{-- Garis Putus-putus Penghubung Kanan ke Senat (Pertimbangan) --}}
                         <div class="h-0.5 w-12 border-t-2 border-dashed" style="border-color: #64748b !important;"></div>
 
-                        {{-- Sayap Kanan: SENAT FAKULTAS (SEKRETARIS) --}}
-                        <div class="w-72">
-                            <div class="p-3.5 rounded-xl shadow-md cursor-pointer hover:scale-[1.02] transition"
-                                 style="background-color: #ffffff !important; border: 2px dashed #475569 !important;"
-                                 @click="openDetail(
-                                     'SENAT FAKULTAS',
-                                     'Badan Pertimbangan Normatif Fakultas',
-                                     {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Senat%'))->count() }},
-                                     2, 'Ideal',
-                                     {{ \App\Models\Pegawai::whereHas('jabatan', fn($q) => $q->where('nama_jabatan', 'like', '%Senat%'))->get(['id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto']) }},
-                                     'Merumuskan kebijakan akademik, memberikan pertimbangan dan pengawasan terhadap pelaksanaan proses akademik di lingkungan Fakultas Keperawatan.'
-                                 )">
-                                <div style="background: linear-gradient(135deg, #334155 0%, #1e293b 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11px; letter-spacing: 0.3px; padding: 6px 8px; border-radius: 6px; text-align: center; text-transform: uppercase;">
+                        {{-- Sayap Kanan: SENAT FAKULTAS (Ketua, Sekretaris, Komisi Akademik & Etik) --}}
+                        @php
+                            $ketuaSenat = $getPejabatFormasi(['Ketua Senat', 'Ketua Senat Fakultas'], ['Ketua Senat'], 1);
+                            $sekretarisSenat = $getPejabatFormasi(['Sekretaris Senat', 'Sekretaris Senat Fakultas'], ['Sekretaris Senat'], 1);
+                            $komisiSenat = $getPejabatFormasi(['Komisi Akademik & Etik', 'Komisi Akademik', 'Akademik & Etik Senat'], ['Komisi Akademik & Etik', 'Komisi Akademik'], 3);
+
+                            $senatTotalBezetting = $ketuaSenat->bezetting + $sekretarisSenat->bezetting + $komisiSenat->bezetting;
+                            $senatTotalKebutuhan = 1 + 1 + $komisiSenat->kebutuhan;
+                            $senatSelisih = $senatTotalBezetting - $senatTotalKebutuhan;
+                            $senatStatus = $senatSelisih < 0 ? ('🔴 Kurang ' . abs($senatSelisih)) : ($senatSelisih > 0 ? ('🟡 Lebih +' . $senatSelisih) : '🟢 Ideal');
+                            $senatListAll = $ketuaSenat->pegawaiList->concat($sekretarisSenat->pegawaiList)->concat($komisiSenat->pegawaiList)->unique('id')->values();
+                        @endphp
+                        <div class="w-80">
+                            <div class="p-3.5 rounded-xl shadow-md transition"
+                                 style="background-color: #ffffff !important; border: 2px dashed #475569 !important;">
+                                <div class="cursor-pointer hover:opacity-95 transition"
+                                     style="background: linear-gradient(135deg, #334155 0%, #1e293b 100%) !important; color: #ffffff !important; font-weight: 900; font-size: 11px; letter-spacing: 0.3px; padding: 6px 8px; border-radius: 6px; text-align: center; text-transform: uppercase;"
+                                     @click="openDetail(
+                                         'SENAT FAKULTAS',
+                                         'Badan Pertimbangan Normatif Fakultas (Ketua, Sekretaris, Komisi Akademik & Etik)',
+                                         {{ $senatTotalBezetting }},
+                                         {{ $senatTotalKebutuhan }},
+                                         '{{ $senatStatus }}',
+                                         {{ $senatListAll }},
+                                         'Merumuskan kebijakan akademik, memberikan pertimbangan dan pengawasan terhadap pelaksanaan proses akademik di lingkungan Fakultas Keperawatan.'
+                                     )">
                                     SENAT FAKULTAS
                                 </div>
-                                <div class="mt-2 space-y-1 text-xs">
-                                    <div class="py-1 px-2 rounded font-bold text-center text-[10.5px]" style="background-color: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #334155 !important;">
-                                        SEKRETARIS
+                                <div class="mt-2.5 space-y-2 text-xs">
+                                    {{-- Ketua Senat (1 org) --}}
+                                    <div class="p-2 rounded-lg cursor-pointer hover:scale-[1.01] transition"
+                                         style="background-color: #f8fafc !important; border: 1.5px solid #cbd5e1 !important;"
+                                         @click.stop="openDetail(
+                                             'Ketua Senat Fakultas Keperawatan',
+                                             'Pimpinan Badan Normatif Senat Fakultas (Formasi: 1 Org)',
+                                             {{ $ketuaSenat->bezetting }},
+                                             1,
+                                             '{{ $ketuaSenat->status }}',
+                                             {{ $ketuaSenat->pegawaiList }},
+                                             'Memimpin rapat senat, mengoordinasikan perumusan norma akademik, dan memberikan pertimbangan kepada pimpinan fakultas.'
+                                         )">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-black text-[11px]" style="color: #1e293b !important;">KETUA SENAT</span>
+                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $ketuaSenat->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
+                                                {{ $ketuaSenat->status }}
+                                            </span>
+                                        </div>
+                                        <div class="mt-1 text-[10.5px] font-medium text-slate-700 truncate">
+                                            @if($ketuaSenat->pejabatUtama)
+                                                <span class="text-indigo-900 font-bold">👤 {{ $ketuaSenat->pejabatUtama['nama_lengkap'] }}</span>
+                                            @else
+                                                <span class="italic text-slate-400">👤 (Belum diisi / Butuh 1 org)</span>
+                                            @endif
+                                        </div>
+                                        <div class="mt-0.5 text-[9.5px] text-slate-500">
+                                            Bezetting: <strong class="text-slate-800">{{ $ketuaSenat->bezetting }}</strong> / Butuh: <strong>1</strong> org
+                                        </div>
                                     </div>
-                                    <div class="py-1 px-2 rounded font-bold text-center text-[10.5px]" style="background-color: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #64748b !important;">
-                                        Komisi Akademik & Etik
+
+                                    {{-- Sekretaris Senat (1 org) --}}
+                                    <div class="p-2 rounded-lg cursor-pointer hover:scale-[1.01] transition"
+                                         style="background-color: #f8fafc !important; border: 1.5px solid #cbd5e1 !important;"
+                                         @click.stop="openDetail(
+                                             'Sekretaris Senat Fakultas Keperawatan',
+                                             'Sekretariat & Administrasi Pertimbangan Senat Fakultas (Formasi: 1 Org)',
+                                             {{ $sekretarisSenat->bezetting }},
+                                             1,
+                                             '{{ $sekretarisSenat->status }}',
+                                             {{ $sekretarisSenat->pegawaiList }},
+                                             'Mengelola administrasi persidangan senat, notulensi rapat, dan dokumentasi pertimbangan senat.'
+                                         )">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-black text-[11px]" style="color: #1e293b !important;">SEKRETARIS SENAT</span>
+                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $sekretarisSenat->bezetting >= 1 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
+                                                {{ $sekretarisSenat->status }}
+                                            </span>
+                                        </div>
+                                        <div class="mt-1 text-[10.5px] font-medium text-slate-700 truncate">
+                                            @if($sekretarisSenat->pejabatUtama)
+                                                <span class="text-indigo-900 font-bold">👤 {{ $sekretarisSenat->pejabatUtama['nama_lengkap'] }}</span>
+                                            @else
+                                                <span class="italic text-slate-400">👤 (Belum diisi / Butuh 1 org)</span>
+                                            @endif
+                                        </div>
+                                        <div class="mt-0.5 text-[9.5px] text-slate-500">
+                                            Bezetting: <strong class="text-slate-800">{{ $sekretarisSenat->bezetting }}</strong> / Butuh: <strong>1</strong> org
+                                        </div>
                                     </div>
+
+                                    {{-- Komisi Akademik & Etik (beberapa org) --}}
+                                    <div class="p-2 rounded-lg cursor-pointer hover:scale-[1.01] transition"
+                                         style="background-color: #f8fafc !important; border: 1.5px solid #cbd5e1 !important;"
+                                         @click.stop="openDetail(
+                                             'Komisi Akademik & Etik Senat Fakultas',
+                                             'Komisi Penegakan Kode Etik & Standar Akademik Senat (Formasi: {{ $komisiSenat->kebutuhan }} Org)',
+                                             {{ $komisiSenat->bezetting }},
+                                             {{ $komisiSenat->kebutuhan }},
+                                             '{{ $komisiSenat->status }}',
+                                             {{ $komisiSenat->pegawaiList }},
+                                             'Membahas dan memberikan pertimbangan terkait integritas akademik, kode etik civitas akademika, dan kurikulum fakultas.'
+                                         )">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-black text-[11px]" style="color: #1e293b !important;">KOMISI AKADEMIK &amp; ETIK</span>
+                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $komisiSenat->selisih >= 0 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300' }}">
+                                                {{ $komisiSenat->status }}
+                                            </span>
+                                        </div>
+                                        <div class="mt-1 text-[10.5px] font-medium text-slate-700 truncate">
+                                            @if($komisiSenat->bezetting > 0)
+                                                <span class="text-indigo-900 font-bold">👥 {{ $komisiSenat->pegawaiList->pluck('nama_lengkap')->join(', ') }}</span>
+                                            @else
+                                                <span class="italic text-slate-400">👥 (Belum ada anggota / Butuh {{ $komisiSenat->kebutuhan }} org)</span>
+                                            @endif
+                                        </div>
+                                        <div class="mt-0.5 text-[9.5px] text-slate-500">
+                                            Bezetting: <strong class="text-slate-800">{{ $komisiSenat->bezetting }}</strong> / Butuh: <strong>{{ $komisiSenat->kebutuhan }}</strong> org
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Footer Total Bezetting Senat --}}
+                                <div class="mt-2.5 pt-2 flex items-center justify-between text-[10px] border-t border-slate-200 text-slate-600">
+                                    <span>Total: <strong>{{ $senatTotalBezetting }}</strong> / Butuh: <strong>{{ $senatTotalKebutuhan }}</strong></span>
+                                    <span class="font-bold px-2 py-0.5 rounded-full {{ $senatTotalBezetting >= $senatTotalKebutuhan ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' }}">
+                                        {{ $senatStatus }}
+                                    </span>
                                 </div>
                             </div>
                         </div>

@@ -21,7 +21,7 @@ class PetaJabatanController extends Controller
             'jabatan.analisisJabatan.uraianTugas',
             'jabatan.pegawai' => function ($q) {
                 $q->where('status_pegawai', 'Aktif')
-                  ->select('id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'jabatan_id', 'unit_kerja_id', 'foto');
+                  ->select('id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'jabatan_id', 'unit_kerja_id', 'foto', 'status_pegawai');
             }
         ])->whereNull('parent_id')
           ->orderBy('urutan')
@@ -43,7 +43,7 @@ class PetaJabatanController extends Controller
         $kelompokPenugasan = \App\Models\KelompokPenugasan::with([
             'penugasan.pegawai' => function ($q) {
                 $q->where('status_pegawai', 'Aktif')
-                  ->select('id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto');
+                  ->select('id', 'nama', 'gelar_depan', 'gelar_belakang', 'nip', 'foto', 'status_pegawai');
             }
         ])->orderBy('urutan')->get();
 
