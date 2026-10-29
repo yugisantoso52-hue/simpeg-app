@@ -778,9 +778,9 @@
                                         <span style="background-color: #fbbf24 !important; color: #0f766e !important; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-family: monospace;">Grade 11 &amp; 10</span>
                                     </div>
 
-                                    <div class="mt-2.5 grid grid-cols-2 gap-2 text-xs">
-                                        {{-- Ketua Jurusan --}}
-                                        <div class="p-2 rounded-lg bg-teal-900/40 border border-teal-400/30 cursor-pointer hover:bg-teal-900/60 transition text-center"
+                                    <div class="mt-2.5 space-y-2 text-xs">
+                                        {{-- Atas: KETUA JURUSAN --}}
+                                        <div class="p-2.5 rounded-lg bg-teal-900/40 border border-teal-400/30 cursor-pointer hover:bg-teal-900/60 transition text-center"
                                              @click="openDetail(
                                                  'KETUA JURUSAN (KAJUR)',
                                                  'Pimpinan Jurusan Keperawatan (Grade 11)',
@@ -792,29 +792,37 @@
                                                  '{{ $kajurAnjab->anjab_url }}',
                                                  '{{ $kajurAnjab->abk_url }}'
                                              )">
-                                            <div class="text-[9px] font-bold text-teal-200 tracking-wider uppercase">KAJUR (Grade 11)</div>
-                                            <div class="font-black text-[11px] uppercase mt-0.5 tracking-wide text-white">
+                                            <div class="flex justify-between items-center text-[9px] mb-1">
+                                                <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 1px 6px; border-radius: 3px;">KAJUR</span>
+                                                <span style="background-color: #fbbf24 !important; color: #0f766e !important; font-weight: 900; padding: 1px 6px; border-radius: 3px; font-family: monospace;">Grade 11</span>
+                                            </div>
+                                            <div class="font-black text-[11.5px] uppercase tracking-wide text-white">
                                                 KETUA JURUSAN
                                             </div>
                                             @if($kajurPejabat)
-                                                <div class="text-[10px] text-amber-300 font-bold truncate mt-1" title="{{ is_array($kajurPejabat) ? $kajurPejabat['nama_lengkap'] : $kajurPejabat->nama_lengkap }}">
+                                                <div class="text-[10.5px] text-amber-300 font-bold truncate mt-1" title="{{ is_array($kajurPejabat) ? $kajurPejabat['nama_lengkap'] : $kajurPejabat->nama_lengkap }}">
                                                     👤 {{ is_array($kajurPejabat) ? $kajurPejabat['nama_lengkap'] : $kajurPejabat->nama_lengkap }}
                                                 </div>
                                             @else
-                                                <div class="text-[9px] text-teal-200/70 italic mt-1">
-                                                    (Menunggu SK)
+                                                <div class="text-[9.5px] text-teal-200/70 italic mt-0.5">
+                                                    (Menunggu SK Penetapan)
                                                 </div>
                                             @endif
-                                            <div class="text-[9.5px] mt-1.5 pt-1 border-t border-teal-500/30 text-teal-100 flex justify-between items-center">
-                                                <span>Bezetting: <strong>{{ $kajurBezetting }}</strong>/1</span>
-                                                <span class="text-[8.5px] px-1.5 py-0.2 rounded font-bold {{ $kajurBezetting > 0 ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900' }}">
+                                            <div class="text-[9.5px] mt-1.5 pt-1.5 border-t border-teal-500/30 text-teal-100 flex justify-between items-center">
+                                                <span>Bezetting: <strong>{{ $kajurBezetting }}</strong> / 1</span>
+                                                <span class="text-[8.5px] px-2 py-0.5 rounded font-bold {{ $kajurBezetting > 0 ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900' }}">
                                                     {{ $kajurBezetting > 0 ? 'Terisi' : 'Butuh SK' }}
                                                 </span>
                                             </div>
                                         </div>
 
-                                        {{-- Sekretaris Jurusan --}}
-                                        <div class="p-2 rounded-lg bg-teal-900/40 border border-teal-400/30 cursor-pointer hover:bg-teal-900/60 transition text-center"
+                                        {{-- Garis Hubung Vertikal Antara Kajur dan Sekjur --}}
+                                        <div class="flex justify-center -my-1">
+                                            <div class="w-0.5 h-2 bg-teal-400/50"></div>
+                                        </div>
+
+                                        {{-- Bawah: SEKRETARIS JURUSAN --}}
+                                        <div class="p-2.5 rounded-lg bg-teal-900/40 border border-teal-400/30 cursor-pointer hover:bg-teal-900/60 transition text-center"
                                              @click="openDetail(
                                                  'SEKRETARIS JURUSAN (SEKJUR)',
                                                  'Pimpinan Administrasi Jurusan Keperawatan (Grade 10)',
@@ -826,22 +834,25 @@
                                                  '{{ $sekjurAnjab->anjab_url }}',
                                                  '{{ $sekjurAnjab->abk_url }}'
                                              )">
-                                            <div class="text-[9px] font-bold text-teal-200 tracking-wider uppercase">SEKJUR (Grade 10)</div>
-                                            <div class="font-black text-[11px] uppercase mt-0.5 tracking-wide text-white">
+                                            <div class="flex justify-between items-center text-[9px] mb-1">
+                                                <span style="background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; font-weight: 800; padding: 1px 6px; border-radius: 3px;">SEKJUR</span>
+                                                <span style="background-color: #fbbf24 !important; color: #0d9488 !important; font-weight: 900; padding: 1px 6px; border-radius: 3px; font-family: monospace;">Grade 10</span>
+                                            </div>
+                                            <div class="font-black text-[11.5px] uppercase tracking-wide text-white">
                                                 SEKRETARIS JURUSAN
                                             </div>
                                             @if($sekjurPejabat)
-                                                <div class="text-[10px] text-amber-300 font-bold truncate mt-1" title="{{ is_array($sekjurPejabat) ? $sekjurPejabat['nama_lengkap'] : $sekjurPejabat->nama_lengkap }}">
+                                                <div class="text-[10.5px] text-amber-300 font-bold truncate mt-1" title="{{ is_array($sekjurPejabat) ? $sekjurPejabat['nama_lengkap'] : $sekjurPejabat->nama_lengkap }}">
                                                     👤 {{ is_array($sekjurPejabat) ? $sekjurPejabat['nama_lengkap'] : $sekjurPejabat->nama_lengkap }}
                                                 </div>
                                             @else
-                                                <div class="text-[9px] text-teal-200/70 italic mt-1">
-                                                    (Menunggu SK)
+                                                <div class="text-[9.5px] text-teal-200/70 italic mt-0.5">
+                                                    (Menunggu SK Penetapan)
                                                 </div>
                                             @endif
-                                            <div class="text-[9.5px] mt-1.5 pt-1 border-t border-teal-500/30 text-teal-100 flex justify-between items-center">
-                                                <span>Bezetting: <strong>{{ $sekjurBezetting }}</strong>/1</span>
-                                                <span class="text-[8.5px] px-1.5 py-0.2 rounded font-bold {{ $sekjurBezetting > 0 ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900' }}">
+                                            <div class="text-[9.5px] mt-1.5 pt-1.5 border-t border-teal-500/30 text-teal-100 flex justify-between items-center">
+                                                <span>Bezetting: <strong>{{ $sekjurBezetting }}</strong> / 1</span>
+                                                <span class="text-[8.5px] px-2 py-0.5 rounded font-bold {{ $sekjurBezetting > 0 ? 'bg-emerald-500 text-white' : 'bg-amber-400 text-amber-900' }}">
                                                     {{ $sekjurBezetting > 0 ? 'Terisi' : 'Butuh SK' }}
                                                 </span>
                                             </div>
