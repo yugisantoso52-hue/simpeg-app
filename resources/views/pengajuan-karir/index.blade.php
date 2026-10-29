@@ -77,26 +77,85 @@
             @elseif(($tab ?? '') === 'radar')
                 @include('pengajuan-karir._tab_radar')
             @elseif(($tab ?? '') === 'kp' || request('jenis') === 'KP')
-                @include('pengajuan-karir._panel_kelayakan_kp')
-            @elseif(($tab ?? '') === 'kgb' || request('jenis') === 'KGB')
-                @include('pengajuan-karir._panel_kelayakan_kgb')
-            @else
-                @if($userPegawai && !$isExecutive)
-                    <div class="space-y-6">
-                        @include('pengajuan-karir._panel_kelayakan_kp')
-                        @include('pengajuan-karir._panel_kelayakan_kgb')
-                    </div>
-                @else
-                    {{-- Kartu Aksi Buat Pengajuan Mandiri (Bagi Pegawai) --}}
-                    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+                <div class="space-y-6">
+                    {{-- Banner Informasi & Aksi Cepat Kenaikan Pangkat --}}
+                    <div class="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden border border-slate-700">
                         <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             <div>
                                 <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                    Layanan Karir Mandiri ASN
+                                    Layanan Kenaikan Pangkat PNS
                                 </span>
-                                <h2 class="text-xl md:text-2xl font-black mt-2 tracking-tight">Form Pengajuan Kenaikan Gaji Berkala & Pangkat</h2>
+                                <h2 class="text-xl md:text-2xl font-black mt-2 tracking-tight">Form & Verifikasi Usulan Kenaikan Pangkat (KP) PNS</h2>
                                 <p class="text-slate-300 text-xs md:text-sm mt-1 max-w-2xl leading-relaxed">
-                                    Diajukan oleh setiap pegawai (Dosen & Tendik PNS/PPPK) yang telah memenuhi syarat masa kerja dan evaluasi kinerja tahunan, diproses melalui verifikasi administrasi <strong>Ka Pokja Keu-Kepeg</strong>, paraf <strong>Kepala Bagian Umum</strong>, dan penetapan resmi oleh <strong>Wakil Dekan Bidang Keuangan dan Umum</strong>.
+                                    Pengusulan kenaikan pangkat PNS reguler & fungsional 6 periode per tahun berdasarkan <strong>Peraturan BKN No. 4/2023</strong> dan <strong>PermenPAN-RB No. 1/2023</strong>. Verifikasi alur berjenjang: <strong>Admin Kepegawaian &rarr; Ka Pokja Keu-Kepeg &rarr; Kabag Umum &rarr; Penetapan WD II</strong>.
+                                </p>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+                                <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KP']) }}" 
+                                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition transform active:scale-95">
+                                    <span>🎖️ Ajukan Kenaikan Pangkat (PNS)</span>
+                                </a>
+                                @if($isExecutive ?? false)
+                                    <a href="{{ route('kp.index') }}" 
+                                       class="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition">
+                                        <span>↗️ Buka Modul KP Lengkap</span>
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Ringkasan 6 Periode Kenaikan Pangkat BKN --}}
+                    <div class="rounded-xl border border-emerald-100 bg-white p-4 shadow-xs">
+                        <div class="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            <span class="text-emerald-600">📅</span>
+                            <span>Jadwal 6 Periode Kenaikan Pangkat PNS (BKN No. 4/2023):</span>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-[11px]">
+                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                                <strong class="text-emerald-900 block">1. Februari</strong>
+                                <span class="text-slate-500 text-[10px]">15 Des - 15 Jan</span>
+                            </div>
+                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                                <strong class="text-emerald-900 block">2. April</strong>
+                                <span class="text-slate-500 text-[10px]">1 - 28 Feb</span>
+                            </div>
+                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                                <strong class="text-emerald-900 block">3. Juni</strong>
+                                <span class="text-slate-500 text-[10px]">1 - 30 Apr</span>
+                            </div>
+                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                                <strong class="text-emerald-900 block">4. Agustus</strong>
+                                <span class="text-slate-500 text-[10px]">1 - 30 Jun</span>
+                            </div>
+                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                                <strong class="text-emerald-900 block">5. Oktober</strong>
+                                <span class="text-slate-500 text-[10px]">1 - 31 Ags</span>
+                            </div>
+                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                                <strong class="text-emerald-900 block">6. Desember</strong>
+                                <span class="text-slate-500 text-[10px]">1 - 31 Okt</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if($userPegawai && ($statusKp ?? false))
+                        @include('pengajuan-karir._panel_kelayakan_kp')
+                    @endif
+                </div>
+            @elseif(($tab ?? '') === 'kgb' || request('jenis') === 'KGB')
+                <div class="space-y-6">
+                    {{-- Banner Informasi & Aksi Cepat Kenaikan Gaji Berkala --}}
+                    <div class="bg-gradient-to-r from-slate-900 via-amber-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden border border-slate-700">
+                        <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div>
+                                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                    Layanan Kenaikan Gaji Berkala ASN
+                                </span>
+                                <h2 class="text-xl md:text-2xl font-black mt-2 tracking-tight">Form & Verifikasi Usulan Kenaikan Gaji Berkala (KGB)</h2>
+                                <p class="text-slate-300 text-xs md:text-sm mt-1 max-w-2xl leading-relaxed">
+                                    Kenaikan gaji berkala setiap 2 (dua) tahun sekali bagi PNS (PP No. 7/1977 jo. PP No. 5/2024) dan PPPK (PermenPAN-RB No. 7/2023 jo. Perpres No. 11/2024). Verifikasi berjenjang terpadu hingga penetapan resmi pimpinan.
                                 </p>
                             </div>
 
@@ -105,46 +164,111 @@
                                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition transform active:scale-95">
                                     <span>⚡ Ajukan KGB (PNS / PPPK)</span>
                                 </a>
-                                <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KP']) }}" 
-                                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition transform active:scale-95">
-                                    <span>🎖️ Ajukan Kenaikan Pangkat (PNS)</span>
-                                </a>
+                                @if($isExecutive ?? false)
+                                    <a href="{{ route('kgb.index') }}" 
+                                       class="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition">
+                                        <span>↗️ Buka Modul KGB Lengkap</span>
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </div>
 
-                    {{-- Ringkasan 6 Periode Kenaikan Pangkat BKN --}}
-                    <div class="rounded-xl border border-indigo-100 bg-white p-4 shadow-xs">
+                    {{-- Ringkasan Siklus 2 Tahunan KGB --}}
+                    <div class="rounded-xl border border-amber-100 bg-white p-4 shadow-xs">
                         <div class="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                            <span class="text-indigo-600">📅</span>
-                            <span>Jadwal 6 Periode Kenaikan Pangkat PNS (BKN No. 4/2023):</span>
+                            <span class="text-amber-600">💡</span>
+                            <span>Ketentuan &amp; Persyaratan Kenaikan Gaji Berkala (KGB):</span>
                         </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-[11px]">
-                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
-                                <strong class="text-indigo-900 block">1. Februari</strong>
-                                <span class="text-slate-500 text-[10px]">15 Des - 15 Jan</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                            <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                                <strong class="text-amber-900 block text-xs">1. Masa Kerja 2 Tahun</strong>
+                                <span class="text-slate-600 text-[11px]">Telah mencapai masa kerja 2 tahun sejak SK KGB terakhir / SK Pengangkatan.</span>
                             </div>
-                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
-                                <strong class="text-indigo-900 block">2. April</strong>
-                                <span class="text-slate-500 text-[10px]">1 - 28 Feb</span>
+                            <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                                <strong class="text-amber-900 block text-xs">2. Penilaian Kinerja Baik</strong>
+                                <span class="text-slate-600 text-[11px]">Hasil penilaian kinerja / SKP minimal berpredikat 'Baik' dalam 2 tahun terakhir.</span>
                             </div>
-                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
-                                <strong class="text-indigo-900 block">3. Juni</strong>
-                                <span class="text-slate-500 text-[10px]">1 - 30 Apr</span>
-                            </div>
-                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
-                                <strong class="text-indigo-900 block">4. Agustus</strong>
-                                <span class="text-slate-500 text-[10px]">1 - 30 Jun</span>
-                            </div>
-                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
-                                <strong class="text-indigo-900 block">5. Oktober</strong>
-                                <span class="text-slate-500 text-[10px]">1 - 31 Ags</span>
-                            </div>
-                            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
-                                <strong class="text-indigo-900 block">6. Desember</strong>
-                                <span class="text-slate-500 text-[10px]">1 - 31 Okt</span>
+                            <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                                <strong class="text-amber-900 block text-xs">3. PNS &amp; PPPK</strong>
+                                <span class="text-slate-600 text-[11px]">Berlaku untuk seluruh Aparatur Sipil Negara (Dosen &amp; Tendik) di lingkungan FKp UNRI.</span>
                             </div>
                         </div>
+                    </div>
+
+                    @if($userPegawai && ($statusKgb ?? false))
+                        @include('pengajuan-karir._panel_kelayakan_kgb')
+                    @endif
+                </div>
+            @else
+                {{-- Kartu Aksi Buat Pengajuan Mandiri (Bagi Pegawai) --}}
+                <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden border border-slate-700">
+                    <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                Layanan Karir Mandiri ASN
+                            </span>
+                            <h2 class="text-xl md:text-2xl font-black mt-2 tracking-tight">Form Pengajuan Kenaikan Gaji Berkala & Pangkat</h2>
+                            <p class="text-slate-300 text-xs md:text-sm mt-1 max-w-2xl leading-relaxed">
+                                Diajukan oleh setiap pegawai (Dosen & Tendik PNS/PPPK) yang telah memenuhi syarat masa kerja dan evaluasi kinerja tahunan, diproses melalui verifikasi administrasi <strong>Ka Pokja Keu-Kepeg</strong>, paraf <strong>Kepala Bagian Umum</strong>, dan penetapan resmi oleh <strong>Wakil Dekan Bidang Keuangan dan Umum</strong>.
+                            </p>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+                            <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KGB']) }}" 
+                               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition transform active:scale-95">
+                                <span>⚡ Ajukan KGB (PNS / PPPK)</span>
+                            </a>
+                            <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KP']) }}" 
+                               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition transform active:scale-95">
+                                <span>🎖️ Ajukan Kenaikan Pangkat (PNS)</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Ringkasan 6 Periode Kenaikan Pangkat BKN --}}
+                <div class="rounded-xl border border-indigo-100 bg-white p-4 shadow-xs">
+                    <div class="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                        <span class="text-indigo-600">📅</span>
+                        <span>Jadwal 6 Periode Kenaikan Pangkat PNS (BKN No. 4/2023):</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-[11px]">
+                        <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                            <strong class="text-indigo-900 block">1. Februari</strong>
+                            <span class="text-slate-500 text-[10px]">15 Des - 15 Jan</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                            <strong class="text-indigo-900 block">2. April</strong>
+                            <span class="text-slate-500 text-[10px]">1 - 28 Feb</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                            <strong class="text-indigo-900 block">3. Juni</strong>
+                            <span class="text-slate-500 text-[10px]">1 - 30 Apr</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                            <strong class="text-indigo-900 block">4. Agustus</strong>
+                            <span class="text-slate-500 text-[10px]">1 - 30 Jun</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                            <strong class="text-indigo-900 block">5. Oktober</strong>
+                            <span class="text-slate-500 text-[10px]">1 - 31 Ags</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-center">
+                            <strong class="text-indigo-900 block">6. Desember</strong>
+                            <span class="text-slate-500 text-[10px]">1 - 31 Okt</span>
+                        </div>
+                    </div>
+                </div>
+
+                @if($userPegawai && !$isExecutive)
+                    <div class="space-y-6">
+                        @if($statusKp ?? false)
+                            @include('pengajuan-karir._panel_kelayakan_kp')
+                        @endif
+                        @if($statusKgb ?? false)
+                            @include('pengajuan-karir._panel_kelayakan_kgb')
+                        @endif
                     </div>
                 @endif
             @endif

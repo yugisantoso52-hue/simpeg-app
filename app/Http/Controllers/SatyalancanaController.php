@@ -228,7 +228,7 @@ class SatyalancanaController extends Controller
             $msg = 'Paraf 2 (Kepala Bagian Umum) berhasil dibubuhkan.';
         }
         // 4. TAHAP PENGESAHAN: TTE WAKIL DEKAN II / DEKAN
-        elseif ($tahap === 'ttd_wd2' || $tahap === 'setujui') {
+        elseif ($tahap === 'ttd_wd2' || $tahap === 'setujui' || $tahap === 'paraf_wd2') {
             if (!$isWd2 && !$isDekan) {
                 return back()->with('error', 'Tahap 4 Pengesahan TTE khusus untuk Wakil Dekan II / Dekan.');
             }
@@ -506,6 +506,108 @@ class SatyalancanaController extends Controller
         $pdf = $watermarkService->applyWatermark($pdf);
 
         return $pdf->stream('Petunjuk_Persyaratan_Satyalancana_FKP_UNRI.pdf');
+    }
+
+    /**
+     * Detail & Tracking Usulan Satyalancana Karya Satya
+     */
+    public function show(int $id)
+    {
+        $pengajuan = UsulanSatyalancana::with([
+            'pegawai.unitKerja', 
+            'pegawai.jabatan', 
+            'pegawai.golongan', 
+            'diajukanOleh', 
+            'verifikasiAdminBy', 
+            'parafKabagBy', 
+            'parafKaPokjaBy', 
+            'ttdWd2By'
+        ])->findOrFail($id);
+
+        $user = Auth::user();
+        $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
+        $pegawaiId = $user->pegawai_id ?? $user->pegawai?->id;
+
+        if (!$isExecutive && (int)$pengajuan->pegawai_id !== (int)$pegawaiId) {
+            abort(403, 'Anda tidak memiliki hak akses melihat berkas usulan ini.');
+        }
+
+        $isKaPokja = $user->isKaPokjaKepeg();
+        $isKabag   = $user->isKabagUmum();
+        $isWd2     = $user->isWadek2();
+        $isDekan   = $user->isDekan();
+        $isAdmin   = $user->isScreeningAdmin();
+
+        return view('pengajuan-karir.show', compact('pengajuan', 'isExecutive', 'isAdmin', 'isKaPokja', 'isKabag', 'isWd2', 'isDekan'));
+    }
+
+    /**
+     * Cetak Surat Usulan Resmi Satyalancana Perorangan Ber-QR Code & Paraf Digital
+     */
+    public function cetakPdf(Request $request, int $id)
+    {
+        $usulan = UsulanSatyalancana::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])
+            ->findOrFail($id);
+
+        $user = Auth::user();
+        if (!$user->canAccessExecutiveKepegawaianMenus() && (int)$user->pegawai_id !== (int)$usulan->pegawai_id) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mencetak berkas usulan ini.');
+        }
+
+        $nomorSurat = $usulan->nomor_surat_usulan ?? app(\App\Services\NomorSuratService::class)->formatSatyalancana('2422', (int) ($usulan->tahun_usulan ?: date('Y')));
+        $tanggalSurat = $usulan->created_at ? $usulan->created_at->locale('id')->translatedFormat('d F Y') : \Carbon\Carbon::now()->locale('id')->translatedFormat('d F Y');
+        $periodeUsulan = $usulan->periode_usulan ?? ('Periode Mei ' . ((int)($usulan->tahun_usulan ?: date('Y')) + 1));
+
+        $p = $usulan->pegawai;
+        if ($p) {
+            $p->kategori_satyalancana = $usulan->kategori;
+            $daftarPegawai = collect([$p]);
+        } else {
+            $daftarPegawai = collect();
+        }
+
+        $suratRujukanNomor   = '200/DST/UN19.5.2.2.1/KP.11.02/' . ($usulan->tahun_usulan ?: date('Y'));
+        $suratRujukanTanggal = '22 Juli ' . ($usulan->tahun_usulan ?: date('Y'));
+        $suratRujukanPerihal = 'Pengusulan Tanda Satyalancana Karya Satya ' . $periodeUsulan;
+
+        $pejabatService = app(\App\Services\PejabatService::class);
+        $pejabatWd2     = $pejabatService->getWadek2Pegawai() ?? $pejabatService->getDekanPegawai();
+        $pejabatKaPokja = $pejabatService->getKaPokjaPegawai();
+        $pejabatKabag   = $pejabatService->getKabagPegawai();
+
+        $sudahParafPokja = !empty($usulan->paraf_kapokja_at);
+        $sudahParafKabag = !empty($usulan->paraf_kabag_at);
+        $sudahTtdWd2     = !empty($usulan->ttd_wd2_at);
+
+        $parafPokjaAt = $sudahParafPokja ? $usulan->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB' : null;
+        $parafKabagAt = $sudahParafKabag ? $usulan->paraf_kabag_at->format('d/m/Y H:i') . ' WIB' : null;
+        $ttdWd2At     = $sudahTtdWd2     ? $usulan->ttd_wd2_at->format('d/m/Y H:i') . ' WIB' : null;
+
+        $watermarkService = app(DocumentWatermarkService::class);
+        $verifyCode = $watermarkService->generateVerificationCode(
+            'Surat Usulan Satyalancana ' . $usulan->kategori,
+            $nomorSurat,
+            $usulan->pegawai?->nama_lengkap ?? $usulan->pegawai?->nama ?? 'FKP UNRI'
+        );
+        $verifyUrl = route('verify.document', ['code' => $verifyCode]);
+
+        $qrWd2Uri      = $sudahTtdWd2 ? QrCodeService::generateDataUri($verifyUrl . '?ttd=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
+        $qrPokjaUri    = $sudahParafPokja ? QrCodeService::generateDataUri($verifyUrl . '?paraf=kapokja&nip=' . ($pejabatKaPokja?->nip ?? '197605212014092001')) : null;
+        $qrKabagUri    = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '?paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) : null;
+        $qrCodeDataUri = QrCodeService::generateDataUri($verifyUrl);
+
+        $pdf = Pdf::loadView('satyalancana.surat_pengantar_print', compact(
+            'periodeUsulan', 'nomorSurat', 'tanggalSurat', 'daftarPegawai',
+            'suratRujukanNomor', 'suratRujukanTanggal', 'suratRujukanPerihal',
+            'pejabatWd2', 'pejabatKaPokja', 'pejabatKabag',
+            'sudahParafPokja', 'sudahParafKabag', 'sudahTtdWd2',
+            'parafPokjaAt', 'parafKabagAt', 'ttdWd2At',
+            'verifyCode', 'verifyUrl', 'qrCodeDataUri', 'qrWd2Uri', 'qrPokjaUri', 'qrKabagUri'
+        ))->setPaper('a4', 'portrait');
+
+        $pdf = $watermarkService->applyWatermark($pdf);
+
+        return $pdf->stream('Surat_Usulan_Satyalancana_' . ($usulan->pegawai?->nip ?? $usulan->id) . '.pdf');
     }
 
     /**

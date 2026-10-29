@@ -224,6 +224,8 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         /* Unduh Berkas Persyaratan & Cetak DRH Satyalancana Karya Satya */
         Route::get('/satyalancana/download-syarat', [SatyalancanaController::class, 'downloadSyarat'])->name('satyalancana.download-syarat');
         Route::get('/satyalancana/{pegawai}/cetak-drh', [SatyalancanaController::class, 'cetakDrh'])->name('satyalancana.cetak-drh');
+        Route::get('/satyalancana/{id}/pdf', [SatyalancanaController::class, 'cetakPdf'])->name('satyalancana.cetak-pdf');
+        Route::get('/satyalancana/{id}', [SatyalancanaController::class, 'show'])->name('satyalancana.show');
 
         /* Modul Karir & Monitoring (Akses Cerdas: Admin memantau seluruh ASN, Pegawai diarahkan ke layanan mandiri) */
         Route::get('/kgb', [KgbController::class, 'index'])->name('kgb.index');

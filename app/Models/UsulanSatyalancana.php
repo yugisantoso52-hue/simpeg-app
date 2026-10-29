@@ -80,4 +80,68 @@ class UsulanSatyalancana extends Model
     {
         return $this->belongsTo(Pegawai::class, 'ttd_wd2_by');
     }
+
+    public function verifikatorKaPokja(): BelongsTo
+    {
+        return $this->parafKaPokjaBy();
+    }
+
+    public function verifikatorKabag(): BelongsTo
+    {
+        return $this->parafKabagBy();
+    }
+
+    public function verifikatorWd2(): BelongsTo
+    {
+        return $this->ttdWd2By();
+    }
+
+    public function penandatanganDekan(): BelongsTo
+    {
+        return $this->ttdWd2By();
+    }
+
+    public function getJenisPengajuanAttribute(): string
+    {
+        return 'SATYALANCANA';
+    }
+
+    public function getNomorSuratAttribute(): ?string
+    {
+        return $this->nomor_surat_usulan;
+    }
+
+    public function getParafWd2AtAttribute(): ?\Carbon\Carbon
+    {
+        return $this->ttd_wd2_at;
+    }
+
+    public function getParafWd2ByAttribute(): ?int
+    {
+        return $this->ttd_wd2_by;
+    }
+
+    public function getTtdDekanAtAttribute(): ?\Carbon\Carbon
+    {
+        return $this->ttd_wd2_at;
+    }
+
+    public function getTtdDekanByAttribute(): ?int
+    {
+        return $this->ttd_wd2_by;
+    }
+
+    public function getStatusBadgeAttribute(): array
+    {
+        return match ($this->status) {
+            'diajukan' => ['label' => 'Diajukan', 'color' => 'blue', 'icon' => 'clock'],
+            'diverifikasi_admin' => ['label' => 'Screening Admin', 'color' => 'amber', 'icon' => 'check'],
+            'diparaf_kapokja' => ['label' => 'Paraf Ka Pokja', 'color' => 'teal', 'icon' => 'check'],
+            'diparaf_kabag' => ['label' => 'Paraf Kabag Umum', 'color' => 'indigo', 'icon' => 'check'],
+            'disetujui_wd2' => ['label' => 'Disahkan TTE WD II', 'color' => 'emerald', 'icon' => 'check-circle'],
+            'ditolak' => ['label' => 'Ditolak / Revisi', 'color' => 'rose', 'icon' => 'x-circle'],
+            'selesai' => ['label' => 'Selesai Keppres RI', 'color' => 'teal', 'icon' => 'award'],
+            default => ['label' => ucfirst(str_replace('_', ' ', $this->status)), 'color' => 'gray', 'icon' => 'info'],
+        };
+    }
 }
