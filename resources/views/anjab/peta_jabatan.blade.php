@@ -6,11 +6,13 @@
                     <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-100 text-blue-800">Bagan Interaktif</span>
                     <span class="text-xs text-gray-500 font-mono">BKN & PermenPAN-RB No. 1/2020</span>
                 </div>
-                <h1 class="text-2xl font-black text-gray-900 mt-1 flex items-center gap-2">
+                <h1 class="text-xl sm:text-2xl font-black text-gray-900 mt-1 flex items-center gap-2">
                     <span>🏛️</span> Peta Jabatan Fakultas Keperawatan UNRI
                 </h1>
-                <p class="text-xs text-gray-600 mt-0.5">
-                    Visualisasi Struktur Organisasi, Rantai Komando, dan Formasi Kuota ABK vs Bezetting Riil Pegawai
+                <p class="text-xs text-gray-600 mt-0.5 flex flex-wrap items-center gap-2">
+                    <span>Visualisasi Struktur Organisasi, Rantai Komando &amp; Formasi Kuota ABK vs Bezetting</span>
+                    <span class="text-gray-300 hidden sm:inline">•</span>
+                    <span class="text-blue-700 font-medium">💡 Klik kotak jabatan untuk melihat data pejabat, SK &amp; rincian tugas</span>
                 </p>
             </div>
             <div class="flex items-center gap-2">
@@ -312,24 +314,7 @@
     }">
         <div class="w-full max-w-[1920px] mx-auto space-y-6 px-3 sm:px-6 lg:px-8 xl:px-10">
 
-            {{-- Indikator Legenda --}}
-            <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm flex flex-wrap items-center justify-between gap-4 text-xs">
-                <div class="flex items-center gap-2">
-                    <span class="font-bold text-gray-700 uppercase tracking-wider">Status Formasi ABK:</span>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                        🟢 Ideal (Cukup)
-                    </span>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-800 border border-rose-300">
-                        🔴 Kurang Pegawai
-                    </span>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                        🟡 Kelebihan Pegawai
-                    </span>
-                </div>
-                <div class="text-gray-500 font-medium">
-                    💡 <span class="italic">Klik pada kotak jabatan atau unit untuk melihat daftar pejabat, foto, NIP & rincian tugas</span>
-                </div>
-            </div>
+
 
             {{-- Alert Pengajuan Jabatan Struktural Menunggu Verifikasi --}}
             @if(isset($pengajuanMenunggu) && $pengajuanMenunggu->isNotEmpty())
@@ -352,30 +337,32 @@
             {{-- KANVAS BAGAN STRUKTUR ORGANISASI (SESUAI DOKUMEN RESMI TERBARU FKP UNRI) --}}
             <div class="bg-gradient-to-b from-sky-50/50 via-white to-gray-50 rounded-2xl border-2 border-blue-200/80 p-6 md:p-8 shadow-md overflow-x-auto">
 
-                {{-- Header Resmi Bagan --}}
-                <div class="text-center pb-6 border-b-2 border-blue-200 mb-8 flex items-center justify-between px-4">
-                    {{-- Logo UNRI --}}
-                    <div class="shrink-0 flex items-center">
-                        <img src="{{ asset('logo-unri.png') }}" 
-                             alt="Logo UNRI" 
-                             class="h-14 sm:h-16 md:h-20 w-auto object-contain drop-shadow-sm">
+                {{-- Header Resmi Bagan (Tanpa Dobel Logo Web) --}}
+                <div class="text-center pb-5 border-b-2 border-blue-200/80 mb-8">
+                    <div class="inline-flex items-center justify-center gap-2 mb-1.5">
+                        <span class="text-[10.5px] font-black uppercase tracking-widest px-3 py-0.5 rounded-full bg-sky-100 text-sky-800 border border-sky-200">
+                            Bagan Resmi Organisasi &amp; Tata Kerja (OTK)
+                        </span>
                     </div>
+                    <h2 class="text-xl md:text-2xl font-black uppercase tracking-wider" style="color: #0284c7 !important; letter-spacing: 0.5px;">
+                        STRUKTUR ORGANISASI
+                    </h2>
+                    <h3 class="text-base md:text-lg font-black uppercase tracking-wide mt-0.5" style="color: #0369a1 !important;">
+                        FAKULTAS KEPERAWATAN UNIVERSITAS RIAU
+                    </h3>
 
-                    {{-- Judul Tengah --}}
-                    <div>
-                        <h2 class="text-xl md:text-2xl font-black uppercase tracking-wider" style="color: #0284c7 !important; letter-spacing: 0.5px;">
-                            STRUKTUR ORGANISASI
-                        </h2>
-                        <h3 class="text-lg md:text-xl font-black uppercase tracking-wide" style="color: #0369a1 !important;">
-                            FAKULTAS KEPERAWATAN UNIVERSITAS RIAU
-                        </h3>
-                    </div>
-
-                    {{-- Logo KEMDIKTI (Kemendiktisaintek) --}}
-                    <div class="shrink-0 flex items-center">
-                        <img src="{{ asset('logo-kemendiktisaintek.png') }}" 
-                             alt="Logo Kemendiktisaintek" 
-                             class="h-14 sm:h-16 md:h-20 w-auto object-contain drop-shadow-sm">
+                    {{-- Indikator Status Formasi ABK Terpusat & Rapi --}}
+                    <div class="mt-3.5 inline-flex flex-wrap items-center justify-center gap-2.5 px-4 py-2 bg-white/90 border border-blue-200 rounded-xl shadow-2xs text-xs">
+                        <span class="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Status Formasi ABK:</span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px]">
+                            🟢 Ideal (Cukup)
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold bg-rose-100 text-rose-800 border border-rose-300 text-[11px]">
+                            🔴 Kurang Pegawai
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800 border border-amber-300 text-[11px]">
+                            🟡 Kelebihan Pegawai
+                        </span>
                     </div>
                 </div>
 
