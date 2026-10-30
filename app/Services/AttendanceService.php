@@ -158,8 +158,19 @@ class AttendanceService
         $isMock = !empty($payload['is_mock']);
         if ($isMock) {
             throw ValidationException::withMessages([
-                'is_mock' => 'Presensi ditolak: Terdeteksi manipulasi peramban / otomasi emulator (Headless/Mock DevTools).',
+                'is_mock' => 'Presensi ditolak: Terdeteksi manipulasi peramban / otomasi emulator / Fake GPS (Mock Location Provider).',
             ]);
+        }
+
+        // Validasi Anti-Tamper Waktu Perangkat (Timestamp Tamper Detection)
+        if (!empty($payload['client_timestamp'])) {
+            $clientTimeSec = (int) ($payload['client_timestamp'] > 10000000000 ? ($payload['client_timestamp'] / 1000) : $payload['client_timestamp']);
+            $timeDifference = abs(Carbon::now('Asia/Jakarta')->timestamp - $clientTimeSec);
+            if ($timeDifference > 300) { // Toleransi maksimal 5 menit
+                throw ValidationException::withMessages([
+                    'client_timestamp' => 'Presensi ditolak: Waktu pada perangkat smartphone/browser Anda tidak sinkron dengan waktu server resmi (selisih ' . round($timeDifference / 60, 1) . ' menit). Pastikan jam perangkat diatur ke "Otomatis / Waktu Jaringan".',
+                ]);
+            }
         }
 
         // 3. Pilar 2: Uji Keaktifan Wajah (Liveness Detection)

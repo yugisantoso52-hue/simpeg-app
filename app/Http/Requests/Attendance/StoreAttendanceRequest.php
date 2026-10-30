@@ -26,6 +26,7 @@ class StoreAttendanceRequest extends FormRequest
             'altitude' => ['nullable', 'numeric'],
             'speed' => ['nullable', 'numeric'],
             'is_mock' => ['nullable', 'boolean'],
+            'client_timestamp' => ['nullable', 'numeric'],
 
             // Pilar 2: Liveness & Face Verification
             'liveness_verified' => ['nullable', 'boolean'],

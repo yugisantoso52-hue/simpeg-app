@@ -199,9 +199,12 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('/pegawai/{pegawai}/unsuspend-account', [PegawaiController::class, 'unsuspendAccount'])->name('pegawai.unsuspend');
         Route::post('/pegawai/{pegawai}/reset-password', [PegawaiController::class, 'resetAccountPassword'])->name('pegawai.reset-password');
 
-        // Backup & Restore Database
+        // Backup & Restore Database & Storage Digital
         Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
         Route::get('/backup/export', [BackupController::class, 'export'])->name('backup.export');
+        Route::get('/backup/export-storage', [BackupController::class, 'exportStorage'])->name('backup.export-storage');
+        Route::post('/backup/run-full', [BackupController::class, 'runFullBackup'])->name('backup.run-full');
+        Route::get('/backup/download/{filename}', [BackupController::class, 'downloadArchive'])->name('backup.download-archive');
         Route::post('/backup/restore', [BackupController::class, 'restore'])->name('backup.restore');
     });
 

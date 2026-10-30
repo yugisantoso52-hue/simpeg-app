@@ -87,13 +87,17 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm flex items-center justify-between">
+                <div class="bg-white rounded-xl p-5 border border-rose-200/80 shadow-sm flex items-center justify-between">
                     <div>
-                        <div class="text-xs font-bold text-rose-600 uppercase tracking-wider">Kekurangan Pegawai</div>
-                        <div class="text-3xl font-black text-rose-600 mt-1">{{ $totalKurang }} <span class="text-sm font-normal text-rose-400">Posisi</span></div>
+                        <div class="text-xs font-bold text-rose-600 uppercase tracking-wider flex items-center gap-1.5">
+                            <span>Defisit Formasi</span>
+                            <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-100 text-rose-800">CASN/PPPK</span>
+                        </div>
+                        <div class="text-3xl font-black text-rose-600 mt-1">{{ $totalKurang }} <span class="text-sm font-normal text-rose-400">Formasi</span></div>
+                        <div class="text-[11px] text-rose-600 font-semibold mt-0.5">Rekomendasi Pengadaan Riil</div>
                     </div>
                     <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl font-bold">
-                        ⚠️
+                        📢
                     </div>
                 </div>
 
@@ -148,6 +152,7 @@
                         'is_defisit'    => $item->selisih_formasi < 0,
                         'is_ideal'      => $item->selisih_formasi == 0,
                         'is_lebih'      => $item->selisih_formasi > 0,
+                        'rekomendasi'   => $item->rekomendasi_pengadaan,
                         'url_edit'      => route('abk.edit', $item),
                         'url_show'      => route('anjab.show', $item),
                         'can_manage'    => $canManage,
@@ -316,6 +321,7 @@
                                 <th class="px-4 py-3 text-center bg-gray-50 text-gray-900">Bezetting</th>
                                 <th class="px-4 py-3 text-center">Selisih</th>
                                 <th class="px-4 py-3 text-center">Status Formasi</th>
+                                <th class="px-4 py-3 text-center bg-indigo-50/70 text-indigo-900">Rekomendasi CASN/PPPK</th>
                                 <th class="px-4 py-3 text-right">Aksi</th>
                             </tr>
                         </thead>
@@ -351,6 +357,23 @@
                                         <template x-if="item.is_ideal">
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
                                                 🟢 Ideal (Cukup)
+                                            </span>
+                                        </template>
+                                    </td>
+                                    <td class="px-4 py-2.5 text-center whitespace-nowrap">
+                                        <template x-if="item.is_defisit">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs">
+                                                <span>📢</span> <span x-text="item.rekomendasi"></span>
+                                            </span>
+                                        </template>
+                                        <template x-if="item.is_lebih">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                                                <span>🔄</span> <span x-text="item.rekomendasi"></span>
+                                            </span>
+                                        </template>
+                                        <template x-if="item.is_ideal">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                                <span>✅</span> <span x-text="item.rekomendasi"></span>
                                             </span>
                                         </template>
                                     </td>

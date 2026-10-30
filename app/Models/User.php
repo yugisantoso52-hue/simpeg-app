@@ -216,6 +216,18 @@ class User extends Authenticatable
     }
 
     /**
+     * Cek apakah user adalah Wakil Dekan I (Bidang Akademik)
+     */
+    public function isWadek1(): bool
+    {
+        $pegawai = $this->resolvePegawaiWithJabatan();
+        if (!$pegawai || !$pegawai->jabatan) return false;
+        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
+        $isWakilDekan = str_contains($jabatan, 'WADEK') || str_contains($jabatan, 'WAKIL DEKAN') || str_contains($jabatan, 'WD ') || str_contains($jabatan, 'WD1') || str_contains($jabatan, 'WDI');
+        return $isWakilDekan && (str_contains($jabatan, ' I') || str_contains($jabatan, ' 1') || str_contains($jabatan, 'AKADEMIK') || str_contains($jabatan, 'AKEDEMIK'));
+    }
+
+    /**
      * Cek apakah user adalah Wakil Dekan II (Bidang Umum & Keuangan)
      */
     public function isWadek2(): bool
@@ -225,6 +237,48 @@ class User extends Authenticatable
         $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
         $isWakilDekan = str_contains($jabatan, 'WADEK') || str_contains($jabatan, 'WAKIL DEKAN') || str_contains($jabatan, 'WD ') || str_contains($jabatan, 'WD2') || str_contains($jabatan, 'WDII');
         return $isWakilDekan && (str_contains($jabatan, 'II') || str_contains($jabatan, '2') || str_contains($jabatan, 'KEUANGAN') || str_contains($jabatan, 'BIDANG UMUM'));
+    }
+
+    /**
+     * Cek apakah user adalah Wakil Dekan III (Bidang Kemahasiswaan & Kerjasama)
+     */
+    public function isWadek3(): bool
+    {
+        $pegawai = $this->resolvePegawaiWithJabatan();
+        if (!$pegawai || !$pegawai->jabatan) return false;
+        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
+        $isWakilDekan = str_contains($jabatan, 'WADEK') || str_contains($jabatan, 'WAKIL DEKAN') || str_contains($jabatan, 'WD ') || str_contains($jabatan, 'WD3') || str_contains($jabatan, 'WDIII');
+        return $isWakilDekan && (str_contains($jabatan, 'III') || str_contains($jabatan, '3') || str_contains($jabatan, 'KEMAHASISWAAN') || str_contains($jabatan, 'KERJASAMA') || str_contains($jabatan, 'ALUMNI'));
+    }
+
+    /**
+     * Cek apakah user adalah Ketua Jurusan (Kajur)
+     */
+    public function isKajur(): bool
+    {
+        $pegawai = $this->resolvePegawaiWithJabatan();
+        if (!$pegawai || !$pegawai->jabatan) return false;
+        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
+        return (str_contains($jabatan, 'KETUA JURUSAN') || str_contains($jabatan, 'KAJUR')) && !str_contains($jabatan, 'SEKRETARIS');
+    }
+
+    /**
+     * Cek apakah user adalah Sekretaris Jurusan (Sekjur)
+     */
+    public function isSekjur(): bool
+    {
+        $pegawai = $this->resolvePegawaiWithJabatan();
+        if (!$pegawai || !$pegawai->jabatan) return false;
+        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
+        return str_contains($jabatan, 'SEKRETARIS JURUSAN') || str_contains($jabatan, 'SEKJUR');
+    }
+
+    /**
+     * Cek apakah user adalah Pimpinan Jurusan (Kajur atau Sekjur)
+     */
+    public function isPimpinanJurusan(): bool
+    {
+        return $this->isKajur() || $this->isSekjur();
     }
 
     /**

@@ -1100,19 +1100,42 @@
                         </div>
 
                         {{-- Tag Status User Login --}}
+                        @php
+                            $roleBadgeLabel = '👔 Pejabat / Atasan';
+                            $roleBadgeClass = 'bg-slate-100 text-slate-800 border border-slate-200';
+                            if ($isAdmin ?? false) {
+                                $roleBadgeLabel = '🛡️ Admin Kepegawaian';
+                                $roleBadgeClass = 'bg-amber-100 text-amber-900 border border-amber-300';
+                            } elseif ($isDekan ?? false) {
+                                $roleBadgeLabel = '🎓 Dekan Fakultas';
+                                $roleBadgeClass = 'bg-emerald-100 text-emerald-900 border border-emerald-300';
+                            } elseif ($isWadek1 ?? false) {
+                                $roleBadgeLabel = '📖 Wakil Dekan I (Akademik)';
+                                $roleBadgeClass = 'bg-sky-100 text-sky-900 border border-sky-300';
+                            } elseif ($isWadek2 ?? false) {
+                                $roleBadgeLabel = '💼 Wakil Dekan II (Kepeg/Keu)';
+                                $roleBadgeClass = 'bg-blue-100 text-blue-900 border border-blue-300';
+                            } elseif ($isWadek3 ?? false) {
+                                $roleBadgeLabel = '🤝 Wakil Dekan III (Mhs/Kerjasama)';
+                                $roleBadgeClass = 'bg-indigo-100 text-indigo-900 border border-indigo-300';
+                            } elseif ($isKajur ?? false) {
+                                $roleBadgeLabel = '🏢 Ketua Jurusan';
+                                $roleBadgeClass = 'bg-teal-100 text-teal-900 border border-teal-300';
+                            } elseif ($isSekjur ?? false) {
+                                $roleBadgeLabel = '📝 Sekretaris Jurusan';
+                                $roleBadgeClass = 'bg-cyan-100 text-cyan-900 border border-cyan-300';
+                            } elseif ($isKabag ?? false) {
+                                $roleBadgeLabel = '🏛️ Kabag Umum';
+                                $roleBadgeClass = 'bg-purple-100 text-purple-900 border border-purple-300';
+                            } elseif ($isPokja ?? false) {
+                                $roleBadgeLabel = '📋 Ka Pokja Keu-Kepeg';
+                                $roleBadgeClass = 'bg-rose-100 text-rose-900 border border-rose-300';
+                            }
+                        @endphp
                         <div class="flex items-center gap-2">
                             <span class="text-xs text-slate-500 font-medium">Peran Anda:</span>
-                            <span class="px-3 py-1 rounded-full text-xs font-bold shadow-2xs 
-                                {{ $isAdmin ? 'bg-amber-100 text-amber-900 border border-amber-300' : 
-                                  ($isDekan ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 
-                                  ($isWadek2 ? 'bg-blue-100 text-blue-900 border border-blue-300' : 
-                                  ($isKabag ? 'bg-purple-100 text-purple-900 border border-purple-300' : 
-                                  ($isPokja ? 'bg-sky-100 text-sky-900 border border-sky-300' : 'bg-slate-100 text-slate-800 border border-slate-200')))) }}">
-                                {{ $isAdmin ? '🛡️ Admin Kepegawaian' : 
-                                  ($isDekan ? '🎓 Dekan Fakultas' : 
-                                  ($isWadek2 ? '💼 Wakil Dekan II' : 
-                                  ($isKabag ? '🏛️ Kabag Umum' : 
-                                  ($isPokja ? '📋 Ka Pokja Keu-Kepeg' : '👔 Pejabat / Atasan')))) }}
+                            <span class="px-3 py-1 rounded-full text-xs font-bold shadow-2xs {{ $roleBadgeClass }}">
+                                {{ $roleBadgeLabel }}
                             </span>
                         </div>
                     </div>
@@ -1386,6 +1409,130 @@
 
                     </div>
                 </div>
+
+                {{-- 🎓 PANEL PEMANTAUAN AKADEMIK & DOSEN (KHUSUS WAKIL DEKAN I / DEKAN) --}}
+                @if(($isWadek1 || $isDekan) && isset($akademikStats))
+                <div class="mb-6 bg-gradient-to-br from-sky-900 via-sky-800 to-indigo-950 rounded-2xl p-5 text-white shadow-lg border border-sky-700/50 relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-sky-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 border-b border-sky-700/60 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="p-2 rounded-xl bg-sky-500/20 text-sky-300 border border-sky-400/30 text-lg">🎓</span>
+                            <div>
+                                <h3 class="font-black text-sm tracking-wide text-sky-100 flex items-center gap-2">
+                                    MONITORING PEMBINAAN DOSEN &amp; AKADEMIK
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-400/20 text-sky-200 border border-sky-400/30">Tupoksi WD I</span>
+                                </h3>
+                                <p class="text-xs text-sky-200/70">Pengawasan kualifikasi dosen, kepemilikan NIDN, tugas belajar aktif, dan keabsahan izin profesi (STR).</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <a href="{{ route('pegawai.index') }}?jenis_pegawai=Dosen" class="px-3 py-1.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 text-xs font-semibold border border-sky-400/30 transition flex items-center gap-1.5">
+                                <span>Master Dosen</span> &rarr;
+                            </a>
+                            <a href="{{ route('tugas-belajar.index') }}" class="px-3 py-1.5 rounded-lg bg-indigo-500/30 hover:bg-indigo-500/40 text-indigo-200 text-xs font-semibold border border-indigo-400/30 transition flex items-center gap-1.5">
+                                <span>Tugas Belajar</span> &rarr;
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-sky-200">Total Dosen Aktif</div>
+                            <div class="text-2xl font-black text-white mt-1">{{ $akademikStats['totalDosen'] ?? 0 }} <span class="text-xs font-normal text-sky-200">Orang</span></div>
+                            <div class="text-[10px] text-sky-300/80 mt-1">Dosen Fakultas Keperawatan</div>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-sky-200">Kepemilikan NIDN</div>
+                            <div class="text-2xl font-black text-emerald-300 mt-1">{{ $akademikStats['withNidn'] ?? 0 }} <span class="text-xs font-normal text-sky-200">/ {{ $akademikStats['totalDosen'] ?? 0 }}</span></div>
+                            <div class="text-[10px] text-emerald-300/90 mt-1">{{ $akademikStats['withoutNidn'] ?? 0 }} dosen belum NIDN/NUPTK</div>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-sky-200">Tugas Belajar Aktif</div>
+                            <div class="text-2xl font-black text-amber-300 mt-1">{{ $akademikStats['tubelAktif'] ?? 0 }} <span class="text-xs font-normal text-sky-200">Dosen</span></div>
+                            <div class="text-[10px] text-amber-200/80 mt-1">Studi Lanjut S2/S3/Spesialis</div>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-sky-200">STR Expiring (&le; 6 Bln)</div>
+                            <div class="text-2xl font-black {{ ($akademikStats['strExpiring'] ?? 0) > 0 ? 'text-rose-300' : 'text-slate-300' }} mt-1">{{ $akademikStats['strExpiring'] ?? 0 }} <span class="text-xs font-normal text-sky-200">Berkas</span></div>
+                            <div class="text-[10px] {{ ($akademikStats['strExpiring'] ?? 0) > 0 ? 'text-rose-200 font-bold' : 'text-sky-300/80' }} mt-1">Perlu perpanjangan izin profesi</div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                {{-- 🏢 MEJA KOORDINASI JURUSAN (KHUSUS KAJUR & SEKJUR) --}}
+                @if(($isKajur || $isSekjur) && isset($jurusanStats))
+                <div class="mb-6 bg-gradient-to-br from-teal-900 via-teal-800 to-slate-900 rounded-2xl p-5 text-white shadow-lg border border-teal-700/50 relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 border-b border-teal-700/60 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="p-2 rounded-xl bg-teal-500/20 text-teal-300 border border-teal-400/30 text-lg">🏢</span>
+                            <div>
+                                <h3 class="font-black text-sm tracking-wide text-teal-100 flex items-center gap-2">
+                                    MEJA KOORDINASI JURUSAN &amp; ATASAN LANGSUNG
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-400/20 text-teal-200 border border-teal-400/30">{{ $isKajur ? 'Ketua Jurusan' : 'Sekretaris Jurusan' }}</span>
+                                </h3>
+                                <p class="text-xs text-teal-200/80">Unit Kerja: <span class="font-bold text-white">{{ $jurusanStats['namaUnit'] ?? 'Jurusan Keperawatan' }}</span> &bull; Pengawasan operasional dosen binaan.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <a href="{{ route('admin.logbook.index') }}" class="px-3 py-1.5 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 text-teal-200 text-xs font-semibold border border-teal-400/30 transition flex items-center gap-1.5">
+                                <span>Verifikasi Logbook</span> &rarr;
+                            </a>
+                            <a href="{{ route('pengajuan-cuti.index') }}" class="px-3 py-1.5 rounded-lg bg-emerald-500/30 hover:bg-emerald-500/40 text-emerald-200 text-xs font-semibold border border-emerald-400/30 transition flex items-center gap-1.5">
+                                <span>Pertimbangan Cuti</span> &rarr;
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 {{ (!empty($jurusanStats['recentPendingCuti']) && count($jurusanStats['recentPendingCuti']) > 0) ? 'mb-4' : '' }}">
+                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-teal-200">Dosen Jurusan</div>
+                            <div class="text-2xl font-black text-white mt-1">{{ $jurusanStats['totalDosen'] ?? 0 }} <span class="text-xs font-normal text-teal-200">Orang</span></div>
+                            <div class="text-[10px] text-teal-300/80 mt-1">Dosen binaan di unit ini</div>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-teal-200">Logbook Bulan Ini</div>
+                            <div class="text-2xl font-black {{ ($jurusanStats['belumLogbookCount'] ?? 0) > 0 ? 'text-amber-300' : 'text-emerald-300' }} mt-1">{{ $jurusanStats['sudahLogbookCount'] ?? 0 }} <span class="text-xs font-normal text-teal-200">/ {{ $jurusanStats['totalDosen'] ?? 0 }}</span></div>
+                            <div class="text-[10px] {{ ($jurusanStats['belumLogbookCount'] ?? 0) > 0 ? 'text-amber-200 font-semibold' : 'text-emerald-200' }} mt-1">{{ $jurusanStats['belumLogbookCount'] ?? 0 }} dosen belum isi logbook</div>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-teal-200">Cuti Menunggu Pertimbangan</div>
+                            <div class="text-2xl font-black {{ ($jurusanStats['pendingCuti'] ?? 0) > 0 ? 'text-amber-300' : 'text-slate-300' }} mt-1">{{ $jurusanStats['pendingCuti'] ?? 0 }} <span class="text-xs font-normal text-teal-200">Usulan</span></div>
+                            <div class="text-[10px] {{ ($jurusanStats['pendingCuti'] ?? 0) > 0 ? 'text-amber-200 font-bold' : 'text-teal-300/80' }} mt-1">Memerlukan tanda tangan atasan</div>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-teal-200">STR Dosen Expiring</div>
+                            <div class="text-2xl font-black {{ ($jurusanStats['strExpiringCount'] ?? 0) > 0 ? 'text-rose-300' : 'text-slate-300' }} mt-1">{{ $jurusanStats['strExpiringCount'] ?? 0 }} <span class="text-xs font-normal text-teal-200">Berkas</span></div>
+                            <div class="text-[10px] {{ ($jurusanStats['strExpiringCount'] ?? 0) > 0 ? 'text-rose-200 font-bold' : 'text-teal-300/80' }} mt-1">&le; 6 bulan kedaluwarsa</div>
+                        </div>
+                    </div>
+
+                    @if(!empty($jurusanStats['recentPendingCuti']) && count($jurusanStats['recentPendingCuti']) > 0)
+                    <div class="bg-black/20 rounded-xl p-3 border border-white/10">
+                        <div class="text-xs font-bold text-teal-200 mb-2 flex items-center justify-between">
+                            <span>Daftar Permohonan Cuti Dosen Menunggu Pertimbangan Atasan:</span>
+                            <a href="{{ route('pengajuan-cuti.index') }}" class="text-[11px] text-teal-300 hover:underline">Lihat Semua &rarr;</a>
+                        </div>
+                        <div class="space-y-1.5">
+                            @foreach($jurusanStats['recentPendingCuti'] as $cutiItem)
+                            <div class="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition text-xs">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                    <span class="font-bold text-white">{{ $cutiItem->pegawai?->nama_lengkap ?? 'Dosen' }}</span>
+                                    <span class="text-teal-300/70 text-[11px]">({{ $cutiItem->jenis_cuti ?? 'Cuti Tahunan' }})</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-slate-300 text-[11px]">{{ \Carbon\Carbon::parse($cutiItem->tanggal_mulai)->format('d M') }} - {{ \Carbon\Carbon::parse($cutiItem->tanggal_selesai)->format('d M Y') }}</span>
+                                    <a href="{{ route('pengajuan-cuti.show', $cutiItem->id) }}" class="px-2 py-0.5 rounded bg-amber-500 hover:bg-amber-600 text-white font-semibold text-[11px] transition">Proses</a>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+                </div>
+                @endif
 
                 {{-- 🚨 PUSAT TINDAKAN & OPERASIONAL HARIAN (ACTION ITEMS) --}}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

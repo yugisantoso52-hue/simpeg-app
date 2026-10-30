@@ -763,6 +763,17 @@
                                 this.isMock = true;
                             }
 
+                            // Deteksi Mock Location Provider pada smartphone Android / browser sensor
+                            if (pos.coords.isMock === true || pos.coords.mocked === true || pos.mocked === true) {
+                                this.isMock = true;
+                            }
+
+                            // Deteksi anomali timestamp lokasi GPS (replay attack / cached mock)
+                            if (pos.timestamp && Math.abs(Date.now() - pos.timestamp) > 120000) {
+                                this.isMock = true;
+                                this.submitErrorMessage = 'Peringatan: Koordinat GPS kedaluwarsa atau terdeteksi injeksi lokasi statis.';
+                            }
+
                             this.updateMapLayers();
                         },
                         (err) => {
@@ -1281,6 +1292,7 @@
                                 altitude: this.gpsAltitude,
                                 speed: this.gpsSpeed,
                                 is_mock: this.isMock,
+                                client_timestamp: Date.now(),
                                 liveness_verified: this.livenessVerified,
                                 liveness_challenge: this.currentChallenge.id,
                                 device_fingerprint: this.deviceFingerprint,

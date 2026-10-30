@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Pegawai;
 use App\Models\RiwayatSkp;
 use App\Repositories\Contracts\RiwayatSkpRepositoryInterface;
+use App\Services\TalentScoringService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -67,6 +68,18 @@ class RiwayatSkpService
                 }
             }
 
+            // 🎯 Otomatisasi Sinkronisasi Matriks 9-Kotak Talenta ASN (PermenPAN-RB No. 3/2020)
+            if (!empty($data['pegawai_id'])) {
+                try {
+                    $pegawaiObj = Pegawai::find($data['pegawai_id']);
+                    if ($pegawaiObj) {
+                        app(TalentScoringService::class)->calculatePegawaiTalent($pegawaiObj, (int) $tahun);
+                    }
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Auto-sync talent mapping failed on SKP create: ' . $e->getMessage());
+                }
+            }
+
             return $skp;
         });
     }
@@ -103,6 +116,13 @@ class RiwayatSkpService
                 if ($fileEvaluasi) {
                     $driveService->uploadDokumen($pegawai, $fileEvaluasi, "SKP_EVALUASI_{$tahun}", '04_KINERJA_PENILAIAN', "Update SKP Evaluasi Tahun {$tahun}");
                 }
+
+                // 🎯 Otomatisasi Sinkronisasi Matriks 9-Kotak Talenta ASN (PermenPAN-RB No. 3/2020)
+                try {
+                    app(TalentScoringService::class)->calculatePegawaiTalent($pegawai, (int) $tahun);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Auto-sync talent mapping failed on SKP update: ' . $e->getMessage());
+                }
             }
 
             return $updated;
@@ -113,6 +133,8 @@ class RiwayatSkpService
     {
         return DB::transaction(function () use ($id) {
             $existing = $this->repository->findOrFail($id);
+            $pegawaiId = $existing->pegawai_id;
+            $tahun = $existing->tahun;
 
             if ($existing->file_rencana_skp) {
                 PegawaiStorageService::delete($existing->file_rencana_skp);
@@ -121,7 +143,21 @@ class RiwayatSkpService
                 PegawaiStorageService::delete($existing->file_evaluasi_skp);
             }
 
-            return $this->repository->delete($id);
+            $deleted = $this->repository->delete($id);
+
+            // 🎯 Otomatisasi Sinkronisasi Ulang Matriks 9-Kotak Talenta ASN setelah SKP dihapus
+            if ($deleted && $pegawaiId) {
+                try {
+                    $pegawai = Pegawai::find($pegawaiId);
+                    if ($pegawai) {
+                        app(TalentScoringService::class)->calculatePegawaiTalent($pegawai, (int) ($tahun ?? date('Y')));
+                    }
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Auto-sync talent mapping failed on SKP delete: ' . $e->getMessage());
+                }
+            }
+
+            return $deleted;
         });
     }
 }

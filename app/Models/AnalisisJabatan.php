@@ -155,6 +155,24 @@ class AnalisisJabatan extends Model
     }
 
     /**
+     * Rekomendasi Formasi Resmi CASN/PPPK / Penataan
+     */
+    public function getRekomendasiPengadaanAttribute(): string
+    {
+        $selisih = $this->selisih_formasi;
+
+        if ($selisih < 0) {
+            return '+' . abs($selisih) . ' Formasi CASN/PPPK';
+        }
+
+        if ($selisih > 0) {
+            return 'Redistribusi Pegawai (+' . $selisih . ')';
+        }
+
+        return 'Formasi Optimal';
+    }
+
+    /**
      * Hitung bobot hierarki jabatan struktural & fungsional
      * Acuan: Bagan Struktur Organisasi Fakultas Keperawatan UNRI & PermenPAN-RB No. 1/2020
      */

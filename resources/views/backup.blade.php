@@ -47,7 +47,7 @@
             @endif
 
             {{-- Validation Errors --}}
-            @if($errors->any())
+            @if(isset($errors) && $errors->any())
                 <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
                     <div class="d-flex align-items-center mb-2">
                         <i class="bi bi-exclamation-circle-fill fs-5 me-2 text-warning"></i>
@@ -205,6 +205,96 @@
                     </div>
                 </div>
 
+            </div>
+
+            {{-- SECTION: PENCADANGAN BERKAS DOKUMEN & STORAGE DIGITAL (ZIP ARCHIVE) --}}
+            <div class="card shadow-sm border-0 rounded-3 mt-4">
+                <div class="card-header bg-white border-bottom border-light py-3 px-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-success-subtle text-success rounded-3 p-2 me-3">
+                                <i class="bi bi-file-earmark-zip-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title fw-bold mb-0 text-dark">Pencadangan Berkas Digital &amp; Storage Komprehensif</h5>
+                                <small class="text-muted">Arsipkan seluruh berkas lampiran resmi (SK CPNS, SK Pangkat, SKP, Ijazah, STR/SIP, Sertifikat)</small>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-light text-dark border px-3 py-2">
+                                <i class="bi bi-files me-1 text-primary"></i> Total Dokumen: <strong>{{ $storageInfo['file_count'] ?? 0 }} Berkas</strong>
+                            </span>
+                            <span class="badge bg-light text-dark border px-3 py-2">
+                                <i class="bi bi-hdd me-1 text-success"></i> Ukuran Dokumen: <strong>{{ $storageInfo['size_mb'] ?? 0 }} MB</strong>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4 align-items-center">
+                        <div class="col-lg-7">
+                            <p class="text-secondary small leading-relaxed mb-3">
+                                Database SQL hanya menyimpan metadata teks kepegawaian. Seluruh dokumen fisik autentik ASN (seperti scan SK asli, berkas portofolio karir, dan bukti sertifikasi) tersimpan di direktori storage server.
+                            </p>
+                            <div class="alert alert-info border-info-subtle small mb-0">
+                                <i class="bi bi-clock-history me-1"></i>
+                                <strong>Pencadangan Otomatis:</strong> Jadwal cron sistem (<code>simpeg:backup</code>) otomatis berjalan setiap hari pukul <strong>00:00 WIB</strong> untuk memadatkan seluruh database dan dokumen storage ke arsip ZIP terproteksi.
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="d-grid gap-2">
+                                <form action="{{ route('backup.run-full') }}" method="POST" onsubmit="return confirm('Jalankan Full Backup komprehensif sekarang? Sistem akan memadatkan seluruh Database SQL dan berkas Storage ke arsip ZIP.')">
+                                    @csrf
+                                    <button type="submit" class="btn btn-success btn-lg w-100 fw-semibold shadow-sm d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-shield-fill-check me-2"></i>
+                                        <span>Jalankan Full System Backup (.zip)</span>
+                                    </button>
+                                </form>
+                                <a href="{{ route('backup.export-storage') }}" class="btn btn-outline-secondary fw-semibold d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-folder-symlink me-2"></i>
+                                    <span>Download Arsip Dokumen Digital Saja (.zip)</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Tabel Riwayat File Backup ZIP di Server --}}
+                    @if(!empty($existingBackups) && count($existingBackups) > 0)
+                    <div class="mt-4 pt-3 border-top">
+                        <h6 class="fw-bold text-dark mb-3 small text-uppercase">
+                            <i class="bi bi-archive me-1"></i> Berkas Arsip Backup Tersimpan di Server (Maks. 14 Hari Terakhir):
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-0 small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">Nama Berkas Arsip</th>
+                                        <th class="text-center">Ukuran</th>
+                                        <th class="text-center">Waktu Pencadangan</th>
+                                        <th class="text-end pe-3">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($existingBackups as $backupItem)
+                                    <tr>
+                                        <td class="ps-3 fw-semibold text-dark">
+                                            <i class="bi bi-file-zip text-danger me-1"></i> {{ $backupItem['filename'] }}
+                                        </td>
+                                        <td class="text-center text-secondary font-monospace">{{ $backupItem['size_mb'] }} MB</td>
+                                        <td class="text-center text-muted">{{ $backupItem['created_at'] }} WIB</td>
+                                        <td class="text-end pe-3">
+                                            <a href="{{ route('backup.download-archive', $backupItem['filename']) }}" class="btn btn-sm btn-outline-primary px-3 fw-semibold">
+                                                <i class="bi bi-download me-1"></i> Unduh
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    @endif
+                </div>
             </div>
 
             {{-- Footnote Information --}}

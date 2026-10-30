@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -52,7 +54,99 @@ class BackupController extends Controller
             Log::warning("Gagal mengambil metadata database: " . $e->getMessage());
         }
 
-        return view('backup', compact('dbInfo'));
+        // Storage Dokumen Digital (SK, Ijazah, SKP, Berkas Lampiran)
+        $storageDir = storage_path('app/public');
+        $totalStorageFiles = 0;
+        $totalStorageBytes = 0;
+        if (File::exists($storageDir)) {
+            $storageFiles = File::allFiles($storageDir);
+            $totalStorageFiles = count($storageFiles);
+            foreach ($storageFiles as $sf) {
+                $totalStorageBytes += $sf->getSize();
+            }
+        }
+        $storageInfo = [
+            'file_count' => $totalStorageFiles,
+            'size_mb'    => round($totalStorageBytes / (1024 * 1024), 2),
+        ];
+
+        // Daftar Berkas Backup ZIP Tersimpan
+        $backupDir = storage_path('app/backups');
+        $existingBackups = [];
+        if (File::exists($backupDir)) {
+            $zipFiles = File::glob($backupDir . '/*.zip');
+            foreach ($zipFiles as $zf) {
+                $existingBackups[] = [
+                    'filename'   => basename($zf),
+                    'size_mb'    => round(File::size($zf) / (1024 * 1024), 2),
+                    'created_at' => Carbon::createFromTimestamp(File::lastModified($zf))->timezone('Asia/Jakarta')->translatedFormat('d M Y H:i'),
+                ];
+            }
+            usort($existingBackups, fn($a, $b) => strcmp($b['filename'], $a['filename']));
+        }
+
+        return view('backup', compact('dbInfo', 'storageInfo', 'existingBackups'));
+    }
+
+    /**
+     * Jalankan Full Backup Komprehensif (Database + Seluruh Dokumen Digital)
+     */
+    public function runFullBackup()
+    {
+        set_time_limit(600);
+        ini_set('memory_limit', '1024M');
+
+        try {
+            Artisan::call('simpeg:backup');
+            return redirect()->route('backup.index')->with('success', 'Backup komprehensif (Database + Seluruh Dokumen Lampiran Digital) berhasil dibuat dan diarsipkan!');
+        } catch (\Throwable $e) {
+            Log::error('Backup manual gagal: ' . $e->getMessage());
+            return redirect()->route('backup.index')->with('error', 'Gagal membuat arsip backup: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Unduh arsip dokumen digital storage saja (.zip)
+     */
+    public function exportStorage()
+    {
+        set_time_limit(600);
+        ini_set('memory_limit', '1024M');
+
+        try {
+            Artisan::call('simpeg:backup', ['--only-files' => true]);
+            
+            $backupDir = storage_path('app/backups');
+            $files = File::glob($backupDir . '/*.zip');
+            if (!empty($files)) {
+                usort($files, fn($a, $b) => File::lastModified($b) <=> File::lastModified($a));
+                $latestZip = $files[0];
+                return response()->download($latestZip, basename($latestZip));
+            }
+
+            return redirect()->route('backup.index')->with('success', 'Pencadangan dokumen digital berhasil disimpan di server.');
+        } catch (\Throwable $e) {
+            Log::error('Export storage gagal: ' . $e->getMessage());
+            return redirect()->route('backup.index')->with('error', 'Gagal mengompresi dokumen storage: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Unduh file ZIP backup dari direktori storage/app/backups
+     */
+    public function downloadArchive(string $filename)
+    {
+        $cleanName = basename($filename);
+        if (!str_ends_with($cleanName, '.zip')) {
+            abort(404, 'Format berkas tidak valid.');
+        }
+
+        $filePath = storage_path('app/backups/' . $cleanName);
+        if (!File::exists($filePath)) {
+            abort(404, 'Berkas arsip cadangan tidak ditemukan.');
+        }
+
+        return response()->download($filePath, $cleanName);
     }
 
     /**

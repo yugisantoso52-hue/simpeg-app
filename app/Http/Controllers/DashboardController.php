@@ -47,19 +47,27 @@ class DashboardController extends Controller
         ];
 
         // Cek identitas & peran user (eksklusif sesuai tahapan wewenang masing-masing)
-        $isDekan  = $user->isDekan();
-        $isWadek2 = $user->isWadek2();
-        $isKabag  = $user->isKabagUmum();
-        $isPokja  = $user->isKaPokjaKepeg();
-        $isAdmin  = $user->isScreeningAdmin();
-        $isAtasan = $user->isAtasan() || $user->hasRole('pimpinan') || $user->canAccessExecutiveKepegawaianMenus();
+        $isDekan   = $user->isDekan();
+        $isWadek1  = $user->isWadek1();
+        $isWadek2  = $user->isWadek2();
+        $isWadek3  = $user->isWadek3();
+        $isKabag   = $user->isKabagUmum();
+        $isPokja   = $user->isKaPokjaKepeg();
+        $isKajur   = $user->isKajur();
+        $isSekjur  = $user->isSekjur();
+        $isAdmin   = $user->isScreeningAdmin();
+        $isAtasan  = $user->isAtasan() || $user->hasRole('pimpinan') || $user->canAccessExecutiveKepegawaianMenus();
 
-        $data['isAdmin']  = $isAdmin;
-        $data['isAtasan'] = $isAtasan;
-        $data['isDekan']  = $isDekan;
-        $data['isWadek2'] = $isWadek2;
-        $data['isKabag']  = $isKabag;
-        $data['isPokja']  = $isPokja;
+        $data['isAdmin']   = $isAdmin;
+        $data['isAtasan']  = $isAtasan;
+        $data['isDekan']   = $isDekan;
+        $data['isWadek1']  = $isWadek1;
+        $data['isWadek2']  = $isWadek2;
+        $data['isWadek3']  = $isWadek3;
+        $data['isKabag']   = $isKabag;
+        $data['isPokja']   = $isPokja;
+        $data['isKajur']   = $isKajur;
+        $data['isSekjur']  = $isSekjur;
 
         // Ambil data profil pegawai yang login (baik pegawai mandiri maupun pejabat/admin)
         $pegawaiId = $user->pegawai_id;
@@ -95,11 +103,78 @@ class DashboardController extends Controller
 
         // Jika user yang login adalah Admin / Pimpinan / Atasan Langsung / Pejabat Eksekutif
         if ($isAdmin || $isAtasan) {
-            try {
-                $data['facultyCompleteness'] = Cache::remember('dashboard_faculty_completeness', 600, fn() => PegawaiCompletenessService::getFacultyCompleteness());
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning('Dashboard facultyCompleteness error: ' . $e->getMessage());
-                $data['facultyCompleteness'] = [];
+            // 🎓 DATA KHUSUS WAKIL DEKAN I (AKADEMIK, DOSEN, NIDN & TUBEL)
+            if ($isWadek1 || $isDekan || $isAdmin) {
+                try {
+                    $data['akademikStats'] = Cache::remember('dashboard_akademik_stats', 300, function() {
+                        $totalDosen = Pegawai::where('jenis_pegawai', 'Dosen')->count();
+                        $withNidn = Pegawai::where('jenis_pegawai', 'Dosen')->whereNotNull('nidn_nuptk')->where('nidn_nuptk', '!=', '')->count();
+                        $withoutNidn = max(0, $totalDosen - $withNidn);
+                        $tubelAktif = \App\Models\TugasBelajar::whereIn('status_studi', ['Aktif', 'aktif', 'Sedang Studi'])->count();
+                        $strExpiring = Pegawai::where('jenis_pegawai', 'Dosen')
+                            ->whereNotNull('tanggal_kadaluarsa_str')
+                            ->whereBetween('tanggal_kadaluarsa_str', [now(), now()->addMonths(6)])
+                            ->count();
+                        return [
+                            'totalDosen'   => $totalDosen,
+                            'withNidn'     => $withNidn,
+                            'withoutNidn'  => $withoutNidn,
+                            'tubelAktif'   => $tubelAktif,
+                            'strExpiring'  => $strExpiring,
+                        ];
+                    });
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Dashboard akademik stats error: ' . $e->getMessage());
+                    $data['akademikStats'] = [
+                        'totalDosen'   => 0,
+                        'withNidn'     => 0,
+                        'withoutNidn'  => 0,
+                        'tubelAktif'   => 0,
+                        'strExpiring'  => 0,
+                    ];
+                }
+            }
+
+            // 🏛️ DATA KHUSUS KAJUR & SEKJUR (MONITORING DOSEN JURUSAN & KINERJA)
+            if ($isKajur || $isSekjur) {
+                try {
+                    $bawahanIds = $user->getBawahanIds();
+                    $unitKerjaUser = $user->pegawai?->unitKerja?->nama_unit ?? 'Jurusan Keperawatan';
+
+                    $dosenJurusanQuery = Pegawai::whereIn('id', $bawahanIds)->orWhere('unit_kerja_id', $user->pegawai?->unit_kerja_id);
+                    $dosenJurusanIds = $dosenJurusanQuery->pluck('id')->toArray();
+
+                    $nowTgl = Carbon::now('Asia/Jakarta');
+                    $logbookDosenBulanIni = Logbook::whereIn('pegawai_id', $dosenJurusanIds)
+                        ->whereMonth('tanggal', $nowTgl->month)
+                        ->whereYear('tanggal', $nowTgl->year)
+                        ->distinct('pegawai_id')
+                        ->pluck('pegawai_id')
+                        ->toArray();
+
+                    $data['jurusanStats'] = [
+                        'namaUnit'          => $unitKerjaUser,
+                        'totalDosen'        => count($dosenJurusanIds),
+                        'sudahLogbookCount' => count($logbookDosenBulanIni),
+                        'belumLogbookCount' => max(0, count($dosenJurusanIds) - count($logbookDosenBulanIni)),
+                        'pendingLogbook'    => Logbook::whereIn('pegawai_id', $dosenJurusanIds)->where('status', Logbook::STATUS_DIAJUKAN)->count(),
+                        'pendingCuti'       => PengajuanCuti::whereIn('pegawai_id', $dosenJurusanIds)->whereIn('status', ['Menunggu Persetujuan Atasan', 'Menunggu Persetujuan', 'Menunggu Pertimbangan Atasan'])->count(),
+                        'strExpiringCount'  => Pegawai::whereIn('id', $dosenJurusanIds)->whereNotNull('tanggal_kadaluarsa_str')->whereBetween('tanggal_kadaluarsa_str', [now(), now()->addMonths(6)])->count(),
+                        'recentPendingCuti' => PengajuanCuti::with('pegawai')->whereIn('pegawai_id', $dosenJurusanIds)->whereIn('status', ['Menunggu Persetujuan Atasan', 'Menunggu Persetujuan', 'Menunggu Pertimbangan Atasan'])->latest()->take(3)->get(),
+                    ];
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Dashboard jurusan stats error: ' . $e->getMessage());
+                    $data['jurusanStats'] = [
+                        'namaUnit'          => 'Jurusan Keperawatan',
+                        'totalDosen'        => 0,
+                        'sudahLogbookCount' => 0,
+                        'belumLogbookCount' => 0,
+                        'pendingLogbook'    => 0,
+                        'pendingCuti'       => 0,
+                        'strExpiringCount'  => 0,
+                        'recentPendingCuti' => collect(),
+                    ];
+                }
             }
 
             // Ringkasan Eksekutif Analisis Jabatan & Formasi Beban Kerja (Anjab & ABK)
