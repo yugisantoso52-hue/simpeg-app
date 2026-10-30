@@ -107,6 +107,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('/surat-aktif', [\App\Http\Controllers\LayananSuratController::class, 'storeSuratAktif'])->name('surat-aktif.store');
         Route::post('/surat-aktif/{id}/verifikasi', [\App\Http\Controllers\LayananSuratController::class, 'verifikasi'])->name('surat-aktif.verifikasi');
         Route::post('/surat-aktif/{id}/update-nomor', [\App\Http\Controllers\LayananSuratController::class, 'updateNomorSurat'])->name('surat-aktif.update-nomor');
+        Route::post('/surat-aktif/{id}/cancel', [\App\Http\Controllers\LayananSuratController::class, 'cancel'])->name('surat-aktif.cancel');
         Route::get('/surat-aktif/{id}/cetak', [\App\Http\Controllers\LayananSuratController::class, 'cetakSuratAktif'])->name('surat-aktif.cetak');
         Route::get('/surat-aktif/{id}/download', [\App\Http\Controllers\LayananSuratController::class, 'cetakSuratAktif'])->name('surat-aktif.download');
     });
@@ -189,6 +190,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::post('/pegawai/bulk-delete', [PegawaiController::class, 'bulkDelete'])->name('pegawai.bulk-delete');
         Route::delete('/pegawai/{pegawai}', [PegawaiController::class, 'destroy'])->name('pegawai.destroy');
         Route::delete('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'destroy'])->name('pengajuan-cuti.destroy');
+        Route::delete('/pengajuan-karir/{id}', [\App\Http\Controllers\PengajuanKarirController::class, 'destroy'])->name('pengajuan-karir.destroy');
+        Route::delete('/satyalancana/{id}', [SatyalancanaController::class, 'destroy'])->name('satyalancana.destroy');
+        Route::delete('/layanan-surat/{id}', [\App\Http\Controllers\LayananSuratController::class, 'destroy'])->name('layanan-surat.destroy');
         Route::post('/pengajuan-cuti/{id}/update-nomor', [PengajuanCutiController::class, 'updateNomorSurat'])->name('pengajuan-cuti.update-nomor');
 
         // Manajemen Akun & Keamanan Pegawai (Khusus Admin)
@@ -222,6 +226,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/pengajuan-karir/create', [\App\Http\Controllers\PengajuanKarirController::class, 'create'])->name('pengajuan-karir.create');
         Route::post('/pengajuan-karir', [\App\Http\Controllers\PengajuanKarirController::class, 'store'])->name('pengajuan-karir.store');
         Route::get('/pengajuan-karir/{id}', [\App\Http\Controllers\PengajuanKarirController::class, 'show'])->name('pengajuan-karir.show');
+        Route::post('/pengajuan-karir/{id}/cancel', [\App\Http\Controllers\PengajuanKarirController::class, 'cancel'])->name('pengajuan-karir.cancel');
         Route::get('/reports/kgb/{id}/pdf', [ReportController::class, 'exportKgbPdf'])->name('reports.kgb.pdf');
         Route::get('/reports/kp/{id}/pdf', [ReportController::class, 'exportUsulanKpPdf'])->name('reports.kp.pdf');
 
@@ -230,6 +235,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/satyalancana/{pegawai}/cetak-drh', [SatyalancanaController::class, 'cetakDrh'])->name('satyalancana.cetak-drh');
         Route::get('/satyalancana/{id}/pdf', [SatyalancanaController::class, 'cetakPdf'])->name('satyalancana.cetak-pdf');
         Route::get('/satyalancana/{id}', [SatyalancanaController::class, 'show'])->name('satyalancana.show');
+        Route::post('/satyalancana/{id}/cancel', [SatyalancanaController::class, 'cancel'])->name('satyalancana.cancel');
 
         /* Modul Karir & Monitoring (Akses Cerdas: Admin memantau seluruh ASN, Pegawai diarahkan ke layanan mandiri) */
         Route::get('/kgb', [KgbController::class, 'index'])->name('kgb.index');

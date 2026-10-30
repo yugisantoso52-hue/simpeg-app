@@ -641,4 +641,59 @@ class PengajuanKarirController extends Controller
         return redirect()->route('pengajuan-karir.index', ['tab' => $tab])
             ->with('success', "Berkas {$label} berhasil diunggah dan disimpan ke profil kepegawaian Anda.");
     }
+
+    /**
+     * Batalkan pengajuan karir oleh pegawai pemohon
+     */
+    public function cancel(Request $request, $id)
+    {
+        $user = Auth::user();
+        $pengajuan = PengajuanKarir::findOrFail($id);
+
+        $isAdmin = $user->hasRole('admin') || $user->isScreeningAdmin();
+        $isOwner = (int)$user->pegawai_id === (int)$pengajuan->pegawai_id;
+
+        if (!$isAdmin && !$isOwner) {
+            abort(403, 'Anda tidak memiliki hak untuk membatalkan pengajuan ini.');
+        }
+
+        if (in_array($pengajuan->status, ['disetujui_wd2', 'disetujui_dekan', 'selesai'])) {
+            return back()->with('error', 'Pengajuan telah disahkan dan tidak dapat dibatalkan.');
+        }
+
+        // Hapus atau ubah status ke dibatalkan
+        $pengajuan->update([
+            'status' => 'dibatalkan',
+            'catatan' => 'Dibatalkan oleh ' . ($isOwner ? 'pemohon' : 'admin') . ' pada ' . now()->format('d/m/Y H:i')
+        ]);
+
+        \Illuminate\Support\Facades\Cache::forget('dashboard_workflow_stats');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_reminder');
+
+        $tab = $pengajuan->jenis_pengajuan === 'KP' ? 'kp' : 'kgb';
+        return redirect()->route('pengajuan-karir.index', ['tab' => $tab])
+            ->with('success', "Pengajuan {$pengajuan->jenis_pengajuan} berhasil dibatalkan.");
+    }
+
+    /**
+     * Hapus pengajuan karir secara permanen (Khusus Admin / Reset Uji Coba)
+     */
+    public function destroy(Request $request, $id)
+    {
+        $user = Auth::user();
+        if (!$user->hasRole('admin') && !$user->isScreeningAdmin()) {
+            abort(403, 'Hanya Administrator yang berwenang menghapus data pengajuan karir.');
+        }
+
+        $pengajuan = PengajuanKarir::findOrFail($id);
+        $jenis = $pengajuan->jenis_pengajuan;
+        $namaPegawai = $pengajuan->pegawai?->nama ?? 'Pegawai';
+
+        $pengajuan->delete();
+
+        \Illuminate\Support\Facades\Cache::forget('dashboard_workflow_stats');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_reminder');
+
+        return back()->with('success', "Data pengajuan {$jenis} untuk {$namaPegawai} berhasil dihapus permanen.");
+    }
 }

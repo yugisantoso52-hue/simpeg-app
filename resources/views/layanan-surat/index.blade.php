@@ -282,12 +282,35 @@
                                         </td>
                                         <td class="px-4 py-3 text-center">
                                             <div class="flex flex-col items-center gap-1.5">
-                                                <a href="{{ route('layanan-surat.surat-aktif.cetak', $item->id) }}"
-                                                   target="_blank"
-                                                   class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg {{ $item->status === 'selesai' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300' }} transition shadow-xs">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                                                    {{ $item->status === 'selesai' ? 'Cetak PDF (Sah)' : 'Cetak (Draf)' }}
-                                                </a>
+                                                <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                                                    <a href="{{ route('layanan-surat.surat-aktif.cetak', $item->id) }}"
+                                                       target="_blank"
+                                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg {{ $item->status === 'selesai' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300' }} transition shadow-xs">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                                        {{ $item->status === 'selesai' ? 'Cetak PDF (Sah)' : 'Cetak (Draf)' }}
+                                                    </a>
+
+                                                    {{-- Tombol Batal oleh Pemohon --}}
+                                                    @if((int)Auth::user()->pegawai_id === (int)$item->pegawai_id && !in_array($item->status, ['disetujui', 'selesai', 'dibatalkan']))
+                                                        <form action="{{ route('layanan-surat.surat-aktif.cancel', $item->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan permohonan surat ini?');" class="inline">
+                                                            @csrf
+                                                            <button type="submit" class="px-2 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition shadow-2xs" title="Batalkan Permohonan">
+                                                                Batal
+                                                            </button>
+                                                        </form>
+                                                    @endif
+
+                                                    {{-- Tombol Hapus Permanen oleh Admin (Reset Uji Coba) --}}
+                                                    @if(Auth::user()->hasRole('admin') || Auth::user()->isScreeningAdmin())
+                                                        <form action="{{ route('layanan-surat.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus permanen berkas permohonan surat ini?');" class="inline">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="p-1.5 rounded-lg text-xs font-semibold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition shadow-2xs" title="Hapus Berkas / Reset Uji Coba (Admin)">
+                                                                🗑️
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                </div>
 
                                                 {{-- Tombol Verifikasi SOP Berjenjang untuk Pimpinan / Verifikator --}}
                                                 @if($isExecutiveOrAdmin)

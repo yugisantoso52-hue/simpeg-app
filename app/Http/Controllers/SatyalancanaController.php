@@ -634,4 +634,58 @@ class SatyalancanaController extends Controller
 
         return back()->with('success', 'Nomor surat usulan Satyalancana berhasil disimpan oleh Admin: ' . ($nomorSuratFormatted ?? '(Dikosongkan)'));
     }
+
+    /**
+     * Batalkan usulan Satyalancana (Oleh Pemohon / Admin)
+     */
+    public function cancel(Request $request, int $id)
+    {
+        $user = Auth::user();
+        $usulan = UsulanSatyalancana::findOrFail($id);
+
+        $isAdmin = $user->hasRole('admin') || $user->isScreeningAdmin();
+        $isOwner = (int)$user->pegawai_id === (int)$usulan->pegawai_id;
+
+        if (!$isAdmin && !$isOwner) {
+            abort(403, 'Anda tidak berwenang membatalkan usulan ini.');
+        }
+
+        if (in_array($usulan->status, ['disetujui_wd2', 'selesai'])) {
+            return back()->with('error', 'Usulan Satyalancana telah disahkan pimpinan dan tidak dapat dibatalkan.');
+        }
+
+        $usulan->update([
+            'status' => 'dibatalkan',
+            'catatan' => 'Dibatalkan oleh ' . ($isOwner ? 'pemohon' : 'admin') . ' pada ' . now()->format('d/m/Y H:i')
+        ]);
+
+        \Illuminate\Support\Facades\Cache::forget('dashboard_workflow_stats');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_reminder');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_nominasi_satya_count');
+
+        return back()->with('success', 'Usulan Satyalancana berhasil dibatalkan.');
+    }
+
+    /**
+     * Hapus usulan Satyalancana secara permanen (Khusus Admin / Reset Uji Coba)
+     */
+    public function destroy(Request $request, int $id)
+    {
+        $user = Auth::user();
+        if (!$user->hasRole('admin') && !$user->isScreeningAdmin()) {
+            abort(403, 'Hanya Administrator yang berwenang menghapus data usulan Satyalancana.');
+        }
+
+        $usulan = UsulanSatyalancana::findOrFail($id);
+        $namaPegawai = $usulan->pegawai?->nama ?? 'Pegawai';
+        $kategori = $usulan->kategori;
+
+        $usulan->delete();
+
+        \Illuminate\Support\Facades\Cache::forget('dashboard_workflow_stats');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_reminder');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_nominasi_satya_count');
+
+        return back()->with('success', "Data usulan Satyalancana {$kategori} untuk {$namaPegawai} berhasil dihapus permanen.");
+    }
 }

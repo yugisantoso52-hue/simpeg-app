@@ -133,7 +133,7 @@ class KelayakanKarirService
 
         $usulanAktif = PengajuanKarir::where('pegawai_id', $pegawai->id)
             ->where('jenis_pengajuan', 'KP')
-            ->whereNotIn('status', ['disetujui_wd2', 'ditolak'])
+            ->whereNotIn('status', ['disetujui_wd2', 'ditolak', 'dibatalkan'])
             ->latest()
             ->first();
 
@@ -210,7 +210,7 @@ class KelayakanKarirService
 
         $usulanAktif = PengajuanKarir::where('pegawai_id', $pegawai->id)
             ->where('jenis_pengajuan', 'KGB')
-            ->whereNotIn('status', ['disetujui_wd2', 'ditolak'])
+            ->whereNotIn('status', ['disetujui_wd2', 'ditolak', 'dibatalkan'])
             ->latest()
             ->first();
 
@@ -263,6 +263,7 @@ class KelayakanKarirService
         $tahunIni = (int) date('Y');
         $usulanAktif = UsulanSatyalancana::where('pegawai_id', $pegawai->id)
             ->where('tahun_usulan', $tahunIni)
+            ->whereNotIn('status', ['ditolak', 'dibatalkan'])
             ->first();
 
         $canSubmit = $isPns && !empty($kategoriLayak) && empty($usulanAktif);

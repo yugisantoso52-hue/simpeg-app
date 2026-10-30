@@ -82,6 +82,33 @@
                                 <span>📄 Cetak SK KGB {{ $isSah ? '(Resmi Sah)' : '(Konsep Draf)' }}</span>
                             </a>
                         @endif
+
+                        {{-- Tombol Batal untuk Pemohon --}}
+                        @php
+                            $isOwner = (int)Auth::user()->pegawai_id === (int)$pengajuan->pegawai_id;
+                            $cancelRoute = $pengajuan->jenis_pengajuan === 'SATYALANCANA' ? route('satyalancana.cancel', $pengajuan->id) : route('pengajuan-karir.cancel', $pengajuan->id);
+                            $destroyRoute = $pengajuan->jenis_pengajuan === 'SATYALANCANA' ? route('satyalancana.destroy', $pengajuan->id) : route('pengajuan-karir.destroy', $pengajuan->id);
+                        @endphp
+
+                        @if($isOwner && !in_array($pengajuan->status, ['disetujui_wd2', 'disetujui_dekan', 'selesai', 'dibatalkan']))
+                            <form action="{{ $cancelRoute }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pengajuan ini?');" class="inline">
+                                @csrf
+                                <button type="submit" class="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 transition shadow-xs">
+                                    <span>✕</span> Batalkan Usulan
+                                </button>
+                            </form>
+                        @endif
+
+                        {{-- Tombol Hapus Permanen oleh Admin (Reset Uji Coba) --}}
+                        @if($isAdmin ?? false)
+                            <form action="{{ $destroyRoute }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus permanen data pengajuan ini? (Aksi ini tidak dapat dibatalkan)');" class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl text-xs font-bold bg-red-600 text-white hover:bg-red-700 transition shadow-xs">
+                                    <span>🗑️</span> Hapus Berkas (Admin)
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 </div>
 

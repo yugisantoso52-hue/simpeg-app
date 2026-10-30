@@ -515,6 +515,17 @@
                                                     DRH PDF
                                                 </a>
 
+                                                {{-- TOMBOL HAPUS PERMANEN KHUSUS ADMIN (RESET UJI COBA) --}}
+                                                @if($isAdmin)
+                                                    <form method="POST" action="{{ route('satyalancana.destroy', $usulan->id) }}" onsubmit="return confirm('Hapus permanen berkas usulan Satyalancana ini?')" class="inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="p-1 rounded text-xs font-semibold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition shadow-2xs" title="Hapus Berkas / Reset Uji Coba (Admin)">
+                                                            🗑️
+                                                        </button>
+                                                    </form>
+                                                @endif
+
                                                 {{-- URUTAN TOMBOL VERIFIKASI BERTINGKAT: ADMIN -> POKJA -> KABAG -> WD2 (TERKUNCI HINGGA TAHAP SEBELUMNYA SELESAI) --}}
                                                 <div class="flex items-center justify-center gap-1 flex-wrap">
                                                     {{-- 1. ADMIN SCREENING BERKAS --}}

@@ -390,6 +390,27 @@
                                                             📄 PDF
                                                         </a>
                                                     @endif
+
+                                                    {{-- Tombol Batalkan Pengajuan oleh Pemohon --}}
+                                                    @if((int)Auth::user()->pegawai_id === (int)$item->pegawai_id && !in_array($item->status, ['disetujui_wd2', 'disetujui_dekan', 'selesai', 'dibatalkan']))
+                                                        <form action="{{ route('pengajuan-karir.cancel', $item->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pengajuan ini?');" class="inline">
+                                                            @csrf
+                                                            <button type="submit" class="px-2 py-1 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition shadow-2xs" title="Batalkan Pengajuan Ini">
+                                                                Batal
+                                                            </button>
+                                                        </form>
+                                                    @endif
+
+                                                    {{-- Tombol Hapus Permanen oleh Admin (Reset Uji Coba) --}}
+                                                    @if($isAdmin ?? false)
+                                                        <form action="{{ route('pengajuan-karir.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus permanen berkas pengajuan karir ini?');" class="inline">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="p-1 rounded-lg text-xs font-semibold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition shadow-2xs" title="Hapus Berkas / Reset Uji Coba (Admin)">
+                                                                🗑️
+                                                            </button>
+                                                        </form>
+                                                    @endif
                                                 </div>
 
                                                 {{-- TOMBOL VERIFIKASI BERTINGKAT TERKUNCI (ADMIN -> POKJA -> KABAG -> WD2) --}}

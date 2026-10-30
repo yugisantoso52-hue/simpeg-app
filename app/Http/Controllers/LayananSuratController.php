@@ -418,4 +418,54 @@ class LayananSuratController extends Controller
 
         return back()->with('success', "Nomor surat berhasil diperbarui oleh Admin: {$nomorSurat}");
     }
+
+    /**
+     * Batalkan permohonan surat oleh pemohon atau admin
+     */
+    public function cancel(Request $request, int $id)
+    {
+        $user = Auth::user();
+        $surat = LayananSurat::findOrFail($id);
+
+        $isAdmin = $user->hasRole('admin') || $user->isScreeningAdmin();
+        $isOwner = (int)$user->pegawai_id === (int)$surat->pegawai_id;
+
+        if (!$isAdmin && !$isOwner) {
+            abort(403, 'Anda tidak berwenang membatalkan permohonan surat ini.');
+        }
+
+        if (in_array($surat->status, ['disetujui', 'selesai'])) {
+            return back()->with('error', 'Surat telah disahkan dan tidak dapat dibatalkan.');
+        }
+
+        $surat->update([
+            'status' => 'dibatalkan',
+            'keterangan_penolakan' => 'Dibatalkan oleh ' . ($isOwner ? 'pemohon' : 'admin') . ' pada ' . now()->format('d/m/Y H:i')
+        ]);
+
+        \Illuminate\Support\Facades\Cache::forget('dashboard_workflow_stats');
+
+        return back()->with('success', 'Permohonan surat berhasil dibatalkan.');
+    }
+
+    /**
+     * Hapus data layanan surat secara permanen (Khusus Admin / Reset Uji Coba)
+     */
+    public function destroy(Request $request, int $id)
+    {
+        $user = Auth::user();
+        if (!$user->hasRole('admin') && !$user->isScreeningAdmin()) {
+            abort(403, 'Hanya Administrator yang berwenang menghapus data layanan surat.');
+        }
+
+        $surat = LayananSurat::findOrFail($id);
+        $jenis = $surat->jenis_surat;
+        $nama = $surat->pegawai?->nama ?? 'Pegawai';
+
+        $surat->delete();
+
+        \Illuminate\Support\Facades\Cache::forget('dashboard_workflow_stats');
+
+        return back()->with('success', "Data {$jenis} untuk {$nama} berhasil dihapus permanen.");
+    }
 }
