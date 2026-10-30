@@ -22,6 +22,9 @@ class User extends Authenticatable
         'role_id',
         'pegawai_id', // Tambahkan field ini
         'must_change_password',
+        'is_suspended',
+        'suspended_at',
+        'suspended_reason',
     ];
 
     protected $hidden = [
@@ -35,6 +38,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'must_change_password' => 'boolean',
+            'is_suspended' => 'boolean',
+            'suspended_at' => 'datetime',
         ];
     }
 

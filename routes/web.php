@@ -191,6 +191,10 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::delete('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'destroy'])->name('pengajuan-cuti.destroy');
         Route::post('/pengajuan-cuti/{id}/update-nomor', [PengajuanCutiController::class, 'updateNomorSurat'])->name('pengajuan-cuti.update-nomor');
 
+        // Manajemen Akun & Keamanan Pegawai (Khusus Admin)
+        Route::post('/pegawai/{pegawai}/unsuspend-account', [PegawaiController::class, 'unsuspendAccount'])->name('pegawai.unsuspend');
+        Route::post('/pegawai/{pegawai}/reset-password', [PegawaiController::class, 'resetAccountPassword'])->name('pegawai.reset-password');
+
         // Backup & Restore Database
         Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
         Route::get('/backup/export', [BackupController::class, 'export'])->name('backup.export');

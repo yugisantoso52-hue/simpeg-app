@@ -18,9 +18,9 @@
     </div>
 
     <div class="mb-5 text-center">
-        <h2 class="text-lg font-bold text-slate-800">Ganti Password Default</h2>
+        <h2 class="text-lg font-bold text-slate-800">Wajib Ganti Password Bawaan</h2>
         <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-            Demi keamanan akun Anda, Anda disarankan untuk memperbarui password default saat login pertama kali.
+            Demi menjaga keamanan akun dan data kepegawaian Anda di SIKAP FKP UNRI, Anda diwajibkan membuat kata sandi baru pribadi sebelum melanjutkan.
         </p>
     </div>
 
@@ -45,13 +45,13 @@
         {{-- Password Saat Ini --}}
         <div>
             <label for="current_password" class="block font-semibold text-xs text-slate-700 uppercase tracking-wider mb-1">
-                Password Saat Ini (Password Default)
+                Kata Sandi Bawaan Saat Ini
             </label>
             <input id="current_password" 
-                   class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-[#007a3d] focus:ring focus:ring-[#007a3d]/20 text-sm py-2 px-3" 
+                   class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-[#0b3b7c] focus:ring focus:ring-[#0b3b7c]/20 text-sm py-2 px-3" 
                    type="password" 
                    name="current_password" 
-                   placeholder="Masukkan password saat ini"
+                   placeholder="Masukkan sandi saat ini (contoh: Password)"
                    required 
                    autofocus />
             <x-input-error :messages="$errors->get('current_password')" class="mt-1" />
@@ -60,42 +60,36 @@
         {{-- Password Baru --}}
         <div>
             <label for="password" class="block font-semibold text-xs text-slate-700 uppercase tracking-wider mb-1">
-                Password Baru
+                Kata Sandi Baru
             </label>
             <input id="password" 
-                   class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-[#007a3d] focus:ring focus:ring-[#007a3d]/20 text-sm py-2 px-3" 
+                   class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-[#0b3b7c] focus:ring focus:ring-[#0b3b7c]/20 text-sm py-2 px-3" 
                    type="password" 
                    name="password" 
-                   placeholder="Minimal 8 karakter"
+                   placeholder="Minimal 8 karakter kombinasi huruf & angka"
                    required />
+            <p class="text-[11px] text-slate-500 mt-1">Minimal 8 karakter, wajib memuat kombinasi huruf dan angka.</p>
             <x-input-error :messages="$errors->get('password')" class="mt-1" />
         </div>
 
         {{-- Konfirmasi Password Baru --}}
         <div>
             <label for="password_confirmation" class="block font-semibold text-xs text-slate-700 uppercase tracking-wider mb-1">
-                Konfirmasi Password Baru
+                Ulangi Kata Sandi Baru
             </label>
             <input id="password_confirmation" 
-                   class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-[#007a3d] focus:ring focus:ring-[#007a3d]/20 text-sm py-2 px-3" 
+                   class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-[#0b3b7c] focus:ring focus:ring-[#0b3b7c]/20 text-sm py-2 px-3" 
                    type="password" 
                    name="password_confirmation" 
-                   placeholder="Ketik ulang password baru"
+                   placeholder="Ketik ulang kata sandi baru"
                    required />
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1" />
         </div>
 
         <div class="pt-2 flex flex-col gap-2.5">
             <button type="submit" 
-                    class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-[#007a3d] hover:bg-[#006030] text-white rounded-lg font-bold text-sm uppercase tracking-wider shadow-md hover:shadow-lg transition focus:outline-none">
-                {{ __('Perbarui Password') }}
-            </button>
-
-            {{-- Opsi Lewati / Nanti Saja (Bypass untuk Pengujian) --}}
-            <button type="button"
-                    onclick="event.preventDefault(); document.getElementById('skip-form').submit();"
-                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold text-xs transition">
-                ⚡ Lewati untuk Sekarang (Masuk ke Dashboard)
+                    class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-[#0b3b7c] hover:bg-[#082a5a] text-white rounded-lg font-bold text-sm uppercase tracking-wider shadow-md hover:shadow-lg transition focus:outline-none">
+                {{ __('Simpan & Aktifkan Akun') }}
             </button>
         </div>
 
@@ -106,10 +100,6 @@
                 ← Batal & Keluar (Logout)
             </button>
         </div>
-    </form>
-
-    <form id="skip-form" action="{{ route('password.skip') }}" method="POST" class="hidden">
-        @csrf
     </form>
 
     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">

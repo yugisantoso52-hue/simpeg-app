@@ -22,27 +22,31 @@
                 </div>
             @endif
 
-            {{-- 5 KARTU STATISTIK LOG --}}
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                    <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Log</span>
-                    <h4 class="text-xl font-black text-slate-800 mt-1">{{ number_format($stats['total']) }}</h4>
+            {{-- 6 KARTU STATISTIK LOG --}}
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Log</span>
+                    <h4 class="text-lg font-black text-slate-800 mt-1">{{ number_format($stats['total']) }}</h4>
                 </div>
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                    <span class="text-xs text-blue-500 font-bold uppercase tracking-wider">Aktivitas Login</span>
-                    <h4 class="text-xl font-black text-blue-600 mt-1">{{ number_format($stats['login']) }}</h4>
+                <div class="bg-red-50/80 p-3.5 rounded-xl border border-red-200 shadow-sm text-center">
+                    <span class="text-[11px] text-red-600 font-bold uppercase tracking-wider">⚠️ Keamanan</span>
+                    <h4 class="text-lg font-black text-red-600 mt-1">{{ number_format($stats['security'] ?? 0) }}</h4>
                 </div>
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                    <span class="text-xs text-emerald-500 font-bold uppercase tracking-wider">Tambah Data</span>
-                    <h4 class="text-xl font-black text-emerald-600 mt-1">{{ number_format($stats['create']) }}</h4>
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-[11px] text-blue-500 font-bold uppercase tracking-wider">Aktivitas Login</span>
+                    <h4 class="text-lg font-black text-blue-600 mt-1">{{ number_format($stats['login']) }}</h4>
                 </div>
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                    <span class="text-xs text-amber-500 font-bold uppercase tracking-wider">Edit Data</span>
-                    <h4 class="text-xl font-black text-amber-600 mt-1">{{ number_format($stats['update']) }}</h4>
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-[11px] text-emerald-500 font-bold uppercase tracking-wider">Tambah Data</span>
+                    <h4 class="text-lg font-black text-emerald-600 mt-1">{{ number_format($stats['create']) }}</h4>
                 </div>
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                    <span class="text-xs text-sky-500 font-bold uppercase tracking-wider">Upload Berkas</span>
-                    <h4 class="text-xl font-black text-sky-600 mt-1">{{ number_format($stats['upload']) }}</h4>
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-[11px] text-amber-500 font-bold uppercase tracking-wider">Edit Data</span>
+                    <h4 class="text-lg font-black text-amber-600 mt-1">{{ number_format($stats['update']) }}</h4>
+                </div>
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-[11px] text-sky-500 font-bold uppercase tracking-wider">Upload Berkas</span>
+                    <h4 class="text-lg font-black text-sky-600 mt-1">{{ number_format($stats['upload']) }}</h4>
                 </div>
             </div>
 
@@ -53,6 +57,7 @@
                         <span class="text-xs font-bold text-slate-500 shrink-0">Filter Tipe:</span>
                         <select name="type" onchange="this.form.submit()" class="text-xs rounded-xl border-slate-300 focus:ring-blue-500 focus:border-blue-500">
                             <option value="ALL" {{ $type === 'ALL' || !$type ? 'selected' : '' }}>Semua Aktivitas</option>
+                            <option value="SECURITY" {{ $type === 'SECURITY' ? 'selected' : '' }}>🛡️ PERINGATAN KEAMANAN</option>
                             <option value="LOGIN" {{ $type === 'LOGIN' ? 'selected' : '' }}>🔑 LOGIN</option>
                             <option value="LOGOUT" {{ $type === 'LOGOUT' ? 'selected' : '' }}>🚪 LOGOUT</option>
                             <option value="CREATE" {{ $type === 'CREATE' ? 'selected' : '' }}>➕ CREATE (Tambah Data)</option>
@@ -106,6 +111,24 @@
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         @switch($log->activity_type)
+                                            @case('SECURITY_SUSPEND')
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-600 text-white animate-pulse">⛔ AKUN DIBEKUKAN</span>
+                                                @break
+                                            @case('SECURITY_LOCKOUT')
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-white">🔒 KUNCI LOGIN</span>
+                                                @break
+                                            @case('SECURITY_IP_BLOCK')
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-600 text-white">🛑 BLOKIR IP</span>
+                                                @break
+                                            @case('SECURITY_BLOCKED')
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">🚫 AKSES DITOLAK</span>
+                                                @break
+                                            @case('SECURITY_UNSUSPEND')
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">🔓 BUKA BEKU</span>
+                                                @break
+                                            @case('SECURITY_RESET_PASSWORD')
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-800">🔄 RESET SANDI</span>
+                                                @break
                                             @case('LOGIN')
                                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">🔑 LOGIN</span>
                                                 @break

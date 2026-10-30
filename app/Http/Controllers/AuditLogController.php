@@ -28,18 +28,23 @@ class AuditLogController extends Controller
         }
 
         if ($type !== '' && $type !== 'ALL') {
-            $query->where('activity_type', $type);
+            if ($type === 'SECURITY') {
+                $query->where('activity_type', 'like', 'SECURITY%');
+            } else {
+                $query->where('activity_type', $type);
+            }
         }
 
         $logs = $query->paginate(20)->withQueryString();
 
         $stats = [
-            'total'   => ActivityLog::count(),
-            'login'   => ActivityLog::where('activity_type', 'LOGIN')->count(),
-            'create'  => ActivityLog::where('activity_type', 'CREATE')->count(),
-            'update'  => ActivityLog::where('activity_type', 'UPDATE')->count(),
-            'delete'  => ActivityLog::where('activity_type', 'DELETE')->count(),
-            'upload'  => ActivityLog::where('activity_type', 'UPLOAD_FILE')->count(),
+            'total'    => ActivityLog::count(),
+            'security' => ActivityLog::where('activity_type', 'like', 'SECURITY%')->count(),
+            'login'    => ActivityLog::where('activity_type', 'LOGIN')->count(),
+            'create'   => ActivityLog::where('activity_type', 'CREATE')->count(),
+            'update'   => ActivityLog::where('activity_type', 'UPDATE')->count(),
+            'delete'   => ActivityLog::where('activity_type', 'DELETE')->count(),
+            'upload'   => ActivityLog::where('activity_type', 'UPLOAD_FILE')->count(),
         ];
 
         return view('audit-logs.index', compact('logs', 'stats', 'search', 'type'));

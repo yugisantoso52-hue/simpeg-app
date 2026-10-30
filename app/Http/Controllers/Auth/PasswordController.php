@@ -43,28 +43,46 @@ class PasswordController extends Controller
     {
         $validated = $request->validate([
             'current_password' => ['required', 'current_password'],
-            'password' => ['required', Password::defaults(), 'confirmed'],
+            'password' => [
+                'required',
+                'string',
+                Password::min(8)->letters()->numbers(),
+                'different:current_password',
+                'confirmed',
+            ],
+        ], [
+            'password.min' => 'Kata sandi baru minimal harus terdiri dari 8 karakter.',
+            'password.letters' => 'Kata sandi baru harus mengandung setidaknya satu huruf.',
+            'password.numbers' => 'Kata sandi baru harus mengandung setidaknya satu angka.',
+            'password.different' => 'Kata sandi baru tidak boleh sama dengan kata sandi saat ini / bawaan sistem.',
+            'password.confirmed' => 'Konfirmasi kata sandi baru tidak cocok.',
+            'current_password.current_password' => 'Kata sandi saat ini / bawaan yang Anda masukkan salah.',
         ]);
 
-        $request->user()->update([
+        $user = $request->user();
+        $user->update([
             'password' => Hash::make($validated['password']),
             'must_change_password' => false,
         ]);
 
+        \App\Services\ActivityLoggerService::log(
+            activityType: 'SECURITY_PASSWORD_CHANGED',
+            description: "Pengguna {$user->name} ({$user->email}) berhasil memperbarui kata sandi default menjadi kata sandi pribadi yang aman.",
+            subjectType: 'User',
+            subjectId: $user->id,
+            user: $user
+        );
+
         return redirect()->route('dashboard')
-            ->with('success', 'Password Anda berhasil diperbarui. Sekarang Anda dapat menggunakan seluruh fitur SIMPEG.');
+            ->with('success', 'Kata sandi Anda berhasil diperbarui. Selamat datang di SIKAP FKP UNRI.');
     }
 
     /**
-     * Lewati penggantian password default (untuk pengujian atau ditunda).
+     * Penolakan lewati penggantian password default demi kepatuhan keamanan.
      */
     public function skip(Request $request): RedirectResponse
     {
-        $request->user()->update([
-            'must_change_password' => false,
-        ]);
-
-        return redirect()->route('dashboard')
-            ->with('info', 'Penggantian password dilewati. Anda dapat mengganti password kapan saja melalui menu Profil.');
+        return redirect()->route('password.change')
+            ->with('warning', 'Penggantian kata sandi bawaan wajib dilakukan demi menjaga keamanan akun Anda.');
     }
 }

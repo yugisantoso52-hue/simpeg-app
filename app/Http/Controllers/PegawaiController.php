@@ -685,4 +685,83 @@ class PegawaiController extends Controller
     {
         return Jabatan::with(['unitKerja', 'analisisJabatan'])->get()->sortByDesc('hierarchy_order')->values();
     }
+
+    /**
+     * Mengaktifkan kembali akun pegawai yang dibekukan (Suspended) dan mereset kunci login.
+     */
+    public function unsuspendAccount(Pegawai $pegawai)
+    {
+        if (!auth()->user()->hasRole('admin')) {
+            abort(403, 'Hanya Administrator Kepegawaian yang berwenang membuka pembekuan akun.');
+        }
+
+        $user = $pegawai->user;
+        if (!$user) {
+            return back()->with('error', 'Pegawai ini belum memiliki akun pengguna yang terdaftar.');
+        }
+
+        $user->is_suspended = false;
+        $user->suspended_at = null;
+        $user->suspended_reason = null;
+        $user->save();
+
+        // Bersihkan cache pembatasan keamanan
+        $cleanNip = preg_replace('/[^0-9]/', '', (string)$pegawai->nip);
+        Cache::forget('security:account_fails:' . strtolower($cleanNip ?: (string)$pegawai->nip));
+        Cache::forget('security:account_lockout:' . strtolower($cleanNip ?: (string)$pegawai->nip));
+        if ($user->email) {
+            Cache::forget('security:account_fails:' . strtolower($user->email));
+            Cache::forget('security:account_lockout:' . strtolower($user->email));
+        }
+
+        \App\Services\ActivityLoggerService::log(
+            activityType: 'SECURITY_UNSUSPEND',
+            description: "Administrator (" . auth()->user()->name . ") mengaktifkan kembali akun pegawai {$pegawai->nama} (NIP: {$pegawai->nip}) dan mereset status pembekuan akun.",
+            subjectType: 'User',
+            subjectId: $user->id,
+            user: auth()->user()
+        );
+
+        return back()->with('success', "Akun pegawai {$pegawai->nama} berhasil diaktifkan kembali. Seluruh kunci percobaan sandi telah direset.");
+    }
+
+    /**
+     * Reset sandi akun pegawai ke sandi bawaan ('Password') dan wajibkan ganti sandi saat login.
+     */
+    public function resetAccountPassword(Pegawai $pegawai)
+    {
+        if (!auth()->user()->hasRole('admin')) {
+            abort(403, 'Hanya Administrator Kepegawaian yang berwenang mereset kata sandi pegawai.');
+        }
+
+        $user = $pegawai->user;
+        if (!$user) {
+            return back()->with('error', 'Pegawai ini belum memiliki akun pengguna.');
+        }
+
+        $user->password = \Illuminate\Support\Facades\Hash::make('Password');
+        $user->must_change_password = true;
+        $user->is_suspended = false;
+        $user->suspended_at = null;
+        $user->suspended_reason = null;
+        $user->save();
+
+        $cleanNip = preg_replace('/[^0-9]/', '', (string)$pegawai->nip);
+        Cache::forget('security:account_fails:' . strtolower($cleanNip ?: (string)$pegawai->nip));
+        Cache::forget('security:account_lockout:' . strtolower($cleanNip ?: (string)$pegawai->nip));
+        if ($user->email) {
+            Cache::forget('security:account_fails:' . strtolower($user->email));
+            Cache::forget('security:account_lockout:' . strtolower($user->email));
+        }
+
+        \App\Services\ActivityLoggerService::log(
+            activityType: 'SECURITY_RESET_PASSWORD',
+            description: "Administrator (" . auth()->user()->name . ") mereset kata sandi akun pegawai {$pegawai->nama} (NIP: {$pegawai->nip}) ke sandi bawaan ('Password').",
+            subjectType: 'User',
+            subjectId: $user->id,
+            user: auth()->user()
+        );
+
+        return back()->with('success', "Kata sandi akun {$pegawai->nama} berhasil direset ke sandi awal ('Password') dan pegawai wajib menggantinya saat login berikutnya.");
+    }
 }

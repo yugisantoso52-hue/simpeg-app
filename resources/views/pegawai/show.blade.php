@@ -62,6 +62,53 @@
                                 @endif
                             </div>
                         </div>
+
+                        {{-- KARTU STATUS KEAMANAN AKUN (KHUSUS ADMIN) --}}
+                        @if(Auth::user()->hasRole('admin'))
+                            <div class="mt-6 w-full p-4 rounded-xl border {{ $pegawai->user?->is_suspended ? 'bg-red-50 border-red-300' : 'bg-slate-50 border-slate-200' }} text-left space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                                        🛡️ Keamanan Akun
+                                    </span>
+                                    @if($pegawai->user?->is_suspended)
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-red-600 text-white uppercase animate-pulse">
+                                            Dibekukan
+                                        </span>
+                                    @else
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 uppercase">
+                                            Aktif Normal
+                                        </span>
+                                    @endif
+                                </div>
+
+                                @if($pegawai->user?->is_suspended)
+                                    <div class="text-xs text-red-800 bg-red-100/70 p-2.5 rounded-lg border border-red-200 leading-relaxed">
+                                        <p class="font-bold">⚠️ Akun Pegawai Ini Sedang Dibekukan</p>
+                                        <p class="text-[11px] mt-0.5">{{ $pegawai->user->suspended_reason }}</p>
+                                        @if($pegawai->user->suspended_at)
+                                            <p class="text-[10px] text-red-600 mt-1">Waktu: {{ $pegawai->user->suspended_at->translatedFormat('d M Y H:i') }} WIB</p>
+                                        @endif
+                                    </div>
+                                    <form action="{{ route('pegawai.unsuspend', $pegawai->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin mengaktifkan kembali akun pegawai ini dan mereset kunci login?');">
+                                        @csrf
+                                        <button type="submit" class="w-full py-2 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs transition flex items-center justify-center gap-1.5">
+                                            <span>🔓</span> Buka Pembekuan (Unsuspend)
+                                        </button>
+                                    </form>
+                                @endif
+
+                                @if($pegawai->user)
+                                    <form action="{{ route('pegawai.reset-password', $pegawai->id) }}" method="POST" onsubmit="return confirm('Reset kata sandi pegawai ini ke bawaan (\'Password\')? Pegawai akan diwajibkan membuat sandi baru saat login.');">
+                                        @csrf
+                                        <button type="submit" class="w-full py-1.5 px-3 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg transition flex items-center justify-center gap-1.5">
+                                            <span>🔄</span> Reset Sandi ke Default ('Password')
+                                        </button>
+                                    </form>
+                                @else
+                                    <p class="text-[11px] text-slate-500 italic">Akun login belum dibuatkan untuk pegawai ini (akan dibuat otomatis saat pegawai pertama kali login).</p>
+                                @endif
+                            </div>
+                        @endif
                     </div>
 
                     {{-- Data Detail Terstruktur --}}
