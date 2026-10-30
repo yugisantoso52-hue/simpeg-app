@@ -1734,17 +1734,36 @@
                         </div>
 
                         {{-- Kartu 2: KP --}}
+                        @php
+                            $bknWindow = app(\App\Services\KelayakanKarirService::class)->getPeriodeBknStatus();
+                        @endphp
                         <div class="bg-emerald-50/90 border border-emerald-200/80 rounded-2xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-xs transition">
                             <div>
-                                <h4 class="font-semibold text-emerald-900 flex justify-between items-center mb-2.5">
+                                <h4 class="font-semibold text-emerald-900 flex justify-between items-center mb-1.5">
                                     <div>
                                         <span class="text-xs font-bold uppercase tracking-wider">Kenaikan Pangkat (KP)</span>
                                         <span class="block text-[10px] text-emerald-700 font-normal">3 Bulan ke Depan</span>
                                     </div>
                                     <span class="bg-emerald-200/90 text-emerald-950 text-xs px-2 py-0.5 rounded-full font-bold border border-emerald-300/60">{{ is_countable($reminder['kp'] ?? null) ? count($reminder['kp']) : 0 }}</span>
                                 </h4>
+
+                                {{-- Lencana Periode Cutoff BKN (6 Periode) --}}
+                                <div class="mb-2 px-2 py-1 rounded-lg {{ $bknWindow['is_open'] ? 'bg-emerald-100 border border-emerald-300/80 text-emerald-900' : 'bg-slate-100 border border-slate-200 text-slate-700' }} text-[10px]">
+                                    <div class="flex items-center justify-between font-bold">
+                                        <span class="flex items-center gap-1">
+                                            <span>📅</span> Periode {{ $bknWindow['active_periode'] }}
+                                        </span>
+                                        <span class="px-1.5 py-0.2 rounded-full text-[9px] font-extrabold {{ $bknWindow['is_open'] ? 'bg-emerald-600 text-white animate-pulse' : 'bg-slate-400 text-white' }}">
+                                            {{ $bknWindow['is_open'] ? 'Buka' : 'Tutup' }}
+                                        </span>
+                                    </div>
+                                    <div class="text-[9px] text-slate-600 mt-0.5 truncate" title="{{ $bknWindow['label'] }}">
+                                        {{ $bknWindow['is_open'] ? 'Batas Usulan: ' . ($bknWindow['current_window']['label'] ?? '-') : 'Buka: ' . ($bknWindow['next_window']['label'] ?? '-') }}
+                                    </div>
+                                </div>
+
                                 @if(!empty($reminder['kp']) && is_countable($reminder['kp']) && count($reminder['kp']) > 0)
-                                    <ul class="text-xs text-emerald-950 divide-y divide-emerald-200/70 max-h-48 overflow-y-auto">
+                                    <ul class="text-xs text-emerald-950 divide-y divide-emerald-200/70 max-h-40 overflow-y-auto">
                                         @foreach($reminder['kp'] as $r)
                                             <li class="py-2 flex justify-between items-center gap-2">
                                                 <span class="truncate font-medium text-slate-800" title="{{ $r->nama_lengkap ?? $r->nama }}">{{ $r->nama_lengkap ?? $r->nama }}</span> 
@@ -1760,25 +1779,53 @@
                             </div>
                             @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
                                 <div class="mt-3 pt-2 border-t border-emerald-200/60 text-right">
-                                    <a href="{{ route('kp.index', ['filter' => 'reminder']) }}" class="text-[11px] font-semibold text-emerald-800 hover:text-emerald-950 hover:underline inline-flex items-center gap-1">
-                                        Buka Monitoring KP &rarr;
+                                    <a href="{{ route('pengajuan-karir.index', ['tab' => 'kp']) }}" class="text-[11px] font-semibold text-emerald-800 hover:text-emerald-950 hover:underline inline-flex items-center gap-1">
+                                        Monitoring & Usulan KP &rarr;
                                     </a>
                                 </div>
                             @endif
                         </div>
 
                         {{-- Kartu 3: Satyalancana --}}
+                        @php
+                            $totalNominasiSatya = Cache::remember('dashboard_nominasi_satya_count', 600, function() {
+                                $satyaService = app(\App\Services\SatyalancanaService::class);
+                                $count = 0;
+                                foreach (\App\Models\Pegawai::all() as $p) {
+                                    if ($satyaService->cekKelayakanSatyalancana($p)) {
+                                        $count++;
+                                    }
+                                }
+                                return $count;
+                            });
+                        @endphp
                         <div class="bg-indigo-50/90 border border-indigo-200/80 rounded-2xl p-4 flex flex-col justify-between shadow-2xs hover:shadow-xs transition">
                             <div>
-                                <h4 class="font-semibold text-indigo-900 flex justify-between items-center mb-2.5">
+                                <h4 class="font-semibold text-indigo-900 flex justify-between items-center mb-1.5">
                                     <div>
                                         <span class="text-xs font-bold uppercase tracking-wider">Satyalancana</span>
                                         <span class="block text-[10px] text-indigo-700 font-normal">3 Bulan ke Depan</span>
                                     </div>
                                     <span class="bg-indigo-200/90 text-indigo-950 text-xs px-2 py-0.5 rounded-full font-bold border border-indigo-300/60">{{ is_countable($reminder['satyalancana'] ?? null) ? count($reminder['satyalancana']) : 0 }}</span>
                                 </h4>
+
+                                {{-- Lencana Nominasi Satyalancana Tahun Berjalan --}}
+                                <div class="mb-2 px-2 py-1 rounded-lg bg-indigo-100 border border-indigo-300/80 text-indigo-950 text-[10px]">
+                                    <div class="flex items-center justify-between font-bold">
+                                        <span class="flex items-center gap-1">
+                                            <span>🏅</span> Nominasi {{ date('Y') }}
+                                        </span>
+                                        <span class="px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-indigo-600 text-white">
+                                            {{ $totalNominasiSatya }} Pegawai
+                                        </span>
+                                    </div>
+                                    <div class="text-[9px] text-indigo-800 mt-0.5">
+                                        Pengabdian 10, 20 &amp; 30 Thn
+                                    </div>
+                                </div>
+
                                 @if(!empty($reminder['satyalancana']) && is_countable($reminder['satyalancana']) && count($reminder['satyalancana']) > 0)
-                                    <ul class="text-xs text-indigo-950 divide-y divide-indigo-200/70 max-h-48 overflow-y-auto">
+                                    <ul class="text-xs text-indigo-950 divide-y divide-indigo-200/70 max-h-40 overflow-y-auto">
                                         @foreach($reminder['satyalancana'] as $r)
                                             <li class="py-2 flex justify-between items-center gap-2">
                                                 <span class="truncate font-medium text-slate-800" title="{{ $r->nama_lengkap ?? $r->nama }}">{{ $r->nama_lengkap ?? $r->nama }}</span> 
@@ -1794,8 +1841,8 @@
                             </div>
                             @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
                                 <div class="mt-3 pt-2 border-t border-indigo-200/60 text-right">
-                                    <a href="{{ route('satyalancana.index') }}" class="text-[11px] font-semibold text-indigo-800 hover:text-indigo-950 hover:underline inline-flex items-center gap-1">
-                                        Buka Satyalancana &rarr;
+                                    <a href="{{ route('satyalancana.index') }}" class="text-[11px] font-semibold text-indigo-800 hover:text-indigo-950 hover:underline inline-flex items-center gap-1" title="Buka Daftar Nominasi Satyalancana ({{ $totalNominasiSatya }} Pegawai)">
+                                        Buka Nominasi ({{ $totalNominasiSatya }}) &rarr;
                                     </a>
                                 </div>
                             @endif
