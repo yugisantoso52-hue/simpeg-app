@@ -60,7 +60,19 @@ class SecurityHeaders
             }
         }
 
-        // 8. Sembunyikan informasi server & PHP
+        // 8. Perlindungan HSTS pada koneksi HTTPS (Mengatasi ZAP 'Strict-Transport-Security Header Not Set')
+        if ($request->isSecure() || $request->header('X-Forwarded-Proto') === 'https') {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        }
+
+        // 9. Manajemen Cache Ketat pada halaman login/akun (Mengatasi ZAP 'Re-examine Cache-control Directives')
+        if ($request->is('login', 'logout', 'change-password*', 'profile*')) {
+            $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+            $response->headers->set('Pragma', 'no-cache');
+        }
+
+        // 10. Sembunyikan informasi server & versi PHP (Mengatasi ZAP 'Server Leaks Version' & 'PHP Version')
+        $response->headers->set('Server', 'Web Server');
         $response->headers->remove('X-Powered-By');
         if (function_exists('header_remove')) {
             @header_remove('X-Powered-By');

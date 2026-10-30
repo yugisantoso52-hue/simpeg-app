@@ -23,3 +23,27 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# ==============================================================================
+# HTTP SECURITY HEADERS (Mengamankan Seluruh Aset Statis & Dokumen Web)
+# ==============================================================================
+<IfModule mod_headers.c>
+    # 1. Anti MIME-Sniffing (Wajib nosniff untuk atasi ZAP Alert X-Content-Type-Options)
+    Header always set X-Content-Type-Options "nosniff"
+    Header set X-Content-Type-Options "nosniff"
+
+    # 2. Anti Clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header set X-Frame-Options "SAMEORIGIN"
+
+    # 3. Kebijakan Referrer
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # 4. Hapus Bocoran Versi PHP & Server
+    Header unset X-Powered-By
+    Header always unset X-Powered-By
+
+    # 5. Aktifkan HSTS secara ketat saat diakses via protokol HTTPS
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" "expr=%{HTTPS} == 'on'"
+</IfModule>
