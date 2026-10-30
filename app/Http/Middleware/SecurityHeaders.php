@@ -24,8 +24,8 @@ class SecurityHeaders
         // 3. Referrer policy
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-        // 4. Permissions policy
-        $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
+        // 4. Permissions policy (Izinkan kamera dan geolokasi untuk domain sendiri / presensi selfie)
+        $response->headers->set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(self)');
 
         // 5. Content Security Policy (CSP) khusus untuk respon dokumen HTML yang bukan redirect
         $contentType = $response->headers->get('Content-Type', '');

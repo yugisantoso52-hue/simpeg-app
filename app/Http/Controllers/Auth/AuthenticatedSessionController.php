@@ -24,7 +24,13 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        try {
+            $request->authenticate();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->route('login')
+                ->withInput($request->only('login', 'remember'))
+                ->withErrors($e->errors());
+        }
 
         $request->session()->regenerate();
 
