@@ -193,9 +193,15 @@
                                         <tr class="hover:bg-blue-50/50 transition">
                                             <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $row->official_duk_rank ?? $loop->iteration }}</td>
                                             <td class="px-3 py-3 border-r border-slate-200">
-                                                <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-blue-600 hover:underline">
-                                                    {{ $row->nama_lengkap ?? $row->nama }}
-                                                </a>
+                                                @if(Auth::user()->hasRole(['admin', 'pimpinan']) || (int)Auth::user()->pegawai_id === (int)$row->id)
+                                                    <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-blue-600 hover:underline">
+                                                        {{ $row->nama_lengkap ?? $row->nama }}
+                                                    </a>
+                                                @else
+                                                    <span class="font-bold text-slate-800">
+                                                        {{ $row->nama_lengkap ?? $row->nama }}
+                                                    </span>
+                                                @endif
                                                 <div class="text-[11px] text-slate-500">NIP. {{ $row->nip ?? '-' }}</div>
                                                 @if($row->nidn_nuptk)
                                                     <div class="text-[10px] font-mono text-emerald-600">NIDN: {{ $row->nidn_nuptk }}</div>
@@ -273,9 +279,15 @@
                                         <tr class="hover:bg-indigo-50/50 transition">
                                             <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $row->official_duk_rank ?? $loop->iteration }}</td>
                                             <td class="px-3 py-3 border-r border-slate-200">
-                                                <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-indigo-600 hover:underline">
-                                                    {{ $row->nama_lengkap ?? $row->nama }}
-                                                </a>
+                                                @if(Auth::user()->hasRole(['admin', 'pimpinan']) || (int)Auth::user()->pegawai_id === (int)$row->id)
+                                                    <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-indigo-600 hover:underline">
+                                                        {{ $row->nama_lengkap ?? $row->nama }}
+                                                    </a>
+                                                @else
+                                                    <span class="font-bold text-slate-800">
+                                                        {{ $row->nama_lengkap ?? $row->nama }}
+                                                    </span>
+                                                @endif
                                                 <div class="text-[11px] text-slate-500">NIP. {{ $row->nip ?? '-' }}</div>
                                                 @if($row->nidn_nuptk)
                                                     <div class="text-[10px] font-mono text-emerald-600">NIDN: {{ $row->nidn_nuptk }}</div>
@@ -353,9 +365,15 @@
                                         <tr class="hover:bg-emerald-50/50 transition">
                                             <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $row->official_duk_rank ?? $loop->iteration }}</td>
                                             <td class="px-3 py-3 border-r border-slate-200">
-                                                <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-emerald-700 hover:underline">
-                                                    {{ $row->nama_lengkap ?? $row->nama }}
-                                                </a>
+                                                @if(Auth::user()->hasRole(['admin', 'pimpinan']) || (int)Auth::user()->pegawai_id === (int)$row->id)
+                                                    <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-emerald-700 hover:underline">
+                                                        {{ $row->nama_lengkap ?? $row->nama }}
+                                                    </a>
+                                                @else
+                                                    <span class="font-bold text-slate-800">
+                                                        {{ $row->nama_lengkap ?? $row->nama }}
+                                                    </span>
+                                                @endif
                                                 <div class="text-[11px] text-slate-500">NIP. {{ $row->nip ?? '-' }}</div>
                                             </td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">
@@ -430,9 +448,15 @@
                                         <tr class="hover:bg-teal-50/50 transition">
                                             <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $row->official_duk_rank ?? $loop->iteration }}</td>
                                             <td class="px-3 py-3 border-r border-slate-200">
-                                                <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-teal-700 hover:underline">
-                                                    {{ $row->nama_lengkap ?? $row->nama }}
-                                                </a>
+                                                @if(Auth::user()->hasRole(['admin', 'pimpinan']) || (int)Auth::user()->pegawai_id === (int)$row->id)
+                                                    <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-teal-700 hover:underline">
+                                                        {{ $row->nama_lengkap ?? $row->nama }}
+                                                    </a>
+                                                @else
+                                                    <span class="font-bold text-slate-800">
+                                                        {{ $row->nama_lengkap ?? $row->nama }}
+                                                    </span>
+                                                @endif
                                                 <div class="text-[11px] text-slate-500">NIP. {{ $row->nip ?? '-' }}</div>
                                             </td>
                                             <td class="px-3 py-3 text-center border-r border-slate-200">
@@ -505,9 +529,15 @@
                                         <tr class="hover:bg-amber-50/50 transition">
                                             <td class="px-2 py-3 text-center font-bold text-slate-600 border-r border-slate-200">{{ $row->official_duk_rank ?? $loop->iteration }}</td>
                                             <td class="px-3 py-3 border-r border-slate-200">
-                                                <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-amber-800 hover:underline">
-                                                    {{ $row->nama_lengkap ?? $row->nama }}
-                                                </a>
+                                                @if(Auth::user()->hasRole(['admin', 'pimpinan']) || (int)Auth::user()->pegawai_id === (int)$row->id)
+                                                    <a href="{{ route('pegawai.show', $row->id) }}" class="font-bold text-amber-800 hover:underline">
+                                                        {{ $row->nama_lengkap ?? $row->nama }}
+                                                    </a>
+                                                @else
+                                                    <span class="font-bold text-slate-800">
+                                                        {{ $row->nama_lengkap ?? $row->nama }}
+                                                    </span>
+                                                @endif
                                                 <div class="text-[11px] text-slate-500">ID/NIP: {{ $row->nip ?? '-' }}</div>
                                             </td>
                                             <td class="px-3 py-3 border-r border-slate-200">

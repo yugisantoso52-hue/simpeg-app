@@ -281,8 +281,8 @@
                                                 </button>
                                             </form>
                                         @else
-                                            <span class="inline-flex items-center px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-100 text-slate-500 border border-slate-200">
-                                                Belum Diusulkan
+                                            <span class="inline-flex items-center px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-100 text-slate-500 border border-slate-200" title="Menunggu proses pengusulan resmi oleh Admin Kepegawaian">
+                                                Belum Diusulkan (Menunggu Admin)
                                             </span>
                                         @endif
                                     </div>

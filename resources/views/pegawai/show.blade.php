@@ -267,11 +267,19 @@
                                          <td class="py-1.5 font-medium text-gray-500">Atasan Langsung Utama</td>
                                          <td class="py-1.5 text-gray-900">
                                              @if($pegawai->atasan)
-                                                 <a href="{{ route('pegawai.show', $pegawai->atasan->id) }}" class="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-800 hover:underline">
-                                                     <span>👤</span>
-                                                     <span>{{ $pegawai->atasan?->nama_lengkap ?? $pegawai->atasan?->nama }}</span>
-                                                     <span class="text-xs text-gray-500 font-normal">({{ $pegawai->atasan?->jabatan?->nama_jabatan ?? 'Pejabat' }})</span>
-                                                 </a>
+                                                 @if(Auth::user()->hasRole(['admin', 'pimpinan']) || (int)Auth::user()->pegawai_id === (int)$pegawai->atasan->id)
+                                                     <a href="{{ route('pegawai.show', $pegawai->atasan->id) }}" class="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-800 hover:underline">
+                                                         <span>👤</span>
+                                                         <span>{{ $pegawai->atasan?->nama_lengkap ?? $pegawai->atasan?->nama }}</span>
+                                                         <span class="text-xs text-gray-500 font-normal">({{ $pegawai->atasan?->jabatan?->nama_jabatan ?? 'Pejabat' }})</span>
+                                                     </a>
+                                                 @else
+                                                     <span class="inline-flex items-center gap-1.5 font-semibold text-slate-800">
+                                                         <span>👤</span>
+                                                         <span>{{ $pegawai->atasan?->nama_lengkap ?? $pegawai->atasan?->nama }}</span>
+                                                         <span class="text-xs text-gray-500 font-normal">({{ $pegawai->atasan?->jabatan?->nama_jabatan ?? 'Pejabat' }})</span>
+                                                     </span>
+                                                 @endif
                                              @else
                                                  <span class="text-gray-400 italic">Otomatis Sesuai Matriks Jabatan</span>
                                              @endif
@@ -281,11 +289,19 @@
                                          <td class="py-1.5 font-medium text-gray-500">Pejabat Penilai Kinerja (Logbook)</td>
                                          <td class="py-1.5 text-gray-900">
                                              @if($pegawai->pejabatPenilai)
-                                                 <a href="{{ route('pegawai.show', $pegawai->pejabatPenilai->id) }}" class="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-800 hover:underline">
-                                                     <span>👤</span>
-                                                     <span>{{ $pegawai->pejabatPenilai?->nama_lengkap ?? $pegawai->pejabatPenilai?->nama }}</span>
-                                                     <span class="text-xs text-gray-500 font-normal">({{ $pegawai->pejabatPenilai?->jabatan?->nama_jabatan ?? 'Pejabat Penilai' }})</span>
-                                                 </a>
+                                                 @if(Auth::user()->hasRole(['admin', 'pimpinan']) || (int)Auth::user()->pegawai_id === (int)$pegawai->pejabatPenilai->id)
+                                                     <a href="{{ route('pegawai.show', $pegawai->pejabatPenilai->id) }}" class="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-800 hover:underline">
+                                                         <span>👤</span>
+                                                         <span>{{ $pegawai->pejabatPenilai?->nama_lengkap ?? $pegawai->pejabatPenilai?->nama }}</span>
+                                                         <span class="text-xs text-gray-500 font-normal">({{ $pegawai->pejabatPenilai?->jabatan?->nama_jabatan ?? 'Pejabat Penilai' }})</span>
+                                                     </a>
+                                                 @else
+                                                     <span class="inline-flex items-center gap-1.5 font-semibold text-slate-800">
+                                                         <span>👤</span>
+                                                         <span>{{ $pegawai->pejabatPenilai?->nama_lengkap ?? $pegawai->pejabatPenilai?->nama }}</span>
+                                                         <span class="text-xs text-gray-500 font-normal">({{ $pegawai->pejabatPenilai?->jabatan?->nama_jabatan ?? 'Pejabat Penilai' }})</span>
+                                                     </span>
+                                                 @endif
                                              @else
                                                  <span class="text-gray-400 italic">Mengikuti Atasan Langsung / Matriks Resmi</span>
                                              @endif
@@ -295,11 +311,19 @@
                                          <td class="py-1.5 font-medium text-gray-500">Atasan Pertimbangan Cuti (E-Cuti)</td>
                                          <td class="py-1.5 text-gray-900">
                                              @if($pegawai->atasanCuti)
-                                                 <a href="{{ route('pegawai.show', $pegawai->atasanCuti->id) }}" class="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-800 hover:underline">
-                                                     <span>👤</span>
-                                                     <span>{{ $pegawai->atasanCuti?->nama_lengkap ?? $pegawai->atasanCuti?->nama }}</span>
-                                                     <span class="text-xs text-gray-500 font-normal">({{ $pegawai->atasanCuti?->jabatan?->nama_jabatan ?? 'Atasan Cuti' }})</span>
-                                                 </a>
+                                                 @if(Auth::user()->hasRole(['admin', 'pimpinan']) || (int)Auth::user()->pegawai_id === (int)$pegawai->atasanCuti->id)
+                                                     <a href="{{ route('pegawai.show', $pegawai->atasanCuti->id) }}" class="inline-flex items-center gap-1.5 font-semibold text-blue-600 hover:text-blue-800 hover:underline">
+                                                         <span>👤</span>
+                                                         <span>{{ $pegawai->atasanCuti?->nama_lengkap ?? $pegawai->atasanCuti?->nama }}</span>
+                                                         <span class="text-xs text-gray-500 font-normal">({{ $pegawai->atasanCuti?->jabatan?->nama_jabatan ?? 'Atasan Cuti' }})</span>
+                                                     </a>
+                                                 @else
+                                                     <span class="inline-flex items-center gap-1.5 font-semibold text-slate-800">
+                                                         <span>👤</span>
+                                                         <span>{{ $pegawai->atasanCuti?->nama_lengkap ?? $pegawai->atasanCuti?->nama }}</span>
+                                                         <span class="text-xs text-gray-500 font-normal">({{ $pegawai->atasanCuti?->jabatan?->nama_jabatan ?? 'Atasan Cuti' }})</span>
+                                                     </span>
+                                                 @endif
                                              @else
                                                  <span class="text-gray-400 italic">Mengikuti Regulasi Ketetapan Cuti</span>
                                              @endif

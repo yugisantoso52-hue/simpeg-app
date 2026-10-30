@@ -64,7 +64,7 @@ class SatyalancanaController extends Controller
 
         // Jabatan login untuk otorisasi tombol paraf / tanda tangan
         $jabatan = strtoupper(trim((string)($user->pegawai?->jabatan->nama_jabatan ?? '')));
-        $isAdmin = $user->hasRole('admin');
+        $isAdmin = $user->isScreeningAdmin();
         $isKaPokja = (str_contains($jabatan, 'KA POKJA') || str_contains($jabatan, 'KEPALA POKJA') || str_contains($jabatan, 'KETUA POKJA'))
             && (str_contains($jabatan, 'KEU') || str_contains($jabatan, 'KEPEG'));
         $isKabag = str_contains($jabatan, 'KEPALA BAGIAN UMUM') || str_contains($jabatan, 'KABAG UMUM') || str_contains($jabatan, 'KABAG TU');

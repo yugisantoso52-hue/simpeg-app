@@ -132,9 +132,13 @@
                                     </td>
                                     <td class="py-3 px-4">
                                         <div class="font-bold text-gray-900">
-                                            <a href="{{ $row->pegawai_id ? route('pegawai.show', $row->pegawai_id) : '#' }}" class="hover:text-indigo-600">
-                                                {{ $row->pegawai?->nama_lengkap ?? $row->pegawai?->nama ?? '-' }}
-                                            </a>
+                                            @if(Auth::user()->hasRole(['admin', 'pimpinan']) || (int)Auth::user()->pegawai_id === (int)$row->pegawai_id)
+                                                <a href="{{ $row->pegawai_id ? route('pegawai.show', $row->pegawai_id) : '#' }}" class="hover:text-indigo-600">
+                                                    {{ $row->pegawai?->nama_lengkap ?? $row->pegawai?->nama ?? '-' }}
+                                                </a>
+                                            @else
+                                                <span>{{ $row->pegawai?->nama_lengkap ?? $row->pegawai?->nama ?? '-' }}</span>
+                                            @endif
                                         </div>
                                         <div class="text-xs text-gray-500 font-mono">NIP. {{ $row->pegawai?->nip ?? '-' }}</div>
                                     </td>

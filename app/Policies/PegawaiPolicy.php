@@ -26,8 +26,13 @@ class PegawaiPolicy
             return true;
         }
 
+        // Atasan langsung / pejabat penilai berhak melihat profil bawahan
+        if ($user->isAtasan() && in_array($pegawai->id, $user->getBawahanIds(), true)) {
+            return true;
+        }
+
         // Pegawai biasa HANYA bisa melihat datanya sendiri
-        return $user->pegawai_id === $pegawai->id;
+        return (int)$user->pegawai_id === (int)$pegawai->id;
     }
 
     /**
