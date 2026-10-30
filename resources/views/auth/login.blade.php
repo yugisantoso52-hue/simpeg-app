@@ -201,7 +201,7 @@
                 <x-auth-session-status class="mb-4" :status="session('status')" />
 
                 {{-- Formulir Login --}}
-                <form method="POST" action="{{ route('login') }}" class="space-y-4">
+                <form method="POST" action="{{ route('login') }}" class="space-y-4" autocomplete="off">
                     @csrf
 
                     {{-- Field NIP / Username (Input Pill Berbingkai Emas Mewah) --}}
@@ -224,7 +224,12 @@
                                    class="block w-full pl-11 pr-4 py-3 text-sm bg-transparent rounded-full focus:outline-none font-medium text-slate-800 placeholder-slate-400"
                                    required
                                    autofocus
-                                   autocomplete="username" />
+                                   autocomplete="off"
+                                   autocorrect="off"
+                                   autocapitalize="off"
+                                   spellcheck="false"
+                                   data-lpignore="true"
+                                   data-form-type="other" />
                         </div>
                         <x-input-error :messages="$errors->get('login')" class="mt-1" />
                     </div>
@@ -247,7 +252,8 @@
                                    placeholder="Masukkan kata sandi akun Anda"
                                    class="block w-full pl-11 pr-11 py-3 text-sm bg-transparent rounded-full focus:outline-none font-medium text-slate-800 placeholder-slate-400"
                                    required
-                                   autocomplete="current-password" />
+                                   autocomplete="new-password"
+                                   data-lpignore="true" />
 
                             {{-- Tombol Show/Hide Password --}}
                             <button type="button"
