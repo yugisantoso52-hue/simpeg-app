@@ -170,73 +170,9 @@
                     </div>
                 @endif
 
-                {{-- Status Verifikasi Berjenjang (Stepper Paraf) --}}
-                <div class="rounded-xl bg-slate-50 p-4 border border-slate-200">
-                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-                        Status Alur Verifikasi &amp; Penandatanganan Resmi:
-                    </h4>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                        {{-- 1. Admin Kepegawaian --}}
-                        <div class="p-3 rounded-lg border {{ $pengajuan->verifikasi_admin_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">1. Admin Kepegawaian</span>
-                                <span class="text-xs font-bold">{{ $pengajuan->verifikasi_admin_at ? '✓ Selesai' : 'Menunggu' }}</span>
-                            </div>
-                            <div class="text-[11px] text-slate-600">Screening &amp; Penomoran</div>
-                            @if($pengajuan->verifikasi_admin_at)
-                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
-                                    {{ $pengajuan->verifikasi_admin_at->format('d/m/Y H:i') }}
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- 2. Ka Pokja Keu-Kepeg --}}
-                        <div class="p-3 rounded-lg border {{ $pengajuan->paraf_kapokja_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">2. Ka Pokja Keu-Kepeg</span>
-                                <span class="text-xs font-bold">{{ $pengajuan->paraf_kapokja_at ? '✓ Paraf' : 'Menunggu' }}</span>
-                            </div>
-                            <div class="text-[11px] text-slate-600">Dolli Vita Zenitha, SE</div>
-                            @if($pengajuan->paraf_kapokja_at)
-                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
-                                    {{ $pengajuan->paraf_kapokja_at->format('d/m/Y H:i') }}
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- 3. Kabag Umum --}}
-                        <div class="p-3 rounded-lg border {{ $pengajuan->paraf_kabag_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">3. Kabag Umum</span>
-                                <span class="text-xs font-bold">{{ $pengajuan->paraf_kabag_at ? '✓ Paraf' : 'Menunggu' }}</span>
-                            </div>
-                            <div class="text-[11px] text-slate-600">Bakhtiar, S.Sos., M.Si</div>
-                            @if($pengajuan->paraf_kabag_at)
-                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
-                                    {{ $pengajuan->paraf_kabag_at->format('d/m/Y H:i') }}
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- 4. Wadek II / Dekan (Pejabat Penandatangan Resmi) --}}
-                        @php
-                            $isSahTte = $pengajuan->paraf_wd2_at || $pengajuan->ttd_wd2_at || $pengajuan->ttd_dekan_at || $pengajuan->status === 'disetujui_wd2';
-                            $waktuTte = $pengajuan->paraf_wd2_at ?? $pengajuan->ttd_wd2_at ?? $pengajuan->ttd_dekan_at;
-                        @endphp
-                        <div class="p-3 rounded-lg border {{ $isSahTte ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">4. TTE Pimpinan</span>
-                                <span class="text-xs font-bold">{{ $isSahTte ? '✓ Sah (TTE)' : 'Menunggu' }}</span>
-                            </div>
-                            <div class="text-[11px] text-slate-600">Dr. Safri, M.Kep / WD II</div>
-                            @if($waktuTte)
-                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
-                                    {{ $waktuTte->format('d/m/Y H:i') }}
-                                </div>
-                            @endif
-                        </div>
-                    </div>
+                {{-- Status Verifikasi Berjenjang (Stepper Paraf & Tracking Timeline) --}}
+                <div class="mb-5">
+                    <x-workflow-tracker :model="$pengajuan" type="karir" />
                 </div>
 
                 {{-- Detail Parameter Pengajuan --}}

@@ -30,12 +30,14 @@
                 </div>
             </a>
 
-            <!-- Sisi Kanan: Logo Kemendiktisaintek + Tombol Menu Hamburger -->
+            <!-- Sisi Kanan: Logo Kemendiktisaintek + Notifikasi + Tombol Menu Hamburger -->
             <div class="shrink-0 flex items-center gap-1.5 sm:gap-2">
                 <img src="{{ asset('logo-kemendiktisaintek.png') }}" 
                      alt="Kemendiktisaintek" 
                      class="h-8 sm:h-9 w-auto object-contain drop-shadow-2xs">
                 
+                @include('layouts.partials.notification-bell')
+
                 <button @click="open = ! open" 
                         class="inline-flex items-center justify-center p-1.5 sm:p-2 rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 focus:outline-none transition active:scale-95 shadow-2xs cursor-pointer" 
                         aria-label="Buka Menu Navigasi">
@@ -53,6 +55,7 @@
         
         <!-- Profile User Dropdown Desktop (Pojok Kanan Atas) -->
         <div class="absolute right-4 sm:right-6 lg:right-8 xl:right-10 top-3 sm:top-4 z-20 flex items-center gap-2">
+            @include('layouts.partials.notification-bell')
             <x-dropdown align="right" width="60">
                 <x-slot name="trigger">
                     <button class="inline-flex items-center px-3 py-1.5 border border-slate-200 text-xs font-semibold rounded-full text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 focus:outline-none transition shadow-2xs cursor-pointer gap-2">
@@ -223,6 +226,18 @@
             </div>
 
             <div class="mt-3 px-3 space-y-2">
+                <a href="{{ route('notifications.index') }}" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 transition shadow-2xs">
+                    <span class="flex items-center gap-2.5">
+                        <span class="text-sm">🔔</span>
+                        <span>{{ __('Pusat Notifikasi & Radar') }}</span>
+                    </span>
+                    @if(Auth::user()->unreadNotifications()->count() > 0)
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white">
+                            {{ Auth::user()->unreadNotifications()->count() }} Baru
+                        </span>
+                    @endif
+                </a>
+
                 <a href="{{ route('profile.edit') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 transition shadow-2xs">
                     <x-icon name="settings" class="w-4 h-4 text-slate-500" />
                     <span>{{ __('Profile & Pengaturan Akun') }}</span>

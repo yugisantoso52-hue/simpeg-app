@@ -29,6 +29,13 @@
                     </svg>
                     Download PDF
                 </a>
+
+                <a href="{{ route('pegawai.cetak-drh', $pegawai->id) }}" target="_blank"
+                   class="inline-flex items-center gap-1.5 px-3.5 py-2 border border-transparent shadow-sm text-sm font-semibold rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition"
+                   title="Cetak Formulir Resmi Daftar Riwayat Hidup Standar BKN">
+                    <span>📄</span>
+                    Cetak DRH BKN (PDF)
+                </a>
             </div>
         </div>
     </x-slot>

@@ -132,75 +132,9 @@
                     @endif
                 </div>
 
-                {{-- STANDARISASI ALUR VERIFIKASI BERJENJANG (STEPPER PARAF DIGITAL) --}}
-                <div class="mt-4 rounded-xl bg-slate-50 p-4 border border-slate-200">
-                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-                        Status Alur Verifikasi & Penandatanganan Resmi:
-                    </h4>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                        {{-- 1. Admin Kepegawaian --}}
-                        <div class="p-3 rounded-lg border {{ $cuti->verifikasi_admin_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">1. Admin Kepegawaian</span>
-                                <span class="text-xs font-bold">{{ $cuti->verifikasi_admin_at ? '✓ Selesai' : 'Menunggu' }}</span>
-                            </div>
-                            <div class="text-[11px] text-slate-600">Screening Lampiran & Kuota</div>
-                            @if($cuti->verifikasi_admin_at)
-                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
-                                    {{ $cuti->verifikasi_admin_at->format('d/m/Y H:i') }}
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- 2. Ka Pokja Keu-Kepeg (Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian) --}}
-                        <div class="p-3 rounded-lg border {{ $cuti->paraf_kapokja_at ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">2. Ka Pokja Keu-Kepeg</span>
-                                <span class="text-xs font-bold">{{ $cuti->paraf_kapokja_at ? '✓ Paraf' : 'Menunggu' }}</span>
-                            </div>
-                            <div class="text-[11px] text-slate-600">Dolli Vita Zenitha Harning Arivina, SE</div>
-                            @if($cuti->paraf_kapokja_at)
-                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
-                                    {{ $cuti->paraf_kapokja_at->format('d/m/Y H:i') }}
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- 3. VI. Pertimbangan Atasan Langsung (TTE Kepala Bagian Umum / Kajur / Wadek II) --}}
-                        @php
-                            $isAtasanDone = !empty($cuti->pertimbangan_atasan) && $cuti->pertimbangan_atasan !== 'Menunggu Persetujuan';
-                            $atasanDoneTime = (($pejabatInfo['kategori'] ?? '') === 'tendik' && !empty($cuti->paraf_kabag_at))
-                                ? $cuti->paraf_kabag_at
-                                : $cuti->pertimbangan_atasan_at;
-                        @endphp
-                        <div class="p-3 rounded-lg border {{ $isAtasanDone ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">3. TTE Atasan Langsung</span>
-                                <span class="text-xs font-bold">{{ $isAtasanDone ? '✓ Sah (TTE)' : 'Menunggu' }}</span>
-                            </div>
-                            <div class="text-[11px] text-slate-600">{{ $pejabatInfo['atasan_nama'] ?? 'Bakhtiar, S.Sos., M.Si' }}</div>
-                            @if($atasanDoneTime)
-                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
-                                    {{ $atasanDoneTime->format('d/m/Y H:i') }}
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- 4. Wadek II / PYBMC (Pejabat Penandatangan Resmi) --}}
-                        <div class="p-3 rounded-lg border {{ in_array($cuti->status, ['Disetujui', 'Ditolak']) ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-white border-slate-200 text-slate-600' }}">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold">4. TTE PYBMC</span>
-                                <span class="text-xs font-bold">{{ in_array($cuti->status, ['Disetujui', 'Ditolak']) ? '✓ Sah (TTE)' : 'Menunggu' }}</span>
-                            </div>
-                            <div class="text-[11px] text-slate-600">{{ $pejabatInfo['pybmc_nama'] ?? 'Wakil Dekan II' }}</div>
-                            @if($cuti->approved_at)
-                                <div class="text-[10px] text-emerald-700 font-mono mt-1">
-                                    {{ $cuti->approved_at->format('d/m/Y H:i') }}
-                                </div>
-                            @endif
-                        </div>
-                    </div>
+                {{-- STANDARISASI ALUR VERIFIKASI BERJENJANG (STEPPER PARAF DIGITAL & TRACKING TIMELINE) --}}
+                <div class="mt-4">
+                    <x-workflow-tracker :model="$cuti" type="cuti" />
                 </div>
 
                 @if(Auth::user()->hasRole('admin'))

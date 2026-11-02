@@ -138,8 +138,10 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     /* Notifications & Document Preview & Foto Pegawai */
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
     Route::get('/notifications/{id}/read', [NotificationController::class, 'readAndRedirect'])->name('notifications.readAndRedirect');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
     Route::get('/document-preview/{path}', [ReportController::class, 'streamPrivateFile'])->where('path', '.*')->name('document.preview');
     Route::get('/pegawai/{pegawai}/foto', [PegawaiController::class, 'foto'])->name('pegawai.foto');
 
@@ -281,6 +283,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::middleware(['role:admin,pimpinan,pegawai'])->group(function () {
         Route::get('/pegawai/{pegawai}', [PegawaiController::class, 'show'])->name('pegawai.show');
         Route::get('/pegawai/{id}/download-pdf', [PegawaiController::class, 'exportProfilPdf'])->name('pegawai.download-pdf');
+        Route::get('/pegawai/{pegawai}/cetak-drh', [PegawaiController::class, 'cetakDrh'])->name('pegawai.cetak-drh');
 
         /* Modul E-Cuti Pegawai (Self-Service) */
         Route::get('/pengajuan-cuti', [PengajuanCutiController::class, 'index'])->name('pengajuan-cuti.index');

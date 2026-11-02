@@ -343,27 +343,44 @@
                                             @endif
                                         </td>
                                         <td class="py-3 px-3">
-                                            <div class="space-y-1">
-                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-{{ $badge['color'] }}-100 text-{{ $badge['color'] }}-800 border border-{{ $badge['color'] }}-200">
-                                                    {{ $badge['label'] }}
-                                                </span>
-                                                {{-- Tracking Mini 4 Tahap Bertingkat --}}
-                                                <div class="flex items-center gap-1 text-[10px] text-slate-500 pt-0.5">
-                                                    <span class="{{ $item->verifikasi_admin_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">
-                                                        Admin: {{ $item->verifikasi_admin_at ? '✓' : '...' }}
+                                            @php
+                                                $s1 = !empty($item->created_at);
+                                                $s2 = !empty($item->verifikasi_admin_at);
+                                                $s3 = !empty($item->paraf_kapokja_at);
+                                                $s4 = !empty($item->paraf_kabag_at);
+                                                $s5 = !empty($item->paraf_wd2_at) || !empty($item->ttd_wd2_at) || !empty($item->ttd_dekan_at) || in_array($item->status, ['disetujui_wd2', 'disetujui_dekan', 'selesai']);
+                                                $isDitolak = in_array(strtolower($item->status), ['ditolak', 'reject']);
+                                                $totalCompleted = (int)$s1 + (int)$s2 + (int)$s3 + (int)$s4 + (int)$s5;
+                                                $pct = round(($totalCompleted / 5) * 100);
+                                            @endphp
+                                            <div class="space-y-1.5 min-w-[160px]">
+                                                <div class="flex items-center justify-between gap-1">
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-{{ $badge['color'] }}-100 text-{{ $badge['color'] }}-800 border border-{{ $badge['color'] }}-200">
+                                                        {{ $badge['label'] }}
                                                     </span>
-                                                    <span>➔</span>
-                                                    <span class="{{ $item->paraf_kapokja_at ? 'text-sky-700 font-bold' : 'text-slate-400' }}">
-                                                        Pokja: {{ $item->paraf_kapokja_at ? '✓' : '...' }}
+                                                    <span class="text-[10px] font-mono font-bold {{ $isDitolak ? 'text-rose-600' : ($totalCompleted == 5 ? 'text-emerald-700' : 'text-indigo-700') }}">
+                                                        {{ $pct }}%
                                                     </span>
-                                                    <span>➔</span>
-                                                    <span class="{{ $item->paraf_kabag_at ? 'text-indigo-700 font-bold' : 'text-slate-400' }}">
-                                                        Kabag: {{ $item->paraf_kabag_at ? '✓' : '...' }}
-                                                    </span>
-                                                    <span>➔</span>
-                                                    <span class="{{ $item->paraf_wd2_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">
-                                                        WD II: {{ $item->paraf_wd2_at ? '✓' : '...' }}
-                                                    </span>
+                                                </div>
+
+                                                {{-- Segmented 5-Step Visual Progress Bar --}}
+                                                <div class="flex items-center gap-1">
+                                                    <div class="h-1.5 flex-1 rounded-full {{ $isDitolak ? 'bg-rose-500' : ($s1 ? 'bg-emerald-500' : 'bg-slate-200') }}" title="1. Pengajuan Usulan"></div>
+                                                    <div class="h-1.5 flex-1 rounded-full {{ $isDitolak ? 'bg-rose-500' : ($s2 ? 'bg-emerald-500' : ($s1 ? 'bg-indigo-500 animate-pulse' : 'bg-slate-200')) }}" title="2. Admin Screening"></div>
+                                                    <div class="h-1.5 flex-1 rounded-full {{ $isDitolak ? 'bg-rose-500' : ($s3 ? 'bg-emerald-500' : ($s2 ? 'bg-indigo-500 animate-pulse' : 'bg-slate-200')) }}" title="3. Paraf Pokja"></div>
+                                                    <div class="h-1.5 flex-1 rounded-full {{ $isDitolak ? 'bg-rose-500' : ($s4 ? 'bg-emerald-500' : ($s3 ? 'bg-indigo-500 animate-pulse' : 'bg-slate-200')) }}" title="4. Paraf Kabag"></div>
+                                                    <div class="h-1.5 flex-1 rounded-full {{ $isDitolak ? 'bg-rose-500' : ($s5 ? 'bg-emerald-500' : ($s4 ? 'bg-indigo-500 animate-pulse' : 'bg-slate-200')) }}" title="5. TTE WD II"></div>
+                                                </div>
+
+                                                {{-- Tracking Step Labels --}}
+                                                <div class="flex items-center gap-1 text-[10px] text-slate-500">
+                                                    <span class="{{ $s2 ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">Admin {{ $s2 ? '✓' : '⏳' }}</span>
+                                                    <span class="text-slate-300">›</span>
+                                                    <span class="{{ $s3 ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">Pokja {{ $s3 ? '✓' : '⏳' }}</span>
+                                                    <span class="text-slate-300">›</span>
+                                                    <span class="{{ $s4 ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">Kabag {{ $s4 ? '✓' : '⏳' }}</span>
+                                                    <span class="text-slate-300">›</span>
+                                                    <span class="{{ $s5 ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">WD II {{ $s5 ? '✓' : '⏳' }}</span>
                                                 </div>
                                             </div>
                                         </td>

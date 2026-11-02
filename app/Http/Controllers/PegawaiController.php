@@ -764,4 +764,53 @@ class PegawaiController extends Controller
 
         return back()->with('success', "Kata sandi akun {$pegawai->nama} berhasil direset ke sandi awal ('Password') dan pegawai wajib menggantinya saat login berikutnya.");
     }
+
+    /**
+     * Cetak Dokumen DRH (Daftar Riwayat Hidup) Berstandar Resmi BKN 1-Klik
+     */
+    public function cetakDrh(Pegawai $pegawai, Request $request)
+    {
+        $user = auth()->user();
+        if (!$user->canAccessExecutiveKepegawaianMenus() && (int)$user->pegawai_id !== (int)$pegawai->id && !$user->hasRole('admin')) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mencetak DRH pegawai ini.');
+        }
+
+        $pegawai->load([
+            'unitKerja',
+            'jabatan',
+            'golongan',
+            'riwayatPendidikan' => fn($q) => $q->orderBy('tahun_lulus', 'desc'),
+            'riwayatPangkat'    => fn($q) => $q->orderBy('tmt', 'desc'),
+            'riwayatJabatan'    => fn($q) => $q->orderBy('tmt_jabatan', 'desc'),
+            'riwayatDiklat'     => fn($q) => $q->orderBy('tanggal_mulai', 'desc'),
+            'riwayatPenghargaan'=> fn($q) => $q->orderBy('tahun', 'desc'),
+            'riwayatSkp'        => fn($q) => $q->orderBy('tahun', 'desc')->take(5),
+            'riwayatOrganisasi' => fn($q) => $q->orderBy('tahun_mulai', 'desc'),
+        ]);
+
+        // Pejabat Pimpinan Pengetahu (Dekan / WD II)
+        $pejabatService = app(\App\Services\PejabatService::class);
+        $pejabatPimpinan = $pejabatService->getDekanPegawai() ?? $pejabatService->getWadek2Pegawai();
+
+        // Watermark & QR Code Keabsahan Digital
+        $watermarkService = app(\App\Services\DocumentWatermarkService::class);
+        $verifyCode = $watermarkService->generateVerificationCode(
+            'Daftar Riwayat Hidup BKN ASN',
+            'DRH-BKN/' . ($pegawai->nip ?? $pegawai->id) . '/' . date('Y'),
+            $pegawai->nama_lengkap ?? $pegawai->nama
+        );
+        $verifyUrl = route('verify.document', ['code' => $verifyCode]);
+        $qrCodeDataUri = \App\Services\QrCodeService::generateDataUri($verifyUrl);
+
+        $pdf = Pdf::loadView('pegawai.drh_bkn_pdf', compact(
+            'pegawai',
+            'pejabatPimpinan',
+            'verifyCode',
+            'verifyUrl',
+            'qrCodeDataUri'
+        ))->setPaper('a4', 'portrait');
+
+        $cleanName = str_replace([' ', '/', '\\'], '_', $pegawai->nama_lengkap ?? $pegawai->nama);
+        return $pdf->stream('DRH_BKN_' . $cleanName . '_' . date('Ymd') . '.pdf');
+    }
 }

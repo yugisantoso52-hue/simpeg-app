@@ -250,30 +250,46 @@
                                     <td class="py-3 px-4 max-w-xs truncate" title="{{ $row->alasan }}">
                                         {{ $row->alasan }}
                                     </td>
-                                    <td class="py-3 px-4 text-center">
-                                        <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold border {{ $row->status_badge_class }}">
-                                            {{ $row->status_label ?? $row->status }}
-                                        </span>
-                                        {{-- Tracking Mini 4 Tahap Bertingkat --}}
+                                    <td class="py-3 px-4">
                                         @php
-                                            $isAtasanApproved = !empty($row->pertimbangan_atasan) && $row->pertimbangan_atasan !== 'Menunggu Persetujuan';
+                                            $s1 = !empty($row->created_at);
+                                            $s2 = !empty($row->verifikasi_admin_at);
+                                            $s3 = !empty($row->paraf_kapokja_at);
+                                            $s4 = !empty($row->pertimbangan_atasan_at) || (!empty($row->pertimbangan_atasan) && $row->pertimbangan_atasan !== 'Menunggu Persetujuan');
+                                            $s5 = in_array($row->status, ['Disetujui', 'Ditolak']) || !empty($row->approved_at);
+                                            $isDitolakCuti = strtolower($row->status) === 'ditolak';
+                                            $totalCompletedCuti = (int)$s1 + (int)$s2 + (int)$s3 + (int)$s4 + (int)$s5;
+                                            $pctCuti = round(($totalCompletedCuti / 5) * 100);
                                         @endphp
-                                        <div class="flex items-center justify-center gap-1 text-[10px] text-slate-500 pt-1">
-                                            <span class="{{ $row->verifikasi_admin_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}" title="1. Admin Screening">
-                                                Admin {{ $row->verifikasi_admin_at ? '✓' : '-' }}
-                                            </span>
-                                            <span>➔</span>
-                                            <span class="{{ $row->paraf_kapokja_at ? 'text-sky-700 font-bold' : 'text-slate-400' }}" title="2. Paraf Koordinasi Ka Pokja Keu-Kepeg">
-                                                Pokja {{ $row->paraf_kapokja_at ? '✓' : '-' }}
-                                            </span>
-                                            <span>➔</span>
-                                            <span class="{{ $isAtasanApproved ? 'text-indigo-700 font-bold' : 'text-slate-400' }}" title="3. TTE Pertimbangan Atasan Langsung">
-                                                Atasan {{ $isAtasanApproved ? '✓' : '-' }}
-                                            </span>
-                                            <span>➔</span>
-                                            <span class="{{ in_array($row->status, ['Disetujui', 'Ditolak']) ? 'text-emerald-700 font-bold' : 'text-slate-400' }}" title="4. TTE Keputusan PYBMC">
-                                                PYBMC {{ in_array($row->status, ['Disetujui', 'Ditolak']) ? '✓' : '-' }}
-                                            </span>
+                                        <div class="space-y-1.5 min-w-[160px]">
+                                            <div class="flex items-center justify-between gap-1">
+                                                <span class="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold border {{ $row->status_badge_class }}">
+                                                    {{ $row->status_label ?? $row->status }}
+                                                </span>
+                                                <span class="text-[10px] font-mono font-bold {{ $isDitolakCuti ? 'text-rose-600' : ($totalCompletedCuti == 5 ? 'text-emerald-700' : 'text-teal-700') }}">
+                                                    {{ $pctCuti }}%
+                                                </span>
+                                            </div>
+
+                                            {{-- Segmented 5-Step Visual Progress Bar --}}
+                                            <div class="flex items-center gap-1">
+                                                <div class="h-1.5 flex-1 rounded-full {{ $isDitolakCuti ? 'bg-rose-500' : ($s1 ? 'bg-emerald-500' : 'bg-slate-200') }}" title="1. Diajukan Pegawai"></div>
+                                                <div class="h-1.5 flex-1 rounded-full {{ $isDitolakCuti ? 'bg-rose-500' : ($s2 ? 'bg-emerald-500' : ($s1 ? 'bg-teal-500 animate-pulse' : 'bg-slate-200')) }}" title="2. Admin Screening"></div>
+                                                <div class="h-1.5 flex-1 rounded-full {{ $isDitolakCuti ? 'bg-rose-500' : ($s3 ? 'bg-emerald-500' : ($s2 ? 'bg-teal-500 animate-pulse' : 'bg-slate-200')) }}" title="3. Paraf Pokja"></div>
+                                                <div class="h-1.5 flex-1 rounded-full {{ $isDitolakCuti ? 'bg-rose-500' : ($s4 ? 'bg-emerald-500' : ($s3 ? 'bg-teal-500 animate-pulse' : 'bg-slate-200')) }}" title="4. Atasan Langsung"></div>
+                                                <div class="h-1.5 flex-1 rounded-full {{ $isDitolakCuti ? 'bg-rose-500' : ($s5 ? 'bg-emerald-500' : ($s4 ? 'bg-teal-500 animate-pulse' : 'bg-slate-200')) }}" title="5. TTE PYBMC"></div>
+                                            </div>
+
+                                            {{-- Step Labels --}}
+                                            <div class="flex items-center gap-1 text-[10px] text-slate-500">
+                                                <span class="{{ $s2 ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">Admin {{ $s2 ? '✓' : '⏳' }}</span>
+                                                <span class="text-slate-300">›</span>
+                                                <span class="{{ $s3 ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">Pokja {{ $s3 ? '✓' : '⏳' }}</span>
+                                                <span class="text-slate-300">›</span>
+                                                <span class="{{ $s4 ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">Atasan {{ $s4 ? '✓' : '⏳' }}</span>
+                                                <span class="text-slate-300">›</span>
+                                                <span class="{{ $s5 ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">PYBMC {{ $s5 ? '✓' : '⏳' }}</span>
+                                            </div>
                                         </div>
                                     </td>
                                     <td class="py-3 px-4 text-center">
