@@ -60,6 +60,73 @@ Route::get('/offline', function () {
     return view('offline');
 })->name('offline');
 
+/* Fallback Static Asset Handlers (Menangani Asset jika Web Server melempar 404 ke PHP) */
+Route::get('/build/{path}', function (string $path) {
+    if (str_contains($path, '..')) abort(404);
+    $file = public_path('build/' . $path);
+    if (!file_exists($file) || !is_file($file)) abort(404);
+    $mime = match (strtolower(pathinfo($file, PATHINFO_EXTENSION))) {
+        'css' => 'text/css; charset=utf-8',
+        'js', 'mjs' => 'application/javascript; charset=utf-8',
+        'json' => 'application/json',
+        'png' => 'image/png',
+        'jpg', 'jpeg' => 'image/jpeg',
+        'svg' => 'image/svg+xml',
+        'woff' => 'font/woff',
+        'woff2' => 'font/woff2',
+        'ttf' => 'font/ttf',
+        default => 'application/octet-stream',
+    };
+    return response()->file($file, [
+        'Content-Type' => $mime,
+        'Cache-Control' => 'public, max-age=31536000, immutable',
+        'X-Content-Type-Options' => 'nosniff',
+    ]);
+})->where('path', '.*');
+
+Route::get('/fonts/{path}', function (string $path) {
+    if (str_contains($path, '..')) abort(404);
+    $file = public_path('fonts/' . $path);
+    if (!file_exists($file) || !is_file($file)) abort(404);
+    $mime = match (strtolower(pathinfo($file, PATHINFO_EXTENSION))) {
+        'css' => 'text/css; charset=utf-8',
+        'woff' => 'font/woff',
+        'woff2' => 'font/woff2',
+        'ttf' => 'font/ttf',
+        default => 'application/octet-stream',
+    };
+    return response()->file($file, [
+        'Content-Type' => $mime,
+        'Cache-Control' => 'public, max-age=2592000',
+        'X-Content-Type-Options' => 'nosniff',
+    ]);
+})->where('path', '.*');
+
+Route::get('/images/{path}', function (string $path) {
+    if (str_contains($path, '..')) abort(404);
+    $file = public_path('images/' . $path);
+    if (!file_exists($file) || !is_file($file)) abort(404);
+    $mime = match (strtolower(pathinfo($file, PATHINFO_EXTENSION))) {
+        'png' => 'image/png',
+        'jpg', 'jpeg' => 'image/jpeg',
+        'svg' => 'image/svg+xml',
+        'webp' => 'image/webp',
+        default => 'application/octet-stream',
+    };
+    return response()->file($file, [
+        'Content-Type' => $mime,
+        'Cache-Control' => 'public, max-age=2592000',
+        'X-Content-Type-Options' => 'nosniff',
+    ]);
+})->where('path', '.*');
+
+Route::get('/logo-unri.png', fn() => file_exists(public_path('logo-unri.png')) ? response()->file(public_path('logo-unri.png'), ['Content-Type' => 'image/png', 'Cache-Control' => 'public, max-age=2592000']) : abort(404));
+Route::get('/logo-unri-bw.png', fn() => file_exists(public_path('logo-unri-bw.png')) ? response()->file(public_path('logo-unri-bw.png'), ['Content-Type' => 'image/png', 'Cache-Control' => 'public, max-age=2592000']) : abort(404));
+Route::get('/logo-kemendiktisaintek.png', fn() => file_exists(public_path('logo-kemendiktisaintek.png')) ? response()->file(public_path('logo-kemendiktisaintek.png'), ['Content-Type' => 'image/png', 'Cache-Control' => 'public, max-age=2592000']) : abort(404));
+Route::get('/manifest.json', fn() => file_exists(public_path('manifest.json')) ? response()->file(public_path('manifest.json'), ['Content-Type' => 'application/json']) : abort(404));
+Route::get('/favicon.ico', fn() => file_exists(public_path('favicon.ico')) ? response()->file(public_path('favicon.ico'), ['Content-Type' => 'image/x-icon']) : abort(404));
+
+
 // AUTHENTICATED USERS (Semua User Login)
 Route::middleware(['auth', 'force.password.change'])->group(function () {
 

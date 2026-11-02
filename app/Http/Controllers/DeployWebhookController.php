@@ -88,7 +88,7 @@ class DeployWebhookController extends Controller
                 }
             }
 
-            // 2. Pastikan direktori storage/app/private & public tersedia dan writable oleh www-data
+            // 2. Pastikan direktori storage/app/private, public, dan build tersedia
             foreach ([
                 storage_path('app/private'),
                 storage_path('app/private/arsip'),
@@ -98,11 +98,32 @@ class DeployWebhookController extends Controller
                 storage_path('framework/views'),
                 storage_path('logs'),
                 base_path('bootstrap/cache'),
+                public_path('build'),
+                public_path('build/assets'),
             ] as $dir) {
                 if (!File::isDirectory($dir)) {
                     @mkdir($dir, 0777, true);
                 }
                 @chmod($dir, 0777);
+            }
+
+            // Sinkronisasi ke Web Server DOCUMENT_ROOT jika Nginx menggunakan path berbeda
+            $docRoot = isset($_SERVER['DOCUMENT_ROOT']) ? rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']), '/') : '';
+            $pubPath = rtrim(str_replace('\\', '/', public_path()), '/');
+            if (!empty($docRoot) && $docRoot !== $pubPath && is_dir($docRoot)) {
+                if (is_dir(public_path('build'))) {
+                    File::copyDirectory(public_path('build'), $docRoot . '/build');
+                }
+                foreach (['logo-unri.png', 'logo-unri-bw.png', 'logo-kemendiktisaintek.png', 'manifest.json', 'favicon.ico', 'fonts', 'images'] as $staticItem) {
+                    $src = public_path($staticItem);
+                    $dst = $docRoot . '/' . $staticItem;
+                    if (is_file($src)) {
+                        @copy($src, $dst);
+                        @chmod($dst, 0644);
+                    } elseif (is_dir($src)) {
+                        File::copyDirectory($src, $dst);
+                    }
+                }
             }
 
             // 3. Run database migrations
@@ -115,6 +136,13 @@ class DeployWebhookController extends Controller
                 @opcache_reset();
             }
             $logs['optimize_clear'] = trim(Artisan::output());
+
+            $logs['server_diag'] = [
+                'base_path'   => base_path(),
+                'public_path' => public_path(),
+                'doc_root'    => $_SERVER['DOCUMENT_ROOT'] ?? 'unset',
+                'css_files'   => array_map('basename', glob(public_path('build/assets/*.css')) ?: []),
+            ];
 
             Log::info('Auto-Deploy Webhook executed successfully.', $logs);
 
