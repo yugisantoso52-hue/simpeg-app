@@ -60,8 +60,8 @@ class ProductionReadinessAndReminderTest extends TestCase
         $response = $this->actingAs($user)
             ->post(route('password.skip'));
 
-        $response->assertRedirect(route('dashboard'));
-        $this->assertFalse($user->fresh()->must_change_password);
+        $response->assertRedirect(route('password.change'));
+        $this->assertTrue($user->fresh()->must_change_password);
     }
 
     public function test_reset_password_flag_command(): void
