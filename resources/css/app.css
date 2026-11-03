@@ -65,4 +65,7 @@
     .nav-mobile-bar {
         display: none !important;
     }
+    .mobile-drawer-container {
+        display: none !important;
+    }
 }

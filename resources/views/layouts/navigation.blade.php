@@ -1,4 +1,6 @@
-<nav x-data="{ open: false }" class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs transition-all">
+<nav x-data="{ open: false }" 
+     @resize.window="if (window.innerWidth >= 1024) open = false"
+     class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs transition-all">
     <!-- ============================================================== -->
     <!-- 1. KOP HEADER INSTANSI (RESPONSIF PENUH ANDROID & DESKTOP PC)  -->
     <!-- ============================================================== -->
@@ -199,8 +201,15 @@
     <!-- 3. RESPONSIVE MENU DRAWER (Mobile Android & PC Setengah Layar) -->
     <!-- Dilengkapi max-h calc dan pb-32 agar Log Out SELALU BISA DI-SCROLL  -->
     <!-- ============================================================== -->
+    <style>
+        @media (min-width: 1024px) {
+            .mobile-drawer-container {
+                display: none !important;
+            }
+        }
+    </style>
     <div :class="{'block': open, 'hidden': ! open}" 
-         class="mobile-drawer-container hidden border-t border-slate-200 bg-white max-h-[calc(100dvh-60px)] overflow-y-auto overscroll-contain pb-32 shadow-2xl transition-all">
+         class="mobile-drawer-container hidden lg:!hidden border-t border-slate-200 bg-white max-h-[calc(100dvh-60px)] overflow-y-auto overscroll-contain pb-32 shadow-2xl transition-all">
         
         @include('layouts.partials.nav-mobile')
 
