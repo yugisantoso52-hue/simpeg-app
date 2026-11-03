@@ -240,13 +240,18 @@
 
                             {{-- 2. SK CPNS & SK PNS --}}
                             @php
-                                $hasCpns = !empty($pengajuan->file_sk_cpns) || !empty($pengajuan->pegawai?->tmt_sk_pertama);
+                                $hasCpns = $pengajuan->hasDoc('sk_cpns') || !empty($pengajuan->pegawai?->tmt_sk_pertama);
                             @endphp
                             <div class="p-3 rounded-xl border {{ $hasCpns ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
-                                <div class="font-semibold text-slate-700">2. SK Pengangkatan CPNS &amp; PNS</div>
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">2. SK Pengangkatan CPNS &amp; PNS</div>
+                                    @if($pengajuan->isDocFromMaster('sk_cpns'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Bukti TMT awal masa pengabdian ASN</span>
-                                @if(!empty($pengajuan->file_sk_cpns))
-                                    <a href="{{ asset('storage/' . $pengajuan->file_sk_cpns) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($pengajuan->hasDoc('sk_cpns'))
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('sk_cpns') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @else
@@ -256,13 +261,18 @@
 
                             {{-- 3. SK Pangkat Terakhir --}}
                             @php
-                                $hasPangkat = !empty($pengajuan->file_sk_pangkat_terakhir) || !empty($pengajuan->pegawai?->golongan_id);
+                                $hasPangkat = $pengajuan->hasDoc('sk_pangkat') || !empty($pengajuan->pegawai?->golongan_id);
                             @endphp
                             <div class="p-3 rounded-xl border {{ $hasPangkat ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
-                                <div class="font-semibold text-slate-700">3. SK Kenaikan Pangkat Terakhir</div>
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">3. SK Kenaikan Pangkat Terakhir</div>
+                                    @if($pengajuan->isDocFromMaster('sk_pangkat'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Golongan: {{ $pengajuan->pegawai?->golongan?->nama_golongan ?? '-' }}</span>
-                                @if(!empty($pengajuan->file_sk_pangkat_terakhir))
-                                    <a href="{{ asset('storage/' . $pengajuan->file_sk_pangkat_terakhir) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($pengajuan->hasDoc('sk_pangkat'))
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('sk_pangkat') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @else
@@ -272,13 +282,18 @@
 
                             {{-- 4. SK Jabatan Terakhir --}}
                             @php
-                                $hasJabatan = !empty($pengajuan->file_sk_jabatan_terakhir) || !empty($pengajuan->pegawai?->jabatan_id);
+                                $hasJabatan = $pengajuan->hasDoc('sk_jabatan') || !empty($pengajuan->pegawai?->jabatan_id);
                             @endphp
                             <div class="p-3 rounded-xl border {{ $hasJabatan ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
-                                <div class="font-semibold text-slate-700">4. SK Jabatan Terakhir</div>
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">4. SK Jabatan Terakhir</div>
+                                    @if($pengajuan->isDocFromMaster('sk_jabatan'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">{{ $pengajuan->pegawai?->jabatan?->nama_jabatan ?? '-' }}</span>
-                                @if(!empty($pengajuan->file_sk_jabatan_terakhir))
-                                    <a href="{{ asset('storage/' . $pengajuan->file_sk_jabatan_terakhir) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($pengajuan->hasDoc('sk_jabatan'))
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('sk_jabatan') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @else
@@ -288,13 +303,19 @@
 
                             {{-- 5. SKP 2 Tahun Terakhir --}}
                             @php
+                                $hasSkpSatya = $pengajuan->hasDoc('skp_2_tahun');
                                 $skpCount = $pengajuan->pegawai?->riwayatSkp?->count() ?? 0;
                             @endphp
-                            <div class="p-3 rounded-xl border {{ (!empty($pengajuan->file_skp_2_tahun) || $skpCount >= 2) ? 'bg-slate-50 border-slate-200' : 'bg-amber-50/60 border-amber-200 text-slate-600' }}">
-                                <div class="font-semibold text-slate-700">5. SKP 2 Tahun Terakhir</div>
+                            <div class="p-3 rounded-xl border {{ ($hasSkpSatya || $skpCount >= 2) ? 'bg-slate-50 border-slate-200' : 'bg-amber-50/60 border-amber-200 text-slate-600' }}">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">5. SKP 2 Tahun Terakhir</div>
+                                    @if($pengajuan->isDocFromMaster('skp_2_tahun'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Predikat kinerja berstatus 'Baik'</span>
-                                @if(!empty($pengajuan->file_skp_2_tahun))
-                                    <a href="{{ asset('storage/' . $pengajuan->file_skp_2_tahun) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($hasSkpSatya)
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('skp_2_tahun') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @elseif($skpCount >= 2)
@@ -305,11 +326,17 @@
                             </div>
 
                             {{-- 6. Surat Bebas Hukdis & Pidana --}}
-                            <div class="p-3 rounded-xl border {{ !empty($pengajuan->file_surat_pernyataan_tidak_hukdis) ? 'bg-slate-50 border-slate-200' : 'bg-slate-50/70 border-slate-200' }}">
-                                <div class="font-semibold text-slate-700">6. Surat Pernyataan Bebas Hukdis</div>
+                            @php $hasHukdis = $pengajuan->hasDoc('hukdis'); @endphp
+                            <div class="p-3 rounded-xl border {{ $hasHukdis ? 'bg-slate-50 border-slate-200' : 'bg-slate-50/70 border-slate-200' }}">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">6. Surat Pernyataan Bebas Hukdis</div>
+                                    @if($pengajuan->isDocFromMaster('hukdis'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Tidak pernah dipidana &amp; tidak dijatuhi hukuman disiplin</span>
-                                @if(!empty($pengajuan->file_surat_pernyataan_tidak_hukdis))
-                                    <a href="{{ asset('storage/' . $pengajuan->file_surat_pernyataan_tidak_hukdis) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($hasHukdis)
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('hukdis') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @else
@@ -331,11 +358,17 @@
                         {{-- PERSYARATAN RESMI KENAIKAN PANGKAT PNS (PerBKN 4/2023 & PermenPAN-RB 1/2023) --}}
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
                             {{-- 1. SK Pangkat Terakhir --}}
-                            <div class="p-3 rounded-xl border {{ ($pengajuan->file_sk_pangkat_terakhir || $pengajuan->file_sk_terakhir) ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
-                                <div class="font-semibold text-slate-700">1. SK Kenaikan Pangkat Terakhir</div>
+                            @php $hasSkPangkat = $pengajuan->hasDoc('sk_pangkat'); @endphp
+                            <div class="p-3 rounded-xl border {{ $hasSkPangkat ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">1. SK Kenaikan Pangkat Terakhir</div>
+                                    @if($pengajuan->isDocFromMaster('sk_pangkat'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Legalisir fotokopi/salinan digital</span>
-                                @if($pengajuan->file_sk_pangkat_terakhir || $pengajuan->file_sk_terakhir)
-                                    <a href="{{ asset('storage/' . ($pengajuan->file_sk_pangkat_terakhir ?? $pengajuan->file_sk_terakhir)) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($hasSkPangkat)
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('sk_pangkat') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @else
@@ -344,11 +377,17 @@
                             </div>
 
                             {{-- 2. SK Jabatan Fungsional Terakhir --}}
-                            <div class="p-3 rounded-xl border {{ $pengajuan->file_sk_terakhir ? 'bg-slate-50 border-slate-200' : 'bg-slate-50/60 border-slate-200' }}">
-                                <div class="font-semibold text-slate-700">2. SK Jabatan Fungsional (Dosen/PLP)</div>
+                            @php $hasSkJabatan = $pengajuan->hasDoc('sk_jabatan'); @endphp
+                            <div class="p-3 rounded-xl border {{ $hasSkJabatan ? 'bg-slate-50 border-slate-200' : 'bg-slate-50/60 border-slate-200' }}">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">2. SK Jabatan Fungsional (Dosen/PLP)</div>
+                                    @if($pengajuan->isDocFromMaster('sk_jabatan'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Khusus jabatan fungsional</span>
-                                @if($pengajuan->file_sk_terakhir)
-                                    <a href="{{ asset('storage/' . $pengajuan->file_sk_terakhir) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($hasSkJabatan)
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('sk_jabatan') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @else
@@ -357,11 +396,17 @@
                             </div>
 
                             {{-- 3. PAK Konversi / Integrasi --}}
-                            <div class="p-3 rounded-xl border {{ $pengajuan->file_pak ? 'bg-slate-50 border-slate-200' : 'bg-slate-50/60 border-slate-200' }}">
-                                <div class="font-semibold text-slate-700">3. Penetapan Angka Kredit (PAK)</div>
+                            @php $hasPak = $pengajuan->hasDoc('pak'); @endphp
+                            <div class="p-3 rounded-xl border {{ $hasPak ? 'bg-slate-50 border-slate-200' : 'bg-slate-50/60 border-slate-200' }}">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">3. Penetapan Angka Kredit (PAK)</div>
+                                    @if($pengajuan->isDocFromMaster('pak'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">PAK Konversi PermenPAN-RB 1/2023</span>
-                                @if($pengajuan->file_pak)
-                                    <a href="{{ asset('storage/' . $pengajuan->file_pak) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($hasPak)
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('pak') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @else
@@ -370,11 +415,17 @@
                             </div>
 
                             {{-- 4. SKP Tahun N-1 --}}
-                            <div class="p-3 rounded-xl border {{ $pengajuan->file_skp_1 ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
-                                <div class="font-semibold text-slate-700">4. Penilaian Kinerja / SKP Tahun (N-1)</div>
+                            @php $hasSkp1 = $pengajuan->hasDoc('skp_1'); @endphp
+                            <div class="p-3 rounded-xl border {{ $hasSkp1 ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">4. Penilaian Kinerja / SKP Tahun (N-1)</div>
+                                    @if($pengajuan->isDocFromMaster('skp_1'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Predikat minimal 'Baik'</span>
-                                @if($pengajuan->file_skp_1)
-                                    <a href="{{ asset('storage/' . $pengajuan->file_skp_1) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($hasSkp1)
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('skp_1') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @else
@@ -383,11 +434,17 @@
                             </div>
 
                             {{-- 5. SKP 2 Tahun Lalu (N-2) --}}
-                            <div class="p-3 rounded-xl border {{ $pengajuan->file_skp_2 ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
-                                <div class="font-semibold text-slate-700">5. Penilaian Kinerja / SKP 2 Tahun Lalu (N-2)</div>
+                            @php $hasSkp2 = $pengajuan->hasDoc('skp_2'); @endphp
+                            <div class="p-3 rounded-xl border {{ $hasSkp2 ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">5. Penilaian Kinerja / SKP 2 Tahun Lalu (N-2)</div>
+                                    @if($pengajuan->isDocFromMaster('skp_2'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Predikat minimal 'Baik'</span>
-                                @if($pengajuan->file_skp_2)
-                                    <a href="{{ asset('storage/' . $pengajuan->file_skp_2) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($hasSkp2)
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('skp_2') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @else
@@ -396,11 +453,17 @@
                             </div>
 
                             {{-- 6. KARPEG / KTA ASN --}}
-                            <div class="p-3 rounded-xl border {{ $pengajuan->file_karpeg ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
-                                <div class="font-semibold text-slate-700">6. KARPEG / Identitas ASN Elektronik</div>
+                            @php $hasKarpeg = $pengajuan->hasDoc('karpeg'); @endphp
+                            <div class="p-3 rounded-xl border {{ $hasKarpeg ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">6. KARPEG / Identitas ASN Elektronik</div>
+                                    @if($pengajuan->isDocFromMaster('karpeg'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Kartu Pegawai resmi BKN</span>
-                                @if($pengajuan->file_karpeg)
-                                    <a href="{{ asset('storage/' . $pengajuan->file_karpeg) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($hasKarpeg)
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('karpeg') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @else
@@ -409,18 +472,30 @@
                             </div>
 
                             {{-- 7. Surat Pernyataan Bebas Hukdis --}}
+                            @php $hasHukdisKp = $pengajuan->hasDoc('hukdis'); @endphp
                             <div class="p-3 rounded-xl border bg-slate-50/60 border-slate-200">
-                                <div class="font-semibold text-slate-700">7. Surat Bebas Hukdis</div>
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">7. Surat Bebas Hukdis</div>
+                                    @if($pengajuan->isDocFromMaster('hukdis'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Tidak sedang dijatuhi hukdis sedang/berat</span>
-                                <span class="text-[11px] text-emerald-600 font-semibold mt-2 block">✓ Verifikasi otomatis integritas ASN</span>
+                                @if($hasHukdisKp)
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('hukdis') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                        <span>📥</span> Buka Dokumen
+                                    </a>
+                                @else
+                                    <span class="text-[11px] text-emerald-600 font-semibold mt-2 block">✓ Verifikasi otomatis integritas ASN</span>
+                                @endif
                             </div>
 
                             {{-- 8. Berkas Pendukung (Serdos / Ijazah) --}}
-                            @if($pengajuan->file_pendukung)
+                            @if($pengajuan->hasDoc('pendukung'))
                                 <div class="p-3 rounded-xl border bg-slate-50 border-slate-200">
                                     <div class="font-semibold text-slate-700">8. Dokumen Pendukung Lainnya</div>
                                     <span class="text-[10px] text-slate-500 block mt-0.5">Serdos / Ijazah peningkatan</span>
-                                    <a href="{{ asset('storage/' . $pengajuan->file_pendukung) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('pendukung') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 </div>
@@ -431,11 +506,17 @@
                         {{-- PERSYARATAN RESMI KENAIKAN GAJI BERKALA (PP 5/2024 & PermenPAN-RB 7/2023) --}}
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
                             {{-- 1. SK Pangkat Terakhir --}}
-                            <div class="p-3 rounded-xl border {{ ($pengajuan->file_sk_pangkat_terakhir || $pengajuan->file_sk_terakhir) ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
-                                <div class="font-semibold text-slate-700">1. SK Pangkat Terakhir</div>
+                            @php $hasSkPangkat = $pengajuan->hasDoc('sk_pangkat'); @endphp
+                            <div class="p-3 rounded-xl border {{ $hasSkPangkat ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">1. SK Pangkat Terakhir</div>
+                                    @if($pengajuan->isDocFromMaster('sk_pangkat'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Dasar penetapan golongan &amp; ruang</span>
-                                @if($pengajuan->file_sk_pangkat_terakhir || $pengajuan->file_sk_terakhir)
-                                    <a href="{{ asset('storage/' . ($pengajuan->file_sk_pangkat_terakhir ?? $pengajuan->file_sk_terakhir)) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($hasSkPangkat)
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('sk_pangkat') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @else
@@ -444,11 +525,17 @@
                             </div>
 
                             {{-- 2. SK KGB Terakhir --}}
-                            <div class="p-3 rounded-xl border {{ $pengajuan->file_sk_kgb_terakhir ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
-                                <div class="font-semibold text-slate-700">2. SK Kenaikan Gaji Berkala (KGB) Terakhir</div>
+                            @php $hasSkKgb = $pengajuan->hasDoc('sk_kgb'); @endphp
+                            <div class="p-3 rounded-xl border {{ $hasSkKgb ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">2. SK Kenaikan Gaji Berkala (KGB) Terakhir</div>
+                                    @if($pengajuan->isDocFromMaster('sk_kgb'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Acuan penetapan TMT 2 tahunan</span>
-                                @if($pengajuan->file_sk_kgb_terakhir)
-                                    <a href="{{ asset('storage/' . $pengajuan->file_sk_kgb_terakhir) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($hasSkKgb)
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('sk_kgb') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @else
@@ -457,11 +544,17 @@
                             </div>
 
                             {{-- 3. SKP Tahun N-1 --}}
-                            <div class="p-3 rounded-xl border {{ $pengajuan->file_skp_1 ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
-                                <div class="font-semibold text-slate-700">3. SKP Tahun (N-1)</div>
+                            @php $hasSkpN1 = $pengajuan->hasDoc('skp_1'); @endphp
+                            <div class="p-3 rounded-xl border {{ $hasSkpN1 ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">3. SKP Tahun (N-1)</div>
+                                    @if($pengajuan->isDocFromMaster('skp_1'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Penilaian kinerja tahun berjalan</span>
-                                @if($pengajuan->file_skp_1)
-                                    <a href="{{ asset('storage/' . $pengajuan->file_skp_1) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($hasSkpN1)
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('skp_1') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @else
@@ -470,11 +563,17 @@
                             </div>
 
                             {{-- 4. SKP 2 Tahun Lalu (N-2) --}}
-                            <div class="p-3 rounded-xl border {{ $pengajuan->file_skp_2 ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
-                                <div class="font-semibold text-slate-700">4. SKP 2 Tahun Lalu (N-2)</div>
+                            @php $hasSkpN2 = $pengajuan->hasDoc('skp_2'); @endphp
+                            <div class="p-3 rounded-xl border {{ $hasSkpN2 ? 'bg-slate-50 border-slate-200' : 'bg-rose-50/50 border-rose-100 text-slate-400' }}">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-semibold text-slate-700">4. SKP 2 Tahun Lalu (N-2)</div>
+                                    @if($pengajuan->isDocFromMaster('skp_2'))
+                                        <span class="text-[9px] bg-blue-100 text-blue-700 font-semibold px-1.5 py-0.5 rounded">Master Data</span>
+                                    @endif
+                                </div>
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Penilaian kinerja tahun sebelumnya</span>
-                                @if($pengajuan->file_skp_2)
-                                    <a href="{{ asset('storage/' . $pengajuan->file_skp_2) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                @if($hasSkpN2)
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('skp_2') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 @else
@@ -483,10 +582,10 @@
                             </div>
 
                             {{-- Dokumen Pendukung --}}
-                            @if($pengajuan->file_pendukung)
+                            @if($pengajuan->hasDoc('pendukung'))
                                 <div class="p-3 rounded-xl border bg-slate-50 border-slate-200">
                                     <div class="font-semibold text-slate-700">5. Dokumen Pendukung Lainnya</div>
-                                    <a href="{{ asset('storage/' . $pengajuan->file_pendukung) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
+                                    <a href="{{ $pengajuan->getDocPreviewUrl('pendukung') }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 mt-2">
                                         <span>📥</span> Buka Dokumen
                                     </a>
                                 </div>

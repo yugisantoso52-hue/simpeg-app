@@ -314,6 +314,39 @@ class PengajuanKarirController extends Controller
             }
         }
 
+        // Auto-sinkronisasi dari master data pegawai jika tidak diunggah manual oleh pengaju
+        if (empty($data['file_sk_pangkat_terakhir'])) {
+            $data['file_sk_pangkat_terakhir'] = $pegawai->file_sk_pangkat_terakhir 
+                ?: $pegawai->riwayatPangkat()->latest('tmt')->first()?->file_sk;
+        }
+        if (empty($data['file_sk_terakhir'])) {
+            $data['file_sk_terakhir'] = $data['file_sk_pangkat_terakhir'] ?? null;
+        }
+        if (empty($data['file_sk_kgb_terakhir'])) {
+            $data['file_sk_kgb_terakhir'] = $pegawai->file_sk_kgb_terakhir;
+        }
+        if (empty($data['file_skp_1'])) {
+            $baseYear = (int)date('Y');
+            $skpN1 = $pegawai->riwayatSkp()->where('tahun', $baseYear - 1)->first()
+                ?: $pegawai->riwayatSkp()->latest('tahun')->first();
+            $data['file_skp_1'] = $skpN1?->file_evaluasi_skp ?: $skpN1?->file_rencana_skp;
+        }
+        if (empty($data['file_skp_2'])) {
+            $baseYear = (int)date('Y');
+            $skpN2 = $pegawai->riwayatSkp()->where('tahun', $baseYear - 2)->first();
+            if (!$skpN2) {
+                $skpList = $pegawai->riwayatSkp()->orderByDesc('tahun')->get();
+                $skpN2 = $skpList->count() > 1 ? $skpList[1] : null;
+            }
+            $data['file_skp_2'] = $skpN2?->file_evaluasi_skp ?: $skpN2?->file_rencana_skp;
+        }
+        if (empty($data['file_karpeg'])) {
+            $data['file_karpeg'] = $pegawai->file_karpeg;
+        }
+        if (empty($data['file_pak'])) {
+            $data['file_pak'] = $pegawai->file_pak;
+        }
+
         // Fallback file_sk_terakhir jika pengusul mengisi file_sk_pangkat_terakhir
         if (empty($data['file_sk_terakhir']) && !empty($data['file_sk_pangkat_terakhir'])) {
             $data['file_sk_terakhir'] = $data['file_sk_pangkat_terakhir'];
@@ -334,6 +367,8 @@ class PengajuanKarirController extends Controller
             'pegawai.unitKerja', 
             'pegawai.jabatan', 
             'pegawai.golongan', 
+            'pegawai.riwayatSkp',
+            'pegawai.riwayatPangkat',
             'golonganLama', 
             'golonganTujuan',
             'verifikatorKaPokja',
@@ -357,6 +392,128 @@ class PengajuanKarirController extends Controller
         $isAdmin   = $user->isScreeningAdmin();
 
         return view('pengajuan-karir.show', compact('pengajuan', 'isExecutive', 'isAdmin', 'isKaPokja', 'isKabag', 'isWd2', 'isDekan'));
+    }
+
+    /**
+     * Preview & Stream Dokumen Persyaratan Pengajuan Karir (KGB / KP / Satyalancana)
+     */
+    public function previewDokumen(int $id, string $jenis, Request $request)
+    {
+        $pengajuan = PengajuanKarir::with(['pegawai.riwayatSkp', 'pegawai.riwayatPangkat'])->findOrFail($id);
+
+        $user = Auth::user();
+        if (!$user) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        $isExecutive = $user->canAccessExecutiveKepegawaianMenus() 
+            || $user->hasRole('admin') 
+            || $user->isPimpinan() 
+            || $user->isKaPokjaKepeg() 
+            || $user->isKabagUmum() 
+            || $user->isWadek2() 
+            || $user->isDekan();
+        $pegawaiId = $user->pegawai_id ?? $user->pegawai?->id;
+
+        if (!$isExecutive && (int)$pengajuan->pegawai_id !== (int)$pegawaiId) {
+            abort(403, 'Anda tidak memiliki hak akses melihat berkas persyaratan ini.');
+        }
+
+        // Resolusi path dokumen dengan fallback cerdas ke master data pegawai
+        $rawPath = $pengajuan->resolveDocPath($jenis);
+
+        if (empty($rawPath) || $rawPath === '-') {
+            $namaDoc = strtoupper(str_replace('_', ' ', $jenis));
+            return response()->view('errors.document_not_found', [
+                'path' => $jenis,
+                'message' => "Berkas persyaratan [{$namaDoc}] belum diunggah dan tidak ditemukan pada master data pegawai."
+            ], 404);
+        }
+
+        $rawPath = trim((string) $rawPath);
+
+        // Jika tersimpan sebagai URL eksternal (Google Drive / Cloud Direct URL)
+        if (str_starts_with($rawPath, 'http://') || str_starts_with($rawPath, 'https://')) {
+            return redirect()->away($rawPath);
+        }
+
+        $normalized = str_replace('\\', '/', $rawPath);
+        $stripped   = preg_replace('#^(private|public|storage)/#i', '', ltrim($normalized, '/'));
+        $filename   = basename($normalized);
+        $extension  = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        $mimeMap = [
+            'pdf'  => 'application/pdf',
+            'png'  => 'image/png',
+            'jpg'  => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+        ];
+        $contentType = $mimeMap[$extension] ?? 'application/octet-stream';
+
+        // 1. Cek disk default / cloud storage (Supabase, S3, R2)
+        $defaultDisk = config('filesystems.default', 'local');
+        if (in_array($defaultDisk, ['supabase', 's3', 'r2'])) {
+            try {
+                $cloudDisk = \Illuminate\Support\Facades\Storage::disk($defaultDisk);
+                if ($cloudDisk->exists($normalized) || $cloudDisk->exists($stripped)) {
+                    $targetPath = $cloudDisk->exists($normalized) ? $normalized : $stripped;
+                    return $cloudDisk->response($targetPath, $filename, [
+                        'Content-Type' => $contentType,
+                        'Content-Disposition' => "inline; filename=\"{$filename}\"",
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Cloud storage error on karir document: ' . $e->getMessage());
+            }
+        }
+
+        // 2. Cek disk lokal (private/local, public, public_local)
+        foreach (['local', 'public', 'public_local', 'private'] as $diskName) {
+            try {
+                if (config("filesystems.disks.{$diskName}")) {
+                    $disk = \Illuminate\Support\Facades\Storage::disk($diskName);
+                    foreach (array_unique([$normalized, $stripped]) as $p) {
+                        if ($disk->exists($p)) {
+                            return response()->file($disk->path($p), [
+                                'Content-Type' => $contentType,
+                                'Content-Disposition' => "inline; filename=\"{$filename}\"",
+                            ]);
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        // 3. Cek direktori fisik storage lokal
+        $cleanRel = str_replace('/', DIRECTORY_SEPARATOR, $stripped);
+        $physicalCandidates = [
+            storage_path('app/private' . DIRECTORY_SEPARATOR . $cleanRel),
+            storage_path('app/public' . DIRECTORY_SEPARATOR . $cleanRel),
+            storage_path('app' . DIRECTORY_SEPARATOR . $cleanRel),
+            public_path('storage' . DIRECTORY_SEPARATOR . $cleanRel),
+            // Cek buffer arsip per pegawai
+            storage_path('app/private/arsip/' . $pengajuan->pegawai_id . DIRECTORY_SEPARATOR . $filename),
+            storage_path('app/arsip/' . $pengajuan->pegawai_id . DIRECTORY_SEPARATOR . $filename),
+        ];
+
+        foreach ($physicalCandidates as $candidate) {
+            if (file_exists($candidate) && is_file($candidate)) {
+                $real = realpath($candidate);
+                if ($real !== false) {
+                    return response()->file($real, [
+                        'Content-Type' => $contentType,
+                        'Content-Disposition' => "inline; filename=\"{$filename}\"",
+                    ]);
+                }
+            }
+        }
+
+        $namaDoc = strtoupper(str_replace('_', ' ', $jenis));
+        return response()->view('errors.document_not_found', [
+            'path' => $filename,
+            'message' => "Berkas fisik [{$namaDoc}] ({$filename}) belum ditemukan pada direktori penyimpanan server. Namun data administratif tetap sah tercatat pada SIMPEG."
+        ], 404);
     }
 
     /**

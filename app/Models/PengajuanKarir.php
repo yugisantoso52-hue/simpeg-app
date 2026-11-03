@@ -123,4 +123,128 @@ class PengajuanKarir extends Model
             default => ['label' => ucfirst($this->status), 'color' => 'gray', 'icon' => 'info'],
         };
     }
+
+    /**
+     * Resolusi path file dokumen (memprioritaskan file upload pada pengajuan, lalu fallback otomatis ke master data pegawai)
+     */
+    public function resolveDocPath(string $type): ?string
+    {
+        $type = strtolower($type);
+        $pegawai = $this->pegawai;
+
+        return match ($type) {
+            'sk_pangkat', 'sk_pangkat_terakhir', 'pangkat' => 
+                $this->file_sk_pangkat_terakhir 
+                ?: ($this->file_sk_terakhir 
+                ?: ($pegawai?->file_sk_pangkat_terakhir 
+                ?: $pegawai?->riwayatPangkat()->latest('tmt')->first()?->file_sk)),
+
+            'sk_kgb', 'sk_kgb_terakhir', 'kgb' => 
+                $this->file_sk_kgb_terakhir 
+                ?: $pegawai?->file_sk_kgb_terakhir,
+
+            'skp_1', 'skp_n1' => 
+                $this->file_skp_1 
+                ?: $this->resolveMasterSkp(1),
+
+            'skp_2', 'skp_n2' => 
+                $this->file_skp_2 
+                ?: $this->resolveMasterSkp(2),
+
+            'skp_2_tahun' =>
+                $this->file_skp_2_tahun
+                ?: ($this->file_skp_1 ?: $this->resolveMasterSkp(1)),
+
+            'sk_cpns', 'cpns' => 
+                $this->file_sk_cpns 
+                ?: $pegawai?->file_sk_pertama,
+
+            'sk_jabatan', 'jabatan' => 
+                $this->file_sk_jabatan_terakhir 
+                ?: ($this->file_sk_terakhir 
+                ?: $pegawai?->riwayatJabatan()->latest('tmt_jabatan')->first()?->file_sk),
+
+            'karpeg' => 
+                $this->file_karpeg 
+                ?: $pegawai?->file_karpeg,
+
+            'pak' => 
+                $this->file_pak 
+                ?: $pegawai?->file_pak,
+
+            'pendukung', 'file_pendukung' => 
+                $this->file_pendukung,
+
+            'hukdis', 'surat_pernyataan_tidak_hukdis', 'file_surat_pernyataan_tidak_hukdis' => 
+                $this->file_surat_pernyataan_tidak_hukdis,
+
+            default => null,
+        };
+    }
+
+    /**
+     * Helper untuk mengambil SKP dari master data (1 = N-1, 2 = N-2)
+     */
+    protected function resolveMasterSkp(int $step = 1): ?string
+    {
+        if (!$this->pegawai) return null;
+
+        $baseYear = $this->created_at ? (int)$this->created_at->format('Y') : (int)date('Y');
+        $targetYear = $baseYear - $step;
+
+        $skp = $this->pegawai->riwayatSkp()->where('tahun', $targetYear)->first();
+        if ($skp && (!empty($skp->file_evaluasi_skp) || !empty($skp->file_rencana_skp))) {
+            return $skp->file_evaluasi_skp ?: $skp->file_rencana_skp;
+        }
+
+        // Fallback: Ambil berdasarkan urutan tahun terbaru di master data
+        $skpList = $this->pegawai->riwayatSkp()->orderByDesc('tahun')->get();
+        $targetIndex = $step - 1;
+        if ($skpList->count() > $targetIndex) {
+            $item = $skpList[$targetIndex];
+            return $item->file_evaluasi_skp ?: $item->file_rencana_skp;
+        }
+
+        return null;
+    }
+
+    /**
+     * Periksa apakah dokumen tersedia (baik dari pengajuan maupun master data)
+     */
+    public function hasDoc(string $type): bool
+    {
+        $path = $this->resolveDocPath($type);
+        return !empty($path) && $path !== '-';
+    }
+
+    /**
+     * Cek apakah dokumen diambil dari master data (karena tidak diunggah langsung pada pengajuan)
+     */
+    public function isDocFromMaster(string $type): bool
+    {
+        $type = strtolower($type);
+        return match ($type) {
+            'sk_pangkat', 'sk_pangkat_terakhir', 'pangkat' => empty($this->file_sk_pangkat_terakhir) && empty($this->file_sk_terakhir) && $this->hasDoc($type),
+            'sk_kgb', 'sk_kgb_terakhir', 'kgb' => empty($this->file_sk_kgb_terakhir) && $this->hasDoc($type),
+            'skp_1', 'skp_n1' => empty($this->file_skp_1) && $this->hasDoc($type),
+            'skp_2', 'skp_n2' => empty($this->file_skp_2) && $this->hasDoc($type),
+            'skp_2_tahun' => empty($this->file_skp_2_tahun) && $this->hasDoc($type),
+            'sk_cpns', 'cpns' => empty($this->file_sk_cpns) && $this->hasDoc($type),
+            'sk_jabatan', 'jabatan' => empty($this->file_sk_jabatan_terakhir) && empty($this->file_sk_terakhir) && $this->hasDoc($type),
+            'karpeg' => empty($this->file_karpeg) && $this->hasDoc($type),
+            'pak' => empty($this->file_pak) && $this->hasDoc($type),
+            default => false,
+        };
+    }
+
+    /**
+     * URL untuk melihat dokumen aman via dedicated streaming controller
+     */
+    public function getDocPreviewUrl(string $type): string
+    {
+        return route('pengajuan-karir.dokumen', [
+            'id'    => $this->id,
+            'jenis' => $type,
+        ]);
+    }
 }

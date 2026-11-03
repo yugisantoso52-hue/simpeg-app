@@ -300,6 +300,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/pengajuan-karir/create', [\App\Http\Controllers\PengajuanKarirController::class, 'create'])->name('pengajuan-karir.create');
         Route::post('/pengajuan-karir', [\App\Http\Controllers\PengajuanKarirController::class, 'store'])->name('pengajuan-karir.store');
         Route::get('/pengajuan-karir/{id}', [\App\Http\Controllers\PengajuanKarirController::class, 'show'])->name('pengajuan-karir.show');
+        Route::get('/pengajuan-karir/{id}/dokumen/{jenis}', [\App\Http\Controllers\PengajuanKarirController::class, 'previewDokumen'])->name('pengajuan-karir.dokumen');
         Route::post('/pengajuan-karir/{id}/cancel', [\App\Http\Controllers\PengajuanKarirController::class, 'cancel'])->name('pengajuan-karir.cancel');
         Route::get('/reports/kgb/{id}/pdf', [ReportController::class, 'exportKgbPdf'])->name('reports.kgb.pdf');
         Route::get('/reports/kp/{id}/pdf', [ReportController::class, 'exportUsulanKpPdf'])->name('reports.kp.pdf');
