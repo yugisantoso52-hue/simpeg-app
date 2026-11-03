@@ -163,6 +163,128 @@ class PengajuanCutiController extends Controller
         ));
     }
 
+    /**
+     * Preview / Stream Berkas Lampiran Pendukung Cuti Terproteksi RBAC
+     */
+    public function previewLampiran(int $id, Request $request)
+    {
+        $cuti = $this->service->find($id);
+        $user = $request->user();
+        if (!$user) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        $this->resolveUserPegawai($user);
+
+        // RBAC: Hak akses membaca lampiran selaras dengan alur verifikasi & persetujuan berjenjang
+        $isKaPokja   = $user->isKaPokjaKepeg();
+        $isKabag     = $user->isKabagUmum();
+        $isWd2       = $user->isWadek2();
+        $isDekan     = $user->isDekan();
+        $isAdmin     = $user->isScreeningAdmin() || $user->hasRole('admin');
+        $isExecutive = $user->canAccessExecutiveKepegawaianMenus();
+        $isOwn       = $user->pegawai_id && (int) $user->pegawai_id === (int) $cuti->pegawai_id;
+
+        $hierarchyService = app(\App\Services\ApprovalHierarchyService::class);
+        $isAtasanLgs = $user->pegawai && $cuti->pegawai && $hierarchyService->isAtasanLangsungCuti($user->pegawai, $cuti->pegawai);
+        $isPybmc     = $user->pegawai && $cuti->pegawai && $hierarchyService->isPybmcCuti($user->pegawai, $cuti->pegawai);
+
+        if (!$isAdmin && !$isOwn && !$isAtasanLgs && !$isPybmc && !$isDekan && !$isKaPokja && !$isKabag && !$isWd2 && !$isExecutive && !$user->hasRole('pimpinan') && !$user->isAtasan()) {
+            abort(403, 'Anda tidak memiliki hak akses untuk membuka berkas lampiran cuti ini.');
+        }
+
+        if (empty($cuti->file_lampiran) || $cuti->file_lampiran === '-') {
+            return response()->view('errors.document_not_found', [
+                'path' => 'Lampiran Cuti #' . $cuti->id,
+                'message' => 'Permohonan cuti ini tidak memiliki berkas lampiran pendukung yang diunggah.'
+            ], 404);
+        }
+
+        $rawPath = trim((string) $cuti->file_lampiran);
+
+        // Jika tersimpan sebagai tautan web eksternal (Google Drive / Cloud Direct URL)
+        if (str_starts_with($rawPath, 'http://') || str_starts_with($rawPath, 'https://')) {
+            return redirect()->away($rawPath);
+        }
+
+        $normalized = str_replace('\\', '/', $rawPath);
+        $stripped   = preg_replace('#^(private|public|storage)/#i', '', ltrim($normalized, '/'));
+        $filename   = basename($normalized);
+        $extension  = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        $mimeMap = [
+            'pdf'  => 'application/pdf',
+            'png'  => 'image/png',
+            'jpg'  => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+        ];
+        $contentType = $mimeMap[$extension] ?? 'application/octet-stream';
+
+        // 1. Cek disk default / cloud storage (Supabase, S3, R2)
+        $defaultDisk = config('filesystems.default', 'local');
+        if (in_array($defaultDisk, ['supabase', 's3', 'r2'])) {
+            try {
+                $cloudDisk = \Illuminate\Support\Facades\Storage::disk($defaultDisk);
+                if ($cloudDisk->exists($normalized) || $cloudDisk->exists($stripped)) {
+                    $targetPath = $cloudDisk->exists($normalized) ? $normalized : $stripped;
+                    return $cloudDisk->response($targetPath, $filename, [
+                        'Content-Type' => $contentType,
+                        'Content-Disposition' => "inline; filename=\"{$filename}\"",
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Cloud storage error on cuti lampiran: ' . $e->getMessage());
+            }
+        }
+
+        // 2. Cek disk lokal (private/local & public)
+        foreach (['local', 'public', 'public_local', 'private'] as $diskName) {
+            try {
+                if (config("filesystems.disks.{$diskName}")) {
+                    $disk = \Illuminate\Support\Facades\Storage::disk($diskName);
+                    foreach (array_unique([$normalized, $stripped]) as $p) {
+                        if ($disk->exists($p)) {
+                            return response()->file($disk->path($p), [
+                                'Content-Type' => $contentType,
+                                'Content-Disposition' => "inline; filename=\"{$filename}\"",
+                            ]);
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        // 3. Cek direktori fisik storage lokal
+        $cleanRel = str_replace('/', DIRECTORY_SEPARATOR, $stripped);
+        $physicalCandidates = [
+            storage_path('app/private' . DIRECTORY_SEPARATOR . $cleanRel),
+            storage_path('app/public' . DIRECTORY_SEPARATOR . $cleanRel),
+            storage_path('app' . DIRECTORY_SEPARATOR . $cleanRel),
+            public_path('storage' . DIRECTORY_SEPARATOR . $cleanRel),
+            // Cek buffer lokal GoogleDriveGasService
+            storage_path('app/private/arsip/' . $cuti->pegawai_id . DIRECTORY_SEPARATOR . $filename),
+            storage_path('app/arsip/' . $cuti->pegawai_id . DIRECTORY_SEPARATOR . $filename),
+        ];
+
+        foreach ($physicalCandidates as $candidate) {
+            if (file_exists($candidate) && is_file($candidate)) {
+                $real = realpath($candidate);
+                if ($real !== false) {
+                    return response()->file($real, [
+                        'Content-Type' => $contentType,
+                        'Content-Disposition' => "inline; filename=\"{$filename}\"",
+                    ]);
+                }
+            }
+        }
+
+        return response()->view('errors.document_not_found', [
+            'path' => $filename,
+            'message' => 'Berkas fisik lampiran pendukung belum ditemukan pada server penyimpanan. Namun demikian, riwayat pengajuan cuti tetap sah tercatat pada database sistem.'
+        ], 404);
+    }
+
     public function approve(ApprovePengajuanCutiRequest $request, int $id)
     {
         $validated = $request->validated();

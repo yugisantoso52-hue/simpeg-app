@@ -290,6 +290,7 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::get('/pengajuan-cuti/create', [PengajuanCutiController::class, 'create'])->name('pengajuan-cuti.create');
         Route::post('/pengajuan-cuti', [PengajuanCutiController::class, 'store'])->name('pengajuan-cuti.store');
         Route::get('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'show'])->name('pengajuan-cuti.show');
+        Route::get('/pengajuan-cuti/{id}/lampiran', [PengajuanCutiController::class, 'previewLampiran'])->name('pengajuan-cuti.lampiran');
         Route::post('/pengajuan-cuti/{id}/cancel', [PengajuanCutiController::class, 'cancel'])->name('pengajuan-cuti.cancel');
         Route::get('/pengajuan-cuti/{id}/cetak-pdf', [PengajuanCutiController::class, 'cetakFormPdf'])->name('pengajuan-cuti.cetak-pdf');
         Route::get('/pengajuan-cuti/{id}/print', [PengajuanCutiController::class, 'cetakFormPdf'])->name('pengajuan-cuti.print');

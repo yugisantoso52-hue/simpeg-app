@@ -102,7 +102,7 @@ class PengajuanCuti extends Model
     public function getFileLampiranUrlAttribute(): ?string
     {
         return (!empty($this->file_lampiran) && $this->file_lampiran !== '-') 
-            ? route('document.preview', ['path' => $this->file_lampiran]) 
+            ? route('pengajuan-cuti.lampiran', $this->id) 
             : null;
     }
 

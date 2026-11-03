@@ -342,8 +342,8 @@ class ReportController extends Controller
         }
 
         // 4. Otorisasi Hak Akses (IDOR Protection)
-        // Admin & Pimpinan memiliki hak akses membaca seluruh berkas
-        if (!$user->hasRole(['admin', 'pimpinan'])) {
+        // Admin, Pimpinan, dan Pejabat Dekanat memiliki hak akses membaca seluruh berkas
+        if (!$user->hasRole(['admin', 'pimpinan']) && !$user->isPimpinan() && !$user->canAccessExecutiveKepegawaianMenus()) {
             $ownerPegawaiId = $this->resolveFileOwnerPegawaiId($normalizedPath);
             if ($ownerPegawaiId) {
                 $userPegawaiId = $user->pegawai_id;
@@ -352,9 +352,9 @@ class ReportController extends Controller
                     $userPegawaiId = $up?->id;
                 }
 
-                // Pengguna dapat melihat dokumen jika miliknya sendiri, ATAU jika pengguna adalah atasan langsung pemilik dokumen
+                // Pengguna dapat melihat dokumen jika miliknya sendiri, ATAU jika pengguna adalah atasan
                 $isOwn = $userPegawaiId && (int)$userPegawaiId === (int)$ownerPegawaiId;
-                $isAtasan = $userPegawaiId && Pegawai::where('id', $ownerPegawaiId)->where('atasan_id', $userPegawaiId)->exists();
+                $isAtasan = ($userPegawaiId && Pegawai::where('id', $ownerPegawaiId)->where('atasan_id', $userPegawaiId)->exists()) || $user->isAtasan();
 
                 if (!$isOwn && !$isAtasan) {
                     abort(403, 'Anda tidak memiliki hak akses untuk membuka dokumen ini.');
@@ -541,7 +541,9 @@ class ReportController extends Controller
             ->first();
         if ($tb) return $tb->pegawai_id;
 
-        $cuti = \App\Models\PengajuanCuti::whereIn('file_lampiran', $pathVariants)->first();
+        $cuti = \App\Models\PengajuanCuti::whereIn('file_lampiran', $pathVariants)
+            ->orWhere('file_lampiran', 'like', "%{$filename}")
+            ->first();
         if ($cuti) return $cuti->pegawai_id;
 
         $logbook = \App\Models\Logbook::whereIn('file_lampiran', $pathVariants)->first();
