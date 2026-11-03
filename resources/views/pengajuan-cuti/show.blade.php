@@ -441,7 +441,8 @@
 
             {{-- PANEL STANDARISASI: VERIFIKASI BERJENJANG 4 TAHAP SESUAI WEWENANG MASING-MASING --}}
             @if($isAdmin || $isKaPokja || $isKabag || $isAtasanLgs || $isPybmc || $isWd2 || $isDekan)
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+                <div x-data="{ showFormPybmc: {{ (isset($errors) && $errors->any()) ? 'true' : 'false' }}, showFormAtasan: {{ (isset($errors) && $errors->any()) ? 'true' : 'false' }} }" class="space-y-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-slate-100 gap-2">
                         <div>
                             <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
@@ -534,34 +535,44 @@
                                     {{-- 3. Tahap 3: VI. Pertimbangan & TTE Atasan Langsung (Khusus Kabag Umum / Atasan Langsung) --}}
                                     @if($pertimbanganSudahAda)
                                         <span class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5">
-                                            ✓ 3. TTE Pertimbangan ({{ $pejabatInfo['atasan_jabatan'] ?? 'Kepala Bagian Umum' }}): Selesai
+                                            ✓ 3. TTE Pertimbangan: {{ $pejabatInfo['atasan_jabatan'] ?? 'Kepala Bagian Umum' }} — Selesai
                                         </span>
                                     @elseif(!$sudahParafPokja)
                                         <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Paraf Ka Pokja Keu-Kepeg">
-                                            🔒 3. TTE Pertimbangan {{ $pejabatInfo['atasan_jabatan'] ?? 'Kabag Umum' }} (Terkunci)
+                                            🔒 3. TTE Pertimbangan: {{ $pejabatInfo['atasan_jabatan'] ?? 'Kabag Umum' }} (Terkunci)
                                         </span>
                                     @elseif($canGivePertimbangan)
-                                        <a href="#form-pertimbangan-atasan" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition flex items-center gap-1.5">
-                                            ✍️ 3. Isi Pertimbangan &amp; TTE ({{ $pejabatInfo['atasan_jabatan'] ?? 'Kepala Bagian Umum' }})
-                                        </a>
+                                        <button type="button"
+                                                @click="showFormAtasan = !showFormAtasan; $nextTick(() => { if(showFormAtasan) document.getElementById('form-pertimbangan-atasan')?.scrollIntoView({behavior: 'smooth'}) })"
+                                                class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+                                                :class="showFormAtasan ? 'bg-indigo-800 text-white ring-2 ring-indigo-300' : 'bg-indigo-600 hover:bg-indigo-700 text-white'">
+                                            <span>✍️</span>
+                                            <span>3. Isi Pertimbangan &amp; TTE: {{ $pejabatInfo['atasan_jabatan'] ?? 'Kepala Bagian Umum' }}</span>
+                                            <span class="text-[10px] ml-1 font-normal opacity-90" x-text="showFormAtasan ? '▲ (Tutup Form)' : '▼ (Buka Form)'">▼ (Buka Form)</span>
+                                        </button>
                                     @else
                                         <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200 select-none">
-                                            ⏳ 3. Menunggu TTE Pertimbangan {{ $pejabatInfo['atasan_jabatan'] ?? 'Kabag Umum' }}
+                                            ⏳ 3. Menunggu TTE Pertimbangan: {{ $pejabatInfo['atasan_jabatan'] ?? 'Kabag Umum' }}
                                         </span>
                                     @endif
 
                                     {{-- 4. Tahap 4: VII. Keputusan & TTE Pejabat Berwenang / PYBMC (Khusus Wakil Dekan II / Dekan) --}}
                                     @if(!$pertimbanganSudahAda)
                                         <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-400 border border-dashed border-slate-300 select-none opacity-60" title="🔒 Terkunci: Menunggu Pertimbangan Atasan Langsung">
-                                            🔒 4. TTE Keputusan {{ $pejabatInfo['pybmc_jabatan'] ?? 'Wakil Dekan II' }} (Terkunci)
+                                            🔒 4. TTE Keputusan: {{ $pejabatInfo['pybmc_jabatan'] ?? 'Wakil Dekan II' }} (Terkunci)
                                         </span>
                                     @elseif($canGiveKeputusan)
-                                        <a href="#form-keputusan-pybmc" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition flex items-center gap-1.5">
-                                            🏛️ 4. Isi Keputusan &amp; TTE ({{ $pejabatInfo['pybmc_jabatan'] ?? 'Wakil Dekan II' }})
-                                        </a>
+                                        <button type="button"
+                                                @click="showFormPybmc = !showFormPybmc; $nextTick(() => { if(showFormPybmc) { document.getElementById('form-keputusan-pybmc')?.scrollIntoView({behavior: 'smooth'}); document.getElementById('status')?.focus(); } })"
+                                                class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+                                                :class="showFormPybmc ? 'bg-emerald-800 text-white ring-2 ring-emerald-300' : 'bg-emerald-600 hover:bg-emerald-700 text-white'">
+                                            <span>🏛️</span>
+                                            <span>4. Isi Keputusan &amp; TTE: {{ $pejabatInfo['pybmc_jabatan'] ?? 'Wakil Dekan II' }}</span>
+                                            <span class="text-[10px] ml-1 font-normal opacity-90" x-text="showFormPybmc ? '▲ (Tutup Form)' : '▼ (Buka Form)'">▼ (Buka Form)</span>
+                                        </button>
                                     @else
                                         <span class="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200 select-none">
-                                            ⏳ 4. Menunggu TTE Keputusan {{ $pejabatInfo['pybmc_jabatan'] ?? 'Wakil Dekan II' }}
+                                            ⏳ 4. Menunggu TTE Keputusan: {{ $pejabatInfo['pybmc_jabatan'] ?? 'Wakil Dekan II' }}
                                         </span>
                                     @endif
 
@@ -583,12 +594,12 @@
                                 @elseif($isKaPokja && $sudahParafPokja)
                                     <div class="mt-2 p-3 rounded-lg bg-indigo-50 border border-indigo-200 text-xs text-indigo-900 flex items-center gap-2">
                                         <span>ℹ️</span>
-                                        <span><strong>Tahap 2 (Paraf Koordinasi Ka Pokja Keu-Kepeg) telah selesai.</strong> Selanjutnya berkas hanya dapat diberikan Pertimbangan &amp; TTE oleh <strong>{{ $pejabatInfo['atasan_jabatan'] ?? 'Kepala Bagian Umum' }} ({{ $pejabatInfo['atasan_nama'] ?? 'Bakhtiar, S.Sos., M.Si' }})</strong> pada akunnya masing-masing.</span>
+                                        <span><strong>Tahap 2 (Paraf Koordinasi Ka Pokja Keu-Kepeg) telah selesai.</strong> Selanjutnya berkas hanya dapat diberikan Pertimbangan &amp; TTE oleh <strong>{{ $pejabatInfo['atasan_jabatan'] ?? 'Kepala Bagian Umum' }} — {{ $pejabatInfo['atasan_nama'] ?? 'Bakhtiar, S.Sos., M.Si' }}</strong> pada akunnya masing-masing.</span>
                                     </div>
                                 @elseif($isAtasanLgs && $pertimbanganSudahAda)
                                     <div class="mt-2 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center gap-2">
                                         <span>ℹ️</span>
-                                        <span><strong>Tahap 3 (Pertimbangan &amp; TTE Atasan Langsung) telah selesai.</strong> Selanjutnya berkas hanya dapat ditetapkan Keputusan Akhir &amp; TTE oleh <strong>{{ $pejabatInfo['pybmc_jabatan'] ?? 'Wakil Dekan II' }} ({{ $pejabatInfo['pybmc_nama'] ?? 'Dr. Safri, M.Kep, Sp.Kep.M.B' }})</strong> pada akunnya masing-masing.</span>
+                                        <span><strong>Tahap 3 (Pertimbangan &amp; TTE Atasan Langsung) telah selesai.</strong> Selanjutnya berkas hanya dapat ditetapkan Keputusan Akhir &amp; TTE oleh <strong>{{ $pejabatInfo['pybmc_jabatan'] ?? 'Wakil Dekan II' }} — {{ $pejabatInfo['pybmc_nama'] ?? 'Dr. Safri, M.Kep, Sp.Kep.M.B' }}</strong> pada akunnya masing-masing.</span>
                                     </div>
                                 @endif
                             </div>
@@ -621,10 +632,18 @@
 
             {{-- FORM TAHAP 3: Pertimbangan Atasan Langsung --}}
             @if($canGivePertimbangan)
-                <div id="form-pertimbangan-atasan" class="bg-white rounded-xl shadow-sm border border-amber-300 p-6 scroll-mt-20">
-                    <h3 class="text-base font-bold text-gray-900 mb-1 flex items-center gap-2">
+                <div id="form-pertimbangan-atasan" 
+                     x-show="showFormAtasan" 
+                     x-cloak
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 -translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     class="bg-white rounded-xl shadow-md border-2 border-indigo-400 p-6 scroll-mt-20">
+                    <h3 class="text-base font-bold text-gray-900 mb-1 flex items-center gap-2 flex-wrap">
                         <span>✍️</span> VI. Form Pertimbangan &amp; TTE Atasan Langsung
-                        <span class="text-xs font-normal text-gray-500">({{ $pejabatInfo['atasan_jabatan'] ?? 'Atasan Langsung' }})</span>
+                        <span class="text-xs font-semibold text-amber-800 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full">
+                            {{ $pejabatInfo['atasan_jabatan'] ?? 'Atasan Langsung' }}
+                        </span>
                     </h3>
                     <p class="text-xs text-amber-800 mb-4 bg-amber-50 border border-amber-200 rounded px-3.5 py-2.5 leading-relaxed">
                         Berkas telah diverifikasi oleh Admin Kepegawaian dan diparaf oleh Ka Pokja Keu-Kepeg. Silakan berikan <strong>PERTIMBANGAN &amp; TTE ATASAN LANGSUNG</strong>. Setelah Anda simpan, permohonan akan diteruskan ke <strong>{{ $pejabatInfo['pybmc_jabatan'] ?? 'Pejabat Berwenang' }}</strong> untuk keputusan akhir.
@@ -667,7 +686,7 @@
                         <div class="font-bold text-blue-900 mb-0.5">Menunggu Tahapan Verifikasi &amp; Pertimbangan Sebelumnya</div>
                         <div class="text-xs leading-relaxed text-blue-700">
                             Anda adalah <strong>{{ $pejabatInfo['pybmc_jabatan'] ?? 'Pejabat Berwenang' }}</strong> untuk permohonan ini.
-                            Form Keputusan Final &amp; TTE Pejabat Berwenang akan otomatis terbuka setelah berkas selesai melalui Admin Screening, Paraf Ka Pokja Keu-Kepeg, serta Pertimbangan &amp; TTE Atasan Langsung: <strong>{{ $pejabatInfo['atasan_jabatan'] ?? 'Atasan Langsung' }} ({{ $pejabatInfo['atasan_nama'] ?? '—' }})</strong>.
+                            Form Keputusan Final &amp; TTE Pejabat Berwenang akan otomatis terbuka setelah berkas selesai melalui Admin Screening, Paraf Ka Pokja Keu-Kepeg, serta Pertimbangan &amp; TTE Atasan Langsung: <strong>{{ $pejabatInfo['atasan_jabatan'] ?? 'Atasan Langsung' }} — {{ $pejabatInfo['atasan_nama'] ?? '—' }}</strong>.
                         </div>
                     </div>
                 </div>
@@ -675,10 +694,18 @@
 
             {{-- FORM TAHAP 4: Keputusan Pejabat Berwenang --}}
             @if($canGiveKeputusan)
-                <div id="form-keputusan-pybmc" class="bg-white rounded-xl shadow-sm border border-blue-300 p-6 scroll-mt-20">
-                    <h3 class="text-base font-bold text-gray-900 mb-1 flex items-center gap-2">
+                <div id="form-keputusan-pybmc" 
+                     x-show="showFormPybmc" 
+                     x-cloak
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 -translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     class="bg-white rounded-xl shadow-md border-2 border-emerald-400 p-6 scroll-mt-20">
+                    <h3 class="text-base font-bold text-gray-900 mb-1 flex items-center gap-2 flex-wrap">
                         <span>🏛️</span> VII. Form Keputusan &amp; TTE Pejabat Berwenang
-                        <span class="text-xs font-normal text-gray-500">({{ $pejabatInfo['pybmc_jabatan'] ?? 'Pejabat Berwenang' }})</span>
+                        <span class="text-xs font-semibold text-blue-800 bg-blue-100 border border-blue-300 px-2.5 py-0.5 rounded-full">
+                            {{ $pejabatInfo['pybmc_jabatan'] ?? 'Pejabat Berwenang' }}
+                        </span>
                     </h3>
                     <p class="text-xs text-blue-800 mb-4 bg-blue-50 border border-blue-200 rounded px-3.5 py-2.5 leading-relaxed">
                         Pertimbangan Atasan Langsung telah diterima: <strong>{{ $cuti->pertimbangan_atasan ?? '-' }}</strong>.
@@ -701,29 +728,20 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="nomor_surat_input" class="block text-xs font-semibold text-gray-700 uppercase mb-1">
-                                    Nomor Surat Izin Cuti (Opsional)
+                                <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">
+                                    Nomor Surat Izin Cuti Resmi
                                 </label>
-                                @php
-                                    $currentNomor = old('nomor_surat_input', old('nomor_surat', $cuti->nomor_surat ?? ''));
-                                    $prefixVal = $currentNomor;
-                                    if (str_contains($currentNomor, '/UN19')) {
-                                        $prefixVal = explode('/UN19', $currentNomor)[0];
-                                    }
-                                @endphp
-                                <div class="flex rounded-lg shadow-sm">
-                                    <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 font-mono text-xs">
-                                        Nomor:
-                                    </span>
-                                    <input type="text" name="nomor_surat_input" id="nomor_surat_input"
-                                           value="{{ $prefixVal }}"
-                                           placeholder="123"
-                                           class="flex-1 min-w-0 block w-full px-3 py-2 border border-gray-300 text-sm font-mono font-bold text-gray-900 focus:ring-emerald-500 focus:border-emerald-500">
-                                    <span class="inline-flex items-center px-3 rounded-r-lg border border-l-0 border-gray-300 bg-slate-100 text-slate-700 font-mono text-xs font-semibold">
-                                        /UN19.5.1.1.10/KP/{{ date('Y') }}
-                                    </span>
-                                </div>
-                                <p class="text-[11px] text-gray-500 mt-1">Isi nomor manual urut surat (misal: 125). Format instansi otomatis disematkan.</p>
+                                @if($cuti->nomor_surat)
+                                    <div class="flex items-center h-[42px] px-3 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-900 font-mono text-xs font-bold shadow-xs">
+                                        <span class="mr-1.5">🏛️</span> {{ $cuti->nomor_surat }}
+                                    </div>
+                                    <p class="text-[11px] text-emerald-700 mt-1 font-medium">✓ Nomor naskah dinas resmi telah diterbitkan oleh Admin Kepegawaian.</p>
+                                @else
+                                    <div class="flex items-center h-[42px] px-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 font-mono text-xs shadow-xs">
+                                        [Ditetapkan oleh Admin Kepegawaian]
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 mt-1">ℹ️ Berdasarkan SOP Tata Naskah Dinas, pengisian nomor surat dinas resmi dilakukan oleh Admin Subbag Kepegawaian.</p>
+                                @endif
                             </div>
                         </div>
                         <div>
@@ -743,6 +761,7 @@
                     </form>
                 </div>
             @endif
+        </div>
 
         </div>
     </div>
