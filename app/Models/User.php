@@ -117,7 +117,7 @@ class User extends Authenticatable
             return false;
         }
 
-        $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
+        $pegawai = $this->resolvePegawaiWithJabatan();
         if (!$pegawai) {
             return false;
         }
@@ -154,7 +154,7 @@ class User extends Authenticatable
             return [];
         }
 
-        $pegawai = $this->pegawai ?? Pegawai::find($this->pegawai_id);
+        $pegawai = $this->resolvePegawaiWithJabatan();
         if (!$pegawai) {
             return [];
         }
@@ -343,7 +343,6 @@ class User extends Authenticatable
      */
     public function canAccessExecutiveKepegawaianMenus(): bool
     {
-        // 1. Admin dan Pimpinan selalu punya akses penuh
         if ($this->hasRole('admin') || $this->hasRole('pimpinan')) {
             return true;
         }
@@ -352,37 +351,13 @@ class User extends Authenticatable
             return false;
         }
 
-        $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
-        if (!$pegawai || !$pegawai->jabatan) {
-            return false;
-        }
-
-        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
-
-        // 2. Dekan & Para Wakil Dekan (Wadek I, II, III)
-        if (str_contains($jabatan, 'DEKAN') || str_contains($jabatan, 'WADEK') || str_contains($jabatan, 'WD ')) {
-            return true;
-        }
-
-        // 3. Kabag Umum (Kepala Bagian Umum / KABAG TU)
-        if (str_contains($jabatan, 'KEPALA BAGIAN UMUM') || str_contains($jabatan, 'KABAG UMUM') || str_contains($jabatan, 'KABAG TU')) {
-            return true;
-        }
-
-        // 4. Ka Pokja Keu-Kepeg (Kepala Pokja Keuangan & Kepegawaian)
-        $isKaPokja = (str_contains($jabatan, 'KA POKJA') || str_contains($jabatan, 'KEPALA POKJA') || str_contains($jabatan, 'KETUA POKJA'))
-            && !str_contains($jabatan, 'STAFF')
-            && !str_contains($jabatan, 'STAF');
-        if ($isKaPokja && (str_contains($jabatan, 'KEU') || str_contains($jabatan, 'KEPEG'))) {
-            return true;
-        }
-
-        // 5. Unsur Pimpinan Fakultas Lainnya (Koorprodi, Kajur, Ka Lab)
-        if ($this->isPimpinan()) {
-            return true;
-        }
-
-        return false;
+        return $this->isDekan()
+            || $this->isWadek1()
+            || $this->isWadek2()
+            || $this->isWadek3()
+            || $this->isKabagUmum()
+            || $this->isKaPokjaKepeg()
+            || $this->isPimpinan();
     }
 
     /**
@@ -412,17 +387,7 @@ class User extends Authenticatable
             return false;
         }
 
-        $pegawai = $this->pegawai ?? Pegawai::with('jabatan')->find($this->pegawai_id);
-        if (!$pegawai || !$pegawai->jabatan) {
-            return false;
-        }
-
-        $jabatan = strtoupper(trim((string)($pegawai->jabatan->nama_jabatan ?? '')));
-        $isKaPokja = (str_contains($jabatan, 'KA POKJA') || str_contains($jabatan, 'KEPALA POKJA') || str_contains($jabatan, 'KETUA POKJA'))
-            && !str_contains($jabatan, 'STAFF')
-            && !str_contains($jabatan, 'STAF');
-
-        return $isKaPokja && (str_contains($jabatan, 'KEU') || str_contains($jabatan, 'KEPEG'));
+        return $this->isKaPokjaKepeg();
     }
 
     /**

@@ -498,10 +498,16 @@ class ReportController extends Controller
         $altPath   = str_replace('/', '\\', $cleanPath);
         $strippedPath = preg_replace('#^(private|public|storage)/#i', '', $cleanPath);
         $altStripped  = str_replace('/', '\\', $strippedPath);
+        $filename     = basename($cleanPath);
 
         $pathVariants = array_unique([$cleanPath, $altPath, $strippedPath, $altStripped]);
 
-        $pegawai = Pegawai::where(function ($q) use ($pathVariants) {
+        // 1. Fast-path: Cek indeks sentral ArsipDokumen terlebih dahulu
+        $arsipPegawaiId = \App\Models\ArsipDokumen::whereIn('nama_file_sistem', $pathVariants)->value('pegawai_id');
+        if ($arsipPegawaiId) return (int) $arsipPegawaiId;
+
+        // 2. Cek tabel utama Pegawai (hanya ambil kolom id tanpa hidrasi model penuh)
+        $pegawaiId = Pegawai::where(function ($q) use ($pathVariants) {
             $q->whereIn('file_sk_pertama', $pathVariants)
               ->orWhereIn('file_sk_pangkat_terakhir', $pathVariants)
               ->orWhereIn('file_sk_kgb_terakhir', $pathVariants)
@@ -510,52 +516,40 @@ class ReportController extends Controller
               ->orWhereIn('file_str', $pathVariants)
               ->orWhereIn('file_sip', $pathVariants)
               ->orWhereIn('foto', $pathVariants);
-        })->first();
-        if ($pegawai) return $pegawai->id;
+        })->value('id');
+        if ($pegawaiId) return (int) $pegawaiId;
 
-        $rp = \App\Models\RiwayatPangkat::whereIn('file_sk', $pathVariants)->first();
-        if ($rp) return $rp->pegawai_id;
+        if ($id = \App\Models\RiwayatPangkat::whereIn('file_sk', $pathVariants)->value('pegawai_id')) return (int) $id;
+        if ($id = \App\Models\RiwayatJabatan::whereIn('file_sk', $pathVariants)->value('pegawai_id')) return (int) $id;
+        if ($id = \App\Models\RiwayatPendidikan::whereIn('ijazah', $pathVariants)->value('pegawai_id')) return (int) $id;
+        if ($id = \App\Models\RiwayatDiklat::whereIn('file_sertifikat', $pathVariants)->value('pegawai_id')) return (int) $id;
+        if ($id = \App\Models\MutasiPegawai::whereIn('file_sk', $pathVariants)->value('pegawai_id')) return (int) $id;
 
-        $rj = \App\Models\RiwayatJabatan::whereIn('file_sk', $pathVariants)->first();
-        if ($rj) return $rj->pegawai_id;
-
-        $rpend = \App\Models\RiwayatPendidikan::whereIn('ijazah', $pathVariants)->first();
-        if ($rpend) return $rpend->pegawai_id;
-
-        $rd = \App\Models\RiwayatDiklat::whereIn('file_sertifikat', $pathVariants)->first();
-        if ($rd) return $rd->pegawai_id;
-
-        $mp = \App\Models\MutasiPegawai::whereIn('file_sk', $pathVariants)->first();
-        if ($mp) return $mp->pegawai_id;
-
-        $skp = \App\Models\RiwayatSkp::whereIn('file_rencana_skp', $pathVariants)
+        $skpId = \App\Models\RiwayatSkp::whereIn('file_rencana_skp', $pathVariants)
             ->orWhereIn('file_evaluasi_skp', $pathVariants)
-            ->first();
-        if ($skp) return $skp->pegawai_id;
+            ->value('pegawai_id');
+        if ($skpId) return (int) $skpId;
 
-        $str = \App\Models\RiwayatStrSip::whereIn('file_dokumen', $pathVariants)->first();
-        if ($str) return $str->pegawai_id;
+        if ($id = \App\Models\RiwayatStrSip::whereIn('file_dokumen', $pathVariants)->value('pegawai_id')) return (int) $id;
 
-        $tb = \App\Models\TugasBelajar::whereIn('file_sk', $pathVariants)
+        $tbId = \App\Models\TugasBelajar::whereIn('file_sk', $pathVariants)
             ->orWhereIn('file_laporan_progress', $pathVariants)
-            ->first();
-        if ($tb) return $tb->pegawai_id;
+            ->value('pegawai_id');
+        if ($tbId) return (int) $tbId;
 
-        $cuti = \App\Models\PengajuanCuti::whereIn('file_lampiran', $pathVariants)
-            ->orWhere('file_lampiran', 'like', "%{$filename}")
-            ->first();
-        if ($cuti) return $cuti->pegawai_id;
+        $cutiId = \App\Models\PengajuanCuti::where(function ($q) use ($pathVariants, $filename) {
+            $q->whereIn('file_lampiran', $pathVariants);
+            if ($filename !== '') {
+                $q->orWhere('file_lampiran', 'like', "%{$filename}");
+            }
+        })->value('pegawai_id');
+        if ($cutiId) return (int) $cutiId;
 
-        $logbook = \App\Models\Logbook::whereIn('file_lampiran', $pathVariants)->first();
-        if ($logbook) return $logbook->pegawai_id;
+        if ($id = \App\Models\Logbook::whereIn('file_lampiran', $pathVariants)->value('pegawai_id')) return (int) $id;
+        if ($id = \App\Models\RiwayatPublikasi::whereIn('file_publikasi', $pathVariants)->value('pegawai_id')) return (int) $id;
+        if ($id = \App\Models\RiwayatPenghargaan::whereIn('file_sk', $pathVariants)->value('pegawai_id')) return (int) $id;
 
-        $pub = \App\Models\RiwayatPublikasi::whereIn('file_publikasi', $pathVariants)->first();
-        if ($pub) return $pub->pegawai_id;
-
-        $penghargaan = \App\Models\RiwayatPenghargaan::whereIn('file_sk', $pathVariants)->first();
-        if ($penghargaan) return $penghargaan->pegawai_id;
-
-        $karir = \App\Models\PengajuanKarir::where(function ($q) use ($pathVariants) {
+        $karirId = \App\Models\PengajuanKarir::where(function ($q) use ($pathVariants) {
             $q->whereIn('file_sk_terakhir', $pathVariants)
               ->orWhereIn('file_sk_pangkat_terakhir', $pathVariants)
               ->orWhereIn('file_sk_kgb_terakhir', $pathVariants)
@@ -564,15 +558,15 @@ class ReportController extends Controller
               ->orWhereIn('file_karpeg', $pathVariants)
               ->orWhereIn('file_pak', $pathVariants)
               ->orWhereIn('file_pendukung', $pathVariants);
-        })->first();
-        if ($karir) return $karir->pegawai_id;
+        })->value('pegawai_id');
+        if ($karirId) return (int) $karirId;
 
-        // Fallback: Ekstraksi NIP dari format nama folder arsip digital: /([0-9]{8,18})\s*-\s*/
-        if (preg_match('/(?:^|\/)([0-9]{8,18})\s*-\s*/', $cleanPath, $matches)) {
+        // Fallback: Ekstraksi NIP dari format nama folder arsip digital: /([0-9]{8,21})\s*-\s*/
+        if (preg_match('/(?:^|\/)([0-9]{8,21})\s*-\s*/', $cleanPath, $matches)) {
             $nipFound = $matches[1];
-            $pegawaiByNip = Pegawai::where('nip', $nipFound)->first();
-            if ($pegawaiByNip) {
-                return $pegawaiByNip->id;
+            $pegawaiIdByNip = Pegawai::where('nip', $nipFound)->value('id');
+            if ($pegawaiIdByNip) {
+                return (int) $pegawaiIdByNip;
             }
         }
 

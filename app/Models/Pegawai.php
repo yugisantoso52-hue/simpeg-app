@@ -705,12 +705,19 @@ class Pegawai extends Model
     {
         $jabatanNama = strtoupper(trim((string)($this->jabatan->nama_jabatan ?? '')));
 
+        if ($jabatanNama === '' || str_contains($jabatanNama, 'STAFF') || str_contains($jabatanNama, 'STAF')) {
+            return false;
+        }
+
         $pimpinanKeywords = [
             'DEKAN',
             'WAKIL DEKAN',
             'WADEK',
+            'WD ',
             'KETUA JURUSAN',
             'KAJUR',
+            'SEKRETARIS JURUSAN',
+            'SEKJUR',
             'KOORDINATOR PRODI',
             'KOORPRODI',
             'KOORDINATOR PROGRAM STUDI',

@@ -490,6 +490,87 @@ class PegawaiService
     }
 
     /**
+     * Ambil & susun data Daftar Urut Kepangkatan (DUK) terkelompok berdasarkan kategori ASN
+     * beserta kalkulasi ranking resmi dan pembatasan privasi ASN.
+     */
+    public function getDukData(?string $search = null, ?User $user = null, bool $enforcePrivacy = true): array
+    {
+        $query = Pegawai::with(['golongan', 'unitKerja', 'jabatan', 'riwayatPendidikan', 'riwayatDiklat']);
+
+        if ($search) {
+            $query->where(function ($sq) use ($search) {
+                $sq->where('nama', 'like', "%{$search}%")
+                   ->orWhere('nip', 'like', "%{$search}%")
+                   ->orWhere('nidn_nuptk', 'like', "%{$search}%");
+            });
+        }
+
+        $allPegawai = $query->get();
+
+        $isPns = function ($p) {
+            $jenis    = strtoupper(trim((string) $p->jenis_pegawai));
+            $asn      = strtoupper(trim((string) $p->status_asn));
+            $cleanNip = preg_replace('/[^0-9]/', '', (string) $p->nip);
+            return ($jenis === 'PNS' || (!str_contains($jenis, 'PPPK') && ($asn === 'ASN' || strlen($cleanNip) === 18)));
+        };
+
+        $isPppk = function ($p) {
+            $jenis    = strtoupper(trim((string) $p->jenis_pegawai));
+            $asn      = strtoupper(trim((string) $p->status_asn));
+            $cleanNip = preg_replace('/[^0-9]/', '', (string) $p->nip);
+            return (str_contains($jenis, 'PPPK') || $asn === 'PPPK' || strlen($cleanNip) === 21);
+        };
+
+        $dosenList  = $allPegawai->filter(fn ($p) => $p->kategori_kepegawaian === 'Dosen');
+        $tendikList = $allPegawai->filter(fn ($p) => $p->kategori_kepegawaian === 'Tendik');
+        $phlListRaw = $allPegawai->filter(fn ($p) => $p->kategori_kepegawaian === 'PHL');
+
+        $assignRank = function ($collection) {
+            $rank = 1;
+            foreach ($collection as $item) {
+                $item->official_duk_rank = $rank++;
+            }
+            return $collection;
+        };
+
+        $dosenPnsList   = $assignRank(Pegawai::sortDukCollection($dosenList->filter($isPns)));
+        $dosenPppkList  = $assignRank(Pegawai::sortDukCollection($dosenList->filter($isPppk)));
+        $tendikPnsList  = $assignRank(Pegawai::sortDukCollection($tendikList->filter($isPns)));
+        $tendikPppkList = $assignRank(Pegawai::sortDukCollection($tendikList->filter($isPppk)));
+        $phlList        = $assignRank(Pegawai::sortDukCollection($phlListRaw));
+
+        $isExecutive = $user && $user->canAccessExecutiveKepegawaianMenus();
+        $pegawaiId   = $user?->pegawai_id;
+
+        if ($enforcePrivacy && !$isExecutive) {
+            $dosenPnsList   = $dosenPnsList->filter(fn ($p) => (int) $p->id === (int) $pegawaiId);
+            $dosenPppkList  = $dosenPppkList->filter(fn ($p) => (int) $p->id === (int) $pegawaiId);
+            $tendikPnsList  = $tendikPnsList->filter(fn ($p) => (int) $p->id === (int) $pegawaiId);
+            $tendikPppkList = $tendikPppkList->filter(fn ($p) => (int) $p->id === (int) $pegawaiId);
+            $phlList        = $phlList->filter(fn ($p) => (int) $p->id === (int) $pegawaiId);
+        }
+
+        $statistics = [
+            'dosen_pns'   => count($dosenPnsList),
+            'dosen_pppk'  => count($dosenPppkList),
+            'tendik_pns'  => count($tendikPnsList),
+            'tendik_pppk' => count($tendikPppkList),
+            'phl'         => count($phlList),
+            'total'       => count($dosenPnsList) + count($dosenPppkList) + count($tendikPnsList) + count($tendikPppkList) + count($phlList),
+        ];
+
+        return [
+            'dosenPnsList'   => $dosenPnsList,
+            'dosenPppkList'  => $dosenPppkList,
+            'tendikPnsList'  => $tendikPnsList,
+            'tendikPppkList' => $tendikPppkList,
+            'phlList'        => $phlList,
+            'statistics'     => $statistics,
+            'isExecutive'    => $isExecutive,
+        ];
+    }
+
+    /**
      * Filter payload ke kolom yang benar-benar ada di tabel database
      */
     protected function filterPegawaiColumns(array $data): array
