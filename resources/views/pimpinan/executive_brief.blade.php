@@ -63,7 +63,7 @@
          x-data="{
             currentSlide: 1,
             currentStep: 1,
-            totalSlides: 6,
+            totalSlides: 5,
             viewMode: 'slides',
             isFullscreen: false,
             slides: [
@@ -71,8 +71,7 @@
                 { id: 2, short: 'I. Latar Belakang', title: 'Bagian I — Latar Belakang & Analisis Kebutuhan', steps: 3, stepLabels: ['Masalah Pengelolaan Manual', 'Keterbatasan Sistem Nasional & Universitas', 'Solusi Terpadu SIKAP FKp UNRI'] },
                 { id: 3, short: 'II. Arsitektur', title: 'Bagian II — Konsep & Arsitektur Sistem', steps: 4, stepLabels: ['1. Pegawai Mandiri', '2. Atasan Langsung', '3. Pimpinan Dekanat', 'Kepatuhan Regulasi Nasional'] },
                 { id: 4, short: 'III. Fitur & Menu', title: 'Bagian III — Katalog Fitur & Menu Aplikasi', steps: 3, stepLabels: ['A. Layanan Mandiri Pegawai', 'B. Supervisi Atasan', 'C. Pengambilan Keputusan Dekanat'] },
-                { id: 5, short: 'IV. Manfaat', title: 'Bagian IV — Dampak Strategis & Nilai Tambah', steps: 3, stepLabels: ['1. Zero Paperwork & Hemat Biaya', '2. Kecepatan Pelayanan Staf', '3. Penguatan Nilai Akreditasi'] },
-                { id: 6, short: 'V. Alur 15 Menit', title: 'Bagian V — Panduan Alur Presentasi', steps: 4, stepLabels: ['01. Menit 00–03 (Masalah)', '02. Menit 03–07 (Konsep)', '03. Menit 07–12 (Live Demo)', '04. Menit 12–15 (Diskusi & Penutup)'] }
+                { id: 5, short: 'IV. Manfaat', title: 'Bagian IV — Dampak Strategis & Nilai Tambah', steps: 3, stepLabels: ['1. Zero Paperwork & Hemat Biaya', '2. Kecepatan Pelayanan Staf', '3. Penguatan Nilai Akreditasi'] }
             ],
             get maxSteps() {
                 return this.slides[this.currentSlide - 1].steps;
@@ -359,7 +358,7 @@
 
                 {{-- Footer Navigasi Slide --}}
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 no-print">
-                    <span x-text="'Slide 2 dari 6 • Poin Pembahasan ' + currentStep + ' dari 3 (' + currentStepLabels[currentStep - 1] + ')'"></span>
+                    <span x-text="'Slide 2 dari 5 • Poin Pembahasan ' + currentStep + ' dari 3 (' + currentStepLabels[currentStep - 1] + ')'"></span>
                     <div class="flex items-center gap-2">
                         <button type="button" @click="prevSlide()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold cursor-pointer">&larr; Sebelumnya</button>
                         <button type="button" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold cursor-pointer">
@@ -501,7 +500,7 @@
 
                 {{-- Footer Navigasi Slide --}}
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 no-print">
-                    <span x-text="'Slide 3 dari 6 • Poin Pembahasan ' + currentStep + ' dari 4 (' + currentStepLabels[currentStep - 1] + ')'"></span>
+                    <span x-text="'Slide 3 dari 5 • Poin Pembahasan ' + currentStep + ' dari 4 (' + currentStepLabels[currentStep - 1] + ')'"></span>
                     <div class="flex items-center gap-2">
                         <button type="button" @click="prevSlide()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold cursor-pointer">&larr; Sebelumnya</button>
                         <button type="button" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold cursor-pointer">
@@ -703,7 +702,7 @@
 
                 {{-- Footer Navigasi Slide --}}
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 no-print">
-                    <span x-text="'Slide 4 dari 6 • Poin Pembahasan ' + currentStep + ' dari 3 (' + currentStepLabels[currentStep - 1] + ')'"></span>
+                    <span x-text="'Slide 4 dari 5 • Poin Pembahasan ' + currentStep + ' dari 3 (' + currentStepLabels[currentStep - 1] + ')'"></span>
                     <div class="flex items-center gap-2">
                         <button type="button" @click="prevSlide()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold cursor-pointer">&larr; Sebelumnya</button>
                         <button type="button" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold cursor-pointer">
@@ -826,131 +825,13 @@
 
                 {{-- Footer Navigasi Slide --}}
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 no-print">
-                    <span x-text="'Slide 5 dari 6 • Poin Pembahasan ' + currentStep + ' dari 3 (' + currentStepLabels[currentStep - 1] + ')'"></span>
+                    <span x-text="'Slide 5 dari 5 • Poin Pembahasan ' + currentStep + ' dari 3 (' + currentStepLabels[currentStep - 1] + ')'"></span>
                     <div class="flex items-center gap-2">
                         <button type="button" @click="prevSlide()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold cursor-pointer">&larr; Sebelumnya</button>
-                        <button type="button" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold cursor-pointer">
-                            <span x-text="currentStep < 3 ? 'Tampilkan Poin Berikutnya (' + (currentStep + 1) + '/3) →' : 'Lanjut Bagian V: Alur Presentasi →'"></span>
+                        <button type="button" x-show="currentStep < 3" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold cursor-pointer">
+                            <span x-text="'Tampilkan Poin Berikutnya (' + (currentStep + 1) + '/3) →'"></span>
                         </button>
-                    </div>
-                </div>
-            </div>
-
-            {{-- ========================================================================= --}}
-            {{-- SLIDE 6: BAGIAN V — PANDUAN ALUR WAKTU PRESENTASI (15 MENIT)              --}}
-            {{-- ========================================================================= --}}
-            <div x-show="viewMode === 'all' || currentSlide === 6"
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 translate-y-2"
-                 x-transition:enter-end="opacity-100 translate-y-0"
-                 class="slide-panel bg-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl min-h-[540px] flex flex-col justify-between space-y-6">
-
-                <div class="space-y-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-3">
-                        <div>
-                            <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Bagian V — Panduan Pelaksanaan Rapat</span>
-                            <h3 class="text-xl sm:text-2xl font-black text-white flex items-center gap-2 mt-1">
-                                <span>⏱️</span> Panduan Alur Waktu Presentasi di Depan Dekanat (Durasi 15 Menit)
-                            </h3>
-                        </div>
-
-                        {{-- Indikator Poin Slide 6 --}}
-                        <div x-show="viewMode === 'slides'" class="no-print flex flex-wrap items-center gap-1.5">
-                            <template x-for="(label, idx) in currentStepLabels" :key="idx">
-                                <button type="button"
-                                        @click="currentStep = idx + 1"
-                                        :class="currentStep >= (idx + 1) ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'"
-                                        class="px-2.5 py-1 rounded-xl text-[11px] transition cursor-pointer flex items-center gap-1">
-                                    <span x-text="idx + 1"></span>.
-                                    <span class="hidden md:inline" x-text="label"></span>
-                                </button>
-                            </template>
-                            <button type="button" x-show="currentStep < 4" @click="showAllStepsInSlide()" class="ml-1 text-[11px] font-semibold text-emerald-400 hover:underline cursor-pointer">
-                                Semua
-                            </button>
-                        </div>
-                    </div>
-
-                    {{-- 4 Tahap Alur Waktu (Muncul 1 per 1) --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs min-h-[160px]">
-                        {{-- Tahap 1 --}}
-                        <div x-show="viewMode === 'all' || currentStep >= 1"
-                             x-transition:enter="transition ease-out duration-300"
-                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
-                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                             :class="viewMode === 'slides' && currentStep === 1 ? 'ring-2 ring-emerald-400 bg-slate-800' : 'bg-slate-800/90'"
-                             class="step-item p-5 rounded-2xl border border-slate-700 space-y-2 transition">
-                            <div class="text-emerald-400 font-black text-xs sm:text-sm">01. Menit 00 - 03 (Pengenalan &amp; Masalah)</div>
-                            <p class="text-slate-300 leading-relaxed">
-                                Buka dengan menyampaikan masalah manual selama ini, perlunya sistem mandiri fakultas, dan peran SIKAP sebagai back-up handal disaat sistem universitas mengalami kendala teknis.
-                            </p>
-                        </div>
-
-                        {{-- Tahap 2 --}}
-                        <div x-show="viewMode === 'all' || currentStep >= 2"
-                             x-transition:enter="transition ease-out duration-300"
-                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
-                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                             :class="viewMode === 'slides' && currentStep === 2 ? 'ring-2 ring-emerald-400 bg-slate-800' : 'bg-slate-800/90'"
-                             class="step-item p-5 rounded-2xl border border-slate-700 space-y-2 transition">
-                            <div class="text-emerald-400 font-black text-xs sm:text-sm">02. Menit 03 - 07 (Garis Besar SIKAP)</div>
-                            <p class="text-slate-300 leading-relaxed">
-                                Jelaskan konsep 3 peran (Pegawai mandiri di HP, Atasan yang memverifikasi, dan Dekanat yang memegang kokpit data agregat).
-                            </p>
-                        </div>
-
-                        {{-- Tahap 3 --}}
-                        <div x-show="viewMode === 'all' || currentStep >= 3"
-                             x-transition:enter="transition ease-out duration-300"
-                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
-                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                             :class="viewMode === 'slides' && currentStep === 3 ? 'ring-2 ring-emerald-400 bg-slate-800' : 'bg-slate-800/90'"
-                             class="step-item p-5 rounded-2xl border border-slate-700 space-y-2 transition">
-                            <div class="text-emerald-400 font-black text-xs sm:text-sm">03. Menit 07 - 12 (Live Demo Fitur Kunci)</div>
-                            <p class="text-slate-300 leading-relaxed">
-                                Buka langsung di layar: <strong>Peta Jabatan ABK</strong> (tunjukkan posisi defisit), <strong>E-Cuti Paperless</strong>, dan <strong>Matriks Talenta</strong>.
-                            </p>
-                        </div>
-
-                        {{-- Tahap 4 --}}
-                        <div x-show="viewMode === 'all' || currentStep >= 4"
-                             x-transition:enter="transition ease-out duration-300"
-                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
-                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                             :class="viewMode === 'slides' && currentStep === 4 ? 'ring-2 ring-emerald-400 bg-slate-800' : 'bg-slate-800/90'"
-                             class="step-item p-5 rounded-2xl border border-slate-700 space-y-2 transition">
-                            <div class="text-emerald-400 font-black text-xs sm:text-sm">04. Menit 12 - 15 (Manfaat &amp; Diskusi)</div>
-                            <p class="text-slate-300 leading-relaxed">
-                                Rangkum manfaat efisiensi anggaran dan kesiapan akreditasi, lalu buka sesi tanggapan dan arahan dari Ibu Dekan Prof. Wan Nishfa Dewi, S.Kp, MNg, PhD beserta jajaran Pimpinan Dekanat.
-                            </p>
-                        </div>
-                    </div>
-
-                    {{-- Penutup & Sesi Arahan Pimpinan (Muncul pada Tahap 4) --}}
-                    <div x-show="viewMode === 'all' || currentStep >= 4"
-                         x-transition:enter="transition ease-out duration-300"
-                         x-transition:enter-start="opacity-0 translate-y-3"
-                         x-transition:enter-end="opacity-100 translate-y-0"
-                         class="step-item p-6 rounded-2xl bg-gradient-to-r from-emerald-900/50 via-teal-900/40 to-slate-800 border border-emerald-500/30 text-center space-y-2">
-                        <div class="text-xs font-bold uppercase tracking-widest text-emerald-300">Terima Kasih • Sesi Diskusi &amp; Arahan Pimpinan</div>
-                        <h4 class="text-lg sm:text-xl font-black text-white">
-                            Mohon Arahan &amp; Masukan Ibu Dekan Prof. Wan Nishfa Dewi, S.Kp, MNg, PhD beserta Jajaran Pimpinan Dekanat
-                        </h4>
-                        <p class="text-xs text-slate-300 max-w-2xl mx-auto">
-                            Fakultas Keperawatan Universitas Riau • Mewujudkan Tata Kelola Kepegawaian Modern, Akuntabel, dan Berdaulat Data
-                        </p>
-                    </div>
-                </div>
-
-                {{-- Footer Navigasi Slide --}}
-                <div class="pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 no-print">
-                    <span x-text="'Slide 6 dari 6 • Poin Pembahasan ' + currentStep + ' dari 4 (' + currentStepLabels[currentStep - 1] + ')'"></span>
-                    <div class="flex items-center gap-2">
-                        <button type="button" @click="prevSlide()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold cursor-pointer">&larr; Sebelumnya</button>
-                        <button type="button" x-show="currentStep < 4" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black cursor-pointer">
-                            <span x-text="'Tampilkan Tahap Berikutnya (' + (currentStep + 1) + '/4) →'"></span>
-                        </button>
-                        <button type="button" x-show="currentStep >= 4" @click="goToSlide(1)" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black cursor-pointer">
+                        <button type="button" x-show="currentStep >= 3" @click="goToSlide(1)" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black cursor-pointer">
                             ↺ Kembali ke Slide 1
                         </button>
                     </div>
@@ -1013,7 +894,7 @@
                 </div>
 
                 {{-- Tab Lompat Cepat Antar Slide & Progress Bar --}}
-                <div class="grid grid-cols-2 sm:grid-cols-6 gap-1.5 pt-1">
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 pt-1">
                     <template x-for="s in slides" :key="s.id">
                         <button type="button"
                                 @click="goToSlide(s.id)"
