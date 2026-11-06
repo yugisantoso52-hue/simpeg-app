@@ -79,7 +79,7 @@
                 <a href="{{ route('admin.presensi.export.pdf', request()->query()) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 border border-transparent rounded-lg text-xs font-semibold text-white shadow-sm transition" style="background-color: #dc2626; color: #ffffff;">
                     <span>🖨️</span> Cetak PDF
                 </a>
-                @if(Auth::check() && (Auth::user()->hasRole('admin') || Auth::user()->isPimpinan() || Auth::user()->isAtasan()))
+                @if(Auth::check() && (Auth::user()->hasRole('admin') || Auth::user()->canAccessExecutiveKepegawaianMenus()))
                 <a href="{{ route('admin.presensi.locations') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-lg text-xs font-semibold text-white shadow-sm transition" style="background-color: #4f46e5; color: #ffffff;">
                     <span>📍</span> Kelola Titik Acuan
                 </a>

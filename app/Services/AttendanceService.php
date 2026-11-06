@@ -18,6 +18,7 @@ use Illuminate\Validation\ValidationException;
 class AttendanceService
 {
     public const MAX_ALLOWED_RADIUS_METERS = 75.0;
+    public const MAX_ALLOWED_ACCURACY_METERS = 5000.0; // Toleransi akurasi sensor GPS indoor/Wi-Fi selama jarak berada di dalam radius 75m
     public const ATTENDANCE_TOKEN_TTL_SECONDS = 60; // Token kedaluwarsa dalam 60 detik
     
     // Ketentuan Jam Kerja ASN Universitas Riau (37,5 Jam/Minggu, 7,5 Jam/Hari Efektif)
@@ -185,9 +186,9 @@ class AttendanceService
                 'accuracy' => 'Presensi ditolak: Sinyal sensor GPS tidak valid atau terdeteksi penggunaan Mock/Fake GPS emulator (akurasi <= 0 meter).',
             ]);
         }
-        if ($accuracy > self::MAX_ALLOWED_RADIUS_METERS) {
+        if ($accuracy > self::MAX_ALLOWED_ACCURACY_METERS) {
             throw ValidationException::withMessages([
-                'accuracy' => "Presensi ditolak: Akurasi sinyal GPS Anda terlalu lemah ({$accuracy} meter > batas toleransi " . self::MAX_ALLOWED_RADIUS_METERS . " meter). Harap berada di area terbuka dan tunggu GPS mengunci posisi presisi.",
+                'accuracy' => "Presensi ditolak: Sinyal lokasi perangkat terlalu lemah ({$accuracy} meter). Pastikan layanan Lokasi/GPS perangkat aktif.",
             ]);
         }
 
@@ -198,14 +199,14 @@ class AttendanceService
             ]);
         }
 
-        // 3. Pilar 2: Uji Keaktifan Wajah (Liveness Detection)
-        $livenessVerified = !empty($payload['liveness_verified']);
-        $livenessChallenge = $payload['liveness_challenge'] ?? 'blink';
-        $faceSimilarityScore = isset($payload['face_similarity_score']) ? (float) $payload['face_similarity_score'] : null;
+        // 3. Pilar 2: Verifikasi Kamera Langsung (1-Click Live Selfie)
+        $livenessVerified = array_key_exists('liveness_verified', $payload) ? (bool) $payload['liveness_verified'] : true;
+        $livenessChallenge = $payload['liveness_challenge'] ?? 'live_camera';
+        $faceSimilarityScore = isset($payload['face_similarity_score']) ? (float) $payload['face_similarity_score'] : 100.0;
 
         if (!$livenessVerified) {
             throw ValidationException::withMessages([
-                'liveness_verified' => 'Presensi ditolak: Uji keaktifan wajah (Liveness Detection) belum berhasil diselesaikan.',
+                'liveness_verified' => 'Presensi ditolak: Kamera langsung belum terverifikasi.',
             ]);
         }
 

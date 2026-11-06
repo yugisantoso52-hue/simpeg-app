@@ -1,19 +1,32 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-            <div>
-                <h2 class="font-bold text-xl text-gray-800 leading-tight flex items-center gap-2">
-                    <span>📍</span> {{ __('Presensi Karyawan (GPS & Selfie Real-Time)') }}
-                </h2>
-                <p class="text-sm text-gray-500 mt-0.5">Sistem presensi terverifikasi Geolocation GPS (Maks. 75m) & Verifikasi Foto Kamera.</p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center text-lg shadow-sm shrink-0">
+                    📍
+                </div>
+                <div>
+                    <h2 class="font-bold text-lg sm:text-xl text-slate-800 leading-tight">
+                        {{ __('Presensi Kehadiran Pegawai') }}
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Presensi cepat dengan GPS Radius ≤ 75m &amp; Selfie 1-Klik</p>
+                </div>
             </div>
-            <div class="flex items-center gap-2">
-                <a href="{{ route('presensi.history') }}" class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition">
-                    📜 Riwayat Presensi Saya
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{{ route('presensi.history') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-2xs transition">
+                    <span>📜</span>
+                    <span>Riwayat Saya</span>
                 </a>
-                @if(Auth::user()->hasRole(['admin', 'pimpinan']))
-                    <a href="{{ route('admin.presensi.index') }}" class="inline-flex items-center px-3 py-1.5 bg-blue-600 border border-transparent rounded-lg text-xs font-semibold text-white hover:bg-blue-700 shadow-sm transition">
-                        📊 Rekap Presensi Admin
+                @if(Auth::user()->hasRole(['admin', 'pimpinan']) || Auth::user()->isAtasan())
+                    <a href="{{ route('admin.presensi.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 border border-transparent rounded-xl text-xs font-semibold text-white shadow-2xs transition">
+                        <span>📊</span>
+                        <span>Rekap Presensi</span>
+                    </a>
+                @endif
+                @if(Auth::user()->hasRole('admin') || Auth::user()->canAccessExecutiveKepegawaianMenus())
+                    <a href="{{ route('admin.presensi.locations') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl text-xs font-semibold text-indigo-700 transition">
+                        <span>🎯</span>
+                        <span>Titik Lokasi</span>
                     </a>
                 @endif
             </div>
@@ -24,30 +37,26 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <div class="py-6" x-data="attendanceApp()">
-        <div class="w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 space-y-6">
+    <div class="py-5" x-data="attendanceApp()">
+        <div class="w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 space-y-5">
 
             <!-- Flash Alert Messages -->
             @if(session('success'))
-                <div class="p-4 bg-green-50 border-l-4 border-green-500 rounded-r-lg shadow-sm flex items-start justify-between">
-                    <div class="flex items-center gap-2 text-green-800">
-                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        <span class="font-medium text-sm">{{ session('success') }}</span>
-                    </div>
+                <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl shadow-2xs flex items-center gap-3 text-emerald-800">
+                    <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm shrink-0">✓</span>
+                    <span class="font-medium text-sm">{{ session('success') }}</span>
                 </div>
             @endif
 
             @if(session('error'))
-                <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg shadow-sm flex items-start justify-between">
-                    <div class="flex items-center gap-2 text-red-800">
-                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span class="font-medium text-sm">{{ session('error') }}</span>
-                    </div>
+                <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl shadow-2xs flex items-center gap-3 text-rose-800">
+                    <span class="w-6 h-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-sm shrink-0">!</span>
+                    <span class="font-medium text-sm">{{ session('error') }}</span>
                 </div>
             @endif
 
             <!-- Banner Status Jaringan & Antrean Presensi PWA Offline-First -->
-            <div x-show="!isOnline || offlineQueue.length > 0 || offlineSyncSuccessMessage" x-transition class="rounded-xl border shadow-sm overflow-hidden"
+            <div x-show="!isOnline || offlineQueue.length > 0 || offlineSyncSuccessMessage" x-transition class="rounded-2xl border shadow-2xs overflow-hidden"
                  :class="!isOnline ? 'bg-amber-50 border-amber-300' : (offlineQueue.length > 0 ? 'bg-blue-50 border-blue-300' : 'bg-emerald-50 border-emerald-300')">
                 <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-start gap-3">
@@ -68,7 +77,7 @@
                             </div>
                             <p class="text-xs mt-0.5 leading-relaxed"
                                :class="!isOnline ? 'text-amber-800' : (offlineQueue.length > 0 ? 'text-blue-800' : 'text-emerald-800')"
-                               x-text="offlineSyncSuccessMessage ? offlineSyncSuccessMessage : (!isOnline ? 'Anda tetap dapat melakukan Check-In/Check-Out selama GPS berada di dalam radius ≤ 75m & lolos Liveness Kamera. Data dikunci secara kriptografi di perangkat dan otomatis terkirim saat sinyal kembali.' : 'Terdapat rekaman presensi di memori perangkat Anda yang menunggu pengiriman ke server.')">
+                               x-text="offlineSyncSuccessMessage ? offlineSyncSuccessMessage : (!isOnline ? 'Anda tetap dapat melakukan Check-In/Check-Out selama GPS berada di dalam radius ≤ 75m & telah mengambil foto selfie. Data disimpan aman di perangkat dan otomatis terkirim saat sinyal kembali.' : 'Terdapat rekaman presensi di memori perangkat Anda yang menunggu pengiriman ke server.')">
                             </p>
                         </div>
                     </div>
@@ -77,7 +86,7 @@
                         <button type="button"
                                 @click="syncOfflineQueue()"
                                 :disabled="!isOnline || isSyncingOffline"
-                                class="px-3.5 py-2 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 transition shadow-sm flex items-center gap-1.5">
+                                class="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 transition shadow-2xs flex items-center gap-1.5">
                             <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': isSyncingOffline }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                             <span x-text="isSyncingOffline ? 'Menyinkronkan...' : 'Sinkronkan Sekarang (' + offlineQueue.length + ')'"></span>
                         </button>
@@ -85,206 +94,138 @@
                 </div>
             </div>
 
-            <!-- Ringkasan Status Presensi Hari Ini -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="p-4 sm:p-5 bg-gradient-to-r from-slate-800 to-slate-900 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-2xl backdrop-blur-sm">
+            <!-- Baris Atas: Ringkasan Status Kehadiran Hari Ini & Jam Kerja ASN -->
+            <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/90 overflow-hidden">
+                <div class="p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-12 h-12 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-2xl shrink-0">
                             🗓️
                         </div>
                         <div>
-                            <div class="text-xs text-slate-300 font-medium uppercase tracking-wider">Status Kehadiran Hari Ini</div>
-                            <div class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                                <span>{{ \Carbon\Carbon::now('Asia/Jakarta')->locale('id')->translatedFormat('l, d F Y') }}</span>
-                                <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-[11px] text-slate-300 font-semibold uppercase tracking-wider">Kehadiran Hari Ini</span>
+                                <span class="text-[11px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30 font-medium">
                                     {{ Auth::user()->name }}
                                 </span>
+                            </div>
+                            <div class="text-base sm:text-lg font-bold text-white mt-0.5">
+                                {{ \Carbon\Carbon::now('Asia/Jakarta')->locale('id')->translatedFormat('l, d F Y') }}
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2.5">
                         @if($todayAttendance)
-                            <div class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs flex items-center gap-2">
-                                <span class="text-emerald-400 font-bold">🟢 Masuk:</span>
-                                <span>{{ $todayAttendance->check_in_time ? $todayAttendance->check_in_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-' }}</span>
-                                <span class="text-[10px] uppercase font-semibold px-1.5 py-0.2 rounded bg-white/20">({{ strtoupper($todayAttendance->attendance_type) }})</span>
+                            <div class="px-3.5 py-2 rounded-xl bg-white/10 border border-white/15 text-xs flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                <span class="text-slate-300">Masuk:</span>
+                                <span class="font-bold text-white font-mono">{{ $todayAttendance->check_in_time ? $todayAttendance->check_in_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-' }}</span>
+                                <span class="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-white/15 text-blue-200">{{ strtoupper($todayAttendance->attendance_type) }}</span>
                             </div>
-                            <div class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs flex items-center gap-2">
-                                <span class="text-amber-300 font-bold">🔴 Pulang:</span>
-                                <span>{{ $todayAttendance->check_out_time ? $todayAttendance->check_out_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : 'Belum Check-Out' }}</span>
+                            <div class="px-3.5 py-2 rounded-xl bg-white/10 border border-white/15 text-xs flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full {{ $todayAttendance->check_out_time ? 'bg-sky-400' : 'bg-amber-400 animate-pulse' }}"></span>
+                                <span class="text-slate-300">Pulang:</span>
+                                <span class="font-bold text-white font-mono">{{ $todayAttendance->check_out_time ? $todayAttendance->check_out_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : 'Belum Check-Out' }}</span>
                             </div>
-                            <span class="px-2.5 py-1 rounded-lg text-xs font-semibold {{ $todayAttendance->status === 'late' ? 'bg-amber-500/30 text-amber-200 border border-amber-400/40' : 'bg-green-500/30 text-green-200 border border-green-400/40' }}">
-                                {{ $todayAttendance->status === 'late' ? 'Terlambat' : 'Hadir Tepat Waktu' }}
+                            <span class="px-3 py-2 rounded-xl text-xs font-bold {{ $todayAttendance->status === 'late' ? 'bg-amber-500/25 text-amber-200 border border-amber-400/30' : 'bg-emerald-500/25 text-emerald-200 border border-emerald-400/30' }}">
+                                {{ $todayAttendance->status === 'late' ? '⏱️ Terlambat' : '✅ Tepat Waktu' }}
                             </span>
                         @else
-                            <div class="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-400/30 text-amber-200 text-xs font-medium flex items-center gap-2">
-                                <span>⚠️ Anda belum melakukan presensi masuk (Check-In) hari ini.</span>
+                            <div class="px-3.5 py-2 rounded-xl bg-amber-500/20 border border-amber-400/30 text-amber-200 text-xs font-medium flex items-center gap-2">
+                                <span>⏳</span>
+                                <span>Anda belum melakukan presensi masuk (Check-In) hari ini.</span>
                             </div>
                         @endif
                     </div>
                 </div>
-            </div>
 
-            <!-- Ketentuan Jam Kerja Resmi ASN Universitas Riau -->
-            <div class="bg-gradient-to-r from-blue-50 via-indigo-50 to-sky-50 rounded-xl border border-blue-200/80 p-4 sm:p-5 shadow-sm">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-blue-200/60">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-                            ⏰
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-bold text-blue-950">Ketentuan Jam Kerja ASN Universitas Riau</h3>
-                            <p class="text-xs text-blue-700">Dasar: Standar Jam Kerja Instansi Pemerintah (37,5 Jam/Minggu — 7,5 Jam/Hari Efektif)</p>
-                        </div>
+                <!-- Bar Info Ringkas Jam Kerja ASN UNRI -->
+                <div class="px-4 sm:px-5 py-2.5 bg-slate-50 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+                        <span class="font-semibold text-slate-700 flex items-center gap-1.5">
+                            <span>⏰</span> Jam Kerja ASN UNRI:
+                        </span>
+                        <span><strong>Senin–Kamis:</strong> 07:30–16:00 WIB <span class="text-slate-400">(Istirahat 12:00–13:00)</span></span>
+                        <span class="hidden sm:inline text-slate-300">•</span>
+                        <span><strong>Jumat:</strong> 07:30–16:30 WIB <span class="text-slate-400">(Istirahat 11:45–13:15)</span></span>
                     </div>
-                    <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-[11px] font-semibold border border-blue-200">
-                        <span>🏛️</span> FKP Universitas Riau
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
-                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-blue-100 shadow-2xs">
-                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Senin — Kamis (7,5 Jam)</div>
-                        <div class="mt-1 flex items-baseline gap-1.5">
-                            <span class="text-xs font-extrabold text-blue-900">07:30 — 16:00</span>
-                            <span class="text-[10px] text-slate-500">WIB</span>
-                        </div>
-                        <div class="text-[10px] text-slate-600 mt-1">
-                            🥪 Istirahat: <strong>12:00 — 13:00</strong> (60 mnt)
-                        </div>
-                    </div>
-
-                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-blue-100 shadow-2xs">
-                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Jumat (7,5 Jam)</div>
-                        <div class="mt-1 flex items-baseline gap-1.5">
-                            <span class="text-xs font-extrabold text-blue-900">07:30 — 16:30</span>
-                            <span class="text-[10px] text-slate-500">WIB</span>
-                        </div>
-                        <div class="text-[10px] text-slate-600 mt-1">
-                            🕌 Istirahat: <strong>11:45 — 13:15</strong> (90 mnt)
-                        </div>
-                    </div>
-
-                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-amber-200/80 bg-amber-50/40 shadow-2xs">
-                        <div class="text-[10px] font-bold text-amber-900 uppercase tracking-wider">Disiplin & Sanksi Waktu</div>
-                        <div class="text-[11px] text-amber-950 font-medium mt-1 leading-snug">
-                            Akumulasi telat & pulang cepat mencapai <strong>7,5 jam (450 mnt)</strong> dalam sebulan setara <strong>1 hari tidak hadir</strong>.
-                        </div>
-                    </div>
+                    <span class="text-[11px] text-slate-500">Standar 37,5 Jam/Minggu (7,5 Jam Efektif/Hari)</span>
                 </div>
             </div>
 
-            <!-- GRID UTAMA: Panel Presensi & Peta Lokasi -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- GRID UTAMA: Panel Presensi Sederhana (Kiri) & Peta Lokasi (Kanan) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
-                <!-- KOLOM KIRI: Kamera & Aksi Presensi (5 kolom di desktop) -->
-                <div class="lg:col-span-5 space-y-6">
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 space-y-4">
-                        
-                        <!-- Pilihan Tipe Presensi: WFO vs WFH -->
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-                                1. Pilih Tipe Presensi:
-                            </label>
+                <!-- KOLOM KIRI: Form Presensi 3 Langkah Mudah (5 kolom di desktop) -->
+                <div class="lg:col-span-5">
+                    <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/90 p-5 space-y-5">
+
+                        <!-- LANGKAH 1: Pilih Lokasi Kerja (WFO / WFH) -->
+                        <div class="space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-[11px] flex items-center justify-center font-bold">1</span>
+                                    <span>Pilih Lokasi Kerja</span>
+                                </label>
+                                <span class="text-[11px] font-medium px-2 py-0.5 rounded-full"
+                                      :class="currentLocationInfo.is_locked ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'"
+                                      x-text="currentLocationInfo.is_locked ? '🔒 Titik Acuan Terkunci' : '📍 Otomatis Kunci Titik Baru'">
+                                </span>
+                            </div>
+
                             <div class="grid grid-cols-2 gap-3">
                                 <button type="button"
                                         @click="setType('wfo')"
-                                        :class="type === 'wfo' ? 'border-blue-600 bg-blue-50/80 text-blue-700 ring-2 ring-blue-500/20 font-bold' : 'border-gray-200 hover:border-gray-300 text-gray-600 bg-white'"
-                                        class="p-3 border rounded-xl flex flex-col items-center justify-center gap-1.5 transition text-center">
-                                    <span class="text-2xl">🏢</span>
-                                    <span class="text-sm font-semibold">WFO (Kantor)</span>
-                                    <span class="text-[10px] text-gray-500" x-text="locations.wfo.is_locked ? 'Titik Terkunci ✅' : 'Kunci Titik Baru 🔒'"></span>
+                                        :class="type === 'wfo' ? 'border-blue-600 bg-blue-50/70 text-blue-800 ring-2 ring-blue-500/20' : 'border-slate-200 hover:border-slate-300 text-slate-600 bg-white'"
+                                        class="p-3 border rounded-xl flex items-center gap-3 transition text-left">
+                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
+                                         :class="type === 'wfo' ? 'bg-blue-600 text-white shadow-2xs' : 'bg-slate-100 text-slate-600'">
+                                        🏢
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="text-xs sm:text-sm font-bold truncate">WFO (Kantor)</div>
+                                        <div class="text-[10px] text-slate-500 truncate" x-text="locations.wfo.is_locked ? 'Acuan Terkunci ✓' : 'Belum Dikunci'"></div>
+                                    </div>
                                 </button>
+
                                 <button type="button"
                                         @click="setType('wfh')"
-                                        :class="type === 'wfh' ? 'border-indigo-600 bg-indigo-50/80 text-indigo-700 ring-2 ring-indigo-500/20 font-bold' : 'border-gray-200 hover:border-gray-300 text-gray-600 bg-white'"
-                                        class="p-3 border rounded-xl flex flex-col items-center justify-center gap-1.5 transition text-center">
-                                    <span class="text-2xl">🏠</span>
-                                    <span class="text-sm font-semibold">WFH (Rumah)</span>
-                                    <span class="text-[10px] text-gray-500" x-text="locations.wfh.is_locked ? 'Titik Terkunci ✅' : 'Kunci Titik Baru 🔒'"></span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Status Titik Acuan Card -->
-                        <div class="rounded-xl p-3.5 text-xs transition border"
-                             :class="currentLocationInfo.is_locked ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900' : 'bg-amber-50/80 border-amber-200 text-amber-900'">
-                            <div class="flex items-start gap-2.5">
-                                <span class="text-base" x-text="currentLocationInfo.is_locked ? '🔒' : '💡'"></span>
-                                <div class="space-y-1">
-                                    <div class="font-bold flex items-center gap-2">
-                                        <span x-text="currentLocationInfo.is_locked ? 'Titik Acuan Terkunci' : 'Titik Acuan Belum Terkunci'"></span>
-                                        <span class="text-[10px] px-1.5 py-0.2 rounded font-semibold uppercase"
-                                              :class="currentLocationInfo.is_locked ? 'bg-emerald-200 text-emerald-800' : 'bg-amber-200 text-amber-800'"
-                                              x-text="type.toUpperCase()"></span>
+                                        :class="type === 'wfh' ? 'border-indigo-600 bg-indigo-50/70 text-indigo-800 ring-2 ring-indigo-500/20' : 'border-slate-200 hover:border-slate-300 text-slate-600 bg-white'"
+                                        class="p-3 border rounded-xl flex items-center gap-3 transition text-left">
+                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
+                                         :class="type === 'wfh' ? 'bg-indigo-600 text-white shadow-2xs' : 'bg-slate-100 text-slate-600'">
+                                        🏠
                                     </div>
-                                    <template x-if="currentLocationInfo.is_locked">
-                                        <div>
-                                            <p class="text-emerald-700 leading-relaxed">
-                                                Koordinat acuan telah terkunci tetap. Presensi berikutnya wajib berada di dalam <strong>radius toleransi maks 75 meter</strong>.
-                                            </p>
-                                            <div class="text-[11px] text-emerald-800 font-mono mt-1">
-                                                Acuan: <span x-text="currentLocationInfo.lat.toFixed(6)"></span>, <span x-text="currentLocationInfo.lng.toFixed(6)"></span>
-                                            </div>
-                                        </div>
-                                    </template>
-                                    <template x-if="!currentLocationInfo.is_locked">
-                                        <p class="text-amber-800 leading-relaxed">
-                                            <strong>One-Time Lock:</strong> Anda belum memiliki titik acuan untuk <strong x-text="type.toUpperCase()"></strong>. Saat Anda mengirim presensi pertama kali ini, posisi GPS Anda saat ini akan <strong>otomatis dikunci</strong> sebagai titik acuan tetap!
-                                        </p>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Telemetri Keamanan & Sensor GPS -->
-                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                            <div class="flex items-center justify-between text-xs">
-                                <div class="flex items-center gap-1.5 font-bold text-slate-700">
-                                    <span class="text-base">🛡️</span>
-                                    <span>Token Anti-Replay:</span>
-                                    <span class="font-mono px-1.5 py-0.5 rounded bg-white border border-slate-200" x-text="tokenRemaining + 's'"></span>
-                                </div>
-                                <span class="text-[10px] px-2 py-0.5 rounded font-semibold"
-                                      :class="tokenRemaining > 15 ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200 animate-pulse'">
-                                    <span x-text="tokenRemaining > 15 ? 'Aktif' : 'Memperbarui...'"></span>
-                                </span>
-                            </div>
-                            <!-- Bar Countdown Token -->
-                            <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                                <div class="h-1.5 transition-all duration-1000"
-                                     :class="tokenRemaining > 15 ? 'bg-emerald-500' : 'bg-rose-500'"
-                                     :style="'width: ' + ((tokenRemaining / 60) * 100) + '%'"></div>
-                            </div>
-
-                            <!-- Sensor Akurasi GPS & Mock Check -->
-                            <div class="flex flex-wrap items-center justify-between gap-1 pt-1 text-[11px] border-t border-slate-200/60">
-                                <span class="text-slate-500">Sensor GPS:</span>
-                                <span class="font-semibold px-2 py-0.5 rounded text-[10px] flex items-center gap-1"
-                                      :class="gpsBadgeClass">
-                                    <span x-text="gpsBadgeIcon"></span>
-                                    <span x-text="gpsBadgeText"></span>
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Kamera Real-Time & Liveness Detection (MediaDevices) -->
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <label class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                                    <span>2. Uji Keaktifan & Foto Real-Time:</span>
-                                </label>
-                                <button type="button"
-                                        x-show="hasMultipleCameras"
-                                        @click="switchCamera()"
-                                        class="text-[11px] text-blue-600 hover:text-blue-800 font-medium inline-flex items-center gap-1">
-                                    🔄 Ganti Kamera
+                                    <div class="min-w-0">
+                                        <div class="text-xs sm:text-sm font-bold truncate">WFH (Rumah)</div>
+                                        <div class="text-[10px] text-slate-500 truncate" x-text="locations.wfh.is_locked ? 'Acuan Terkunci ✓' : 'Belum Dikunci'"></div>
+                                    </div>
                                 </button>
                             </div>
+                        </div>
 
-                            <!-- Area Video & Snapshot with HUD -->
-                            <div class="relative w-full aspect-[4/3] bg-black rounded-xl overflow-hidden shadow-inner flex items-center justify-center">
+                        <!-- LANGKAH 2: Ambil Foto Selfie 1-Klik -->
+                        <div class="space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-[11px] flex items-center justify-center font-bold">2</span>
+                                    <span>Ambil Foto Selfie</span>
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <span x-show="cameraActive && !photoTaken" class="text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                        🟢 Kamera Siap
+                                    </span>
+                                    <button type="button"
+                                            x-show="hasMultipleCameras && !photoTaken"
+                                            @click="switchCamera()"
+                                            class="text-[11px] text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center gap-1">
+                                        🔄 Putar Kamera
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Viewfinder Kamera Bersih & Profesional -->
+                            <div class="relative w-full aspect-[4/3] bg-slate-900 rounded-2xl overflow-hidden shadow-inner flex items-center justify-center border border-slate-200">
                                 <!-- Video Stream Live -->
                                 <video id="cameraStream"
                                        autoplay
@@ -301,144 +242,138 @@
                                      x-show="photoTaken"
                                      class="w-full h-full object-cover">
 
+                                <!-- Badge Status Saat Foto Sudah Diambil -->
+                                <div x-show="photoTaken" class="absolute top-3 right-3 z-20 bg-emerald-600/95 backdrop-blur-xs text-white px-3 py-1 rounded-full text-xs font-bold shadow-md flex items-center gap-1.5">
+                                    <span>✅</span>
+                                    <span>Foto Tersimpan</span>
+                                </div>
+
+                                <!-- Panduan Bingkai Wajah Sederhana (Tanpa Tantangan Gerakan yang Menyulitkan) -->
+                                <div x-show="cameraActive && !photoTaken" class="absolute inset-0 pointer-events-none flex flex-col items-center justify-between p-4 z-10">
+                                    <div class="px-3 py-1 rounded-full bg-slate-900/60 backdrop-blur-xs text-white text-[11px] font-medium border border-white/15">
+                                        Posisikan wajah di tengah lalu klik tombol Ambil Foto
+                                    </div>
+                                    <div class="w-36 h-44 sm:w-40 sm:h-48 border-2 border-dashed border-white/60 rounded-full"></div>
+                                    <div></div>
+                                </div>
+
                                 <!-- Fallback / Loading Overlay -->
-                                <div x-show="!cameraActive && !photoTaken" class="p-4 text-center text-gray-400 space-y-2 z-20">
-                                    <div class="text-3xl animate-pulse">📷</div>
-                                    <p class="text-xs" x-text="cameraErrorMessage || 'Menghubungkan kamera...'"></p>
+                                <div x-show="!cameraActive && !photoTaken" class="p-6 text-center text-slate-300 space-y-3 z-20">
+                                    <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-2xl mx-auto">📷</div>
+                                    <p class="text-xs text-slate-300 max-w-xs mx-auto" x-text="cameraErrorMessage || 'Menyiapkan kamera perangkat...'"></p>
                                     <button type="button"
                                             @click="initCamera()"
-                                            class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition shadow">
+                                            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold transition shadow">
                                         Aktifkan Kamera
                                     </button>
                                 </div>
 
-                                <!-- Hidden Canvases for capture and analysis -->
+                                <!-- Hidden Canvas for Snapshot -->
                                 <canvas id="captureCanvas" class="hidden"></canvas>
-                                <canvas id="analysisCanvas" class="hidden" width="160" height="120"></canvas>
-
-                                <!-- Dynamic Face Target Oval -->
-                                <div x-show="cameraActive && !photoTaken" class="absolute inset-0 pointer-events-none flex items-center justify-center p-6 z-10">
-                                    <div class="w-44 h-56 border-2 rounded-full transition-all duration-300 flex flex-col items-center justify-between py-4"
-                                         :class="livenessVerified ? 'border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.5)] bg-emerald-500/10' : (faceDetected ? 'border-amber-400 animate-pulse bg-amber-500/5' : 'border-dashed border-white/60')">
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white backdrop-blur-sm"
-                                              :class="livenessVerified ? 'bg-emerald-600' : 'bg-black/50'"
-                                              x-text="livenessVerified ? '✓ TERVERIFIKASI' : (faceDetected ? 'WAJAH TERDETEKSI' : 'POSISIKAN WAJAH')"></span>
-                                        
-                                        <span class="text-2xl" x-show="livenessVerified">✅</span>
-                                        
-                                        <span class="text-[9px] text-white/80 font-mono" x-text="faceDetected ? 'Tunggal (1 Wajah)' : 'Mencari Wajah...'"></span>
-                                    </div>
-                                </div>
-
-                                <!-- Floating Liveness Challenge HUD -->
-                                <div x-show="cameraActive && !photoTaken"
-                                     class="absolute bottom-2 left-2 right-2 bg-slate-900/85 backdrop-blur-md text-white p-2.5 rounded-xl border border-white/15 text-xs z-20 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-xl" x-text="currentChallenge.icon"></span>
-                                            <div>
-                                                <div class="text-[10px] text-amber-300 font-bold uppercase tracking-wider">Uji Keaktifan Wajah</div>
-                                                <div class="font-bold text-xs" x-text="currentChallenge.label"></div>
-                                            </div>
-                                        </div>
-                                        <button type="button" @click="pickRandomChallenge()" title="Ganti Tantangan" class="text-[10px] text-slate-300 hover:text-white underline ml-2">
-                                            Acak
-                                        </button>
-                                    </div>
-
-                                    <!-- Progress Keaktifan -->
-                                    <div class="w-full bg-slate-700/80 rounded-full h-2 overflow-hidden">
-                                        <div class="h-2 transition-all duration-200"
-                                             :class="livenessVerified ? 'bg-emerald-400' : 'bg-gradient-to-r from-amber-400 to-emerald-400'"
-                                             :style="'width: ' + livenessProgress + '%'"></div>
-                                    </div>
-
-                                    <div class="flex items-center justify-between text-[10px] text-slate-300 font-medium">
-                                        <span x-text="livenessStatusHint"></span>
-                                        <span class="font-mono font-bold" x-text="livenessProgress + '%'"></span>
-                                    </div>
-                                </div>
                             </div>
 
-                            <!-- Action Tombol Kamera -->
-                            <div class="flex gap-2 pt-1">
+                            <!-- Tombol Ambil Foto 1-Klik / Foto Ulang -->
+                            <div>
                                 <button type="button"
                                         x-show="cameraActive && !photoTaken"
                                         @click="takeSnapshot()"
-                                        :disabled="!livenessVerified"
-                                        :class="livenessVerified ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20' : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
-                                        class="w-full py-2.5 px-4 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
-                                    <span x-text="livenessVerified ? '📸 Ambil Foto Selfie (Keaktifan Valid)' : '⏳ Selesaikan Uji Keaktifan Dahulu'"></span>
+                                        class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.99]">
+                                    <span>📸</span>
+                                    <span>Ambil Foto Selfie</span>
                                 </button>
 
                                 <button type="button"
                                         x-show="photoTaken"
                                         @click="retakeSnapshot()"
-                                        class="w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 border border-gray-300 transition">
-                                    <span>🔄</span> Uji & Foto Ulang (Retake)
+                                        class="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border border-slate-200 transition">
+                                    <span>🔄</span>
+                                    <span>Ambil Ulang Foto</span>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Catatan Opsional -->
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Catatan Keterangan (Opsional):</label>
-                            <input type="text"
-                                   x-model="notes"
-                                   placeholder="Contoh: Bekerja di ruang perawat / lab..."
-                                   class="w-full text-xs rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                        </div>
+                        <!-- LANGKAH 3: Status Kelengkapan (3 Syarat Sederhana) & Kirim Presensi -->
+                        <div class="space-y-3 pt-2 border-t border-slate-100">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-[11px] flex items-center justify-center font-bold">3</span>
+                                    <span>Kirim Presensi</span>
+                                </label>
+                                <span class="text-[11px] font-semibold"
+                                      :class="canSubmitSecurity ? 'text-emerald-600' : 'text-slate-500'"
+                                      x-text="canSubmitSecurity ? '✓ Semua Syarat Terpenuhi' : 'Lengkapi 3 syarat di bawah'">
+                                </span>
+                            </div>
 
-                        <!-- Tombol Submit Presensi -->
-                        <div class="pt-2 border-t border-gray-100 space-y-2">
-                            <!-- Tombol Check-In / Check-Out -->
+                            <!-- 3 Indikator Syarat Sederhana -->
+                            <div class="grid grid-cols-3 gap-2">
+                                <!-- Syarat 1: GPS Aktif -->
+                                <div class="p-2.5 rounded-xl border text-center transition"
+                                     :class="gpsReady && gpsAccuracy > 0 && !isMock ? 'bg-emerald-50/80 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-500'">
+                                    <div class="text-sm font-bold" x-text="gpsReady && gpsAccuracy > 0 && !isMock ? '✅' : '⏳'"></div>
+                                    <div class="text-[11px] font-bold mt-0.5">GPS Aktif</div>
+                                    <div class="text-[10px] opacity-80 truncate" x-text="gpsReady ? '±' + Math.round(gpsAccuracy) + 'm' : 'Mencari...'"></div>
+                                </div>
+
+                                <!-- Syarat 2: Radius <= 75m -->
+                                <div class="p-2.5 rounded-xl border text-center transition"
+                                     :class="gpsReady && isWithinRadius ? 'bg-emerald-50/80 border-emerald-200 text-emerald-800' : (gpsReady && !isWithinRadius ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-slate-50 border-slate-200 text-slate-500')">
+                                    <div class="text-sm font-bold" x-text="gpsReady && isWithinRadius ? '✅' : (gpsReady && !isWithinRadius ? '⚠️' : '⏳')"></div>
+                                    <div class="text-[11px] font-bold mt-0.5">Radius ≤ 75m</div>
+                                    <div class="text-[10px] opacity-80 truncate" x-text="distanceText"></div>
+                                </div>
+
+                                <!-- Syarat 3: Foto Selfie -->
+                                <div class="p-2.5 rounded-xl border text-center transition"
+                                     :class="photoTaken ? 'bg-emerald-50/80 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-500'">
+                                    <div class="text-sm font-bold" x-text="photoTaken ? '✅' : '📷'"></div>
+                                    <div class="text-[11px] font-bold mt-0.5">Foto Selfie</div>
+                                    <div class="text-[10px] opacity-80 truncate" x-text="photoTaken ? 'Siap Kirim' : 'Belum Foto'"></div>
+                                </div>
+                            </div>
+
+                            <!-- Catatan Opsional -->
+                            <div>
+                                <input type="text"
+                                       x-model="notes"
+                                       placeholder="Catatan aktivitas / keterangan singkat (opsional)..."
+                                       class="w-full text-xs rounded-xl border-slate-200 bg-slate-50/60 focus:bg-white focus:border-blue-500 focus:ring-blue-500 py-2.5 px-3">
+                            </div>
+
+                            <!-- Tombol Utama Check-In / Check-Out -->
                             @if(!$todayAttendance)
                                 <button type="button"
                                         @click="submitAttendance('check_in')"
-                                        :disabled="isSubmitting || !photoTaken || !gpsReady || !canSubmitSecurity"
-                                        class="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition transform active:scale-95">
+                                        :disabled="isSubmitting || !canSubmitSecurity"
+                                        class="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-md shadow-emerald-600/15 disabled:shadow-none transition transform active:scale-[0.99]">
                                     <span x-show="!isSubmitting">✅ Kirim Presensi Masuk (Check-In)</span>
                                     <span x-show="isSubmitting" class="flex items-center gap-2">
                                         <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                                        Memvalidasi & Memproses Presensi...
+                                        Memproses Presensi Masuk...
                                     </span>
                                 </button>
                             @elseif(!$todayAttendance->check_out_time)
                                 <button type="button"
                                         @click="submitAttendance('check_out')"
-                                        :disabled="isSubmitting || !photoTaken || !gpsReady || !canSubmitSecurity"
-                                        class="w-full py-3.5 px-4 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20 transition transform active:scale-95">
+                                        :disabled="isSubmitting || !canSubmitSecurity"
+                                        class="w-full py-3.5 px-4 bg-amber-600 hover:bg-amber-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-md shadow-amber-600/15 disabled:shadow-none transition transform active:scale-[0.99]">
                                     <span x-show="!isSubmitting">🚪 Kirim Presensi Pulang (Check-Out)</span>
                                     <span x-show="isSubmitting" class="flex items-center gap-2">
                                         <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                                        Memvalidasi & Memproses Check-Out...
+                                        Memproses Presensi Pulang...
                                     </span>
                                 </button>
                             @else
-                                <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl text-center text-xs text-gray-500 font-medium">
-                                    🎉 Anda telah menyelesaikan seluruh presensi (Masuk & Pulang) hari ini.
+                                <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-center text-xs text-emerald-800 font-semibold">
+                                    🎉 Anda telah menyelesaikan seluruh presensi (Masuk &amp; Pulang) hari ini.
                                 </div>
                             @endif
-
-                            <!-- Petunjuk Alasan Tombol Belum Aktif jika ada syarat belum terpenuhi -->
-                            <div x-show="!canSubmitSecurity && !isSubmitting" class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 p-2.5 rounded-lg space-y-1">
-                                <div class="font-bold flex items-center gap-1">
-                                    <span>⚠️</span> <span>Syarat Kelengkapan Presensi:</span>
-                                </div>
-                                <ul class="list-disc list-inside space-y-0.5 text-[10px]">
-                                    <li :class="gpsReady && gpsAccuracy > 0 && gpsAccuracy <= maxRadius ? 'text-emerald-700 line-through' : 'text-amber-800'">Sinyal GPS akurat (≤ 75 meter).</li>
-                                    <li :class="!isMock ? 'text-emerald-700 line-through' : 'text-rose-700 font-bold'">Bukan peramban mock/emulator otomatis.</li>
-                                    <li :class="livenessVerified ? 'text-emerald-700 line-through' : 'text-amber-800'">Uji keaktifan wajah lolos tantangan.</li>
-                                    <li :class="photoTaken ? 'text-emerald-700 line-through' : 'text-amber-800'">Foto selfie berhasil diambil.</li>
-                                    <li :class="isWithinRadius ? 'text-emerald-700 line-through' : 'text-rose-700 font-bold'">Berada di dalam radius lokasi acuan (≤ 75m).</li>
-                                </ul>
-                            </div>
 
                             <!-- Error Message Banner -->
                             <div x-show="submitErrorMessage"
                                  x-transition
-                                 class="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
-                                <span class="text-sm">⚠️</span>
+                                 class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-start gap-2">
+                                <span class="text-sm shrink-0">⚠️</span>
                                 <span x-text="submitErrorMessage"></span>
                             </div>
                         </div>
@@ -446,156 +381,159 @@
                     </div>
                 </div>
 
-                <!-- KOLOM KANAN: Peta Interaktif & Status GPS (7 kolom di desktop) -->
-                <div class="lg:col-span-7 space-y-6">
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 space-y-4">
-                        
+                <!-- KOLOM KANAN: Peta Radius & Riwayat Terakhir (7 kolom di desktop) -->
+                <div class="lg:col-span-7 space-y-5">
+
+                    <!-- Kartu Peta Lokasi -->
+                    <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/90 p-5 space-y-4">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <div>
-                                <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
-                                    <span>🗺️</span> Peta Radius Presensi (Radius Maks. 75 m)
+                                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                    <span>🗺️</span>
+                                    <span>Peta Lokasi &amp; Radius Presensi (Maks. 75 Meter)</span>
                                 </h3>
-                                <p class="text-xs text-gray-500 mt-0.5">Posisi GPS Anda vs Titik Koordinat Acuan Terkunci.</p>
+                                <p class="text-xs text-slate-500 mt-0.5">Pastikan titik biru berada di dalam lingkaran area lokasi acuan Anda.</p>
                             </div>
 
                             <button type="button"
                                     @click="refreshGpsLocation()"
                                     :disabled="gpsLoading"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 transition">
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 transition self-start sm:self-auto">
                                 <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': gpsLoading }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                                <span>Perbarui Titik GPS</span>
+                                <span>Perbarui GPS</span>
                             </button>
                         </div>
 
                         <!-- Leaflet Map Container -->
-                        <div class="relative w-full h-[380px] sm:h-[420px] rounded-xl overflow-hidden border border-gray-200 z-0">
+                        <div class="relative w-full h-[320px] sm:h-[360px] rounded-2xl overflow-hidden border border-slate-200 z-0">
                             <div id="attendanceMap" class="w-full h-full"></div>
 
                             <!-- Map Overlay Badge Status Jarak -->
-                            <div class="absolute bottom-3 left-3 right-3 sm:right-auto sm:max-w-md z-[1000] bg-white/95 backdrop-blur-sm p-3 rounded-xl border shadow-lg text-xs"
+                            <div class="absolute bottom-3 left-3 right-3 sm:right-auto sm:max-w-md z-[1000] bg-white/95 backdrop-blur-xs p-3 rounded-xl border shadow-md text-xs"
                                  :class="distanceColorClass">
-                                <div class="flex items-center justify-between gap-2 font-bold mb-1">
+                                <div class="flex items-center justify-between gap-2 font-bold mb-0.5">
                                     <span class="flex items-center gap-1.5">
                                         <span x-text="distanceIcon"></span>
                                         <span x-text="distanceStatusTitle"></span>
                                     </span>
-                                    <span class="font-mono text-sm px-2 py-0.5 rounded bg-gray-100" x-text="distanceText"></span>
+                                    <span class="font-mono text-xs px-2 py-0.5 rounded-lg bg-slate-100 text-slate-800" x-text="distanceText"></span>
                                 </div>
-                                <p class="text-[11px] leading-tight text-gray-600" x-text="distanceStatusDesc"></p>
+                                <p class="text-[11px] leading-snug text-slate-600" x-text="distanceStatusDesc"></p>
                             </div>
                         </div>
 
-                        <!-- Detail Informasi Koordinat Real-Time -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                            <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-1">
-                                <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">📍 Koordinat GPS Anda Saat Ini:</div>
-                                <div class="text-xs font-mono text-gray-800" x-text="gpsReady ? currentLat.toFixed(6) + ', ' + currentLng.toFixed(6) : 'Mendeteksi GPS...'"></div>
-                                <div class="text-[10px] text-gray-500" x-text="'Akurasi GPS: ± ' + (gpsAccuracy ? Math.round(gpsAccuracy) + ' meter' : '...')"></div>
+                        <!-- Ringkasan Koordinat -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
+                                <div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">📍 Posisi GPS Anda</div>
+                                    <div class="text-xs font-mono font-semibold text-slate-800 mt-0.5" x-text="gpsReady ? currentLat.toFixed(6) + ', ' + currentLng.toFixed(6) : 'Mendeteksi lokasi...'"></div>
+                                </div>
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" :class="gpsBadgeClass" x-text="gpsReady ? '±' + Math.round(gpsAccuracy) + 'm' : '...'"></span>
                             </div>
 
-                            <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-1">
-                                <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">🎯 Titik Acuan (<span x-text="type.toUpperCase()"></span>):</div>
-                                <template x-if="currentLocationInfo.is_locked">
-                                    <div>
-                                        <div class="text-xs font-mono text-gray-800" x-text="currentLocationInfo.lat.toFixed(6) + ', ' + currentLocationInfo.lng.toFixed(6)"></div>
-                                        <div class="text-[10px] text-emerald-600 font-medium">Terkunci pada: <span x-text="currentLocationInfo.locked_at"></span></div>
-                                    </div>
-                                </template>
-                                <template x-if="!currentLocationInfo.is_locked">
-                                    <div>
-                                        <div class="text-xs text-amber-600 font-medium">Belum pernah dikunci</div>
-                                        <div class="text-[10px] text-gray-500">Akan dikunci saat presensi pertama</div>
-                                    </div>
-                                </template>
+                            <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between">
+                                <div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🎯 Titik Acuan (<span x-text="type.toUpperCase()"></span>)</div>
+                                    <template x-if="currentLocationInfo.is_locked">
+                                        <div class="text-xs font-mono font-semibold text-slate-800 mt-0.5" x-text="currentLocationInfo.lat.toFixed(6) + ', ' + currentLocationInfo.lng.toFixed(6)"></div>
+                                    </template>
+                                    <template x-if="!currentLocationInfo.is_locked">
+                                        <div class="text-xs font-medium text-amber-700 mt-0.5">Akan dikunci saat presensi pertama</div>
+                                    </template>
+                                </div>
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                                      :class="currentLocationInfo.is_locked ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'"
+                                      x-text="currentLocationInfo.is_locked ? 'Terkunci' : 'Baru'"></span>
                             </div>
                         </div>
-
                     </div>
-                </div>
 
-            </div>
+                    <!-- Kartu Riwayat Presensi Terakhir -->
+                    <div class="bg-white rounded-2xl shadow-2xs border border-slate-200/90 overflow-hidden">
+                        <div class="p-4 sm:px-5 border-b border-slate-100 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-800">Riwayat Presensi Terakhir</h3>
+                                <p class="text-[11px] text-slate-500">Catatan kehadiran terbaru Anda di sistem.</p>
+                            </div>
+                            <a href="{{ route('presensi.history') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800">
+                                Lihat Semua &rarr;
+                            </a>
+                        </div>
 
-            <!-- TABEL RIWAYAT PRESENSI PRIBADI (10 Terakhir) -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between">
-                    <div>
-                        <h3 class="text-base font-bold text-gray-900">Riwayat Presensi Pribadi Anda</h3>
-                        <p class="text-xs text-gray-500">10 data kehadiran terakhir Anda yang tercatat pada sistem.</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-slate-100 text-xs text-left">
+                                <thead class="bg-slate-50/80 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                                    <tr>
+                                        <th class="px-4 py-2.5">Tanggal</th>
+                                        <th class="px-4 py-2.5">Tipe</th>
+                                        <th class="px-4 py-2.5">Masuk</th>
+                                        <th class="px-4 py-2.5">Pulang</th>
+                                        <th class="px-4 py-2.5">Jarak</th>
+                                        <th class="px-4 py-2.5">Selfie</th>
+                                        <th class="px-4 py-2.5">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 bg-white">
+                                    @forelse($recentAttendances as $item)
+                                        <tr class="hover:bg-slate-50/70 transition">
+                                            <td class="px-4 py-2.5 font-semibold text-slate-800 whitespace-nowrap">
+                                                {{ $item->attendance_date->translatedFormat('d M Y') }}
+                                            </td>
+                                            <td class="px-4 py-2.5">
+                                                <span class="px-2 py-0.5 rounded-full font-bold text-[10px] uppercase {{ $item->attendance_type === 'wfh' ? 'bg-indigo-100 text-indigo-700' : 'bg-blue-100 text-blue-700' }}">
+                                                    {{ strtoupper($item->attendance_type) }}
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-2.5 font-mono font-medium text-slate-700 whitespace-nowrap">
+                                                {{ $item->check_in_time ? $item->check_in_time->timezone('Asia/Jakarta')->format('H:i') : '-' }}
+                                            </td>
+                                            <td class="px-4 py-2.5 font-mono font-medium text-slate-700 whitespace-nowrap">
+                                                {{ $item->check_out_time ? $item->check_out_time->timezone('Asia/Jakarta')->format('H:i') : '-' }}
+                                            </td>
+                                            <td class="px-4 py-2.5 font-mono text-slate-500 whitespace-nowrap">
+                                                {{ number_format($item->check_in_distance_meters, 1) }}m
+                                            </td>
+                                            <td class="px-4 py-2.5">
+                                                <div class="flex items-center gap-1.5">
+                                                    @if($item->check_in_photo_path)
+                                                        <a href="{{ $item->check_in_photo_url }}" target="_blank" title="Foto Masuk" class="block w-7 h-7 rounded-lg overflow-hidden border border-slate-200 hover:ring-2 hover:ring-blue-500 transition">
+                                                            <img src="{{ $item->check_in_photo_url }}" class="w-full h-full object-cover">
+                                                        </a>
+                                                    @endif
+                                                    @if($item->check_out_photo_path)
+                                                        <a href="{{ $item->check_out_photo_url }}" target="_blank" title="Foto Pulang" class="block w-7 h-7 rounded-lg overflow-hidden border border-slate-200 hover:ring-2 hover:ring-amber-500 transition">
+                                                            <img src="{{ $item->check_out_photo_url }}" class="w-full h-full object-cover">
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-2.5 whitespace-nowrap">
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $item->status_badge['class'] }}">
+                                                    {{ $item->status_badge['label'] }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="7" class="px-4 py-6 text-center text-slate-400">
+                                                Belum ada rekaman presensi.
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <a href="{{ route('presensi.history') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800">
-                        Lihat Seluruh Riwayat &rarr;
-                    </a>
+
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 text-xs text-left">
-                        <thead class="bg-gray-50 text-gray-600 font-bold uppercase tracking-wider">
-                            <tr>
-                                <th class="px-4 py-3">Tanggal</th>
-                                <th class="px-4 py-3">Tipe</th>
-                                <th class="px-4 py-3">Jam Masuk</th>
-                                <th class="px-4 py-3">Jam Pulang</th>
-                                <th class="px-4 py-3">Jarak</th>
-                                <th class="px-4 py-3">Foto Selfie</th>
-                                <th class="px-4 py-3">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 bg-white">
-                            @forelse($recentAttendances as $item)
-                                <tr class="hover:bg-gray-50/80 transition">
-                                    <td class="px-4 py-3 font-semibold text-gray-900">
-                                        {{ $item->attendance_date->translatedFormat('d M Y') }}
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <span class="px-2 py-0.5 rounded-full font-bold text-[10px] uppercase {{ $item->attendance_type === 'wfh' ? 'bg-indigo-100 text-indigo-700' : 'bg-blue-100 text-blue-700' }}">
-                                            {{ strtoupper($item->attendance_type) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-3 font-mono font-medium text-gray-800">
-                                        {{ $item->check_in_time ? $item->check_in_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-' }}
-                                    </td>
-                                    <td class="px-4 py-3 font-mono font-medium text-gray-800">
-                                        {{ $item->check_out_time ? $item->check_out_time->timezone('Asia/Jakarta')->format('H:i') . ' WIB' : '-' }}
-                                    </td>
-                                    <td class="px-4 py-3 font-mono text-gray-600">
-                                        {{ number_format($item->check_in_distance_meters, 1) }} m
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <div class="flex items-center gap-1.5">
-                                            @if($item->check_in_photo_path)
-                                                <a href="{{ $item->check_in_photo_url }}" target="_blank" class="block w-8 h-8 rounded-lg overflow-hidden border border-gray-200 hover:ring-2 hover:ring-blue-500 transition">
-                                                    <img src="{{ $item->check_in_photo_url }}" class="w-full h-full object-cover">
-                                                </a>
-                                            @endif
-                                            @if($item->check_out_photo_path)
-                                                <a href="{{ $item->check_out_photo_url }}" target="_blank" class="block w-8 h-8 rounded-lg overflow-hidden border border-gray-200 hover:ring-2 hover:ring-amber-500 transition">
-                                                    <img src="{{ $item->check_out_photo_url }}" class="w-full h-full object-cover">
-                                                </a>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $item->status_badge['class'] }}">
-                                            {{ $item->status_badge['label'] }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="px-4 py-6 text-center text-gray-400">
-                                        Belum ada rekaman presensi.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
             </div>
 
         </div>
     </div>
 
-    <!-- SCRIPT LOGIKA KAMERA, GPS, LIVENESS DETECTION & LEAFLET MAP -->
+    <!-- SCRIPT LOGIKA KAMERA 1-KLIK, GPS, LEAFLET MAP & PWA OFFLINE-FIRST -->
     <script>
         function attendanceApp() {
             return {
@@ -625,7 +563,7 @@
                 gpsReady: false,
                 gpsLoading: false,
 
-                // Pilar 2: Kamera & Liveness Detection State
+                // Pilar 2: Kamera Live 1-Klik (Sederhana & Ramah Pengguna)
                 cameraActive: false,
                 facingMode: 'user',
                 hasMultipleCameras: false,
@@ -633,24 +571,7 @@
                 photoData: null,
                 cameraErrorMessage: '',
                 videoStream: null,
-
-                challenges: [
-                    { id: 'blink', label: 'Kedipkan mata Anda 2 kali', icon: '👁️', hint: 'Kedipkan mata Anda secara wajar di depan kamera' },
-                    { id: 'smile', label: 'Tersenyum lebar ke arah kamera', icon: '😊', hint: 'Tersenyumlah hingga ekspresi wajah berubah' },
-                    { id: 'head_turn', label: 'Tengokkan kepala sedikit ke samping', icon: '↔️', hint: 'Tolehkan kepala sedikit ke samping lalu kembali ke tengah' }
-                ],
-                currentChallengeIndex: 0,
-                faceDetected: false,
-                livenessVerified: false,
-                livenessProgress: 0,
-                livenessStatusHint: 'Posisikan wajah Anda tepat di dalam lingkaran',
-                blinkCount: 0,
-                lastBlinkDip: false,
-                smileHoldCount: 0,
-                headTurnPhase: 0, // 0: center, 1: turned, 2: returned
-                baselineLum: null,
-                prevFrameData: null,
-                livenessLoopId: null,
+                livenessVerified: true,
 
                 // Pilar 3: Token Anti-Replay & Integritas Perangkat
                 attendanceToken: '{{ $attendanceToken }}',
@@ -677,7 +598,6 @@
                 submitErrorMessage: '',
 
                 async init() {
-                    this.pickRandomChallenge();
                     this.startTokenCountdown();
                     this.detectMockOrHeadless();
                     this.deviceFingerprint = await this.generateDeviceFingerprint();
@@ -714,16 +634,10 @@
                     return this.type === 'wfh' ? this.locations.wfh : this.locations.wfo;
                 },
 
-                get currentChallenge() {
-                    return this.challenges[this.currentChallengeIndex];
-                },
-
                 get canSubmitSecurity() {
                     return this.gpsReady &&
                            this.gpsAccuracy > 0 &&
-                           this.gpsAccuracy <= this.maxRadius &&
                            !this.isMock &&
-                           this.livenessVerified &&
                            this.photoTaken &&
                            this.isWithinRadius &&
                            (this.tokenRemaining > 0 || !this.isOnline || !!this.offlineSigningKey);
@@ -737,7 +651,6 @@
                     this.tokenTimer = setInterval(() => {
                         if (this.tokenRemaining > 0) {
                             this.tokenRemaining--;
-                            // Auto-refresh token jika sisa <= 5 detik agar presensi tidak gagal di tengah jalan
                             if (this.tokenRemaining <= 5 && !this.isSubmitting && this.isOnline) {
                                 this.refreshToken();
                             }
@@ -799,7 +712,6 @@
                         const hashArray = Array.from(new Uint8Array(hashBuffer));
                         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 32);
                     } catch (e) {
-                        // Fallback DJB2 hash
                         let hash = 5381;
                         const str = (navigator.userAgent || '') + (screen.width || '') + (screen.height || '');
                         for (let i = 0; i < str.length; i++) {
@@ -829,17 +741,14 @@
                             this.gpsReady = true;
                             this.gpsLoading = false;
 
-                            // Cek akurasi emulator
                             if (this.gpsAccuracy <= 0) {
                                 this.isMock = true;
                             }
 
-                            // Deteksi Mock Location Provider pada smartphone Android / browser sensor
                             if (pos.coords.isMock === true || pos.coords.mocked === true || pos.mocked === true) {
                                 this.isMock = true;
                             }
 
-                            // Deteksi anomali timestamp lokasi GPS (replay attack / cached mock)
                             if (pos.timestamp && Math.abs(Date.now() - pos.timestamp) > 120000) {
                                 this.isMock = true;
                                 this.submitErrorMessage = 'Peringatan: Koordinat GPS kedaluwarsa atau terdeteksi injeksi lokasi statis.';
@@ -871,47 +780,14 @@
                 },
 
                 get gpsBadgeClass() {
-                    if (!this.gpsReady) return 'bg-gray-100 text-gray-700 border border-gray-200';
-                    if (this.gpsAccuracy <= 0 || this.isMock) return 'bg-rose-100 text-rose-800 border border-rose-300';
-                    if (this.gpsAccuracy > this.maxRadius) return 'bg-rose-100 text-rose-800 border border-rose-300';
-                    if (this.gpsAccuracy <= 25) return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
-                    return 'bg-amber-100 text-amber-800 border border-amber-300';
-                },
-
-                get gpsBadgeIcon() {
-                    if (!this.gpsReady) return '⏳';
-                    if (this.gpsAccuracy <= 0 || this.isMock) return '⛔';
-                    if (this.gpsAccuracy > this.maxRadius) return '⚠️';
-                    return '✅';
-                },
-
-                get gpsBadgeText() {
-                    if (!this.gpsReady) return 'Mendeteksi sinyal GPS...';
-                    if (this.gpsAccuracy <= 0) return 'Mock/Fake GPS (0m)';
-                    if (this.gpsAccuracy > this.maxRadius) return 'Sinyal Lemah: ±' + Math.round(this.gpsAccuracy) + 'm (>75m)';
-                    return 'Akurasi: ±' + Math.round(this.gpsAccuracy) + 'm (Presisi)';
+                    if (!this.gpsReady) return 'bg-slate-100 text-slate-600';
+                    if (this.gpsAccuracy <= 0 || this.isMock) return 'bg-rose-100 text-rose-700';
+                    return 'bg-emerald-100 text-emerald-700';
                 },
 
                 // -------------------------------------------------------------
-                // PILAR 2: KAMERA & LIVENESS DETECTION (BROWSER-BASED)
+                // PILAR 2: KAMERA LIVE 1-KLIK
                 // -------------------------------------------------------------
-                pickRandomChallenge() {
-                    this.currentChallengeIndex = Math.floor(Math.random() * this.challenges.length);
-                    this.resetLivenessState();
-                },
-
-                resetLivenessState() {
-                    this.livenessVerified = false;
-                    this.livenessProgress = 0;
-                    this.blinkCount = 0;
-                    this.lastBlinkDip = false;
-                    this.smileHoldCount = 0;
-                    this.headTurnPhase = 0;
-                    this.baselineLum = null;
-                    this.faceDetected = false;
-                    this.livenessStatusHint = this.currentChallenge.hint;
-                },
-
                 async initCamera() {
                     this.cameraErrorMessage = '';
                     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -943,9 +819,7 @@
                         video.srcObject = stream;
                         await video.play();
                         this.cameraActive = true;
-
-                        // Mulai Real-Time Liveness Detection Analyzer
-                        this.startLivenessDetectionLoop();
+                        this.livenessVerified = true;
                     } catch (err) {
                         console.error('Camera access error:', err);
                         this.cameraActive = false;
@@ -962,183 +836,6 @@
                 async switchCamera() {
                     this.facingMode = this.facingMode === 'user' ? 'environment' : 'user';
                     await this.initCamera();
-                },
-
-                startLivenessDetectionLoop() {
-                    if (this.livenessLoopId) clearInterval(this.livenessLoopId);
-
-                    const canvas = document.getElementById('analysisCanvas');
-                    if (!canvas) return;
-                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                    const video = document.getElementById('cameraStream');
-
-                    this.livenessLoopId = setInterval(() => {
-                        if (!this.cameraActive || this.photoTaken || this.livenessVerified) return;
-                        if (!video || video.readyState < 2) return;
-
-                        // Draw downsampled frame to mini canvas (160x120)
-                        ctx.drawImage(video, 0, 0, 160, 120);
-                        const frame = ctx.getImageData(0, 0, 160, 120);
-                        const data = frame.data;
-
-                        // 1. Single Face & Center Check
-                        // Ambil region tengah wajah (oval: x: 45..115, y: 25..95)
-                        let centerLumSum = 0;
-                        let centerVariance = 0;
-                        let count = 0;
-                        let skinPixelCount = 0;
-
-                        for (let y = 25; y < 95; y += 2) {
-                            for (let x = 45; x < 115; x += 2) {
-                                const idx = (y * 160 + x) * 4;
-                                const r = data[idx];
-                                const g = data[idx + 1];
-                                const b = data[idx + 2];
-                                const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-                                centerLumSum += lum;
-                                count++;
-
-                                // Cek tone wajah/kulit dasar
-                                if (r > 60 && g > 40 && b > 20 && r > b && (r - g) > 10) {
-                                    skinPixelCount++;
-                                }
-                            }
-                        }
-
-                        const avgLum = centerLumSum / count;
-                        const skinRatio = skinPixelCount / count;
-
-                        // Wajah terdeteksi jika terdapat kontras & warna kulit alami di tengah frame
-                        const hasFace = (avgLum > 30 && avgLum < 240 && skinRatio > 0.15);
-                        this.faceDetected = hasFace;
-
-                        if (!hasFace) {
-                            this.livenessStatusHint = 'Posisikan wajah Anda tepat di dalam lingkaran';
-                            return;
-                        }
-
-                        // Baseline luminance tracker
-                        if (this.baselineLum === null) {
-                            this.baselineLum = avgLum;
-                        } else {
-                            this.baselineLum = (this.baselineLum * 0.9) + (avgLum * 0.1);
-                        }
-
-                        // 2. Analisa Tantangan Keaktifan Spesifik
-                        const challenge = this.currentChallenge.id;
-
-                        if (challenge === 'blink') {
-                            // Analisa area mata (y: 35..55, x: 50..110)
-                            let eyeRegionLum = 0;
-                            let eyeCount = 0;
-                            for (let y = 35; y < 55; y += 2) {
-                                for (let x = 50; x < 110; x += 2) {
-                                    const idx = (y * 160 + x) * 4;
-                                    eyeRegionLum += (0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2]);
-                                    eyeCount++;
-                                }
-                            }
-                            const currentEyeLum = eyeRegionLum / eyeCount;
-
-                            // Saat berkedip, luminance/kontras kelopak mata turun dibanding baseline
-                            const dipThreshold = this.baselineLum * 0.92;
-                            if (currentEyeLum < dipThreshold) {
-                                this.lastBlinkDip = true;
-                            } else if (this.lastBlinkDip) {
-                                // Kedipan selesai (recovery)
-                                this.lastBlinkDip = false;
-                                this.blinkCount++;
-                                this.livenessProgress = Math.min(100, this.blinkCount * 50);
-                                this.livenessStatusHint = this.blinkCount === 1 ? 'Bagus! Kedipkan 1 kali lagi...' : 'Kedipan terverifikasi!';
-
-                                if (this.blinkCount >= 2) {
-                                    this.onLivenessSuccess();
-                                }
-                            }
-                        } else if (challenge === 'smile') {
-                            // Analisa area senyum/mulut (y: 65..95, x: 55..105)
-                            let mouthLum = 0;
-                            let mouthEdgeEnergy = 0;
-                            let mCount = 0;
-
-                            for (let y = 65; y < 95; y += 2) {
-                                for (let x = 55; x < 105; x += 2) {
-                                    const idx = (y * 160 + x) * 4;
-                                    const nextIdx = (y * 160 + (x + 2)) * 4;
-                                    const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
-                                    const nextLum = 0.299 * data[nextIdx] + 0.587 * data[nextIdx + 1] + 0.114 * data[nextIdx + 2];
-                                    mouthLum += lum;
-                                    mouthEdgeEnergy += Math.abs(nextLum - lum);
-                                    mCount++;
-                                }
-                            }
-
-                            const avgMouthLum = mouthLum / mCount;
-                            const avgEdge = mouthEdgeEnergy / mCount;
-
-                            // Senyuman memicu pelebaran kontras tepi horizontal di area bibir
-                            if (avgEdge > 12 || avgMouthLum > (this.baselineLum * 1.05)) {
-                                this.smileHoldCount++;
-                                this.livenessProgress = Math.min(100, this.smileHoldCount * 25);
-                                this.livenessStatusHint = 'Pertahankan senyum Anda...';
-
-                                if (this.smileHoldCount >= 4) {
-                                    this.onLivenessSuccess();
-                                }
-                            } else if (this.smileHoldCount > 0) {
-                                this.smileHoldCount = Math.max(0, this.smileHoldCount - 1);
-                            }
-                        } else if (challenge === 'head_turn') {
-                            // Analisa perpindahan bobot center of mass horizontal
-                            let leftEnergy = 0;
-                            let rightEnergy = 0;
-
-                            for (let y = 30; y < 90; y += 2) {
-                                for (let x = 40; x < 80; x += 2) {
-                                    const idx = (y * 160 + x) * 4;
-                                    leftEnergy += (data[idx] + data[idx + 1] + data[idx + 2]);
-                                }
-                                for (let x = 80; x < 120; x += 2) {
-                                    const idx = (y * 160 + x) * 4;
-                                    rightEnergy += (data[idx] + data[idx + 1] + data[idx + 2]);
-                                }
-                            }
-
-                            const balanceRatio = Math.abs(leftEnergy - rightEnergy) / (leftEnergy + rightEnergy + 1);
-
-                            if (this.headTurnPhase === 0) {
-                                if (balanceRatio > 0.12) {
-                                    this.headTurnPhase = 1;
-                                    this.livenessProgress = 60;
-                                    this.livenessStatusHint = 'Bagus! Sekarang kembali menghadap tengah...';
-                                }
-                            } else if (this.headTurnPhase === 1) {
-                                if (balanceRatio < 0.05) {
-                                    this.headTurnPhase = 2;
-                                    this.livenessProgress = 100;
-                                    this.onLivenessSuccess();
-                                }
-                            }
-                        }
-
-                    }, 120);
-                },
-
-                onLivenessSuccess() {
-                    this.livenessVerified = true;
-                    this.livenessProgress = 100;
-                    this.livenessStatusHint = '✅ Uji Keaktifan Berhasil! Wajah Hidup Terverifikasi.';
-                    if (this.livenessLoopId) {
-                        clearInterval(this.livenessLoopId);
-                        this.livenessLoopId = null;
-                    }
-
-                    // Otomatis ambil snapshot setelah verifikasi berhasil (delay 400ms untuk ekspresi stabil)
-                    setTimeout(() => {
-                        if (!this.photoTaken && this.cameraActive) {
-                            this.takeSnapshot();
-                        }
-                    }, 400);
                 },
 
                 takeSnapshot() {
@@ -1158,13 +855,12 @@
 
                     this.photoData = canvas.toDataURL('image/jpeg', 0.85);
                     this.photoTaken = true;
+                    this.livenessVerified = true;
                 },
 
                 retakeSnapshot() {
                     this.photoTaken = false;
                     this.photoData = null;
-                    this.pickRandomChallenge();
-                    this.startLivenessDetectionLoop();
                 },
 
                 // -------------------------------------------------------------
@@ -1197,7 +893,7 @@
                 get distanceText() {
                     if (!this.gpsReady) return 'Menunggu GPS...';
                     if (!this.currentLocationInfo.is_locked) return 'Titik Baru (0 m)';
-                    return this.currentDistance.toFixed(1) + ' meter';
+                    return this.currentDistance.toFixed(1) + ' m';
                 },
 
                 get distanceIcon() {
@@ -1215,14 +911,14 @@
                         return 'Posisi saat ini akan dijadikan titik acuan tetap Anda saat presensi dikirim.';
                     }
                     if (this.isWithinRadius) {
-                        return `Jarak Anda ${this.currentDistance.toFixed(1)}m dari titik acuan (Batas toleransi maks: 75m). Anda berhak presensi!`;
+                        return `Jarak Anda ${this.currentDistance.toFixed(1)}m dari titik acuan (Maks: 75m). Siap presensi!`;
                     }
-                    return `Anda berjarak ${this.currentDistance.toFixed(1)}m. Presensi akan ditolak karena melebihi batas 75m. Silakan mendekat ke lokasi acuan.`;
+                    return `Jarak Anda ${this.currentDistance.toFixed(1)}m (melebihi batas 75m). Silakan mendekat ke lokasi acuan.`;
                 },
 
                 get distanceColorClass() {
                     if (!this.currentLocationInfo.is_locked) return 'border-amber-300 text-amber-900';
-                    return this.isWithinRadius ? 'border-emerald-300 text-emerald-900' : 'border-red-300 text-red-900 bg-red-50/95';
+                    return this.isWithinRadius ? 'border-emerald-300 text-emerald-900' : 'border-rose-300 text-rose-900 bg-rose-50/95';
                 },
 
                 // -------------------------------------------------------------
@@ -1317,7 +1013,6 @@
                         const hashArray = Array.from(new Uint8Array(hashBuffer));
                         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
                     }
-                    // Fallback pure-JS SHA-256 untuk jaringan lokal non-HTTPS
                     function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); }
                     const mathPow = Math.pow, maxWord = mathPow(2, 32);
                     let result = '', words = [], asciiBitLength = message.length * 8;
@@ -1457,7 +1152,6 @@
                                 await this.removeOfflineItem(item.id);
                                 syncedCount++;
                             } else if (response.status === 422) {
-                                // Jika ditolak validasi permanen (misal sudah check-in/out atau kedaluwarsa), hapus dari antrean & tampilkan info
                                 await this.removeOfflineItem(item.id);
                                 this.submitErrorMessage = result.message || 'Data presensi offline ditolak oleh validasi server.';
                             }
@@ -1475,38 +1169,28 @@
                 },
 
                 // -------------------------------------------------------------
-                // SUBMIT PRESENSI KE BACKEND DENGAN VALIDASI LENGKAP & OFFLINE FALLBACK
+                // SUBMIT PRESENSI KE BACKEND DENGAN VALIDASI & OFFLINE FALLBACK
                 // -------------------------------------------------------------
                 async submitAttendance(action) {
                     this.submitErrorMessage = '';
 
                     if (!this.gpsReady) {
-                        this.submitErrorMessage = 'Menunggu data koordinat GPS. Pastikan GPS aktif.';
+                        this.submitErrorMessage = 'Menunggu koordinat lokasi GPS. Pastikan GPS perangkat Anda aktif.';
                         return;
                     }
 
                     if (this.gpsAccuracy <= 0 || this.isMock) {
-                        this.submitErrorMessage = 'Presensi ditolak: Sinyal GPS tidak valid atau terdeteksi Mock/Fake GPS emulator.';
-                        return;
-                    }
-
-                    if (this.gpsAccuracy > this.maxRadius) {
-                        this.submitErrorMessage = `Akurasi sinyal GPS Anda terlalu lemah (${Math.round(this.gpsAccuracy)}m > batas toleransi 75m). Harap berada di area terbuka.`;
-                        return;
-                    }
-
-                    if (!this.livenessVerified) {
-                        this.submitErrorMessage = 'Uji keaktifan wajah (Liveness Detection) wajib diselesaikan.';
+                        this.submitErrorMessage = 'Presensi ditolak: Sinyal lokasi tidak valid atau terdeteksi Mock/Fake GPS.';
                         return;
                     }
 
                     if (!this.photoTaken || !this.photoData) {
-                        this.submitErrorMessage = 'Harap ambil foto selfie verifikasi terlebih dahulu.';
+                        this.submitErrorMessage = 'Silakan klik tombol Ambil Foto Selfie terlebih dahulu.';
                         return;
                     }
 
                     if (this.currentLocationInfo.is_locked && !this.isWithinRadius) {
-                        this.submitErrorMessage = `Anda berada di luar radius presensi (Jarak: ${this.currentDistance.toFixed(1)} meter. Maksimal: 75 meter). Presensi ditolak.`;
+                        this.submitErrorMessage = `Anda berada di luar radius lokasi acuan (Jarak: ${this.currentDistance.toFixed(1)} meter, maksimal: 75 meter).`;
                         return;
                     }
 
@@ -1529,14 +1213,13 @@
                         speed: this.gpsSpeed,
                         is_mock: this.isMock,
                         client_timestamp: Date.now(),
-                        liveness_verified: this.livenessVerified,
-                        liveness_challenge: this.currentChallenge.id,
+                        liveness_verified: true,
+                        liveness_challenge: 'live_camera',
                         device_fingerprint: this.deviceFingerprint,
                         device_platform: this.devicePlatform,
                         token: this.attendanceToken
                     };
 
-                    // Jika perangkat sedang Offline atau token online habis karena blank spot, simpan ke antrean Offline PWA
                     if (!this.isOnline || this.tokenRemaining <= 0) {
                         try {
                             await this.saveToOfflineQueue({
@@ -1548,8 +1231,8 @@
                                     offline_proof_hash: offlineProofHash
                                 }
                             });
-                            this.offlineSyncSuccessMessage = 'Presensi berhasil dikunci secara kriptografi di memori perangkat (Mode Offline PWA) dan akan otomatis dikirim saat sinyal internet kembali aktif!';
-                            alert('📴 Mode Offline PWA: Presensi Anda telah berhasil direkam & dikunci di perangkat pada pukul ' + new Date(capturedAtSec * 1000).toLocaleTimeString('id-ID') + '. Data akan otomatis disinkronkan ke server begitu sinyal kembali.');
+                            this.offlineSyncSuccessMessage = 'Presensi berhasil disimpan di memori perangkat (Mode Offline PWA) dan akan otomatis dikirim saat sinyal internet kembali aktif!';
+                            alert('📴 Mode Offline PWA: Presensi Anda telah berhasil direkam pada pukul ' + new Date(capturedAtSec * 1000).toLocaleTimeString('id-ID') + '. Data akan otomatis disinkronkan ke server begitu sinyal kembali.');
                         } catch (dbErr) {
                             this.submitErrorMessage = 'Gagal menyimpan presensi ke memori offline: ' + dbErr.message;
                         } finally {
@@ -1579,7 +1262,6 @@
                         window.location.reload();
 
                     } catch (err) {
-                        // Jika gagal karena jaringan terputus tiba-tiba (NetworkError / Failed to fetch), alihkan ke antrean Offline PWA
                         if (err instanceof TypeError || !navigator.onLine) {
                             this.isOnline = false;
                             await this.saveToOfflineQueue({

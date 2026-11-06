@@ -252,4 +252,103 @@ class OfflineAttendancePwaTest extends TestCase
 
         Carbon::setTestNow();
     }
+
+    public function test_simplified_one_click_selfie_and_indoor_gps_accuracy_within_75m_radius_succeeds(): void
+    {
+        $now = Carbon::parse('2026-11-05 07:22:00', 'Asia/Jakarta');
+        Carbon::setTestNow($now);
+
+        $token = $this->attendanceService->generateAttendanceToken($this->pegawaiUser);
+
+        // Simulasikan akurasi GPS indoor/Wi-Fi (250 meter), namun titik koordinat aktual berada tepat di dalam radius <= 75m
+        // dan foto selfie diambil dengan 1-Klik tanpa perlu tantangan kedip/senyum
+        $response = $this->actingAs($this->pegawaiUser)->postJson(route('presensi.store'), [
+            'attendance_type' => 'wfo',
+            'action' => 'check_in',
+            'latitude' => $this->officeLat + 0.0001, // ~15 meter dari titik acuan
+            'longitude' => $this->officeLng + 0.0001,
+            'photo' => $this->dummySelfie,
+            'notes' => 'Presensi 1-klik dari dalam gedung',
+            'accuracy' => 250.0,
+            'is_mock' => false,
+            'device_fingerprint' => 'fp_indoor_wifi_device',
+            'token' => $token,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.check_in_time', '07:22')
+            ->assertJsonPath('data.status', 'present');
+
+        Carbon::setTestNow();
+    }
+
+    public function test_all_supporting_attendance_menus_and_exports_work_without_error(): void
+    {
+        $adminRole = Role::firstOrCreate(['name' => 'admin'], ['display_name' => 'Administrator']);
+        $adminUser = User::factory()->create([
+            'name' => 'Admin Kepegawaian',
+            'role_id' => $adminRole->id,
+            'must_change_password' => false,
+        ]);
+
+        // Buat 1 data presensi terlebih dahulu
+        $token = $this->attendanceService->generateAttendanceToken($this->pegawaiUser);
+        $this->actingAs($this->pegawaiUser)->postJson(route('presensi.store'), [
+            'attendance_type' => 'wfo',
+            'action' => 'check_in',
+            'latitude' => $this->officeLat,
+            'longitude' => $this->officeLng,
+            'photo' => $this->dummySelfie,
+            'accuracy' => 20.0,
+            'is_mock' => false,
+            'device_fingerprint' => 'fp_test_menu_support',
+            'token' => $token,
+        ])->assertStatus(200);
+
+        $attendance = Attendance::where('user_id', $this->pegawaiUser->id)->firstOrFail();
+
+        // 1. Halaman Utama Presensi Pegawai
+        $this->actingAs($this->pegawaiUser)
+            ->get(route('presensi.index'))
+            ->assertStatus(200)
+            ->assertSee('Ambil Foto Selfie');
+
+        // 2. Halaman Riwayat Presensi Saya
+        $this->actingAs($this->pegawaiUser)
+            ->get(route('presensi.history'))
+            ->assertStatus(200);
+
+        // 3. Streaming Foto Selfie Aman (presensi.photo)
+        $this->actingAs($this->pegawaiUser)
+            ->get(route('presensi.photo', ['id' => $attendance->id, 'type' => 'in']))
+            ->assertStatus(200);
+
+        // 4. Halaman Rekap Presensi Admin (Mode Harian & Mode Matriks Bulanan)
+        $this->actingAs($adminUser)
+            ->get(route('admin.presensi.index', ['mode' => 'daily']))
+            ->assertStatus(200);
+
+        $this->actingAs($adminUser)
+            ->get(route('admin.presensi.index', ['mode' => 'monthly']))
+            ->assertStatus(200);
+
+        // 5. Halaman Kelola Titik Lokasi Acuan (admin.presensi.locations) & Reset Lokasi
+        $this->actingAs($adminUser)
+            ->get(route('admin.presensi.locations'))
+            ->assertStatus(200);
+
+        $this->actingAs($adminUser)
+            ->post(route('admin.presensi.reset-location', $this->pegawaiUser->id), ['type' => 'wfo'])
+            ->assertRedirect();
+
+        // 6. Ekspor PDF & Excel Rekap Presensi
+        $this->actingAs($adminUser)
+            ->get(route('admin.presensi.export.pdf', ['mode' => 'daily']))
+            ->assertStatus(200);
+
+        $this->actingAs($adminUser)
+            ->get(route('admin.presensi.export.excel', ['mode' => 'daily']))
+            ->assertStatus(200);
+    }
 }
