@@ -46,11 +46,15 @@
         }
         #presentationDeck:fullscreen {
             background-color: #0f172a;
-            padding: 1.5rem;
+            padding: 1.25rem 1.5rem;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
+            gap: 1rem;
+        }
+        #presentationDeck:fullscreen .slide-panel {
+            flex: 1;
         }
     </style>
 
@@ -104,77 +108,6 @@
         <div id="presentationDeck" class="w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 space-y-4 print-container">
 
             {{-- ========================================================================= --}}
-            {{-- TOP CONTROL BAR: NAVIGASI SLIDE PRESENTASI INTERAKTIF                     --}}
-            {{-- ========================================================================= --}}
-            <div class="no-print bg-slate-900 text-white rounded-2xl p-3 sm:p-4 shadow-md border border-slate-800 space-y-3">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    {{-- Indikator Slide & Progress --}}
-                    <div class="flex items-center gap-3">
-                        <span class="px-3 py-1 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs tracking-wide uppercase">
-                            <span x-show="viewMode === 'slides'" x-text="'Slide ' + currentSlide + ' / ' + totalSlides"></span>
-                            <span x-show="viewMode === 'all'">Semua Slide</span>
-                        </span>
-                        <span class="text-xs sm:text-sm font-bold text-slate-200 truncate"
-                              x-text="viewMode === 'slides' ? slides[currentSlide - 1].title : 'Tampilan Dokumen Lengkap (Seluruh Bagian)'">
-                        </span>
-                    </div>
-
-                    {{-- Tombol Kontrol Slide (Prev / Next / Mode / Fullscreen) --}}
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button type="button"
-                                @click="prevSlide()"
-                                x-show="viewMode === 'slides'"
-                                :disabled="currentSlide === 1"
-                                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-white border border-slate-700 transition cursor-pointer flex items-center gap-1">
-                            <span>&larr;</span>
-                            <span class="hidden sm:inline">Sebelumnya</span>
-                        </button>
-
-                        <button type="button"
-                                @click="nextSlide()"
-                                x-show="viewMode === 'slides'"
-                                :disabled="currentSlide === totalSlides"
-                                class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 transition cursor-pointer flex items-center gap-1 shadow-xs">
-                            <span class="hidden sm:inline">Slide Berikutnya</span>
-                            <span class="sm:hidden">Lanjut</span>
-                            <span>&rarr;</span>
-                        </button>
-
-                        <div class="h-4 w-px bg-slate-700 mx-1 hidden sm:block"></div>
-
-                        <button type="button"
-                                @click="viewMode = (viewMode === 'slides' ? 'all' : 'slides')"
-                                class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer"
-                                x-text="viewMode === 'slides' ? '📑 Lihat Semua Sekaligus' : '🖥️ Kembali ke Mode Slide'">
-                        </button>
-
-                        <button type="button"
-                                @click="toggleFullscreen()"
-                                class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition cursor-pointer flex items-center gap-1.5">
-                            <span x-text="isFullscreen ? '🗗 Keluar Layar Penuh' : '⛶ Layar Penuh'"></span>
-                        </button>
-                    </div>
-                </div>
-
-                {{-- Tab Lompat Cepat Antar Slide & Progress Bar --}}
-                <div class="grid grid-cols-2 sm:grid-cols-6 gap-1.5 pt-1">
-                    <template x-for="s in slides" :key="s.id">
-                        <button type="button"
-                                @click="goToSlide(s.id)"
-                                :class="viewMode === 'slides' && currentSlide === s.id
-                                    ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 font-bold'
-                                    : 'bg-slate-800/70 border-slate-700/80 text-slate-400 hover:text-white hover:bg-slate-800'"
-                                class="px-2.5 py-1.5 rounded-xl border text-[11px] text-left truncate transition cursor-pointer flex items-center gap-1.5">
-                            <span class="w-4 h-4 rounded-full text-[10px] flex items-center justify-center shrink-0"
-                                  :class="viewMode === 'slides' && currentSlide === s.id ? 'bg-emerald-400 text-slate-950 font-black' : 'bg-slate-700 text-slate-300'"
-                                  x-text="s.id"></span>
-                            <span class="truncate" x-text="s.short"></span>
-                        </button>
-                    </template>
-                </div>
-            </div>
-
-            {{-- ========================================================================= --}}
             {{-- SLIDE 1: SAMPUL & IDENTITAS RESMI PRESENTASI DEKANAT                      --}}
             {{-- ========================================================================= --}}
             <div x-show="viewMode === 'all' || currentSlide === 1"
@@ -220,7 +153,7 @@
                     </h3>
 
                     <p class="text-sm sm:text-base text-slate-300 max-w-3xl leading-relaxed">
-                        Membangun sistem mandiri tingkat fakultas yang menjembatani kebutuhan operasional harian Dosen, Tenaga Kependidikan, dan Pimpinan Dekanat serta bertindak sebagai penopang darurat (*back-up*) saat sistem universitas terkendala.
+                        Membangun sistem mandiri tingkat fakultas yang menjembatani kebutuhan operasional harian Dosen, Tenaga Kependidikan, dan Pimpinan Dekanat serta bertindak sebagai penopang darurat (<em>back-up</em>) saat sistem universitas terkendala.
                     </p>
 
                     {{-- Highlight Angka Eksekutif Real-Time --}}
@@ -371,7 +304,7 @@
                                     <h4 class="font-bold text-blue-950 text-xs sm:text-sm uppercase">Pegawai Mandiri (Dosen &amp; Tendik)</h4>
                                 </div>
                                 <p class="text-slate-600 text-xs leading-relaxed">
-                                    Layanan mandiri tanpa kertas (*Self-Service Portal*): Presensi GPS foto live 1-klik, pengisian logbook 7.5 jam/hari, pengajuan cuti, dan pemutakhiran biodata riwayat karir pribadi.
+                                    Layanan mandiri tanpa kertas (<em>Self-Service Portal</em>): Presensi GPS foto live 1-klik, pengisian logbook 7.5 jam/hari, pengajuan cuti, dan pemutakhiran biodata riwayat karir pribadi.
                                 </p>
                             </div>
                             <div class="text-xs text-blue-700 font-bold bg-white p-3 rounded-xl border border-blue-100">
@@ -532,7 +465,7 @@
                                             <span>⚖️</span> Meja Verifikasi &amp; Rekap Logbook
                                         </strong>
                                         <p class="text-[11px] text-slate-700 leading-relaxed">
-                                            Atasan memverifikasi keabsahan uraian kerja staf binaannya dengan fitur *Batch Approve* atau catatan pembinaan.
+                                            Atasan memverifikasi keabsahan uraian kerja staf binaannya dengan fitur <em>Batch Approve</em> atau catatan pembinaan.
                                         </p>
                                     </div>
                                     <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/40 space-y-1">
@@ -743,6 +676,77 @@
                         <button type="button" @click="prevSlide()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold cursor-pointer">&larr; Sebelumnya</button>
                         <button type="button" @click="goToSlide(1)" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black cursor-pointer">↺ Kembali ke Slide 1</button>
                     </div>
+                </div>
+            </div>
+
+            {{-- ========================================================================= --}}
+            {{-- BOTTOM CONTROL BAR: NAVIGASI SLIDE PRESENTASI INTERAKTIF                  --}}
+            {{-- ========================================================================= --}}
+            <div class="no-print bg-slate-900 text-white rounded-2xl p-3 sm:p-4 shadow-md border border-slate-800 space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    {{-- Indikator Slide & Progress --}}
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs tracking-wide uppercase">
+                            <span x-show="viewMode === 'slides'" x-text="'Slide ' + currentSlide + ' / ' + totalSlides"></span>
+                            <span x-show="viewMode === 'all'">Semua Slide</span>
+                        </span>
+                        <span class="text-xs sm:text-sm font-bold text-slate-200 truncate"
+                              x-text="viewMode === 'slides' ? slides[currentSlide - 1].title : 'Tampilan Dokumen Lengkap (Seluruh Bagian)'">
+                        </span>
+                    </div>
+
+                    {{-- Tombol Kontrol Slide (Prev / Next / Mode / Fullscreen) --}}
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button"
+                                @click="prevSlide()"
+                                x-show="viewMode === 'slides'"
+                                :disabled="currentSlide === 1"
+                                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-white border border-slate-700 transition cursor-pointer flex items-center gap-1">
+                            <span>&larr;</span>
+                            <span class="hidden sm:inline">Sebelumnya</span>
+                        </button>
+
+                        <button type="button"
+                                @click="nextSlide()"
+                                x-show="viewMode === 'slides'"
+                                :disabled="currentSlide === totalSlides"
+                                class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 transition cursor-pointer flex items-center gap-1 shadow-xs">
+                            <span class="hidden sm:inline">Slide Berikutnya</span>
+                            <span class="sm:hidden">Lanjut</span>
+                            <span>&rarr;</span>
+                        </button>
+
+                        <div class="h-4 w-px bg-slate-700 mx-1 hidden sm:block"></div>
+
+                        <button type="button"
+                                @click="viewMode = (viewMode === 'slides' ? 'all' : 'slides')"
+                                class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer"
+                                x-text="viewMode === 'slides' ? '📑 Lihat Semua Sekaligus' : '🖥️ Kembali ke Mode Slide'">
+                        </button>
+
+                        <button type="button"
+                                @click="toggleFullscreen()"
+                                class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition cursor-pointer flex items-center gap-1.5">
+                            <span x-text="isFullscreen ? '🗗 Keluar Layar Penuh' : '⛶ Layar Penuh'"></span>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Tab Lompat Cepat Antar Slide & Progress Bar --}}
+                <div class="grid grid-cols-2 sm:grid-cols-6 gap-1.5 pt-1">
+                    <template x-for="s in slides" :key="s.id">
+                        <button type="button"
+                                @click="goToSlide(s.id)"
+                                :class="viewMode === 'slides' && currentSlide === s.id
+                                    ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 font-bold'
+                                    : 'bg-slate-800/70 border-slate-700/80 text-slate-400 hover:text-white hover:bg-slate-800'"
+                                class="px-2.5 py-1.5 rounded-xl border text-[11px] text-left truncate transition cursor-pointer flex items-center gap-1.5">
+                            <span class="w-4 h-4 rounded-full text-[10px] flex items-center justify-center shrink-0"
+                                  :class="viewMode === 'slides' && currentSlide === s.id ? 'bg-emerald-400 text-slate-950 font-black' : 'bg-slate-700 text-slate-300'"
+                                  x-text="s.id"></span>
+                            <span class="truncate" x-text="s.short"></span>
+                        </button>
+                    </template>
                 </div>
             </div>
 
