@@ -36,7 +36,12 @@ class StoreAttendanceRequest extends FormRequest
             // Pilar 3: Integritas Perangkat & Anti-Replay
             'device_fingerprint' => ['required', 'string', 'max:64'],
             'device_platform' => ['nullable', 'string', 'max:100'],
-            'token' => ['required', 'string', 'max:100'],
+            'token' => ['nullable', 'required_without:is_offline_sync', 'string', 'max:100'],
+
+            // Pilar 4: PWA Offline-First Sync & Cryptographic Proof
+            'is_offline_sync' => ['nullable', 'boolean'],
+            'offline_captured_at' => ['nullable', 'required_if:is_offline_sync,true,1', 'numeric'],
+            'offline_proof_hash' => ['nullable', 'required_if:is_offline_sync,true,1', 'string', 'size:64'],
         ];
     }
 

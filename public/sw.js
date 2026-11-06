@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sikap-cache-v1';
+const CACHE_NAME = 'sikap-cache-v2';
 const OFFLINE_URL = '/offline';
 
 const PRECACHE_ASSETS = [
@@ -32,14 +32,22 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// 3. Fetch Strategy: Network First with Cache/Offline Fallback for Navigations
+// 3. Fetch Strategy: Network First with Cache/Offline Fallback for Navigations (termasuk /presensi & /logbook)
 self.addEventListener('fetch', (event) => {
     // Only handle GET requests
     if (event.request.method !== 'GET') return;
 
     if (event.request.mode === 'navigate') {
         event.respondWith(
-            fetch(event.request).catch(async () => {
+            fetch(event.request).then((networkResponse) => {
+                if (networkResponse && networkResponse.status === 200) {
+                    const responseClone = networkResponse.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseClone);
+                    });
+                }
+                return networkResponse;
+            }).catch(async () => {
                 const cache = await caches.open(CACHE_NAME);
                 const cachedResponse = await cache.match(event.request);
                 if (cachedResponse) {
@@ -67,4 +75,17 @@ self.addEventListener('fetch', (event) => {
             return cachedResponse || fetchPromise;
         })
     );
+});
+
+// 4. Background Sync API untuk Antrean Presensi Offline PWA
+self.addEventListener('sync', (event) => {
+    if (event.tag === 'sync-offline-attendance') {
+        event.waitUntil(
+            self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+                clients.forEach((client) => {
+                    client.postMessage({ type: 'SYNC_OFFLINE_ATTENDANCE' });
+                });
+            })
+        );
+    }
 });

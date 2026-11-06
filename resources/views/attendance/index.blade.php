@@ -46,6 +46,45 @@
                 </div>
             @endif
 
+            <!-- Banner Status Jaringan & Antrean Presensi PWA Offline-First -->
+            <div x-show="!isOnline || offlineQueue.length > 0 || offlineSyncSuccessMessage" x-transition class="rounded-xl border shadow-sm overflow-hidden"
+                 :class="!isOnline ? 'bg-amber-50 border-amber-300' : (offlineQueue.length > 0 ? 'bg-blue-50 border-blue-300' : 'bg-emerald-50 border-emerald-300')">
+                <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
+                             :class="!isOnline ? 'bg-amber-200/70 text-amber-800' : (offlineQueue.length > 0 ? 'bg-blue-200/70 text-blue-800' : 'bg-emerald-200/70 text-emerald-800')">
+                            <span x-text="!isOnline ? '📴' : (offlineQueue.length > 0 ? '🔄' : '✅')"></span>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-xs sm:text-sm font-bold"
+                                    :class="!isOnline ? 'text-amber-900' : (offlineQueue.length > 0 ? 'text-blue-900' : 'text-emerald-900')"
+                                    x-text="!isOnline ? 'Mode Presensi Offline-First Aktif (Tanpa Sinyal Internet)' : (offlineQueue.length > 0 ? 'Antrean Presensi Offline Siap Disinkronkan (' + offlineQueue.length + ' Data)' : 'Sinkronisasi Presensi Offline Berhasil')">
+                                </h4>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                                      :class="isOnline ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' : 'bg-amber-200 text-amber-900'">
+                                    <span x-text="isOnline ? '🟢 Online' : '⚡ Offline PWA'"></span>
+                                </span>
+                            </div>
+                            <p class="text-xs mt-0.5 leading-relaxed"
+                               :class="!isOnline ? 'text-amber-800' : (offlineQueue.length > 0 ? 'text-blue-800' : 'text-emerald-800')"
+                               x-text="offlineSyncSuccessMessage ? offlineSyncSuccessMessage : (!isOnline ? 'Anda tetap dapat melakukan Check-In/Check-Out selama GPS berada di dalam radius ≤ 75m & lolos Liveness Kamera. Data dikunci secara kriptografi di perangkat dan otomatis terkirim saat sinyal kembali.' : 'Terdapat rekaman presensi di memori perangkat Anda yang menunggu pengiriman ke server.')">
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0" x-show="offlineQueue.length > 0">
+                        <button type="button"
+                                @click="syncOfflineQueue()"
+                                :disabled="!isOnline || isSyncingOffline"
+                                class="px-3.5 py-2 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 transition shadow-sm flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" :class="{ 'animate-spin': isSyncingOffline }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            <span x-text="isSyncingOffline ? 'Menyinkronkan...' : 'Sinkronkan Sekarang (' + offlineQueue.length + ')'"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Ringkasan Status Presensi Hari Ini -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-4 sm:p-5 bg-gradient-to-r from-slate-800 to-slate-900 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -621,6 +660,13 @@
                 devicePlatform: navigator.platform || (navigator.userAgentData ? navigator.userAgentData.platform : 'Unknown'),
                 isMock: false,
 
+                // Pilar 4: PWA Offline-First State & IndexedDB Queue
+                offlineSigningKey: '{{ $offlineSigningKey ?? "" }}',
+                isOnline: navigator.onLine,
+                offlineQueue: [],
+                isSyncingOffline: false,
+                offlineSyncSuccessMessage: '',
+
                 // Map & Form State
                 map: null,
                 userMarker: null,
@@ -635,6 +681,27 @@
                     this.startTokenCountdown();
                     this.detectMockOrHeadless();
                     this.deviceFingerprint = await this.generateDeviceFingerprint();
+                    await this.loadOfflineQueue();
+
+                    window.addEventListener('online', () => {
+                        this.isOnline = true;
+                        this.refreshToken();
+                        this.syncOfflineQueue();
+                    });
+                    window.addEventListener('offline', () => {
+                        this.isOnline = false;
+                    });
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.addEventListener('message', (event) => {
+                            if (event.data && event.data.type === 'SYNC_OFFLINE_ATTENDANCE') {
+                                this.syncOfflineQueue();
+                            }
+                        });
+                    }
+
+                    if (this.isOnline && this.offlineQueue.length > 0) {
+                        this.syncOfflineQueue();
+                    }
 
                     this.$nextTick(() => {
                         this.initMap();
@@ -659,7 +726,7 @@
                            this.livenessVerified &&
                            this.photoTaken &&
                            this.isWithinRadius &&
-                           this.tokenRemaining > 0;
+                           (this.tokenRemaining > 0 || !this.isOnline || !!this.offlineSigningKey);
                 },
 
                 // -------------------------------------------------------------
@@ -671,7 +738,7 @@
                         if (this.tokenRemaining > 0) {
                             this.tokenRemaining--;
                             // Auto-refresh token jika sisa <= 5 detik agar presensi tidak gagal di tengah jalan
-                            if (this.tokenRemaining <= 5 && !this.isSubmitting) {
+                            if (this.tokenRemaining <= 5 && !this.isSubmitting && this.isOnline) {
                                 this.refreshToken();
                             }
                         }
@@ -679,6 +746,7 @@
                 },
 
                 async refreshToken() {
+                    if (!this.isOnline) return;
                     try {
                         const response = await fetch('{{ route("presensi.token") }}', {
                             headers: { 'Accept': 'application/json' }
@@ -687,9 +755,12 @@
                         if (data.success && data.token) {
                             this.attendanceToken = data.token;
                             this.tokenRemaining = data.expires_in || 60;
+                            if (data.offline_signing_key) {
+                                this.offlineSigningKey = data.offline_signing_key;
+                            }
                         }
                     } catch (e) {
-                        console.warn('Auto refresh token gagal:', e);
+                        console.warn('Auto refresh token gagal (kemungkinan mode offline):', e);
                     }
                 },
 
@@ -1158,6 +1229,7 @@
                 // LEAFLET MAP VISUALIZATION
                 // -------------------------------------------------------------
                 initMap() {
+                    if (typeof L === 'undefined') return;
                     const startLat = this.currentLocationInfo.is_locked ? this.currentLocationInfo.lat : this.currentLat;
                     const startLng = this.currentLocationInfo.is_locked ? this.currentLocationInfo.lng : this.currentLng;
 
@@ -1236,7 +1308,174 @@
                 },
 
                 // -------------------------------------------------------------
-                // SUBMIT PRESENSI KE BACKEND DENGAN VALIDASI LENGKAP
+                // PILAR 4: PWA OFFLINE-FIRST INDEXEDDB & CRYPTOGRAPHIC PROOF
+                // -------------------------------------------------------------
+                async computeSha256(message) {
+                    if (window.crypto && window.crypto.subtle) {
+                        const msgBuffer = new TextEncoder().encode(message);
+                        const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgBuffer);
+                        const hashArray = Array.from(new Uint8Array(hashBuffer));
+                        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                    }
+                    // Fallback pure-JS SHA-256 untuk jaringan lokal non-HTTPS
+                    function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); }
+                    const mathPow = Math.pow, maxWord = mathPow(2, 32);
+                    let result = '', words = [], asciiBitLength = message.length * 8;
+                    let hash = [], k = [], primeCounter = 0, isComposite = {};
+                    for (let candidate = 2; primeCounter < 64; candidate++) {
+                        if (!isComposite[candidate]) {
+                            for (let i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+                            hash[primeCounter] = (mathPow(candidate, .5) * maxWord) | 0;
+                            k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+                        }
+                    }
+                    message += '\x80';
+                    while (message.length % 64 - 56) message += '\x00';
+                    for (let i = 0; i < message.length; i++) {
+                        const j = message.charCodeAt(i);
+                        words[i >> 2] |= j << ((3 - i) % 4) * 8;
+                    }
+                    words[words.length] = ((asciiBitLength / maxWord) | 0);
+                    words[words.length] = (asciiBitLength);
+                    for (let j = 0; j < words.length;) {
+                        const w = words.slice(j, j += 16), oldHash = hash.slice(0);
+                        for (let i = 0; i < 64; i++) {
+                            const w15 = w[i - 15], w2 = w[i - 2];
+                            const a = hash[0], e = hash[4];
+                            const temp1 = hash[7]
+                                + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+                                + ((e & hash[5]) ^ ((~e) & hash[6]))
+                                + k[i]
+                                + (w[i] = (i < 16) ? w[i] : (
+                                    w[i - 16]
+                                    + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+                                    + w[i - 7]
+                                    + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+                                ) | 0);
+                            const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+                                + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+                            hash = [(temp1 + temp2) | 0].concat(hash);
+                            hash[4] = (hash[4] + temp1) | 0;
+                            hash.pop();
+                        }
+                        for (let i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+                    }
+                    for (let i = 0; i < 8; i++) {
+                        for (let j = 3; j + 1; j--) {
+                            const b = (hash[i] >> (j * 8)) & 255;
+                            result += ((b < 16) ? 0 : '') + b.toString(16);
+                        }
+                    }
+                    return result;
+                },
+
+                openOfflineDb() {
+                    return new Promise((resolve, reject) => {
+                        if (!('indexedDB' in window)) {
+                            return reject(new Error('IndexedDB tidak didukung pada peramban ini.'));
+                        }
+                        const request = indexedDB.open('sikap_offline_attendance_db', 1);
+                        request.onupgradeneeded = (e) => {
+                            const db = e.target.result;
+                            if (!db.objectStoreNames.contains('outbox')) {
+                                db.createObjectStore('outbox', { keyPath: 'id', autoIncrement: true });
+                            }
+                        };
+                        request.onsuccess = (e) => resolve(e.target.result);
+                        request.onerror = (e) => reject(e.target.error);
+                    });
+                },
+
+                async loadOfflineQueue() {
+                    try {
+                        const db = await this.openOfflineDb();
+                        const tx = db.transaction('outbox', 'readonly');
+                        const store = tx.objectStore('outbox');
+                        const req = store.getAll();
+                        this.offlineQueue = await new Promise((res, rej) => {
+                            req.onsuccess = () => res(req.result || []);
+                            req.onerror = () => rej(req.error);
+                        });
+                    } catch (e) {
+                        this.offlineQueue = [];
+                    }
+                },
+
+                async saveToOfflineQueue(payload) {
+                    const db = await this.openOfflineDb();
+                    const tx = db.transaction('outbox', 'readwrite');
+                    const store = tx.objectStore('outbox');
+                    await new Promise((res, rej) => {
+                        const req = store.add(payload);
+                        req.onsuccess = () => res(req.result);
+                        req.onerror = () => rej(req.error);
+                    });
+                    await this.loadOfflineQueue();
+                    if ('serviceWorker' in navigator && 'SyncManager' in window) {
+                        try {
+                            const reg = await navigator.serviceWorker.ready;
+                            await reg.sync.register('sync-offline-attendance');
+                        } catch (_) {}
+                    }
+                },
+
+                async removeOfflineItem(id) {
+                    const db = await this.openOfflineDb();
+                    const tx = db.transaction('outbox', 'readwrite');
+                    const store = tx.objectStore('outbox');
+                    await new Promise((res, rej) => {
+                        const req = store.delete(id);
+                        req.onsuccess = () => res();
+                        req.onerror = () => rej(req.error);
+                    });
+                    await this.loadOfflineQueue();
+                },
+
+                async syncOfflineQueue() {
+                    if (!this.isOnline || this.isSyncingOffline) return;
+                    await this.loadOfflineQueue();
+                    if (this.offlineQueue.length === 0) return;
+
+                    this.isSyncingOffline = true;
+                    this.submitErrorMessage = '';
+                    let syncedCount = 0;
+
+                    try {
+                        for (const item of this.offlineQueue) {
+                            const response = await fetch('{{ route("presensi.store") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify(item.payload)
+                            });
+
+                            const result = await response.json();
+                            if (response.ok && result.success) {
+                                await this.removeOfflineItem(item.id);
+                                syncedCount++;
+                            } else if (response.status === 422) {
+                                // Jika ditolak validasi permanen (misal sudah check-in/out atau kedaluwarsa), hapus dari antrean & tampilkan info
+                                await this.removeOfflineItem(item.id);
+                                this.submitErrorMessage = result.message || 'Data presensi offline ditolak oleh validasi server.';
+                            }
+                        }
+
+                        if (syncedCount > 0) {
+                            this.offlineSyncSuccessMessage = `Berhasil menyinkronkan ${syncedCount} data presensi offline ke server SIKAP! Memuat ulang...`;
+                            setTimeout(() => window.location.reload(), 1500);
+                        }
+                    } catch (e) {
+                        console.warn('Sinkronisasi antrean presensi offline tertunda:', e);
+                    } finally {
+                        this.isSyncingOffline = false;
+                    }
+                },
+
+                // -------------------------------------------------------------
+                // SUBMIT PRESENSI KE BACKEND DENGAN VALIDASI LENGKAP & OFFLINE FALLBACK
                 // -------------------------------------------------------------
                 async submitAttendance(action) {
                     this.submitErrorMessage = '';
@@ -1272,6 +1511,52 @@
                     }
 
                     this.isSubmitting = true;
+                    const capturedAtSec = Math.floor(Date.now() / 1000);
+                    const latFixed = Number(this.currentLat).toFixed(6);
+                    const lngFixed = Number(this.currentLng).toFixed(6);
+                    const canonical = `${this.offlineSigningKey}|${this.type.toLowerCase()}|${action}|${latFixed}|${lngFixed}|${capturedAtSec}|${this.deviceFingerprint}`;
+                    const offlineProofHash = await this.computeSha256(canonical);
+
+                    const basePayload = {
+                        attendance_type: this.type,
+                        action: action,
+                        latitude: this.currentLat,
+                        longitude: this.currentLng,
+                        photo: this.photoData,
+                        notes: this.notes,
+                        accuracy: this.gpsAccuracy,
+                        altitude: this.gpsAltitude,
+                        speed: this.gpsSpeed,
+                        is_mock: this.isMock,
+                        client_timestamp: Date.now(),
+                        liveness_verified: this.livenessVerified,
+                        liveness_challenge: this.currentChallenge.id,
+                        device_fingerprint: this.deviceFingerprint,
+                        device_platform: this.devicePlatform,
+                        token: this.attendanceToken
+                    };
+
+                    // Jika perangkat sedang Offline atau token online habis karena blank spot, simpan ke antrean Offline PWA
+                    if (!this.isOnline || this.tokenRemaining <= 0) {
+                        try {
+                            await this.saveToOfflineQueue({
+                                captured_at: capturedAtSec,
+                                payload: {
+                                    ...basePayload,
+                                    is_offline_sync: true,
+                                    offline_captured_at: capturedAtSec,
+                                    offline_proof_hash: offlineProofHash
+                                }
+                            });
+                            this.offlineSyncSuccessMessage = 'Presensi berhasil dikunci secara kriptografi di memori perangkat (Mode Offline PWA) dan akan otomatis dikirim saat sinyal internet kembali aktif!';
+                            alert('📴 Mode Offline PWA: Presensi Anda telah berhasil direkam & dikunci di perangkat pada pukul ' + new Date(capturedAtSec * 1000).toLocaleTimeString('id-ID') + '. Data akan otomatis disinkronkan ke server begitu sinyal kembali.');
+                        } catch (dbErr) {
+                            this.submitErrorMessage = 'Gagal menyimpan presensi ke memori offline: ' + dbErr.message;
+                        } finally {
+                            this.isSubmitting = false;
+                        }
+                        return;
+                    }
 
                     try {
                         const response = await fetch('{{ route("presensi.store") }}', {
@@ -1281,24 +1566,7 @@
                                 'Accept': 'application/json',
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                             },
-                            body: JSON.stringify({
-                                attendance_type: this.type,
-                                action: action,
-                                latitude: this.currentLat,
-                                longitude: this.currentLng,
-                                photo: this.photoData,
-                                notes: this.notes,
-                                accuracy: this.gpsAccuracy,
-                                altitude: this.gpsAltitude,
-                                speed: this.gpsSpeed,
-                                is_mock: this.isMock,
-                                client_timestamp: Date.now(),
-                                liveness_verified: this.livenessVerified,
-                                liveness_challenge: this.currentChallenge.id,
-                                device_fingerprint: this.deviceFingerprint,
-                                device_platform: this.devicePlatform,
-                                token: this.attendanceToken
-                            })
+                            body: JSON.stringify(basePayload)
                         });
 
                         const result = await response.json();
@@ -1311,6 +1579,21 @@
                         window.location.reload();
 
                     } catch (err) {
+                        // Jika gagal karena jaringan terputus tiba-tiba (NetworkError / Failed to fetch), alihkan ke antrean Offline PWA
+                        if (err instanceof TypeError || !navigator.onLine) {
+                            this.isOnline = false;
+                            await this.saveToOfflineQueue({
+                                captured_at: capturedAtSec,
+                                payload: {
+                                    ...basePayload,
+                                    is_offline_sync: true,
+                                    offline_captured_at: capturedAtSec,
+                                    offline_proof_hash: offlineProofHash
+                                }
+                            });
+                            this.offlineSyncSuccessMessage = 'Koneksi terputus saat mengirim. Presensi Anda telah diamankan di antrean Offline PWA dan akan otomatis terkirim saat sinyal pulih!';
+                            return;
+                        }
                         console.error('Submit attendance error:', err);
                         this.submitErrorMessage = err.message || 'Terjadi kesalahan sistem.';
                     } finally {

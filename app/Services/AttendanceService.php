@@ -101,39 +101,75 @@ class AttendanceService
     }
 
     /**
-     * Proses Presensi (Check-in atau Check-out)
-     *
-     * @param User $user
-     * @param array{
-     *     attendance_type: string,
-     *     action?: string,
-     *     latitude: float,
-     *     longitude: float,
-     *     photo: string,
-     *     notes?: string|null,
-     *     accuracy?: float|int|null,
-     *     altitude?: float|int|null,
-     *     speed?: float|int|null,
-     *     is_mock?: bool|null,
-     *     liveness_verified?: bool|null,
-     *     liveness_challenge?: string|null,
-     *     face_similarity_score?: float|null,
-     *     device_fingerprint?: string|null,
-     *     device_platform?: string|null,
-     *     token?: string|null
-     * } $payload
-     * @return Attendance
-     * @throws ValidationException
+     * Generate kunci tanda tangan harian khusus user untuk membuktikan integritas presensi Offline PWA.
+     */
+    public function generateOfflineSigningKey(User $user, ?string $date = null): string
+    {
+        $dateStr = $date ?? Carbon::now('Asia/Jakarta')->toDateString();
+        $secret  = (string) config('app.key', 'sikap-fkp-unri-offline-secret');
+        return hash_hmac('sha256', "sikap_offline_att:{$user->id}:{$dateStr}", $secret);
+    }
+
+    /**
+     * Hitung SHA-256 Proof Hash atas parameter kritikal presensi offline.
+     */
+    public function computeOfflineProofHash(
+        string $signingKey,
+        string $type,
+        string $action,
+        float $latitude,
+        float $longitude,
+        int $capturedAtSec,
+        string $deviceFingerprint
+    ): string {
+        $latStr = number_format($latitude, 6, '.', '');
+        $lngStr = number_format($longitude, 6, '.', '');
+        $canonical = "{$signingKey}|" . strtolower($type) . "|{$action}|{$latStr}|{$lngStr}|{$capturedAtSec}|{$deviceFingerprint}";
+        return hash('sha256', $canonical);
+    }
+
+    /**
+     * Validasi bukti kriptografi presensi offline & bakar hash agar tidak bisa di-replay.
+     */
+    public function validateAndBurnOfflineProof(User $user, array $payload, string $type, string $action, int $capturedAtSec, Carbon $capturedTime): bool
+    {
+        $proofHash = (string) ($payload['offline_proof_hash'] ?? '');
+        if (strlen($proofHash) !== 64) {
+            return false;
+        }
+
+        $signingKey = $this->generateOfflineSigningKey($user, $capturedTime->toDateString());
+        $expectedHash = $this->computeOfflineProofHash(
+            $signingKey,
+            $type,
+            $action,
+            (float) $payload['latitude'],
+            (float) $payload['longitude'],
+            $capturedAtSec,
+            (string) ($payload['device_fingerprint'] ?? '')
+        );
+
+        if (!hash_equals($expectedHash, strtolower($proofHash))) {
+            return false;
+        }
+
+        $replayCacheKey = "att_offline_burned_{$user->id}_{$expectedHash}";
+        if (Cache::has($replayCacheKey)) {
+            return false;
+        }
+
+        // Bakar bukti offline selama 24 jam agar tidak bisa dikirim berulang (Anti-Replay)
+        Cache::put($replayCacheKey, true, 86400);
+        return true;
+    }
+
+    /**
+     * Proses Presensi (Check-in atau Check-out), mendukung Mode Real-Time Online & PWA Offline-First Sync
      */
     public function processAttendance(User $user, array $payload): Attendance
     {
-        // 1. Anti-Replay Token (Single Use, 60s TTL)
-        $token = $payload['token'] ?? null;
-        if (!$this->validateAndBurnToken($user, $token)) {
-            throw ValidationException::withMessages([
-                'token' => 'Sesi presensi telah kedaluwarsa atau token tidak valid (Anti-Replay Protection). Silakan refresh halaman dan lakukan presensi kembali.',
-            ]);
-        }
+        $now = Carbon::now('Asia/Jakarta');
+        $isOfflineSync = !empty($payload['is_offline_sync']);
 
         $type = strtolower($payload['attendance_type'] ?? 'wfo');
         if (!in_array($type, ['wfo', 'wfh'])) {
@@ -162,17 +198,6 @@ class AttendanceService
             ]);
         }
 
-        // Validasi Anti-Tamper Waktu Perangkat (Timestamp Tamper Detection)
-        if (!empty($payload['client_timestamp'])) {
-            $clientTimeSec = (int) ($payload['client_timestamp'] > 10000000000 ? ($payload['client_timestamp'] / 1000) : $payload['client_timestamp']);
-            $timeDifference = abs(Carbon::now('Asia/Jakarta')->timestamp - $clientTimeSec);
-            if ($timeDifference > 300) { // Toleransi maksimal 5 menit
-                throw ValidationException::withMessages([
-                    'client_timestamp' => 'Presensi ditolak: Waktu pada perangkat smartphone/browser Anda tidak sinkron dengan waktu server resmi (selisih ' . round($timeDifference / 60, 1) . ' menit). Pastikan jam perangkat diatur ke "Otomatis / Waktu Jaringan".',
-                ]);
-            }
-        }
-
         // 3. Pilar 2: Uji Keaktifan Wajah (Liveness Detection)
         $livenessVerified = !empty($payload['liveness_verified']);
         $livenessChallenge = $payload['liveness_challenge'] ?? 'blink';
@@ -195,7 +220,6 @@ class AttendanceService
             ]);
         }
 
-        $now = Carbon::now('Asia/Jakarta');
         $today = $now->toDateString();
         $existingAttendance = Attendance::where('user_id', $user->id)
             ->whereDate('attendance_date', $today)
@@ -205,6 +229,63 @@ class AttendanceService
         $action = $payload['action'] ?? null;
         if (!$action) {
             $action = (!$existingAttendance || !$existingAttendance->check_in_time) ? 'check_in' : 'check_out';
+        }
+
+        // 1. Validasi Token Online vs Bukti Kriptografi Offline-First PWA
+        $effectiveTime = $now;
+        if ($isOfflineSync) {
+            $rawCaptured = $payload['offline_captured_at'] ?? null;
+            if (empty($rawCaptured) || !is_numeric($rawCaptured)) {
+                throw ValidationException::withMessages([
+                    'offline_captured_at' => 'Waktu perekaman presensi offline tidak valid.',
+                ]);
+            }
+
+            $capturedAtSec = (int) ($rawCaptured > 10000000000 ? floor($rawCaptured / 1000) : $rawCaptured);
+            $capturedTime  = Carbon::createFromTimestamp($capturedAtSec, 'Asia/Jakarta');
+
+            // Waktu tangkap offline tidak boleh berada di masa depan (> 60 detik dari waktu server)
+            // dan wajib berada pada tanggal hari kerja yang sama (maksimal 14 jam ke belakang)
+            if ($capturedTime->timestamp > ($now->timestamp + 60)) {
+                throw ValidationException::withMessages([
+                    'offline_captured_at' => 'Presensi offline ditolak: Waktu perekaman perangkat melampaui waktu server resmi.',
+                ]);
+            }
+
+            if ($capturedTime->toDateString() !== $today || ($now->timestamp - $capturedTime->timestamp) > 50400) {
+                throw ValidationException::withMessages([
+                    'offline_captured_at' => 'Presensi offline telah kedaluwarsa (melebihi batas hari kerja yang sama).',
+                ]);
+            }
+
+            if (!$this->validateAndBurnOfflineProof($user, $payload, $type, $action, $capturedAtSec, $capturedTime)) {
+                throw ValidationException::withMessages([
+                    'offline_proof_hash' => 'Presensi offline ditolak: Tanda tangan kriptografi (Offline Proof Hash) tidak sah, telah dimodifikasi, atau sudah pernah disinkronkan.',
+                ]);
+            }
+
+            $effectiveTime = $capturedTime;
+            $syncNote = "[PWA Offline Sync: Direkam {$capturedTime->format('H:i')} WIB, Tersinkron {$now->format('H:i')} WIB]";
+            $notes = $notes ? "{$notes} {$syncNote}" : $syncNote;
+        } else {
+            // Mode Online Real-Time: Anti-Replay Token (Single Use, 60s TTL)
+            $token = $payload['token'] ?? null;
+            if (!$this->validateAndBurnToken($user, $token)) {
+                throw ValidationException::withMessages([
+                    'token' => 'Sesi presensi telah kedaluwarsa atau token tidak valid (Anti-Replay Protection). Silakan refresh halaman dan lakukan presensi kembali.',
+                ]);
+            }
+
+            // Validasi Anti-Tamper Waktu Perangkat (Timestamp Tamper Detection)
+            if (!empty($payload['client_timestamp'])) {
+                $clientTimeSec = (int) ($payload['client_timestamp'] > 10000000000 ? ($payload['client_timestamp'] / 1000) : $payload['client_timestamp']);
+                $timeDifference = abs($now->timestamp - $clientTimeSec);
+                if ($timeDifference > 300) { // Toleransi maksimal 5 menit
+                    throw ValidationException::withMessages([
+                        'client_timestamp' => 'Presensi ditolak: Waktu pada perangkat smartphone/browser Anda tidak sinkron dengan waktu server resmi (selisih ' . round($timeDifference / 60, 1) . ' menit). Pastikan jam perangkat diatur ke "Otomatis / Waktu Jaringan".',
+                    ]);
+                }
+            }
         }
 
         if ($action === 'check_out') {
@@ -254,7 +335,7 @@ class AttendanceService
                 $latitude,
                 $longitude
             );
-            $secondsElapsed = Carbon::parse($existingAttendance->check_in_time)->diffInSeconds($now);
+            $secondsElapsed = Carbon::parse($existingAttendance->check_in_time)->diffInSeconds($effectiveTime);
             if ($secondsElapsed > 0) {
                 $speedKmh = ($distanceFromCheckIn / 1000) / ($secondsElapsed / 3600);
                 // Jarak > 2 km dengan rata-rata kecepatan > 120 km/jam
@@ -280,11 +361,11 @@ class AttendanceService
             if ($type === 'wfh') {
                 $location->wfh_latitude = $latitude;
                 $location->wfh_longitude = $longitude;
-                $location->wfh_locked_at = $now;
+                $location->wfh_locked_at = $effectiveTime;
             } else {
                 $location->wfo_latitude = $latitude;
                 $location->wfo_longitude = $longitude;
-                $location->wfo_locked_at = $now;
+                $location->wfo_locked_at = $effectiveTime;
             }
             $location->save();
 
@@ -313,7 +394,7 @@ class AttendanceService
 
         return DB::transaction(function () use (
             $user, $type, $today, $action, $latitude, $longitude, $distanceMeters,
-            $photoPath, $notes, $existingAttendance, $now,
+            $photoPath, $notes, $existingAttendance, $effectiveTime,
             $ipAddress, $userAgent, $accuracy, $altitude, $speed, $isMock,
             $livenessVerified, $livenessChallenge, $faceSimilarityScore,
             $deviceFingerprint, $devicePlatform, $isSuspicious, $suspiciousReasonText
@@ -323,12 +404,12 @@ class AttendanceService
                     // Update check-in jika belum check out
                     $existingAttendance->update([
                         'attendance_type' => $type,
-                        'check_in_time' => $now,
+                        'check_in_time' => $effectiveTime,
                         'check_in_latitude' => $latitude,
                         'check_in_longitude' => $longitude,
                         'check_in_distance_meters' => $distanceMeters,
                         'check_in_photo_path' => $photoPath,
-                        'status' => $this->determineStatus($now),
+                        'status' => $this->determineStatus($effectiveTime),
                         'notes' => $notes ?: $existingAttendance->notes,
                         'ip_address' => $ipAddress,
                         'user_agent' => $userAgent,
@@ -351,12 +432,12 @@ class AttendanceService
                     'user_id' => $user->id,
                     'attendance_type' => $type,
                     'attendance_date' => $today,
-                    'check_in_time' => $now,
+                    'check_in_time' => $effectiveTime,
                     'check_in_latitude' => $latitude,
                     'check_in_longitude' => $longitude,
                     'check_in_distance_meters' => $distanceMeters,
                     'check_in_photo_path' => $photoPath,
-                    'status' => $this->determineStatus($now),
+                    'status' => $this->determineStatus($effectiveTime),
                     'notes' => $notes,
                     'ip_address' => $ipAddress,
                     'user_agent' => $userAgent,
@@ -376,7 +457,7 @@ class AttendanceService
 
             // Check-out
             $existingAttendance->update([
-                'check_out_time' => $now,
+                'check_out_time' => $effectiveTime,
                 'check_out_latitude' => $latitude,
                 'check_out_longitude' => $longitude,
                 'check_out_distance_meters' => $distanceMeters,

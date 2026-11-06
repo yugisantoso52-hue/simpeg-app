@@ -39,6 +39,7 @@ class AttendanceController extends Controller
         $maxRadius = AttendanceService::MAX_ALLOWED_RADIUS_METERS;
         $attendanceToken = $this->service->generateAttendanceToken($user);
         $tokenTtl = AttendanceService::ATTENDANCE_TOKEN_TTL_SECONDS;
+        $offlineSigningKey = $this->service->generateOfflineSigningKey($user);
 
         return view('attendance.index', compact(
             'user',
@@ -47,7 +48,8 @@ class AttendanceController extends Controller
             'recentAttendances',
             'maxRadius',
             'attendanceToken',
-            'tokenTtl'
+            'tokenTtl',
+            'offlineSigningKey'
         ));
     }
 
@@ -56,11 +58,13 @@ class AttendanceController extends Controller
      */
     public function refreshToken(Request $request): JsonResponse
     {
-        $token = $this->service->generateAttendanceToken($request->user());
+        $user = $request->user();
+        $token = $this->service->generateAttendanceToken($user);
         return response()->json([
             'success' => true,
             'token' => $token,
             'expires_in' => AttendanceService::ATTENDANCE_TOKEN_TTL_SECONDS,
+            'offline_signing_key' => $this->service->generateOfflineSigningKey($user),
         ]);
     }
 
