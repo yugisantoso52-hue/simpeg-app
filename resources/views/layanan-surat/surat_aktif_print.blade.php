@@ -362,18 +362,23 @@
                     @else
                         {{ $surat->penandatangan_jabatan }},
                     @endif
-                    @if(!empty($isDisahkan))
+                    @php
+                        $isSuratSah = !empty($isDisahkan) || !empty($surat->ttd_pimpinan_at) || $surat->status === 'selesai';
+                    @endphp
+                    @if($isSuratSah)
                         <div style="text-align: left; margin: 4px 0 4px 0;">
                             @if(!empty($qrTtePimpinanUri))
                                 <img src="{{ $qrTtePimpinanUri }}" style="width: 46px; height: 46px; display: inline-block;" />
                             @elseif(!empty($qrCodeDataUri))
                                 <img src="{{ $qrCodeDataUri }}" style="width: 46px; height: 46px; display: inline-block;" />
+                            @else
+                                <img src="{{ \App\Services\QrCodeService::generateDataUri($verifyUrl . '?tte=pimpinan&nip=' . ($surat->penandatangan_nip ?? '')) }}" style="width: 46px; height: 46px; display: inline-block;" />
                             @endif
                             <div style="font-size: 6.2pt; color: #15803d; font-weight: bold; margin-top: 1px;">
                                 Ditandatangani secara Elektronik (TTE)
                             </div>
                             <div style="font-size: 5.6pt; color: #64748b;">
-                                SIKAP FKP UNRI &bull; {{ $disahkanAt ?? now()->format('d/m/Y H:i') . ' WIB' }}
+                                SIKAP FKP UNRI &bull; {{ $disahkanAt ?? ($surat->ttd_pimpinan_at ? $surat->ttd_pimpinan_at->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') }}
                             </div>
                         </div>
                         <strong style="text-decoration: underline;">{{ str_replace(['M.kep', 'Sp.kep'], ['M.Kep', 'Sp.Kep'], $surat->penandatangan_nama) }}</strong><br>

@@ -547,11 +547,15 @@ class PengajuanKarirController extends Controller
                 }
 
                 $updateData = [
-                    'status'              => 'diverifikasi_admin',
                     'verifikasi_admin_at' => now(),
                     'verifikasi_admin_by' => $user->id,
                     'catatan_verifikator' => $catatan ?? 'Telah diverifikasi kelengkapan berkas usulan karir (SK terakhir, SKP, dll) oleh Admin Kepegawaian.',
                 ];
+
+                // Hanya ubah status jika belum memasuki tahap verifikasi lanjutan (Pokja, Kabag, WD2)
+                if (in_array($pengajuan->status, ['diajukan', 'draft', null, ''])) {
+                    $updateData['status'] = 'diverifikasi_admin';
+                }
 
                 if ($request->filled('nomor_surat_input')) {
                     $nomorInput = trim((string) $request->input('nomor_surat_input'));
@@ -574,11 +578,14 @@ class PengajuanKarirController extends Controller
                 }
 
                 $dataPokja = [
-                    'status'              => 'diverifikasi_kapokja',
                     'paraf_kapokja_at'    => now(),
                     'paraf_kapokja_by'    => $pejabatLogin?->id,
                     'catatan_verifikator' => $catatan ?? 'Telah diperiksa kelengkapan berkas administrasi dan diverifikasi sah oleh Ka Pokja Keu-Kepeg.',
                 ];
+
+                if (!in_array($pengajuan->status, ['diverifikasi_kabag', 'disetujui_wd2', 'diverifikasi_wd2', 'disetujui_dekan', 'selesai'])) {
+                    $dataPokja['status'] = 'diverifikasi_kapokja';
+                }
 
                 $pengajuan->update($dataPokja);
                 $msg = '2. Paraf Ka Pokja Keuangan dan Kepegawaian berhasil dibubuhkan.';
@@ -594,11 +601,14 @@ class PengajuanKarirController extends Controller
                 }
 
                 $dataKabag = [
-                    'status'              => 'diverifikasi_kabag',
                     'paraf_kabag_at'      => now(),
                     'paraf_kabag_by'      => $pejabatLogin?->id,
                     'catatan_verifikator' => $catatan ?? 'Telah ditelaah format tata naskah dinas dan diparaf oleh Kepala Bagian Umum.',
                 ];
+
+                if (!in_array($pengajuan->status, ['disetujui_wd2', 'diverifikasi_wd2', 'disetujui_dekan', 'selesai'])) {
+                    $dataKabag['status'] = 'diverifikasi_kabag';
+                }
 
                 $pengajuan->update($dataKabag);
                 $msg = '3. Paraf Kepala Bagian Umum berhasil dibubuhkan.';
@@ -613,12 +623,17 @@ class PengajuanKarirController extends Controller
                     return back()->with('error', 'SOP Tata Naskah: Naskah dinas harus melalui telaah paraf koordinasi Kepala Bagian Umum sebelum ditandatangani Wakil Dekan II.');
                 }
 
+                $nowTime = now();
                 $dataWd2 = [
                     'status'              => 'disetujui_wd2',
-                    'paraf_wd2_at'        => now(),
+                    'paraf_wd2_at'        => $nowTime,
                     'paraf_wd2_by'        => $pejabatLogin?->id,
                     'catatan_verifikator' => $catatan ?? 'Telah ditandatangani dan disetujui secara resmi oleh Wakil Dekan Bidang Keuangan dan Umum.',
                 ];
+
+                if (\Illuminate\Support\Facades\Schema::hasColumn('pengajuan_karir', 'ttd_wd2_at')) {
+                    $dataWd2['ttd_wd2_at'] = $nowTime;
+                }
 
                 $pengajuan->update($dataWd2);
 

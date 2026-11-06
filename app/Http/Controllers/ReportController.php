@@ -153,12 +153,17 @@ class ReportController extends Controller
         $verifyUrl  = route('verify.document', ['code' => $verifyCode]);
 
         // Status Faktual Verifikasi & Paraf Berjenjang
-        $isDisahkan      = $pengajuan && in_array($pengajuan->status, ['disetujui_wd2', 'disetujui_dekan', 'selesai']);
-        $sudahParafPokja = (bool) ($pengajuan && $pengajuan->paraf_kapokja_at);
-        $sudahParafKabag = (bool) ($pengajuan && $pengajuan->paraf_kabag_at);
+        $isDisahkan      = $pengajuan && (
+            in_array($pengajuan->status, ['disetujui_wd2', 'diverifikasi_wd2', 'disetujui_dekan', 'selesai'])
+            || !empty($pengajuan->paraf_wd2_at)
+            || !empty($pengajuan->ttd_wd2_at)
+            || !empty($pengajuan->ttd_dekan_at)
+        );
+        $sudahParafPokja = (bool) ($pengajuan && !empty($pengajuan->paraf_kapokja_at));
+        $sudahParafKabag = (bool) ($pengajuan && !empty($pengajuan->paraf_kabag_at));
 
-        $parafPokjaAt = $sudahParafPokja ? $pengajuan->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB' : null;
-        $parafKabagAt = $sudahParafKabag ? $pengajuan->paraf_kabag_at->format('d/m/Y H:i') . ' WIB' : null;
+        $parafPokjaAt = $sudahParafPokja ? \Carbon\Carbon::parse($pengajuan->paraf_kapokja_at)->format('d/m/Y H:i') . ' WIB' : null;
+        $parafKabagAt = $sudahParafKabag ? \Carbon\Carbon::parse($pengajuan->paraf_kabag_at)->format('d/m/Y H:i') . ' WIB' : null;
 
         $qrPokjaUri = $sudahParafPokja 
             ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '?paraf=kapokja&nip=' . $kapokjaData['nip']) 
@@ -168,7 +173,9 @@ class ReportController extends Controller
             : null;
         $qrCodeDataUri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl) : null;
         $qrTteWd2Uri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '?tte=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
-        $disahkanAt = $isDisahkan ? ($pengajuan?->updated_at ? $pengajuan->updated_at->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') : null;
+        
+        $tglDisahkan = $pengajuan?->paraf_wd2_at ?? $pengajuan?->ttd_wd2_at ?? $pengajuan?->ttd_dekan_at ?? $pengajuan?->updated_at;
+        $disahkanAt = $isDisahkan ? ($tglDisahkan ? \Carbon\Carbon::parse($tglDisahkan)->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') : null;
 
         $nomorSuratFormatted = !empty($pengajuan?->nomor_surat) 
             ? $pengajuan->nomor_surat 
@@ -244,7 +251,12 @@ class ReportController extends Controller
         $verifyUrl  = route('verify.document', ['code' => $verifyCodeKp]);
 
         // Status Faktual Verifikasi & Paraf Berjenjang
-        $isDisahkan      = $pengajuan && in_array($pengajuan->status ?? '', ['disetujui_wd2', 'disetujui_dekan', 'selesai']);
+        $isDisahkan      = $pengajuan && (
+            in_array($pengajuan->status ?? '', ['disetujui_wd2', 'diverifikasi_wd2', 'disetujui_dekan', 'selesai'])
+            || !empty($pengajuan->paraf_wd2_at)
+            || !empty($pengajuan->ttd_wd2_at)
+            || !empty($pengajuan->ttd_dekan_at)
+        );
         $sudahParafPokja = (bool) ($pengajuan && !empty($pengajuan->paraf_kapokja_at));
         $sudahParafKabag = (bool) ($pengajuan && !empty($pengajuan->paraf_kabag_at));
 
@@ -259,7 +271,9 @@ class ReportController extends Controller
             : null;
         $qrCodeDataUri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl) : null;
         $qrTteWd2Uri = $isDisahkan ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '?tte=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) : null;
-        $disahkanAt = $isDisahkan ? ($pengajuan?->updated_at ? Carbon::parse($pengajuan->updated_at)->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') : null;
+        
+        $tglDisahkan = $pengajuan?->paraf_wd2_at ?? $pengajuan?->ttd_wd2_at ?? $pengajuan?->ttd_dekan_at ?? $pengajuan?->updated_at;
+        $disahkanAt = $isDisahkan ? ($tglDisahkan ? Carbon::parse($tglDisahkan)->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') : null;
 
         $nomorSuratFormatted = !empty($pengajuan->nomor_surat)
             ? $pengajuan->nomor_surat

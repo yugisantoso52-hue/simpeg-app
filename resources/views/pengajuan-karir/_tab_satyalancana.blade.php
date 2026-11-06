@@ -306,7 +306,7 @@
                                             <span class="{{ $usl->verifikasi_admin_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">Admin</span> &rarr;
                                             <span class="{{ $usl->paraf_kapokja_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">Ka Pokja</span> &rarr;
                                             <span class="{{ $usl->paraf_kabag_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">Kabag</span> &rarr;
-                                            <span class="{{ $usl->ttd_wd2_at ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">WD II</span>
+                                            <span class="{{ ($usl->ttd_wd2_at || $usl->status === 'disetujui_wd2') ? 'text-emerald-700 font-bold' : 'text-slate-400' }}">WD II</span>
                                         </div>
                                     </div>
                                 </td>
@@ -419,7 +419,7 @@
                                                 @endif
 
                                                 {{-- 4. TTE WD2 --}}
-                                                @if($usl->ttd_wd2_at)
+                                                @if($usl->ttd_wd2_at || $usl->status === 'disetujui_wd2')
                                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300" title="4. Disahkan TTE WD2">
                                                         ✓ 4. Sah (WD2)
                                                     </span>

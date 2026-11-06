@@ -313,8 +313,9 @@
         }
 
         // TTE Atasan Langsung
-        $isAtasanSigned = (!empty($cuti->pertimbangan_atasan) && $cuti->pertimbangan_atasan !== 'Menunggu Persetujuan')
-            || (!empty($cuti->paraf_kabag_at) && ($pejabatInfo['kategori'] ?? '') === 'tendik');
+        $isAtasanSigned = (!empty($cuti->pertimbangan_atasan) && !in_array(strtolower($cuti->pertimbangan_atasan), ['menunggu persetujuan', 'pending', '']))
+            || (!empty($cuti->paraf_kabag_at))
+            || (!empty($cuti->pertimbangan_atasan_at));
         $qrAtasanDataUri = null;
         $atasanSignedAt = '';
         if ($isAtasanSigned && isset($verifyUrl)) {
@@ -326,7 +327,7 @@
         }
 
         // TTE Pejabat Berwenang
-        $isPejabatSigned = in_array($cuti->status, ['Disetujui', 'Ditolak']);
+        $isPejabatSigned = in_array(strtolower($cuti->status ?? ''), ['disetujui', 'ditolak', 'disetujui_wd2', 'disetujui_dekan']) || !empty($cuti->approved_at);
         $qrPejabatDataUri = null;
         $pejabatSignedAt = '';
         if ($isPejabatSigned && isset($verifyUrl)) {
@@ -393,7 +394,7 @@
                 />
                 {{-- Status dan No. SK di pojok bawah kiri --}}
                 <div style="margin-top: 6px; font-size: 8.5pt; text-align: left;">
-                    <div>Status: <strong>{{ in_array($cuti->status, ['Disetujui', 'Ditolak']) ? $cuti->status : 'Menunggu Keputusan' }}</strong></div>
+                    <div>Status: <strong>{{ in_array(strtolower($cuti->status ?? ''), ['disetujui', 'ditolak', 'disetujui_wd2', 'disetujui_dekan']) || !empty($cuti->approved_at) ? ($cuti->status ?: 'Disetujui') : 'Menunggu Keputusan' }}</strong></div>
                 </div>
             </td>
         </tr>

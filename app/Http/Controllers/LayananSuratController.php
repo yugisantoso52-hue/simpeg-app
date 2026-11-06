@@ -205,11 +205,15 @@ class LayananSuratController extends Controller
             }
 
             $updateData = [
-                'status'              => 'diverifikasi_admin',
                 'verifikasi_admin_at' => now(),
                 'verifikasi_admin_by' => $user->id,
                 'catatan'             => $catatan ?? 'Telah diverifikasi kelengkapan berkas permohonan surat oleh Admin Kepegawaian.',
             ];
+
+            // Hanya set status diverifikasi_admin jika permohonan masih dalam tahap awal agar tidak menurunkan tahap paraf lanjutan
+            if (in_array($surat->status, ['diajukan', 'draft', null, ''])) {
+                $updateData['status'] = 'diverifikasi_admin';
+            }
 
             if ($request->filled('nomor_surat_manual')) {
                 $inputNomor = trim($request->nomor_surat_manual);
@@ -232,11 +236,14 @@ class LayananSuratController extends Controller
             }
 
             $dataPokja = [
-                'status'           => 'diparaf_kapokja',
                 'paraf_kapokja_at' => now(),
                 'paraf_kapokja_by' => $pejabatLogin?->id,
                 'catatan'          => $catatan ?? 'Telah diperiksa keaktifan pegawai dan kelayakan berkas oleh Ka Pokja Keu-Kepeg.',
             ];
+
+            if (!in_array($surat->status, ['diparaf_kabag', 'selesai'])) {
+                $dataPokja['status'] = 'diparaf_kapokja';
+            }
 
             $surat->update($dataPokja);
             $msg = '2. Paraf Ka Pokja Keuangan & Kepegawaian berhasil dibubuhkan.';
@@ -250,11 +257,14 @@ class LayananSuratController extends Controller
             }
 
             $dataKabag = [
-                'status'         => 'diparaf_kabag',
                 'paraf_kabag_at' => now(),
                 'paraf_kabag_by' => $pejabatLogin?->id,
                 'catatan'        => $catatan ?? 'Telah ditelaah format naskah dinas dan diparaf oleh Kepala Bagian Umum.',
             ];
+
+            if ($surat->status !== 'selesai') {
+                $dataKabag['status'] = 'diparaf_kabag';
+            }
 
             $surat->update($dataKabag);
             $msg = '3. Paraf Kepala Bagian Umum berhasil dibubuhkan.';
@@ -341,7 +351,7 @@ class LayananSuratController extends Controller
         $pejabatKaPokja = $kapokjaData['pegawai'];
 
         // Kondisi Faktual Verifikasi & Pengesahan
-        $isDisahkan      = ($surat->status === 'selesai');
+        $isDisahkan      = ($surat->status === 'selesai' || !empty($surat->ttd_pimpinan_at));
         $sudahParafPokja = !empty($surat->paraf_kapokja_at);
         $sudahParafKabag = !empty($surat->paraf_kabag_at);
 
@@ -359,8 +369,9 @@ class LayananSuratController extends Controller
         $parafKabagAt = $sudahParafKabag ? $surat->paraf_kabag_at->format('d/m/Y H:i') . ' WIB' : null;
 
         // Tanggal & QR Code TTE Pimpinan Faktual
+        $tglDisahkan = $surat->ttd_pimpinan_at ?? $surat->updated_at;
         $disahkanAt = $isDisahkan 
-            ? ($surat->updated_at ? $surat->updated_at->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') 
+            ? ($tglDisahkan ? $tglDisahkan->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') 
             : null;
         $qrTtePimpinanUri = $isDisahkan 
             ? QrCodeService::generateDataUri($verifyUrl . '?tte=pimpinan&nip=' . ($surat->penandatangan_nip ?? '')) 

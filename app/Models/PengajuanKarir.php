@@ -112,15 +112,31 @@ class PengajuanKarir extends Model
      */
     public function getStatusBadgeAttribute(): array
     {
+        if (in_array(strtolower($this->status ?? ''), ['ditolak', 'reject'])) {
+            return ['label' => 'Ditolak / Perlu Revisi', 'color' => 'rose', 'icon' => 'x-circle'];
+        }
+        if (in_array(strtolower($this->status ?? ''), ['dibatalkan', 'canceled', 'batal'])) {
+            return ['label' => 'Dibatalkan', 'color' => 'slate', 'icon' => 'x'];
+        }
+        if (!empty($this->ttd_dekan_at) || $this->status === 'disetujui_dekan') {
+            return ['label' => 'Disetujui Dekan', 'color' => 'emerald', 'icon' => 'award'];
+        }
+        if (!empty($this->paraf_wd2_at) || !empty($this->ttd_wd2_at) || in_array($this->status, ['disetujui_wd2', 'diverifikasi_wd2', 'selesai'])) {
+            return ['label' => 'Disetujui WD II (Sah)', 'color' => 'emerald', 'icon' => 'check-circle'];
+        }
+        if (!empty($this->paraf_kabag_at) || $this->status === 'diverifikasi_kabag') {
+            return ['label' => 'Paraf Kabag Umum', 'color' => 'indigo', 'icon' => 'check'];
+        }
+        if (!empty($this->paraf_kapokja_at) || $this->status === 'diverifikasi_kapokja') {
+            return ['label' => 'Paraf Ka Pokja', 'color' => 'sky', 'icon' => 'check'];
+        }
+        if (!empty($this->verifikasi_admin_at) || $this->status === 'diverifikasi_admin') {
+            return ['label' => 'Diverifikasi Admin', 'color' => 'amber', 'icon' => 'check'];
+        }
+
         return match ($this->status) {
             'diajukan' => ['label' => 'Diajukan', 'color' => 'blue', 'icon' => 'clock'],
-            'diverifikasi_kapokja' => ['label' => 'Paraf Ka Pokja', 'color' => 'sky', 'icon' => 'check'],
-            'diverifikasi_kabag' => ['label' => 'Paraf Kabag Umum', 'color' => 'indigo', 'icon' => 'check'],
-            'diverifikasi_wd2', 'disetujui_wd2' => ['label' => 'Disetujui WD II (Sah)', 'color' => 'emerald', 'icon' => 'check-circle'],
-            'disetujui_dekan' => ['label' => 'Disetujui Dekan', 'color' => 'emerald', 'icon' => 'award'],
-            'ditolak' => ['label' => 'Ditolak / Perlu Revisi', 'color' => 'rose', 'icon' => 'x-circle'],
-            'selesai' => ['label' => 'Selesai / Terbit SK', 'color' => 'teal', 'icon' => 'check-check'],
-            default => ['label' => ucfirst($this->status), 'color' => 'gray', 'icon' => 'info'],
+            default => ['label' => ucfirst(str_replace('_', ' ', $this->status ?? 'Diajukan')), 'color' => 'gray', 'icon' => 'info'],
         };
     }
 

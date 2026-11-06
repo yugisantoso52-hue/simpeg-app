@@ -251,19 +251,24 @@
             <div style="font-size: 10pt; line-height: 1.25;">
                 a.n. Dekan Fakultas Keperawatan<br>
                 Wakil Dekan II (Bid. Keuangan dan Umum)<br>
-                @if(!empty($isDisahkan))
+                @php
+                    $isWd2Approved = !empty($isDisahkan) || !empty($pengajuan?->paraf_wd2_at) || !empty($pengajuan?->ttd_wd2_at) || in_array($pengajuan?->status ?? '', ['disetujui_wd2', 'diverifikasi_wd2', 'disetujui_dekan', 'selesai']);
+                @endphp
+                @if($isWd2Approved)
                     {{-- Ruang tanda tangan elektronik resmi --}}
                     <div style="text-align: left; margin: 4px 0 4px 0;">
                         @if(!empty($qrTteWd2Uri))
                             <img src="{{ $qrTteWd2Uri }}" style="width: 46px; height: 46px; display: inline-block;" />
                         @elseif(!empty($qrCodeDataUri))
                             <img src="{{ $qrCodeDataUri }}" style="width: 46px; height: 46px; display: inline-block;" />
+                        @else
+                            <img src="{{ \App\Services\QrCodeService::generateDataUri($verifyUrl . '?tte=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) }}" style="width: 46px; height: 46px; display: inline-block;" />
                         @endif
                         <div style="font-size: 6.2pt; color: #15803d; font-weight: bold; margin-top: 1px;">
                             Ditandatangani secara Elektronik (TTE)
                         </div>
                         <div style="font-size: 5.6pt; color: #64748b;">
-                            SIKAP FKP UNRI &bull; {{ $disahkanAt ?? now()->format('d/m/Y H:i') . ' WIB' }}
+                            SIKAP FKP UNRI &bull; {{ $disahkanAt ?? ($pengajuan?->paraf_wd2_at ? Carbon::parse($pengajuan->paraf_wd2_at)->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') }}
                         </div>
                     </div>
                     <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep, Sp.Kep.M.B') }}</strong><br>

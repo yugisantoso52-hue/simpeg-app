@@ -346,13 +346,19 @@
                     
                     {{-- QR Code TTE Pimpinan --}}
                     <div style="text-align: left; margin: 4px 0 4px 0; min-height: 48px;">
-                        @if(!empty($sudahTtdWd2) && !empty($qrWd2Uri))
-                            <img src="{{ $qrWd2Uri }}" style="width: 46px; height: 46px; display: inline-block;" />
+                        @if(!empty($sudahTtdWd2))
+                            @if(!empty($qrWd2Uri))
+                                <img src="{{ $qrWd2Uri }}" style="width: 46px; height: 46px; display: inline-block;" />
+                            @elseif(!empty($qrCodeDataUri))
+                                <img src="{{ $qrCodeDataUri }}" style="width: 46px; height: 46px; display: inline-block;" />
+                            @else
+                                <img src="{{ \App\Services\QrCodeService::generateDataUri($verifyUrl . '?ttd=wd2&nip=' . ($pejabatWd2?->nip ?? '198509092014041001')) }}" style="width: 46px; height: 46px; display: inline-block;" />
+                            @endif
                             <div style="font-size: 6.2pt; color: #15803d; font-weight: bold; margin-top: 1px;">
                                 Ditandatangani secara Elektronik (TTE)
                             </div>
                             <div style="font-size: 5.6pt; color: #64748b;">
-                                SIKAP FKP UNRI &bull; {{ $ttdWd2At }}
+                                SIKAP FKP UNRI &bull; {{ $ttdWd2At ?? now()->format('d/m/Y H:i') . ' WIB' }}
                             </div>
                         @else
                             <div style="height: 38px; padding-top: 10px; font-size: 7.5pt; color: #64748b; font-style: italic;">

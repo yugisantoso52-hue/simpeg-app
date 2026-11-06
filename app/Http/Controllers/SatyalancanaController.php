@@ -178,11 +178,15 @@ class SatyalancanaController extends Controller
             }
 
             $updateData = [
-                'status'              => 'diverifikasi_admin',
                 'verifikasi_admin_at' => now(),
                 'verifikasi_admin_by' => $user->id,
                 'catatan'             => $catatan ?? 'Telah diverifikasi kelengkapan berkas DRH 12 poin, SK CPNS, SK Pangkat, SK Jabatan, SKP 2 tahun, Surat Bebas Hukdis, dan Piagam sebelumnya oleh Admin Kepegawaian.',
             ];
+
+            // Hanya set status diverifikasi_admin jika berkas masih baru/diajukan agar tidak menurunkan status jika sudah diparaf
+            if (in_array($usulan->status, ['draft', 'diajukan', null, ''])) {
+                $updateData['status'] = 'diverifikasi_admin';
+            }
 
             if ($request->filled('nomor_surat_input')) {
                 $nomorInput = trim((string) $request->input('nomor_surat_input'));
@@ -203,11 +207,15 @@ class SatyalancanaController extends Controller
                 return back()->with('error', 'Usulan belum diverifikasi kelengkapan berkasnya oleh Admin Kepegawaian.');
             }
 
-            $usulan->update([
-                'status'           => 'diparaf_kapokja',
+            $dataPokja = [
                 'paraf_kapokja_at' => now(),
                 'paraf_kapokja_by' => $pejabatLogin?->id,
-            ]);
+            ];
+            if (!in_array($usulan->status, ['diparaf_kabag', 'disetujui_wd2', 'selesai'])) {
+                $dataPokja['status'] = 'diparaf_kapokja';
+            }
+
+            $usulan->update($dataPokja);
             $msg = 'Paraf 1 (Ka Pokja Keuangan & Kepegawaian) berhasil dibubuhkan.';
         }
         // 3. TAHAP PARAF 2: KEPALA BAGIAN UMUM
@@ -220,11 +228,15 @@ class SatyalancanaController extends Controller
                 return back()->with('error', 'Usulan harus diparaf terlebih dahulu oleh Ka Pokja Keuangan & Kepegawaian.');
             }
 
-            $usulan->update([
-                'status'         => 'diparaf_kabag',
+            $dataKabag = [
                 'paraf_kabag_at' => now(),
                 'paraf_kabag_by' => $pejabatLogin?->id,
-            ]);
+            ];
+            if (!in_array($usulan->status, ['disetujui_wd2', 'selesai'])) {
+                $dataKabag['status'] = 'diparaf_kabag';
+            }
+
+            $usulan->update($dataKabag);
             $msg = 'Paraf 2 (Kepala Bagian Umum) berhasil dibubuhkan.';
         }
         // 4. TAHAP PENGESAHAN: TTE WAKIL DEKAN II / DEKAN
@@ -444,9 +456,10 @@ class SatyalancanaController extends Controller
         $suratRujukanPerihal = $request->input('surat_rujukan_perihal', 'Pengusulan Tanda Satyalancana Karya Satya Periode Mei ' . (date('Y') + 1));
         $periodeUsulan       = $request->input('periode', 'Periode Mei ' . (date('Y') + 1));
 
-        // Ambil pegawai yang berhak atau pegawai yang sudah diusulkan resmi
+        // Ambil pegawai yang berhak atau pegawai yang sudah diusulkan resmi (abaikan yang dibatalkan / ditolak)
         $usulans = UsulanSatyalancana::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])
             ->where('tahun_usulan', date('Y'))
+            ->whereNotIn('status', ['dibatalkan', 'ditolak'])
             ->get();
 
         $daftarPegawai = collect();
@@ -476,19 +489,18 @@ class SatyalancanaController extends Controller
         $pejabatKaPokja = $pejabatService->getKaPokjaPegawai();
         $pejabatKabag   = $pejabatService->getKabagPegawai();
 
-        // Hitung status kolektif dari usulan yang ada
-        // Minimal ada usulan yang telah diverifikasi/diparaf
+        // Hitung status kolektif dari usulan aktif yang ada
         $sudahParafPokja = $usulans->isNotEmpty() && $usulans->whereNotNull('paraf_kapokja_at')->count() === $usulans->count();
         $sudahParafKabag = $usulans->isNotEmpty() && $usulans->whereNotNull('paraf_kabag_at')->count() === $usulans->count();
-        $sudahTtdWd2     = $usulans->isNotEmpty() && $usulans->whereNotNull('ttd_wd2_at')->count() === $usulans->count();
+        $sudahTtdWd2     = $usulans->isNotEmpty() && ($usulans->whereNotNull('ttd_wd2_at')->count() === $usulans->count() || $usulans->every(fn($u) => in_array($u->status, ['disetujui_wd2', 'selesai']) || !empty($u->ttd_wd2_at)));
 
         $tglPokjaLatest = $usulans->whereNotNull('paraf_kapokja_at')->sortByDesc('paraf_kapokja_at')->first()?->paraf_kapokja_at;
         $tglKabagLatest = $usulans->whereNotNull('paraf_kabag_at')->sortByDesc('paraf_kabag_at')->first()?->paraf_kabag_at;
-        $tglWd2Latest   = $usulans->whereNotNull('ttd_wd2_at')->sortByDesc('ttd_wd2_at')->first()?->ttd_wd2_at;
+        $tglWd2Latest   = $usulans->whereNotNull('ttd_wd2_at')->sortByDesc('ttd_wd2_at')->first()?->ttd_wd2_at ?? ($sudahTtdWd2 ? $usulans->sortByDesc('updated_at')->first()?->updated_at : null);
 
         $parafPokjaAt = $sudahParafPokja && $tglPokjaLatest ? $tglPokjaLatest->format('d/m/Y H:i') . ' WIB' : null;
         $parafKabagAt = $sudahParafKabag && $tglKabagLatest ? $tglKabagLatest->format('d/m/Y H:i') . ' WIB' : null;
-        $ttdWd2At     = $sudahTtdWd2 && $tglWd2Latest ? $tglWd2Latest->format('d/m/Y H:i') . ' WIB' : null;
+        $ttdWd2At     = $sudahTtdWd2 && $tglWd2Latest ? $tglWd2Latest->format('d/m/Y H:i') . ' WIB' : ($sudahTtdWd2 ? now()->format('d/m/Y H:i') . ' WIB' : null);
 
         $watermarkService = app(DocumentWatermarkService::class);
         $verifyCode = $watermarkService->generateVerificationCode(
@@ -600,11 +612,12 @@ class SatyalancanaController extends Controller
 
         $sudahParafPokja = !empty($usulan->paraf_kapokja_at);
         $sudahParafKabag = !empty($usulan->paraf_kabag_at);
-        $sudahTtdWd2     = !empty($usulan->ttd_wd2_at);
+        $sudahTtdWd2     = !empty($usulan->ttd_wd2_at) || in_array($usulan->status, ['disetujui_wd2', 'selesai']);
 
+        $tglTtdWd2    = $usulan->ttd_wd2_at ?? $usulan->updated_at;
         $parafPokjaAt = $sudahParafPokja ? $usulan->paraf_kapokja_at->format('d/m/Y H:i') . ' WIB' : null;
         $parafKabagAt = $sudahParafKabag ? $usulan->paraf_kabag_at->format('d/m/Y H:i') . ' WIB' : null;
-        $ttdWd2At     = $sudahTtdWd2     ? $usulan->ttd_wd2_at->format('d/m/Y H:i') . ' WIB' : null;
+        $ttdWd2At     = $sudahTtdWd2     ? ($tglTtdWd2 ? $tglTtdWd2->format('d/m/Y H:i') . ' WIB' : now()->format('d/m/Y H:i') . ' WIB') : null;
 
         $watermarkService = app(DocumentWatermarkService::class);
         $verifyCode = $watermarkService->generateVerificationCode(

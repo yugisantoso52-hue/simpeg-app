@@ -258,15 +258,15 @@
                                             {{ $item->tanggal_surat ? $item->tanggal_surat->format('d/m/Y') : '-' }}
                                         </td>
                                         <td class="px-4 py-3 text-center">
-                                            @if($item->status === 'selesai')
+                                            @if($item->status === 'selesai' || !empty($item->ttd_pimpinan_at))
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                                                     ● Sah & Selesai
                                                 </span>
-                                            @elseif($item->status === 'diparaf_kabag')
+                                            @elseif($item->status === 'diparaf_kabag' || !empty($item->paraf_kabag_at))
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
                                                     ⏳ Menunggu TTD Pimpinan
                                                 </span>
-                                            @elseif($item->status === 'diparaf_kapokja')
+                                            @elseif($item->status === 'diparaf_kapokja' || !empty($item->paraf_kapokja_at))
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-800 border border-sky-200">
                                                     ⏳ Menunggu Paraf Kabag
                                                 </span>
@@ -285,9 +285,9 @@
                                                 <div class="flex items-center justify-center gap-1.5 flex-wrap">
                                                     <a href="{{ route('layanan-surat.surat-aktif.cetak', $item->id) }}"
                                                        target="_blank"
-                                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg {{ $item->status === 'selesai' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300' }} transition shadow-xs">
+                                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg {{ ($item->status === 'selesai' || !empty($item->ttd_pimpinan_at)) ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300' }} transition shadow-xs">
                                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                                                        {{ $item->status === 'selesai' ? 'Cetak PDF (Sah)' : 'Cetak (Draf)' }}
+                                                        {{ ($item->status === 'selesai' || !empty($item->ttd_pimpinan_at)) ? 'Cetak PDF (Sah)' : 'Cetak (Draf)' }}
                                                     </a>
 
                                                     {{-- Tombol Batal oleh Pemohon --}}
@@ -393,7 +393,7 @@
                                                             $isWadekSurat = str_contains(strtolower($item->penandatangan_jabatan ?? ''), 'wakil dekan') || str_contains(strtolower($item->penandatangan_jabatan ?? ''), 'wadek');
                                                             $canUserTte = $isWadekSurat ? ($isWd2 || $isDekan) : $isDekan;
                                                         @endphp
-                                                        @if($item->status === 'selesai')
+                                                        @if($item->status === 'selesai' || !empty($item->ttd_pimpinan_at))
                                                             <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300" title="4. Disahkan TTE Pimpinan">
                                                                 ✓ 4. Sah (TTE)
                                                             </span>
