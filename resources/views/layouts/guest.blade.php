@@ -15,10 +15,11 @@
         <link rel="manifest" href="/manifest.json">
         <meta name="theme-color" content="#0b3b7c">
 
-        <!-- Self-Hosted Fonts (Local & Zero External CDN Leak) -->
-        <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}">
+        <!-- Self-Hosted Fonts & Portal Styles (With Cache Busting) -->
+        <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}?v={{ file_exists(public_path('fonts/fonts.css')) ? filemtime(public_path('fonts/fonts.css')) : time() }}">
+        <link rel="stylesheet" href="{{ asset('css/auth.css') }}?v={{ file_exists(public_path('css/auth.css')) ? filemtime(public_path('css/auth.css')) : time() }}">
 
-        <!-- Scripts -->
+        <!-- Scripts & Tailwind Bundle -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <script src="{{ asset('js/guest-portal.js') }}" defer></script>
     </head>

@@ -4,15 +4,15 @@
         {{-- ======================================================== --}}
         {{-- SISI KIRI: BRANDING, VISUAL & SECURITY SHOWCASE (DESKTOP) --}}
         {{-- ======================================================== --}}
-        <div class="hidden lg:flex lg:w-7/12 xl:w-3/5 text-white p-8 xl:p-14 relative flex-col justify-between overflow-hidden shadow-2xl login-hero-bg">
+        <div class="hidden lg:flex lg:w-7/12 xl:w-3/5 text-white p-8 xl:p-14 relative flex-col justify-between overflow-hidden shadow-2xl bg-[#072552] bg-gradient-to-br from-[#031530] via-[#072552] to-[#0a3875] login-hero-bg">
             
             {{-- Ornamen Tekstur & Glow Latar Belakang --}}
-            <div class="absolute inset-0 opacity-40 pointer-events-none bg-cover bg-center login-hero-texture"></div>
+            <div class="absolute inset-0 opacity-40 pointer-events-none bg-cover bg-center bg-[url('/images/bg-blue-regal.jpg')] login-hero-texture"></div>
             <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-400/20 blur-3xl pointer-events-none"></div>
             <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-amber-400/15 blur-3xl pointer-events-none"></div>
 
             {{-- Bingkai Linework Geometris Emas Mewah (Vector Art Deco / Regal Certificate) --}}
-            <svg class="absolute inset-0 w-full h-full pointer-events-none z-0 login-svg-frame" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 1000 1000">
+            <svg class="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-65 login-svg-frame" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 1000 1000">
                 <defs>
                     <linearGradient id="goldLineworkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stop-color="#fcedc0" />
@@ -135,7 +135,7 @@
         {{-- ======================================================== --}}
         {{-- SISI KANAN: FORMULIR LOGIN CALACATTA MARBLE --}}
         {{-- ======================================================== --}}
-        <div class="w-full lg:w-5/12 xl:w-2/5 flex flex-col justify-between p-6 sm:p-10 xl:p-12 relative z-10 min-h-screen lg:min-h-0 bg-cover bg-center login-marble-bg">
+        <div class="w-full lg:w-5/12 xl:w-2/5 flex flex-col justify-between p-6 sm:p-10 xl:p-12 relative z-10 min-h-screen lg:min-h-0 bg-[#faf8f5] bg-cover bg-center bg-[url('/images/bg-marble.jpg')] login-marble-bg">
             
             {{-- Lapisan Translusen Sangat Halus --}}
             <div class="absolute inset-0 bg-white/10 pointer-events-none"></div>
@@ -201,7 +201,7 @@
                         <label for="login" class="block font-bold text-xs text-slate-800 uppercase tracking-wider mb-1.5">
                             NIP / USERNAME
                         </label>
-                        <div class="relative rounded-full shadow-xs focus-within:ring-2 focus-within:ring-[#0b3b7c]/20 transition-all login-gold-pill">
+                        <div class="relative rounded-full shadow-xs focus-within:ring-2 focus-within:ring-[#0b3b7c]/20 transition-all border-[1.8px] border-[#a3824c] bg-white login-gold-pill">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -230,7 +230,7 @@
                         <label for="password" class="block font-bold text-xs text-slate-800 uppercase tracking-wider mb-1.5">
                             KATA SANDI
                         </label>
-                        <div class="relative rounded-full shadow-xs focus-within:ring-2 focus-within:ring-[#0b3b7c]/20 transition-all login-gold-pill">
+                        <div class="relative rounded-full shadow-xs focus-within:ring-2 focus-within:ring-[#0b3b7c]/20 transition-all border-[1.8px] border-[#a3824c] bg-white login-gold-pill">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -263,7 +263,7 @@
                     </div>
 
                     {{-- Petunjuk Akun Baru (Box Bernuansa Soft Blue & Gold) --}}
-                    <div class="p-3 rounded-2xl text-slate-800 text-xs leading-relaxed flex items-center gap-2.5 shadow-xs login-info-box">
+                    <div class="p-3 rounded-2xl text-slate-800 text-xs leading-relaxed flex items-center gap-2.5 shadow-xs bg-gradient-to-r from-blue-100 via-sky-50 to-amber-100 border border-[#c59b27]/70 login-info-box">
                         <span class="text-base select-none shrink-0">🔑</span>
                         <div class="text-[11px] text-slate-800 leading-normal">
                             <strong class="text-slate-900 font-bold">Login Pertama Kali:</strong> Masukkan 18 digit NIP Anda dan kata sandi default <span class="bg-[#bfdbfe] text-[#1e3a8a] font-bold px-2 py-0.5 rounded-md font-mono text-[11px] border border-[#93c5fd]">Password.</span>
@@ -287,7 +287,7 @@
                     {{-- Tombol Masuk ke SIKAP (Pill Mewah Gradasi Royal Blue & Glow Emas) --}}
                     <div class="pt-2">
                         <button type="submit" 
-                                class="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-full text-white font-extrabold text-sm uppercase tracking-wider transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0b3b7c] login-submit-btn">
+                                class="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-full text-white font-extrabold text-sm uppercase tracking-wider transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0b3b7c] bg-[#0c4384] bg-gradient-to-r from-[#072e66] via-[#0c4384] to-[#062654] border-[1.5px] border-[#d4af37] shadow-[0_4px_18px_rgba(8,41,89,0.45)] hover:brightness-110 login-submit-btn">
                             <span>MASUK KE SIKAP</span>
                             <span class="text-base font-bold">&rarr;</span>
                         </button>

@@ -77,6 +77,17 @@ Route::get('/sitemap.xml', function () {
 })->name('sitemap');
 
 /* Fallback Static Asset Handlers (Menangani Asset jika Web Server melempar 404 ke PHP) */
+Route::get('/css/{path}', function (string $path) {
+    if (str_contains($path, '..')) abort(404);
+    $file = public_path('css/' . $path);
+    if (!file_exists($file) || !is_file($file)) abort(404);
+    return response()->file($file, [
+        'Content-Type' => 'text/css; charset=utf-8',
+        'Cache-Control' => 'no-cache, must-revalidate',
+        'X-Content-Type-Options' => 'nosniff',
+    ]);
+})->where('path', '.*');
+
 Route::get('/js/{path}', function (string $path) {
     if (str_contains($path, '..')) abort(404);
     $file = public_path('js/' . $path);
