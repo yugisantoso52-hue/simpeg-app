@@ -43,6 +43,7 @@
             body { background: white !important; color: #0f172a !important; font-size: 10pt !important; margin: 0 !important; }
             .print-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important; }
             .slide-panel { display: block !important; border: 1px solid #cbd5e1 !important; break-inside: avoid; page-break-after: always; margin-bottom: 20px !important; box-shadow: none !important; min-height: auto !important; }
+            .step-item { display: block !important; opacity: 1 !important; }
         }
         #presentationDeck:fullscreen {
             background-color: #0f172a;
@@ -61,30 +62,47 @@
     <div class="py-4 sm:py-6"
          x-data="{
             currentSlide: 1,
+            currentStep: 1,
             totalSlides: 6,
             viewMode: 'slides',
             isFullscreen: false,
             slides: [
-                { id: 1, short: 'Sampul', title: 'Sampul & Identitas Paparan' },
-                { id: 2, short: 'I. Latar Belakang', title: 'Bagian I — Latar Belakang & Analisis Kebutuhan' },
-                { id: 3, short: 'II. Arsitektur', title: 'Bagian II — Konsep & Arsitektur Sistem' },
-                { id: 4, short: 'III. Fitur & Menu', title: 'Bagian III — Katalog Fitur & Menu Aplikasi' },
-                { id: 5, short: 'IV. Manfaat', title: 'Bagian IV — Dampak Strategis & Nilai Tambah' },
-                { id: 6, short: 'V. Alur 15 Menit', title: 'Bagian V — Panduan Alur Presentasi' }
+                { id: 1, short: 'Sampul', title: 'Sampul & Identitas Paparan', steps: 4, stepLabels: ['Total SDM Aktif', 'Bezetting vs Formasi ABK', 'Talent Pool (Kotak 7–9)', 'Radar Pensiun (1–3 Thn)'] },
+                { id: 2, short: 'I. Latar Belakang', title: 'Bagian I — Latar Belakang & Analisis Kebutuhan', steps: 3, stepLabels: ['Masalah Pengelolaan Manual', 'Keterbatasan Sistem Nasional & Universitas', 'Solusi Terpadu SIKAP FKp UNRI'] },
+                { id: 3, short: 'II. Arsitektur', title: 'Bagian II — Konsep & Arsitektur Sistem', steps: 4, stepLabels: ['1. Pegawai Mandiri', '2. Atasan Langsung', '3. Pimpinan Dekanat', 'Kepatuhan Regulasi Nasional'] },
+                { id: 4, short: 'III. Fitur & Menu', title: 'Bagian III — Katalog Fitur & Menu Aplikasi', steps: 3, stepLabels: ['A. Layanan Mandiri Pegawai', 'B. Supervisi Atasan', 'C. Pengambilan Keputusan Dekanat'] },
+                { id: 5, short: 'IV. Manfaat', title: 'Bagian IV — Dampak Strategis & Nilai Tambah', steps: 3, stepLabels: ['1. Zero Paperwork & Hemat Biaya', '2. Kecepatan Pelayanan Staf', '3. Penguatan Nilai Akreditasi'] },
+                { id: 6, short: 'V. Alur 15 Menit', title: 'Bagian V — Panduan Alur Presentasi', steps: 4, stepLabels: ['01. Menit 00–03 (Masalah)', '02. Menit 03–07 (Konsep)', '03. Menit 07–12 (Live Demo)', '04. Menit 12–15 (Diskusi & Penutup)'] }
             ],
+            get maxSteps() {
+                return this.slides[this.currentSlide - 1].steps;
+            },
+            get currentStepLabels() {
+                return this.slides[this.currentSlide - 1].stepLabels;
+            },
             nextSlide() {
-                if (this.currentSlide < this.totalSlides) {
+                if (this.currentStep < this.maxSteps) {
+                    this.currentStep++;
+                } else if (this.currentSlide < this.totalSlides) {
                     this.currentSlide++;
+                    this.currentStep = 1;
                 }
             },
             prevSlide() {
-                if (this.currentSlide > 1) {
+                if (this.currentStep > 1) {
+                    this.currentStep--;
+                } else if (this.currentSlide > 1) {
                     this.currentSlide--;
+                    this.currentStep = this.slides[this.currentSlide - 1].steps;
                 }
             },
             goToSlide(n) {
                 this.viewMode = 'slides';
                 this.currentSlide = n;
+                this.currentStep = 1;
+            },
+            showAllStepsInSlide() {
+                this.currentStep = this.maxSteps;
             },
             toggleFullscreen() {
                 const deck = document.getElementById('presentationDeck');
@@ -143,9 +161,26 @@
                 </div>
 
                 {{-- Inti Slide Sampul --}}
-                <div class="my-auto py-8 space-y-6 z-10">
-                    <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold uppercase tracking-wider">
-                        <span>🚀</span> Executive Summary &amp; Strategic Blueprint
+                <div class="my-auto py-6 space-y-5 z-10">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold uppercase tracking-wider">
+                            <span>🚀</span> Executive Summary &amp; Strategic Blueprint
+                        </div>
+
+                        {{-- Indikator Poin Slide 1 --}}
+                        <div x-show="viewMode === 'slides'" class="no-print flex items-center gap-1.5 text-xs">
+                            <span class="text-slate-400 mr-1">Sorotan KPI (<span x-text="currentStep"></span>/4):</span>
+                            <template x-for="stepIdx in 4" :key="stepIdx">
+                                <button type="button"
+                                        @click="currentStep = stepIdx"
+                                        :class="currentStep >= stepIdx ? 'bg-emerald-400 text-slate-950 font-black' : 'bg-white/10 text-slate-400 hover:bg-white/20'"
+                                        class="w-6 h-6 rounded-lg text-[11px] transition cursor-pointer"
+                                        x-text="stepIdx"></button>
+                            </template>
+                            <button type="button" x-show="currentStep < 4" @click="showAllStepsInSlide()" class="ml-1 text-[11px] text-emerald-300 hover:underline cursor-pointer">
+                                Tampilkan Semua
+                            </button>
+                        </div>
                     </div>
 
                     <h3 class="text-2xl sm:text-4xl font-black text-white leading-tight max-w-4xl">
@@ -156,25 +191,52 @@
                         Membangun sistem mandiri tingkat fakultas yang menjembatani kebutuhan operasional harian Dosen, Tenaga Kependidikan, dan Pimpinan Dekanat serta bertindak sebagai penopang darurat (<em>back-up</em>) saat sistem universitas terkendala.
                     </p>
 
-                    {{-- Highlight Angka Eksekutif Real-Time --}}
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
-                        <div class="p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xs">
-                            <div class="text-[11px] text-slate-300 uppercase font-bold">Total SDM Aktif</div>
+                    {{-- Highlight Angka Eksekutif Real-Time (Muncul 1 per 1) --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2 min-h-[110px]">
+                        {{-- KPI 1 --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 1"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 1 ? 'ring-2 ring-emerald-400 bg-white/15' : 'bg-white/10'"
+                             class="step-item p-4 rounded-2xl border border-white/15 backdrop-blur-xs transition">
+                            <div class="text-[11px] text-slate-300 uppercase font-bold">1. Total SDM Aktif</div>
                             <div class="text-2xl font-black text-white mt-1">{{ $kpis['total_pegawai'] ?? 83 }} <span class="text-xs font-semibold text-emerald-300">Pegawai</span></div>
                             <div class="text-[11px] text-slate-300 mt-0.5">Dosen, Tendik &amp; PHL</div>
                         </div>
-                        <div class="p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xs">
-                            <div class="text-[11px] text-slate-300 uppercase font-bold">Bezetting vs Formasi ABK</div>
+
+                        {{-- KPI 2 --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 2"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 2 ? 'ring-2 ring-emerald-400 bg-white/15' : 'bg-white/10'"
+                             class="step-item p-4 rounded-2xl border border-white/15 backdrop-blur-xs transition">
+                            <div class="text-[11px] text-slate-300 uppercase font-bold">2. Bezetting vs Formasi ABK</div>
                             <div class="text-2xl font-black text-white mt-1">{{ $totalBezetting }} <span class="text-xs font-semibold text-amber-300">/ {{ $totalKebutuhanFormasi }}</span></div>
                             <div class="text-[11px] text-slate-300 mt-0.5">{{ $defisitJabatan->count() }} Jabatan Perlu Tambahan</div>
                         </div>
-                        <div class="p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xs">
-                            <div class="text-[11px] text-slate-300 uppercase font-bold">Talent Pool (Kotak 7–9)</div>
+
+                        {{-- KPI 3 --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 3"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 3 ? 'ring-2 ring-emerald-400 bg-white/15' : 'bg-white/10'"
+                             class="step-item p-4 rounded-2xl border border-white/15 backdrop-blur-xs transition">
+                            <div class="text-[11px] text-slate-300 uppercase font-bold">3. Talent Pool (Kotak 7–9)</div>
                             <div class="text-2xl font-black text-emerald-400 mt-1">{{ $talentPoolCount }} <span class="text-xs font-semibold text-white">Kandidat</span></div>
                             <div class="text-[11px] text-slate-300 mt-0.5">Siap Suksesi Kepemimpinan</div>
                         </div>
-                        <div class="p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xs">
-                            <div class="text-[11px] text-slate-300 uppercase font-bold">Radar Pensiun (1–3 Thn)</div>
+
+                        {{-- KPI 4 --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 4"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 4 ? 'ring-2 ring-emerald-400 bg-white/15' : 'bg-white/10'"
+                             class="step-item p-4 rounded-2xl border border-white/15 backdrop-blur-xs transition">
+                            <div class="text-[11px] text-slate-300 uppercase font-bold">4. Radar Pensiun (1–3 Thn)</div>
                             <div class="text-2xl font-black text-amber-300 mt-1">{{ isset($retirementRadar['within_3_years']) ? count($retirementRadar['within_3_years']) : 0 }} <span class="text-xs font-semibold text-white">ASN</span></div>
                             <div class="text-[11px] text-slate-300 mt-0.5">Perencanaan Regenerasi Dini</div>
                         </div>
@@ -183,9 +245,9 @@
 
                 {{-- Footer Slide 1 --}}
                 <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/10 text-xs text-slate-400 z-10 no-print">
-                    <span>Gunakan tombol panah keyboard (<strong>&larr;</strong> / <strong>&rarr;</strong>) atau tombol di bawah untuk memulai slide paparan.</span>
+                    <span>Tekan tombol panah kanan (<strong>&rarr;</strong>) untuk menampilkan kolom berikutnya satu per satu.</span>
                     <button type="button" @click="nextSlide()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition cursor-pointer">
-                        Mulai Paparan (Bagian I) &rarr;
+                        <span x-text="currentStep < 4 ? 'Tampilkan KPI Berikutnya (' + (currentStep + 1) + '/4) →' : 'Lanjut ke Bagian I →'"></span>
                     </button>
                 </div>
             </div>
@@ -200,16 +262,29 @@
                  class="slide-panel bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-md min-h-[540px] flex flex-col justify-between space-y-6">
 
                 <div class="space-y-5">
-                    <div class="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
                             <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Bagian I — Latar Belakang &amp; Analisis Kebutuhan</span>
                             <h3 class="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2 mt-1">
                                 <span>🔍</span> Mengapa Fakultas Keperawatan Butuh Sistem Mandiri (SIKAP)?
                             </h3>
                         </div>
-                        <span class="px-3.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 self-start sm:self-auto">
-                            Manual &rarr; Digital Terpadu
-                        </span>
+
+                        {{-- Indikator Poin Pembahasan Slide 2 --}}
+                        <div x-show="viewMode === 'slides'" class="no-print flex flex-wrap items-center gap-1.5">
+                            <template x-for="(label, idx) in currentStepLabels" :key="idx">
+                                <button type="button"
+                                        @click="currentStep = idx + 1"
+                                        :class="currentStep >= (idx + 1) ? 'bg-rose-600 text-white font-bold shadow-2xs' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+                                        class="px-2.5 py-1 rounded-xl text-[11px] transition cursor-pointer flex items-center gap-1">
+                                    <span x-text="idx + 1"></span>.
+                                    <span class="hidden md:inline" x-text="label"></span>
+                                </button>
+                            </template>
+                            <button type="button" x-show="currentStep < 3" @click="showAllStepsInSlide()" class="ml-1 text-[11px] font-semibold text-rose-600 hover:underline cursor-pointer">
+                                Semua
+                            </button>
+                        </div>
                     </div>
 
                     {{-- Narasi Konteks Eksekutif --}}
@@ -218,12 +293,20 @@
                         Meskipun saat ini sudah ada sistem yang dibuat oleh Universitas, <strong>keberadaan aplikasi SIKAP di Fakultas Keperawatan sangat penting sebagai sistem operasional harian terpadu sekaligus penopang darurat (Back-up) disaat sistem milik Universitas mengalami kendala teknis atau gangguan server (seperti kendala yang pernah terjadi sebelumnya)</strong>. Dengan SIKAP, pelayanan presensi, pelaporan tugas, dan administrasi kepegawaian di Fakultas Keperawatan tetap berjalan stabil tanpa terhenti.
                     </div>
 
-                    {{-- Tabel Komparasi 3 Kolom: Kondisi Lama vs Solusi SIKAP --}}
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        {{-- Kondisi 1 --}}
-                        <div class="p-5 rounded-2xl border border-rose-200 bg-rose-50/40 space-y-3">
-                            <div class="flex items-center gap-2 text-rose-700 font-extrabold text-xs sm:text-sm uppercase">
-                                <span>❌</span> Masalah Pengelolaan Manual
+                    {{-- Tabel Komparasi 3 Kolom: Muncul Satu Per Satu --}}
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 min-h-[230px]">
+                        {{-- Kolom 1: Masalah Pengelolaan Manual --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 1"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 1 ? 'ring-2 ring-rose-400 shadow-md' : ''"
+                             class="step-item p-5 rounded-2xl border border-rose-200 bg-rose-50/40 space-y-3 transition">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 text-rose-700 font-extrabold text-xs sm:text-sm uppercase">
+                                    <span>❌</span> Masalah Pengelolaan Manual
+                                </div>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">Poin 1/3</span>
                             </div>
                             <ul class="space-y-2 text-xs text-slate-700 leading-relaxed">
                                 <li>• Berkas kertas permohonan cuti, KGB, dan SK fisik menumpuk di lemari TU serta rentan tercecer/rusak.</li>
@@ -233,10 +316,18 @@
                             </ul>
                         </div>
 
-                        {{-- Kondisi 2 (Telah dihapus poin presensi GPS gedung sesuai instruksi) --}}
-                        <div class="p-5 rounded-2xl border border-amber-200 bg-amber-50/40 space-y-3">
-                            <div class="flex items-center gap-2 text-amber-800 font-extrabold text-xs sm:text-sm uppercase">
-                                <span>⚠️</span> Keterbatasan Sistem Nasional &amp; Universitas
+                        {{-- Kolom 2: Keterbatasan Sistem Nasional & Universitas --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 2"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 2 ? 'ring-2 ring-amber-400 shadow-md' : ''"
+                             class="step-item p-5 rounded-2xl border border-amber-200 bg-amber-50/40 space-y-3 transition">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 text-amber-800 font-extrabold text-xs sm:text-sm uppercase">
+                                    <span>⚠️</span> Keterbatasan Sistem Nasional &amp; Universitas
+                                </div>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Poin 2/3</span>
                             </div>
                             <ul class="space-y-2.5 text-xs text-slate-700 leading-relaxed">
                                 <li>• Sistem nasional (BKN / Kemendikbud) bersifat makro nasional dengan akses data terbatas bagi Dekanat.</li>
@@ -244,10 +335,18 @@
                             </ul>
                         </div>
 
-                        {{-- Kondisi 3 --}}
-                        <div class="p-5 rounded-2xl border border-emerald-300 bg-emerald-50/70 space-y-3">
-                            <div class="flex items-center gap-2 text-emerald-800 font-extrabold text-xs sm:text-sm uppercase">
-                                <span>✅</span> Solusi Terpadu SIKAP FKp UNRI
+                        {{-- Kolom 3: Solusi Terpadu SIKAP FKp UNRI --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 3"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 3 ? 'ring-2 ring-emerald-500 shadow-md' : ''"
+                             class="step-item p-5 rounded-2xl border border-emerald-300 bg-emerald-50/70 space-y-3 transition">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 text-emerald-800 font-extrabold text-xs sm:text-sm uppercase">
+                                    <span>✅</span> Solusi Terpadu SIKAP FKp UNRI
+                                </div>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900">Poin 3/3</span>
                             </div>
                             <ul class="space-y-2 text-xs text-emerald-950 leading-relaxed">
                                 <li>• <strong>Kedaulatan Data &amp; Siaga Back-up:</strong> Data 83 SDM riil (Dosen, Tendik, PHL) aman di tangan Dekanat, siap mem-backup disaat sistem universitas mengalami kendala seperti sebelumnya.</li>
@@ -260,10 +359,12 @@
 
                 {{-- Footer Navigasi Slide --}}
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 no-print">
-                    <span>Slide 2 dari 6 • Bagian I: Latar Belakang &amp; Analisis Kebutuhan</span>
+                    <span x-text="'Slide 2 dari 6 • Poin Pembahasan ' + currentStep + ' dari 3 (' + currentStepLabels[currentStep - 1] + ')'"></span>
                     <div class="flex items-center gap-2">
                         <button type="button" @click="prevSlide()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold cursor-pointer">&larr; Sebelumnya</button>
-                        <button type="button" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold cursor-pointer">Bagian II: Arsitektur &rarr;</button>
+                        <button type="button" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold cursor-pointer">
+                            <span x-text="currentStep < 3 ? 'Tampilkan Poin Berikutnya (' + (currentStep + 1) + '/3) →' : 'Lanjut Bagian II: Arsitektur →'"></span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -278,30 +379,51 @@
                  class="slide-panel bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-md min-h-[540px] flex flex-col justify-between space-y-6">
 
                 <div class="space-y-5">
-                    <div class="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
                             <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Bagian II — Konsep &amp; Arsitektur Sistem</span>
                             <h3 class="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2 mt-1">
                                 <span>🏗️</span> Garis Besar Aplikasi SIKAP FKp UNRI
                             </h3>
                         </div>
-                        <span class="px-3.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 self-start sm:self-auto">
-                            3 Tingkat Peran Terintegrasi
-                        </span>
+
+                        {{-- Indikator Poin Slide 3 --}}
+                        <div x-show="viewMode === 'slides'" class="no-print flex flex-wrap items-center gap-1.5">
+                            <template x-for="(label, idx) in currentStepLabels" :key="idx">
+                                <button type="button"
+                                        @click="currentStep = idx + 1"
+                                        :class="currentStep >= (idx + 1) ? 'bg-indigo-600 text-white font-bold shadow-2xs' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+                                        class="px-2.5 py-1 rounded-xl text-[11px] transition cursor-pointer flex items-center gap-1">
+                                    <span x-text="idx + 1"></span>.
+                                    <span class="hidden md:inline" x-text="label"></span>
+                                </button>
+                            </template>
+                            <button type="button" x-show="currentStep < 4" @click="showAllStepsInSlide()" class="ml-1 text-[11px] font-semibold text-indigo-600 hover:underline cursor-pointer">
+                                Semua
+                            </button>
+                        </div>
                     </div>
 
                     <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
                         SIKAP menghubungkan seluruh pemangku kepentingan kepegawaian dalam satu ekosistem terpadu melalui tiga tingkatan peran yang saling berkesinambungan:
                     </p>
 
-                    {{-- 3 Pilar Arsitektur --}}
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    {{-- 3 Pilar Arsitektur (Muncul 1 per 1) --}}
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 min-h-[200px]">
                         {{-- Pilar 1: Pegawai --}}
-                        <div class="p-5 rounded-2xl border border-blue-200 bg-blue-50/50 flex flex-col justify-between space-y-4">
+                        <div x-show="viewMode === 'all' || currentStep >= 1"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 1 ? 'ring-2 ring-blue-500 shadow-md' : ''"
+                             class="step-item p-5 rounded-2xl border border-blue-200 bg-blue-50/50 flex flex-col justify-between space-y-4 transition">
                             <div class="space-y-2.5">
-                                <div class="flex items-center gap-2.5">
-                                    <span class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-sm shadow-xs">1</span>
-                                    <h4 class="font-bold text-blue-950 text-xs sm:text-sm uppercase">Pegawai Mandiri (Dosen &amp; Tendik)</h4>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-sm shadow-xs">1</span>
+                                        <h4 class="font-bold text-blue-950 text-xs sm:text-sm uppercase">Pegawai Mandiri (Dosen &amp; Tendik)</h4>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Poin 1/4</span>
                                 </div>
                                 <p class="text-slate-600 text-xs leading-relaxed">
                                     Layanan mandiri tanpa kertas (<em>Self-Service Portal</em>): Presensi GPS foto live 1-klik, pengisian logbook 7.5 jam/hari, pengajuan cuti, dan pemutakhiran biodata riwayat karir pribadi.
@@ -313,11 +435,19 @@
                         </div>
 
                         {{-- Pilar 2: Atasan --}}
-                        <div class="p-5 rounded-2xl border border-amber-200 bg-amber-50/50 flex flex-col justify-between space-y-4">
+                        <div x-show="viewMode === 'all' || currentStep >= 2"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 2 ? 'ring-2 ring-amber-500 shadow-md' : ''"
+                             class="step-item p-5 rounded-2xl border border-amber-200 bg-amber-50/50 flex flex-col justify-between space-y-4 transition">
                             <div class="space-y-2.5">
-                                <div class="flex items-center gap-2.5">
-                                    <span class="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-black text-sm shadow-xs">2</span>
-                                    <h4 class="font-bold text-amber-950 text-xs sm:text-sm uppercase">Atasan Langsung (Kajur/Kaprodi/Pokja)</h4>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-black text-sm shadow-xs">2</span>
+                                        <h4 class="font-bold text-amber-950 text-xs sm:text-sm uppercase">Atasan Langsung (Kajur/Kaprodi/Pokja)</h4>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Poin 2/4</span>
                                 </div>
                                 <p class="text-slate-600 text-xs leading-relaxed">
                                     Meja supervisi pembinaan bawahan: Verifikasi logbook harian staf, pemberian catatan revisi, dan pertimbangan ketersediaan personil pengganti saat cuti diajukan.
@@ -329,11 +459,19 @@
                         </div>
 
                         {{-- Pilar 3: Dekanat --}}
-                        <div class="p-5 rounded-2xl border border-emerald-200 bg-emerald-50/50 flex flex-col justify-between space-y-4">
+                        <div x-show="viewMode === 'all' || currentStep >= 3"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 3 ? 'ring-2 ring-emerald-500 shadow-md' : ''"
+                             class="step-item p-5 rounded-2xl border border-emerald-200 bg-emerald-50/50 flex flex-col justify-between space-y-4 transition">
                             <div class="space-y-2.5">
-                                <div class="flex items-center gap-2.5">
-                                    <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm shadow-xs">3</span>
-                                    <h4 class="font-bold text-emerald-950 text-xs sm:text-sm uppercase">Pimpinan Dekanat (Ibu Dekan &amp; Para Wadek)</h4>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm shadow-xs">3</span>
+                                        <h4 class="font-bold text-emerald-950 text-xs sm:text-sm uppercase">Pimpinan Dekanat (Ibu Dekan &amp; Para Wadek)</h4>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Poin 3/4</span>
                                 </div>
                                 <p class="text-slate-600 text-xs leading-relaxed">
                                     Kokpit strategis pengambilan keputusan: Peta formasi ABK, radar pensiun 1–3 tahun, matriks talenta 9-kotak, dan analitik beban kerja seluruh program studi.
@@ -345,9 +483,14 @@
                         </div>
                     </div>
 
-                    {{-- Kepatuhan Regulasi Nasional --}}
-                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex flex-wrap items-center justify-between gap-3">
-                        <span class="font-bold text-slate-800">🏛️ Kepatuhan Standar Regulasi Nasional ASN:</span>
+                    {{-- Poin 4: Kepatuhan Regulasi Nasional --}}
+                    <div x-show="viewMode === 'all' || currentStep >= 4"
+                         x-transition:enter="transition ease-out duration-300"
+                         x-transition:enter-start="opacity-0 translate-y-3"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         :class="viewMode === 'slides' && currentStep === 4 ? 'ring-2 ring-indigo-500 shadow-xs' : ''"
+                         class="step-item p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex flex-wrap items-center justify-between gap-3 transition">
+                        <span class="font-bold text-slate-800">🏛️ 4. Kepatuhan Standar Regulasi Nasional ASN:</span>
                         <div class="flex flex-wrap gap-2 text-xs">
                             <span class="px-3 py-1 rounded-xl bg-white border border-slate-200 font-semibold">📜 PermenPAN-RB No. 1/2020 (Anjab-ABK)</span>
                             <span class="px-3 py-1 rounded-xl bg-white border border-slate-200 font-semibold">📜 PermenPAN-RB No. 3/2020 (Manajemen Talenta)</span>
@@ -358,10 +501,12 @@
 
                 {{-- Footer Navigasi Slide --}}
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 no-print">
-                    <span>Slide 3 dari 6 • Bagian II: Konsep &amp; Arsitektur Sistem</span>
+                    <span x-text="'Slide 3 dari 6 • Poin Pembahasan ' + currentStep + ' dari 4 (' + currentStepLabels[currentStep - 1] + ')'"></span>
                     <div class="flex items-center gap-2">
                         <button type="button" @click="prevSlide()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold cursor-pointer">&larr; Sebelumnya</button>
-                        <button type="button" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold cursor-pointer">Bagian III: Katalog Fitur &rarr;</button>
+                        <button type="button" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold cursor-pointer">
+                            <span x-text="currentStep < 4 ? 'Tampilkan Poin Berikutnya (' + (currentStep + 1) + '/4) →' : 'Lanjut Bagian III: Katalog Fitur →'"></span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -376,24 +521,45 @@
                  class="slide-panel bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-md min-h-[540px] flex flex-col justify-between space-y-6">
 
                 <div class="space-y-5">
-                    <div class="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
                             <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Bagian III — Katalog Fitur &amp; Menu Aplikasi</span>
                             <h3 class="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2 mt-1">
                                 <span>📑</span> Penjelasan Menu &amp; Fitur Utama dalam SIKAP
                             </h3>
                         </div>
-                        <span class="px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start sm:self-auto">
-                            Modul End-to-End Lengkap
-                        </span>
+
+                        {{-- Indikator Poin Slide 4 --}}
+                        <div x-show="viewMode === 'slides'" class="no-print flex flex-wrap items-center gap-1.5">
+                            <template x-for="(label, idx) in currentStepLabels" :key="idx">
+                                <button type="button"
+                                        @click="currentStep = idx + 1"
+                                        :class="currentStep >= (idx + 1) ? 'bg-emerald-600 text-white font-bold shadow-2xs' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+                                        class="px-2.5 py-1 rounded-xl text-[11px] transition cursor-pointer flex items-center gap-1">
+                                    <span x-text="idx + 1"></span>.
+                                    <span class="hidden md:inline" x-text="label"></span>
+                                </button>
+                            </template>
+                            <button type="button" x-show="currentStep < 3" @click="showAllStepsInSlide()" class="ml-1 text-[11px] font-semibold text-emerald-600 hover:underline cursor-pointer">
+                                Semua
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="space-y-5">
-                        {{-- KELOMPOK 1: LAYANAN MANDIRI PEGAWAI --}}
-                        <div class="space-y-2.5">
-                            <div class="flex items-center gap-2 text-xs font-bold text-blue-900 uppercase tracking-wider">
-                                <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-                                <span>A. Modul Layanan Mandiri Pegawai (Front-Office)</span>
+                    <div class="space-y-5 min-h-[340px]">
+                        {{-- KELOMPOK 1: LAYANAN MANDIRI PEGAWAI (Poin 1/3) --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 1"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             :class="viewMode === 'slides' && currentStep === 1 ? 'ring-2 ring-blue-400 p-3 rounded-2xl bg-blue-50/20' : ''"
+                             class="step-item space-y-2.5 transition">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 text-xs font-bold text-blue-900 uppercase tracking-wider">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                                    <span>A. Modul Layanan Mandiri Pegawai (Front-Office)</span>
+                                </div>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Kelompok 1/3</span>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
@@ -452,12 +618,21 @@
                             </div>
                         </div>
 
-                        {{-- KELOMPOK 2 & 3 --}}
+                        {{-- KELOMPOK 2 & 3 (Muncul Bertahap Poin 2 & Poin 3) --}}
                         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 pt-1">
-                            <div class="lg:col-span-5 space-y-2.5">
-                                <div class="flex items-center gap-2 text-xs font-bold text-amber-900 uppercase tracking-wider">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
-                                    <span>B. Supervisi Atasan (Middle-Office)</span>
+                            {{-- KELOMPOK 2: SUPERVISI ATASAN (Poin 2/3) --}}
+                            <div x-show="viewMode === 'all' || currentStep >= 2"
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                 :class="viewMode === 'slides' && currentStep === 2 ? 'ring-2 ring-amber-400 p-3 rounded-2xl bg-amber-50/20' : ''"
+                                 class="step-item lg:col-span-5 space-y-2.5 transition">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2 text-xs font-bold text-amber-900 uppercase tracking-wider">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
+                                        <span>B. Supervisi Atasan (Middle-Office)</span>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Kelompok 2/3</span>
                                 </div>
                                 <div class="grid grid-cols-1 gap-2.5">
                                     <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/40 space-y-1">
@@ -479,10 +654,19 @@
                                 </div>
                             </div>
 
-                            <div class="lg:col-span-7 space-y-2.5">
-                                <div class="flex items-center gap-2 text-xs font-bold text-emerald-900 uppercase tracking-wider">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-                                    <span>C. Pengambilan Keputusan Dekanat (Executive Governance)</span>
+                            {{-- KELOMPOK 3: PENGAMBILAN KEPUTUSAN DEKANAT (Poin 3/3) --}}
+                            <div x-show="viewMode === 'all' || currentStep >= 3"
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                 :class="viewMode === 'slides' && currentStep === 3 ? 'ring-2 ring-emerald-500 p-3 rounded-2xl bg-emerald-50/20' : ''"
+                                 class="step-item lg:col-span-7 space-y-2.5 transition">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2 text-xs font-bold text-emerald-900 uppercase tracking-wider">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                                        <span>C. Pengambilan Keputusan Dekanat (Executive Governance)</span>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Kelompok 3/3</span>
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                                     <div class="p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/50 space-y-1.5">
@@ -519,10 +703,12 @@
 
                 {{-- Footer Navigasi Slide --}}
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 no-print">
-                    <span>Slide 4 dari 6 • Bagian III: Katalog Fitur &amp; Menu Aplikasi</span>
+                    <span x-text="'Slide 4 dari 6 • Poin Pembahasan ' + currentStep + ' dari 3 (' + currentStepLabels[currentStep - 1] + ')'"></span>
                     <div class="flex items-center gap-2">
                         <button type="button" @click="prevSlide()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold cursor-pointer">&larr; Sebelumnya</button>
-                        <button type="button" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold cursor-pointer">Bagian IV: Manfaat Strategis &rarr;</button>
+                        <button type="button" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold cursor-pointer">
+                            <span x-text="currentStep < 3 ? 'Tampilkan Kelompok Berikutnya (' + (currentStep + 1) + '/3) →' : 'Lanjut Bagian IV: Manfaat Strategis →'"></span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -537,37 +723,78 @@
                  class="slide-panel bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-md min-h-[540px] flex flex-col justify-between space-y-6">
 
                 <div class="space-y-6">
-                    <div class="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
                             <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Bagian IV — Dampak Strategis</span>
                             <h3 class="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2 mt-1">
                                 <span>🚀</span> Manfaat &amp; Nilai Tambah Langsung bagi Fakultas Keperawatan
                             </h3>
                         </div>
-                        <span class="px-3.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 self-start sm:self-auto">
-                            Efisiensi &amp; Akuntabilitas
-                        </span>
+
+                        {{-- Indikator Poin Slide 5 --}}
+                        <div x-show="viewMode === 'slides'" class="no-print flex flex-wrap items-center gap-1.5">
+                            <template x-for="(label, idx) in currentStepLabels" :key="idx">
+                                <button type="button"
+                                        @click="currentStep = idx + 1"
+                                        :class="currentStep >= (idx + 1) ? 'bg-blue-600 text-white font-bold shadow-2xs' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+                                        class="px-2.5 py-1 rounded-xl text-[11px] transition cursor-pointer flex items-center gap-1">
+                                    <span x-text="idx + 1"></span>.
+                                    <span class="hidden md:inline" x-text="label"></span>
+                                </button>
+                            </template>
+                            <button type="button" x-show="currentStep < 3" @click="showAllStepsInSlide()" class="ml-1 text-[11px] font-semibold text-blue-600 hover:underline cursor-pointer">
+                                Semua
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
-                            <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl">🌱</div>
+                    {{-- 3 Kolom Manfaat (Muncul 1 per 1) --}}
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 min-h-[210px]">
+                        {{-- Manfaat 1 --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 1"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 1 ? 'ring-2 ring-emerald-500 shadow-md' : ''"
+                             class="step-item p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-3 transition">
+                            <div class="flex items-center justify-between">
+                                <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl">🌱</div>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Poin 1/3</span>
+                            </div>
                             <h4 class="font-black text-slate-900 text-sm uppercase">1. Zero Paperwork &amp; Hemat Biaya</h4>
                             <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
                                 Menghilangkan biaya pencetakan formulir cuti, map arsip, dan binder kertas. Seluruh berkas tersimpan aman dalam format digital terproteksi QR Code.
                             </p>
                         </div>
 
-                        <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
-                            <div class="w-12 h-12 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center text-2xl">⚡</div>
+                        {{-- Manfaat 2 --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 2"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 2 ? 'ring-2 ring-blue-500 shadow-md' : ''"
+                             class="step-item p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-3 transition">
+                            <div class="flex items-center justify-between">
+                                <div class="w-12 h-12 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center text-2xl">⚡</div>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">Poin 2/3</span>
+                            </div>
                             <h4 class="font-black text-slate-900 text-sm uppercase">2. Kecepatan Pelayanan Staf</h4>
                             <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
                                 Proses pengajuan cuti dan permohonan kepegawaian yang biasanya memakan waktu berhari-hari kini tuntas dalam hitungan menit via ponsel.
                             </p>
                         </div>
 
-                        <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
-                            <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-2xl">🏆</div>
+                        {{-- Manfaat 3 --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 3"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 3 ? 'ring-2 ring-amber-500 shadow-md' : ''"
+                             class="step-item p-6 rounded-2xl border border-slate-200 bg-slate-50 space-y-3 transition">
+                            <div class="flex items-center justify-between">
+                                <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-2xl">🏆</div>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Poin 3/3</span>
+                            </div>
                             <h4 class="font-black text-slate-900 text-sm uppercase">3. Penguatan Nilai Akreditasi</h4>
                             <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
                                 Menjadi bukti otentik tata pamong perguruan tinggi yang akuntabel, transparan, dan meritokratis pada instrumen akreditasi LAM-PTKes / BAN-PT.
@@ -576,7 +803,9 @@
                     </div>
 
                     {{-- Pintasan Live Demo untuk Ditampilkan Saat Paparan --}}
-                    <div class="p-5 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-950 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 no-print">
+                    <div x-show="viewMode === 'all' || currentStep >= 3"
+                         x-transition
+                         class="p-5 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-950 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 no-print">
                         <div>
                             <div class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Pintasan Cepat Live Demo</div>
                             <div class="text-sm font-bold text-white mt-0.5">Buka modul strategis secara langsung di hadapan Pimpinan Dekanat:</div>
@@ -597,10 +826,12 @@
 
                 {{-- Footer Navigasi Slide --}}
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 no-print">
-                    <span>Slide 5 dari 6 • Bagian IV: Dampak Strategis &amp; Manfaat</span>
+                    <span x-text="'Slide 5 dari 6 • Poin Pembahasan ' + currentStep + ' dari 3 (' + currentStepLabels[currentStep - 1] + ')'"></span>
                     <div class="flex items-center gap-2">
                         <button type="button" @click="prevSlide()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold cursor-pointer">&larr; Sebelumnya</button>
-                        <button type="button" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold cursor-pointer">Bagian V: Alur Presentasi &rarr;</button>
+                        <button type="button" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold cursor-pointer">
+                            <span x-text="currentStep < 3 ? 'Tampilkan Poin Berikutnya (' + (currentStep + 1) + '/3) →' : 'Lanjut Bagian V: Alur Presentasi →'"></span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -615,41 +846,79 @@
                  class="slide-panel bg-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl min-h-[540px] flex flex-col justify-between space-y-6">
 
                 <div class="space-y-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-3">
                         <div>
                             <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Bagian V — Panduan Pelaksanaan Rapat</span>
                             <h3 class="text-xl sm:text-2xl font-black text-white flex items-center gap-2 mt-1">
                                 <span>⏱️</span> Panduan Alur Waktu Presentasi di Depan Dekanat (Durasi 15 Menit)
                             </h3>
                         </div>
-                        <span class="text-xs text-slate-400 font-mono px-3 py-1 rounded-full bg-slate-800 border border-slate-700 self-start sm:self-auto">
-                            Struktur Paparan Rapat Pimpinan
-                        </span>
+
+                        {{-- Indikator Poin Slide 6 --}}
+                        <div x-show="viewMode === 'slides'" class="no-print flex flex-wrap items-center gap-1.5">
+                            <template x-for="(label, idx) in currentStepLabels" :key="idx">
+                                <button type="button"
+                                        @click="currentStep = idx + 1"
+                                        :class="currentStep >= (idx + 1) ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'"
+                                        class="px-2.5 py-1 rounded-xl text-[11px] transition cursor-pointer flex items-center gap-1">
+                                    <span x-text="idx + 1"></span>.
+                                    <span class="hidden md:inline" x-text="label"></span>
+                                </button>
+                            </template>
+                            <button type="button" x-show="currentStep < 4" @click="showAllStepsInSlide()" class="ml-1 text-[11px] font-semibold text-emerald-400 hover:underline cursor-pointer">
+                                Semua
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-                        <div class="p-5 rounded-2xl bg-slate-800/90 border border-slate-700 space-y-2">
+                    {{-- 4 Tahap Alur Waktu (Muncul 1 per 1) --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs min-h-[160px]">
+                        {{-- Tahap 1 --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 1"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 1 ? 'ring-2 ring-emerald-400 bg-slate-800' : 'bg-slate-800/90'"
+                             class="step-item p-5 rounded-2xl border border-slate-700 space-y-2 transition">
                             <div class="text-emerald-400 font-black text-xs sm:text-sm">01. Menit 00 - 03 (Pengenalan &amp; Masalah)</div>
                             <p class="text-slate-300 leading-relaxed">
                                 Buka dengan menyampaikan masalah manual selama ini, perlunya sistem mandiri fakultas, dan peran SIKAP sebagai back-up handal disaat sistem universitas mengalami kendala teknis.
                             </p>
                         </div>
 
-                        <div class="p-5 rounded-2xl bg-slate-800/90 border border-slate-700 space-y-2">
+                        {{-- Tahap 2 --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 2"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 2 ? 'ring-2 ring-emerald-400 bg-slate-800' : 'bg-slate-800/90'"
+                             class="step-item p-5 rounded-2xl border border-slate-700 space-y-2 transition">
                             <div class="text-emerald-400 font-black text-xs sm:text-sm">02. Menit 03 - 07 (Garis Besar SIKAP)</div>
                             <p class="text-slate-300 leading-relaxed">
                                 Jelaskan konsep 3 peran (Pegawai mandiri di HP, Atasan yang memverifikasi, dan Dekanat yang memegang kokpit data agregat).
                             </p>
                         </div>
 
-                        <div class="p-5 rounded-2xl bg-slate-800/90 border border-slate-700 space-y-2">
+                        {{-- Tahap 3 --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 3"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 3 ? 'ring-2 ring-emerald-400 bg-slate-800' : 'bg-slate-800/90'"
+                             class="step-item p-5 rounded-2xl border border-slate-700 space-y-2 transition">
                             <div class="text-emerald-400 font-black text-xs sm:text-sm">03. Menit 07 - 12 (Live Demo Fitur Kunci)</div>
                             <p class="text-slate-300 leading-relaxed">
                                 Buka langsung di layar: <strong>Peta Jabatan ABK</strong> (tunjukkan posisi defisit), <strong>E-Cuti Paperless</strong>, dan <strong>Matriks Talenta</strong>.
                             </p>
                         </div>
 
-                        <div class="p-5 rounded-2xl bg-slate-800/90 border border-slate-700 space-y-2">
+                        {{-- Tahap 4 --}}
+                        <div x-show="viewMode === 'all' || currentStep >= 4"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                             :class="viewMode === 'slides' && currentStep === 4 ? 'ring-2 ring-emerald-400 bg-slate-800' : 'bg-slate-800/90'"
+                             class="step-item p-5 rounded-2xl border border-slate-700 space-y-2 transition">
                             <div class="text-emerald-400 font-black text-xs sm:text-sm">04. Menit 12 - 15 (Manfaat &amp; Diskusi)</div>
                             <p class="text-slate-300 leading-relaxed">
                                 Rangkum manfaat efisiensi anggaran dan kesiapan akreditasi, lalu buka sesi tanggapan dan arahan dari Ibu Dekan Prof. Wan Nishfa Dewi, S.Kp, MNg, PhD beserta jajaran Pimpinan Dekanat.
@@ -657,8 +926,12 @@
                         </div>
                     </div>
 
-                    {{-- Penutup & Sesi Arahan Pimpinan --}}
-                    <div class="p-6 rounded-2xl bg-gradient-to-r from-emerald-900/50 via-teal-900/40 to-slate-800 border border-emerald-500/30 text-center space-y-2">
+                    {{-- Penutup & Sesi Arahan Pimpinan (Muncul pada Tahap 4) --}}
+                    <div x-show="viewMode === 'all' || currentStep >= 4"
+                         x-transition:enter="transition ease-out duration-300"
+                         x-transition:enter-start="opacity-0 translate-y-3"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         class="step-item p-6 rounded-2xl bg-gradient-to-r from-emerald-900/50 via-teal-900/40 to-slate-800 border border-emerald-500/30 text-center space-y-2">
                         <div class="text-xs font-bold uppercase tracking-widest text-emerald-300">Terima Kasih • Sesi Diskusi &amp; Arahan Pimpinan</div>
                         <h4 class="text-lg sm:text-xl font-black text-white">
                             Mohon Arahan &amp; Masukan Ibu Dekan Prof. Wan Nishfa Dewi, S.Kp, MNg, PhD beserta Jajaran Pimpinan Dekanat
@@ -671,10 +944,15 @@
 
                 {{-- Footer Navigasi Slide --}}
                 <div class="pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 no-print">
-                    <span>Slide 6 dari 6 • Selesai</span>
+                    <span x-text="'Slide 6 dari 6 • Poin Pembahasan ' + currentStep + ' dari 4 (' + currentStepLabels[currentStep - 1] + ')'"></span>
                     <div class="flex items-center gap-2">
                         <button type="button" @click="prevSlide()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold cursor-pointer">&larr; Sebelumnya</button>
-                        <button type="button" @click="goToSlide(1)" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black cursor-pointer">↺ Kembali ke Slide 1</button>
+                        <button type="button" x-show="currentStep < 4" @click="nextSlide()" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black cursor-pointer">
+                            <span x-text="'Tampilkan Tahap Berikutnya (' + (currentStep + 1) + '/4) →'"></span>
+                        </button>
+                        <button type="button" x-show="currentStep >= 4" @click="goToSlide(1)" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black cursor-pointer">
+                            ↺ Kembali ke Slide 1
+                        </button>
                     </div>
                 </div>
             </div>
@@ -685,10 +963,13 @@
             <div class="no-print bg-slate-900 text-white rounded-2xl p-3 sm:p-4 shadow-md border border-slate-800 space-y-3">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     {{-- Indikator Slide & Progress --}}
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2.5">
                         <span class="px-3 py-1 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs tracking-wide uppercase">
                             <span x-show="viewMode === 'slides'" x-text="'Slide ' + currentSlide + ' / ' + totalSlides"></span>
                             <span x-show="viewMode === 'all'">Semua Slide</span>
+                        </span>
+                        <span x-show="viewMode === 'slides'" class="px-2.5 py-1 rounded-xl bg-slate-800 border border-slate-700 text-emerald-300 font-bold text-xs"
+                              x-text="'Poin ' + currentStep + ' / ' + maxSteps">
                         </span>
                         <span class="text-xs sm:text-sm font-bold text-slate-200 truncate"
                               x-text="viewMode === 'slides' ? slides[currentSlide - 1].title : 'Tampilan Dokumen Lengkap (Seluruh Bagian)'">
@@ -700,7 +981,7 @@
                         <button type="button"
                                 @click="prevSlide()"
                                 x-show="viewMode === 'slides'"
-                                :disabled="currentSlide === 1"
+                                :disabled="currentSlide === 1 && currentStep === 1"
                                 class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-white border border-slate-700 transition cursor-pointer flex items-center gap-1">
                             <span>&larr;</span>
                             <span class="hidden sm:inline">Sebelumnya</span>
@@ -709,10 +990,9 @@
                         <button type="button"
                                 @click="nextSlide()"
                                 x-show="viewMode === 'slides'"
-                                :disabled="currentSlide === totalSlides"
+                                :disabled="currentSlide === totalSlides && currentStep === maxSteps"
                                 class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 transition cursor-pointer flex items-center gap-1 shadow-xs">
-                            <span class="hidden sm:inline">Slide Berikutnya</span>
-                            <span class="sm:hidden">Lanjut</span>
+                            <span x-text="currentStep < maxSteps ? 'Poin Berikutnya' : 'Slide Berikutnya'"></span>
                             <span>&rarr;</span>
                         </button>
 
