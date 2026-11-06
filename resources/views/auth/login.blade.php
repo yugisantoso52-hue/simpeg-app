@@ -1,25 +1,18 @@
 <x-guest-layout :fullWidth="true">
-    <div x-data="{ 
-            showPassword: false,
-            openVerifyModal: false,
-            openExecutiveModal: false,
-            verifyCode: ''
-         }" 
-         class="min-h-screen w-full flex flex-col lg:flex-row text-slate-800 antialiased selection:bg-[#0b3b7c] selection:text-white">
+    <div class="min-h-screen w-full flex flex-col lg:flex-row text-slate-800 antialiased selection:bg-[#0b3b7c] selection:text-white">
 
         {{-- ======================================================== --}}
         {{-- SISI KIRI: BRANDING, VISUAL & SECURITY SHOWCASE (DESKTOP) --}}
         {{-- ======================================================== --}}
-        <div class="hidden lg:flex lg:w-7/12 xl:w-3/5 text-white p-8 xl:p-14 relative flex-col justify-between overflow-hidden shadow-2xl"
-             style="background: linear-gradient(135deg, #031530 0%, #072552 40%, #0a3875 100%);">
+        <div class="hidden lg:flex lg:w-7/12 xl:w-3/5 text-white p-8 xl:p-14 relative flex-col justify-between overflow-hidden shadow-2xl login-hero-bg">
             
             {{-- Ornamen Tekstur & Glow Latar Belakang --}}
-            <div class="absolute inset-0 opacity-40 pointer-events-none bg-cover bg-center" style="background-image: url('{{ asset('images/bg-blue-regal.jpg') }}'); mix-blend-mode: overlay;"></div>
+            <div class="absolute inset-0 opacity-40 pointer-events-none bg-cover bg-center login-hero-texture"></div>
             <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-400/20 blur-3xl pointer-events-none"></div>
             <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-amber-400/15 blur-3xl pointer-events-none"></div>
 
             {{-- Bingkai Linework Geometris Emas Mewah (Vector Art Deco / Regal Certificate) --}}
-            <svg class="absolute inset-0 w-full h-full pointer-events-none z-0" style="opacity: 0.65;" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 1000 1000">
+            <svg class="absolute inset-0 w-full h-full pointer-events-none z-0 login-svg-frame" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 1000 1000">
                 <defs>
                     <linearGradient id="goldLineworkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stop-color="#fcedc0" />
@@ -110,18 +103,18 @@
                 {{-- Tautan Cepat Layanan Publik --}}
                 <div class="mt-7 flex flex-wrap items-center gap-3">
                     <button type="button"
-                            @click="openExecutiveModal = true"
+                            data-open-modal="executive-modal"
                             class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#dca34d] via-[#e5b869] to-[#c49335] text-slate-950 text-xs font-bold shadow-md hover:brightness-110 transition cursor-pointer">
                         <span>🎨</span>
                         <span>Paparan Eksekutif &amp; Ringkasan SIKAP</span>
                     </button>
                     <button type="button"
-                            @click="openVerifyModal = true"
+                            data-open-modal="verify-modal"
                             class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0a2754]/80 hover:bg-[#0f346e] border border-[#d4af37]/60 text-xs font-semibold text-white transition shadow-xs cursor-pointer">
                         <span>🛡️</span>
                         <span>Verifikasi Dokumen SK Publik</span>
                     </button>
-                    <a href="http://keperawatan.unri.ac.id" target="_blank"
+                    <a href="http://keperawatan.unri.ac.id" target="_blank" rel="noopener noreferrer"
                        class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0a2754]/80 hover:bg-[#0f346e] border border-[#d4af37]/60 text-xs font-semibold text-white transition shadow-xs">
                         <span>🌐</span>
                         <span>Portal Resmi FKP UNRI</span>
@@ -142,8 +135,7 @@
         {{-- ======================================================== --}}
         {{-- SISI KANAN: FORMULIR LOGIN CALACATTA MARBLE --}}
         {{-- ======================================================== --}}
-        <div class="w-full lg:w-5/12 xl:w-2/5 flex flex-col justify-between p-6 sm:p-10 xl:p-12 relative z-10 min-h-screen lg:min-h-0 bg-cover bg-center"
-             style="background-image: url('{{ asset('images/bg-marble.jpg') }}'); background-color: #faf8f5;">
+        <div class="w-full lg:w-5/12 xl:w-2/5 flex flex-col justify-between p-6 sm:p-10 xl:p-12 relative z-10 min-h-screen lg:min-h-0 bg-cover bg-center login-marble-bg">
             
             {{-- Lapisan Translusen Sangat Halus --}}
             <div class="absolute inset-0 bg-white/10 pointer-events-none"></div>
@@ -172,7 +164,7 @@
                     </h1>
                     <div class="mt-2.5">
                         <button type="button"
-                                @click="openExecutiveModal = true"
+                                data-open-modal="executive-modal"
                                 class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#dca34d] via-[#e5b869] to-[#c49335] text-slate-950 text-xs font-bold shadow-md hover:brightness-110 transition cursor-pointer">
                             <span>🎨</span>
                             <span>Paparan Eksekutif &amp; Ringkasan SIKAP</span>
@@ -209,8 +201,7 @@
                         <label for="login" class="block font-bold text-xs text-slate-800 uppercase tracking-wider mb-1.5">
                             NIP / USERNAME
                         </label>
-                        <div class="relative rounded-full shadow-xs focus-within:ring-2 focus-within:ring-[#0b3b7c]/20 transition-all"
-                             style="border: 1.8px solid #a3824c; background-color: #ffffff;">
+                        <div class="relative rounded-full shadow-xs focus-within:ring-2 focus-within:ring-[#0b3b7c]/20 transition-all login-gold-pill">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -239,15 +230,14 @@
                         <label for="password" class="block font-bold text-xs text-slate-800 uppercase tracking-wider mb-1.5">
                             KATA SANDI
                         </label>
-                        <div class="relative rounded-full shadow-xs focus-within:ring-2 focus-within:ring-[#0b3b7c]/20 transition-all"
-                             style="border: 1.8px solid #a3824c; background-color: #ffffff;">
+                        <div class="relative rounded-full shadow-xs focus-within:ring-2 focus-within:ring-[#0b3b7c]/20 transition-all login-gold-pill">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
                             </div>
                             <input id="password"
-                                   :type="showPassword ? 'text' : 'password'"
+                                   type="password"
                                    name="password"
                                    placeholder="Masukkan kata sandi akun Anda"
                                    class="block w-full pl-11 pr-11 py-3 text-sm bg-transparent rounded-full focus:outline-none font-medium text-slate-800 placeholder-slate-400"
@@ -257,14 +247,14 @@
 
                             {{-- Tombol Show/Hide Password --}}
                             <button type="button"
-                                    @click="showPassword = !showPassword"
+                                    data-toggle-password="true"
                                     class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
                                     title="Tampilkan / Sembunyikan Kata Sandi">
-                                <svg x-show="!showPassword" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg id="icon-eye-open" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
-                                <svg x-show="showPassword" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
+                                <svg id="icon-eye-closed" class="h-4 w-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
                                 </svg>
                             </button>
@@ -273,8 +263,7 @@
                     </div>
 
                     {{-- Petunjuk Akun Baru (Box Bernuansa Soft Blue & Gold) --}}
-                    <div class="p-3 rounded-2xl text-slate-800 text-xs leading-relaxed flex items-center gap-2.5 shadow-xs"
-                         style="background: linear-gradient(90deg, rgba(219, 234, 254, 0.9) 0%, rgba(240, 249, 255, 0.85) 50%, rgba(254, 243, 199, 0.9) 100%); border: 1px solid rgba(197, 155, 39, 0.7);">
+                    <div class="p-3 rounded-2xl text-slate-800 text-xs leading-relaxed flex items-center gap-2.5 shadow-xs login-info-box">
                         <span class="text-base select-none shrink-0">🔑</span>
                         <div class="text-[11px] text-slate-800 leading-normal">
                             <strong class="text-slate-900 font-bold">Login Pertama Kali:</strong> Masukkan 18 digit NIP Anda dan kata sandi default <span class="bg-[#bfdbfe] text-[#1e3a8a] font-bold px-2 py-0.5 rounded-md font-mono text-[11px] border border-[#93c5fd]">Password.</span>
@@ -298,8 +287,7 @@
                     {{-- Tombol Masuk ke SIKAP (Pill Mewah Gradasi Royal Blue & Glow Emas) --}}
                     <div class="pt-2">
                         <button type="submit" 
-                                class="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-full text-white font-extrabold text-sm uppercase tracking-wider transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0b3b7c]"
-                                style="background: linear-gradient(90deg, #072e66 0%, #0c4384 50%, #062654 100%); border: 1.5px solid #d4af37; box-shadow: 0 4px 18px rgba(8,41,89,0.45), 0 0 14px rgba(212,175,55,0.35);">
+                                class="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-full text-white font-extrabold text-sm uppercase tracking-wider transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0b3b7c] login-submit-btn">
                             <span>MASUK KE SIKAP</span>
                             <span class="text-base font-bold">&rarr;</span>
                         </button>
@@ -310,11 +298,11 @@
                 <div class="mt-8 pt-5 border-t border-slate-300/80 flex flex-col gap-2.5 lg:hidden text-center">
                     <span class="text-[11px] font-extrabold uppercase tracking-widest text-slate-600">LAYANAN PUBLIK</span>
                     <div class="flex items-center justify-center gap-3 text-xs font-semibold text-slate-800">
-                        <button type="button" @click="openVerifyModal = true" class="hover:text-[#0b3b7c] flex items-center gap-1.5 cursor-pointer">
+                        <button type="button" data-open-modal="verify-modal" class="hover:text-[#0b3b7c] flex items-center gap-1.5 cursor-pointer">
                             <span>🔍</span> Cek SK Publik
                         </button>
                         <span class="text-slate-400">•</span>
-                        <a href="http://keperawatan.unri.ac.id" target="_blank" class="hover:text-[#0b3b7c] flex items-center gap-1.5">
+                        <a href="http://keperawatan.unri.ac.id" target="_blank" rel="noopener noreferrer" class="hover:text-[#0b3b7c] flex items-center gap-1.5">
                             <span>🌐</span> Web Fakultas
                         </a>
                     </div>
@@ -339,18 +327,9 @@
         {{-- ======================================================== --}}
         {{-- MODAL VERIFIKASI KEASLIAN DOKUMEN PUBLIK --}}
         {{-- ======================================================== --}}
-        <div x-show="openVerifyModal" 
-             class="fixed inset-0 z-50 overflow-y-auto" 
-             style="display: none;"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0">
-            
+        <div id="verify-modal" class="fixed inset-0 z-50 overflow-y-auto hidden">
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 transition-opacity bg-slate-900/60 backdrop-blur-xs" @click="openVerifyModal = false"></div>
+                <div class="fixed inset-0 transition-opacity bg-slate-900/60 backdrop-blur-xs" data-close-modal="verify-modal"></div>
 
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
@@ -365,7 +344,7 @@
                                 <p class="text-xs text-slate-500">Periksa keabsahan berkas resmi FKP UNRI</p>
                             </div>
                         </div>
-                        <button type="button" @click="openVerifyModal = false" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                        <button type="button" data-close-modal="verify-modal" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
@@ -373,14 +352,13 @@
                     </div>
 
                     <div class="mt-4">
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                        <label for="verify-code-input" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                             Kode Digital Signature Dokumen
                         </label>
-                        <input type="text" 
-                               x-model="verifyCode"
+                        <input id="verify-code-input"
+                               type="text" 
                                placeholder="Contoh: SK-KGB-2026-XXXX atau hash unik" 
-                               class="w-full px-3.5 py-2.5 text-sm bg-slate-50 rounded-xl border border-slate-300 focus:border-[#0b3b7c] focus:ring-2 focus:ring-[#0b3b7c]/20 font-mono text-slate-800"
-                               @keydown.enter="if(verifyCode.trim()){ window.location.href = '/verifikasi-dokumen/' + encodeURIComponent(verifyCode.trim()); }">
+                               class="w-full px-3.5 py-2.5 text-sm bg-slate-50 rounded-xl border border-slate-300 focus:border-[#0b3b7c] focus:ring-2 focus:ring-[#0b3b7c]/20 font-mono text-slate-800">
                         <p class="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
                             Masukkan kode tanda tangan elektronik yang tertera pada bagian bawah lembar dokumen SK/KGB atau pindai QR Code dokumen tersebut.
                         </p>
@@ -388,12 +366,12 @@
 
                     <div class="mt-6 flex items-center justify-end gap-2.5">
                         <button type="button" 
-                                @click="openVerifyModal = false"
+                                data-close-modal="verify-modal"
                                 class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">
                             Batal
                         </button>
-                        <button type="button"
-                                @click="if(verifyCode.trim()){ window.location.href = '/verifikasi-dokumen/' + encodeURIComponent(verifyCode.trim()); }"
+                        <button id="verify-code-submit"
+                                type="button"
                                 class="px-4 py-2 text-xs font-bold text-white bg-[#0b3b7c] hover:bg-[#082d62] rounded-xl shadow-xs transition cursor-pointer">
                             Periksa Dokumen →
                         </button>
@@ -405,18 +383,9 @@
         {{-- ======================================================== --}}
         {{-- MODAL PAPARAN EKSEKUTIF & RINGKASAN SISTEM (LOGIN) --}}
         {{-- ======================================================== --}}
-        <div x-show="openExecutiveModal" 
-             class="fixed inset-0 z-50 overflow-y-auto" 
-             style="display: none;"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0">
-            
+        <div id="executive-modal" class="fixed inset-0 z-50 overflow-y-auto hidden">
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 transition-opacity bg-slate-900/60 backdrop-blur-xs" @click="openExecutiveModal = false"></div>
+                <div class="fixed inset-0 transition-opacity bg-slate-900/60 backdrop-blur-xs" data-close-modal="executive-modal"></div>
 
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
@@ -431,7 +400,7 @@
                                 <p class="text-xs text-slate-500">Sistem Informasi Kepegawaian (SIKAP) • Fakultas Keperawatan UNRI</p>
                             </div>
                         </div>
-                        <button type="button" @click="openExecutiveModal = false" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                        <button type="button" data-close-modal="executive-modal" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
@@ -484,12 +453,13 @@
 
                     <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
                         <button type="button" 
-                                @click="openExecutiveModal = false"
+                                data-close-modal="executive-modal"
                                 class="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
                             Tutup
                         </button>
                         <button type="button" 
-                                @click="openExecutiveModal = false; setTimeout(() => document.getElementById('login')?.focus(), 100);"
+                                data-close-modal="executive-modal"
+                                data-focus-login="true"
                                 class="px-4 py-2 text-xs font-bold text-white bg-[#0b3b7c] hover:bg-[#082d62] rounded-xl shadow-xs transition cursor-pointer">
                             Login ke Dashboard &rarr;
                         </button>

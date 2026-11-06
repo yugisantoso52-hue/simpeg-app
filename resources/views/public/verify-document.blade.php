@@ -4,9 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Verifikasi Keaslian Dokumen - SIKAP FKP UNRI</title>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-100 font-sans antialiased text-slate-800 min-h-screen flex flex-col justify-between">
 
@@ -14,7 +13,7 @@
         <!-- Kartu Kop Surat Resmi -->
         <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
             <div class="p-6 text-center border-b border-slate-100 bg-slate-50/50">
-                <img src="{{ asset('logo-unri.png') }}" alt="Logo UNRI" class="h-16 mx-auto mb-2.5 object-contain" onerror="this.style.display='none'">
+                <img src="{{ asset('logo-unri.png') }}" alt="Logo UNRI" class="h-16 mx-auto mb-2.5 object-contain">
                 <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Kementerian Pendidikan Tinggi, Sains, dan Teknologi</h4>
                 <h2 class="text-sm font-extrabold text-slate-900 uppercase">Universitas Riau</h2>
                 <h3 class="text-xs font-bold text-emerald-700 uppercase">Fakultas Keperawatan</h3>

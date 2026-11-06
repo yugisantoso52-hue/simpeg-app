@@ -60,7 +60,33 @@ Route::get('/offline', function () {
     return view('offline');
 })->name('offline');
 
+/* Sitemap XML Endpoint (Standar SEO & Keamanan Pemindaian Crawler) */
+Route::get('/sitemap.xml', function () {
+    $baseUrl = rtrim(url('/'), '/');
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+         . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n"
+         . '    <url><loc>' . htmlspecialchars($baseUrl . '/login', ENT_XML1, 'UTF-8') . '</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>' . "\n"
+         . '    <url><loc>' . htmlspecialchars($baseUrl . '/forgot-password', ENT_XML1, 'UTF-8') . '</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>' . "\n"
+         . '</urlset>';
+
+    return response($xml, 200, [
+        'Content-Type' => 'application/xml; charset=utf-8',
+        'Cache-Control' => 'public, max-age=86400',
+        'X-Content-Type-Options' => 'nosniff',
+    ]);
+})->name('sitemap');
+
 /* Fallback Static Asset Handlers (Menangani Asset jika Web Server melempar 404 ke PHP) */
+Route::get('/js/{path}', function (string $path) {
+    if (str_contains($path, '..')) abort(404);
+    $file = public_path('js/' . $path);
+    if (!file_exists($file) || !is_file($file)) abort(404);
+    return response()->file($file, [
+        'Content-Type' => 'application/javascript; charset=utf-8',
+        'Cache-Control' => 'public, max-age=2592000',
+        'X-Content-Type-Options' => 'nosniff',
+    ]);
+})->where('path', '.*');
 Route::get('/build/{path}', function (string $path) {
     if (str_contains($path, '..')) abort(404);
     $file = public_path('build/' . $path);

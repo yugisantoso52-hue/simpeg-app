@@ -20,6 +20,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <script src="{{ asset('js/guest-portal.js') }}" defer></script>
     </head>
     <body class="font-sans text-slate-900 antialiased bg-slate-100 min-h-screen">
         @if($fullWidth)

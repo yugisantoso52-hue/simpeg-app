@@ -32,18 +32,35 @@ class SecurityHeaders
         $isHtml = empty($contentType) || str_contains($contentType, 'text/html');
 
         if ($isHtml && ! $response->isRedirection()) {
-            $csp = [
-                "default-src 'self'",
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.tailwindcss.com",
-                "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com",
-                "font-src 'self' data: https://fonts.gstatic.com",
-                "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com https://*.unri.ac.id",
-                "connect-src 'self' blob: https://*.tile.openstreetmap.org",
-                "object-src 'none'",
-                "base-uri 'self'",
-                "form-action 'self'",
-                "frame-ancestors 'self'",
-            ];
+            if (! $request->user()) {
+                // Kebijakan CSP ketat (Zero unsafe-inline & Zero unsafe-eval) untuk portal publik/guest & halaman error
+                $csp = [
+                    "default-src 'self'",
+                    "script-src 'self'",
+                    "style-src 'self'",
+                    "font-src 'self' data:",
+                    "img-src 'self' data: blob:",
+                    "connect-src 'self'",
+                    "object-src 'none'",
+                    "base-uri 'self'",
+                    "form-action 'self'",
+                    "frame-ancestors 'self'",
+                ];
+            } else {
+                // Kebijakan CSP terautentikasi untuk modul internal (Presensi GPS/Leaflet, Alpine.js, Slide Dekanat)
+                $csp = [
+                    "default-src 'self'",
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.tailwindcss.com",
+                    "style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com",
+                    "font-src 'self' data: https://fonts.gstatic.com",
+                    "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com https://*.unri.ac.id",
+                    "connect-src 'self' blob: https://*.tile.openstreetmap.org",
+                    "object-src 'none'",
+                    "base-uri 'self'",
+                    "form-action 'self'",
+                    "frame-ancestors 'self'",
+                ];
+            }
 
             $response->headers->set('Content-Security-Policy', implode('; ', $csp));
         }
@@ -60,13 +77,11 @@ class SecurityHeaders
             }
         }
 
-        // 8. Perlindungan HSTS pada koneksi HTTPS (Mengatasi ZAP 'Strict-Transport-Security Header Not Set')
-        if ($request->isSecure() || $request->header('X-Forwarded-Proto') === 'https') {
-            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-        }
+        // 8. Perlindungan HSTS secara konsisten (Mengatasi ZAP 'Strict-Transport-Security Header Not Set')
+        $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 
-        // 9. Manajemen Cache Ketat pada halaman login/akun (Mengatasi ZAP 'Re-examine Cache-control Directives')
-        if ($request->is('login', 'logout', 'change-password*', 'profile*')) {
+        // 9. Manajemen Cache Ketat pada seluruh halaman HTML dinamis & redirect (Mengatasi ZAP 'Re-examine Cache-control Directives')
+        if ($isHtml || $response->isRedirection()) {
             $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
             $response->headers->set('Pragma', 'no-cache');
         }

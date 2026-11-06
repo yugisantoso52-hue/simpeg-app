@@ -80,3 +80,40 @@
   src: url('/fonts/playfair-900.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+
+/* ==========================================================================
+   Strict CSP Compliant Styles for SIKAP Guest & Auth Portal
+   ========================================================================== */
+.login-hero-bg {
+  background: linear-gradient(135deg, #031530 0%, #072552 40%, #0a3875 100%);
+}
+
+.login-hero-texture {
+  background-image: url('/images/bg-blue-regal.jpg');
+  mix-blend-mode: overlay;
+}
+
+.login-svg-frame {
+  opacity: 0.65;
+}
+
+.login-marble-bg {
+  background-image: url('/images/bg-marble.jpg');
+  background-color: #faf8f5;
+}
+
+.login-gold-pill {
+  border: 1.8px solid #a3824c;
+  background-color: #ffffff;
+}
+
+.login-info-box {
+  background: linear-gradient(90deg, rgba(219, 234, 254, 0.9) 0%, rgba(240, 249, 255, 0.85) 50%, rgba(254, 243, 199, 0.9) 100%);
+  border: 1px solid rgba(197, 155, 39, 0.7);
+}
+
+.login-submit-btn {
+  background: linear-gradient(90deg, #072e66 0%, #0c4384 50%, #062654 100%);
+  border: 1.5px solid #d4af37;
+  box-shadow: 0 4px 18px rgba(8, 41, 89, 0.45), 0 0 14px rgba(212, 175, 55, 0.35);
+}

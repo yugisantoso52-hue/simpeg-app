@@ -4,8 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mode Offline - SIKAP FKP UNRI</title>
-    <link rel="stylesheet" href="/fonts/fonts.css">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="{{ asset('js/guest-portal.js') }}" defer></script>
 </head>
 <body class="bg-slate-100 font-sans antialiased text-slate-800 min-h-screen flex items-center justify-center p-4">
 
@@ -32,7 +33,7 @@
             </p>
         </div>
 
-        <button onclick="window.location.reload()" class="w-full py-3 bg-[#007a3d] hover:bg-[#006030] text-white rounded-xl text-xs font-bold transition shadow-md">
+        <button type="button" data-action="reload" class="w-full py-3 bg-[#007a3d] hover:bg-[#006030] text-white rounded-xl text-xs font-bold transition shadow-md cursor-pointer">
             🔄 Coba Hubungkan Kembali
         </button>
     </div>

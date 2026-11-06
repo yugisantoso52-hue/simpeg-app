@@ -40,16 +40,23 @@ class PasswordResetLinkController extends Controller
             })
             ->first();
 
-        if (!$user) {
+        if (!$user || empty($user->email)) {
             throw ValidationException::withMessages([
                 'login' => 'NIP atau alamat email tidak terdaftar dalam sistem.',
             ]);
         }
 
-        // Kirim reset link ke email pengguna yang ditemukan
-        $status = Password::sendResetLink([
-            'email' => $user->email,
-        ]);
+        try {
+            // Kirim reset link ke email pengguna yang ditemukan
+            $status = Password::sendResetLink([
+                'email' => $user->email,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Gagal mengirim email reset password: ' . $e->getMessage());
+
+            return back()->withInput($request->only('login'))
+                ->withErrors(['login' => 'Layanan pengiriman email sedang sibuk. Silakan coba lagi atau hubungi Administrator Kepegawaian.']);
+        }
 
         return $status == Password::RESET_LINK_SENT
                     ? back()->with('status', __($status))

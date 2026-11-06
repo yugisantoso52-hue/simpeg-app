@@ -126,4 +126,46 @@ class WebSecurityAuditTest extends TestCase
         $this->assertStringNotContainsString('storage_path', $content);
         $this->assertStringNotContainsString('SQLSTATE', $content);
     }
+
+    /**
+     * TEST 7 — OWASP ZAP HARDENING: STRICT CSP (NO UNSAFE-INLINE / UNSAFE-EVAL) ON GUEST & PUBLIC ROUTES
+     */
+    public function test_owasp_zap_strict_csp_and_security_headers_on_public_routes(): void
+    {
+        foreach (['/login', '/forgot-password', '/offline'] as $uri) {
+            $response = $this->get($uri);
+            $response->assertStatus(200);
+
+            $csp = (string) $response->headers->get('Content-Security-Policy');
+            $this->assertNotEmpty($csp, "CSP header missing on {$uri}");
+            $this->assertStringNotContainsString('unsafe-inline', $csp, "CSP on {$uri} must not contain unsafe-inline");
+            $this->assertStringNotContainsString('unsafe-eval', $csp, "CSP on {$uri} must not contain unsafe-eval");
+
+            $this->assertEquals(
+                'max-age=31536000; includeSubDomains',
+                $response->headers->get('Strict-Transport-Security')
+            );
+
+            $cacheControl = (string) $response->headers->get('Cache-Control');
+            $this->assertStringContainsString('no-store', $cacheControl);
+            $this->assertStringContainsString('no-cache', $cacheControl);
+            $this->assertStringContainsString('must-revalidate', $cacheControl);
+
+            $html = $response->getContent();
+            $this->assertStringNotContainsString('style="', $html, "Public view {$uri} must not use inline style attributes");
+            $this->assertStringNotContainsString('x-data=', $html, "Public view {$uri} must not require Alpine eval");
+        }
+    }
+
+    /**
+     * TEST 8 — OWASP ZAP HARDENING: SITEMAP.XML RETURNS 200 VALID XML
+     */
+    public function test_sitemap_xml_returns_200_xml_response(): void
+    {
+        $response = $this->get('/sitemap.xml');
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('xml', (string) $response->headers->get('Content-Type'));
+        $this->assertStringContainsString('<urlset', $response->getContent());
+    }
 }
