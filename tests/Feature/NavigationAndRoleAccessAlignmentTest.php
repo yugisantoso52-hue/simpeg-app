@@ -184,4 +184,17 @@ class NavigationAndRoleAccessAlignmentTest extends TestCase
         $this->actingAs($this->pegawaiUser)->get(route('pimpinan.analytics'))->assertStatus(403);
         $this->actingAs($this->pegawaiUser)->get(route('backup.index'))->assertStatus(403);
     }
+
+    public function test_executive_brief_slide_presentation_renders_properly_for_admin_and_dekan(): void
+    {
+        $response = $this->actingAs($this->adminUser)->get(route('pimpinan.executive-brief'));
+        $response->assertStatus(200)
+            ->assertSee('Mode Slide Presentasi Dekanat')
+            ->assertSee('viewMode: \'slides\'', false)
+            ->assertDontSee('Belum mendukung fleksibilitas pemantauan presensi GPS khusus titik gedung Fakultas Keperawatan');
+
+        $dekanResponse = $this->actingAs($this->pimpinanUser)->get(route('pimpinan.executive-brief'));
+        $dekanResponse->assertStatus(200)
+            ->assertSee('Mode Slide Presentasi Dekanat');
+    }
 }
