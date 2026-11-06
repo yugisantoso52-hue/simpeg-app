@@ -704,28 +704,30 @@ class PengajuanKarirController extends Controller
             ];
             $bulanTmt = $bulanMap[$pengajuan->periode_kp] ?? '04-01';
             $tmtPangkatBaru = "{$tahun}-{$bulanTmt}";
+            $fileSk = $pengajuan->file_sk_pangkat_terakhir ?? $pengajuan->file_sk_terakhir;
 
             app(KpService::class)->prosesKp($pegawai, [
                 'golongan_baru_id' => $pengajuan->golongan_tujuan_id,
                 'tmt_pangkat_baru' => $tmtPangkatBaru,
+                'nomor_sk'         => $pengajuan->nomor_surat,
+                'tanggal_sk'       => now()->toDateString(),
+                'file_sk'          => $fileSk,
+                'keterangan'       => 'Disahkan melalui Pengajuan Kenaikan Pangkat (' . ($pengajuan->jenis_kp ?? 'Reguler') . ')',
             ]);
-
-            if ($pengajuan->file_sk_pangkat_terakhir || $pengajuan->file_sk_terakhir) {
-                $fileSk = $pengajuan->file_sk_pangkat_terakhir ?? $pengajuan->file_sk_terakhir;
-                $pegawai->update(['file_sk_pangkat_terakhir' => $fileSk]);
-            }
         } elseif ($pengajuan->jenis_pengajuan === 'KGB' && $pengajuan->tmt_baru) {
             $tmtKgb = is_string($pengajuan->tmt_baru) ? $pengajuan->tmt_baru : $pengajuan->tmt_baru->format('Y-m-d');
+            $fileSk = $pengajuan->file_sk_kgb_terakhir ?? $pengajuan->file_sk_terakhir;
+
             app(KgbService::class)->prosesKgb($pegawai, [
                 'tmt_kgb_baru'    => $tmtKgb,
                 'gaji_pokok_baru' => $pengajuan->gaji_pokok_baru,
+                'nomor_sk'        => $pengajuan->nomor_surat,
+                'file_sk'         => $fileSk,
             ]);
-
-            if ($pengajuan->file_sk_kgb_terakhir || $pengajuan->file_sk_terakhir) {
-                $fileSk = $pengajuan->file_sk_kgb_terakhir ?? $pengajuan->file_sk_terakhir;
-                $pegawai->update(['file_sk_kgb_terakhir' => $fileSk]);
-            }
         }
+
+        \Illuminate\Support\Facades\Cache::forget('dashboard_reminder');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_workflow_stats');
     }
 
     /**

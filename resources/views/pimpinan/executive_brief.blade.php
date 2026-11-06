@@ -200,7 +200,7 @@
                              :class="viewMode === 'slides' && currentStep === 1 ? 'ring-2 ring-emerald-400 bg-white/15' : 'bg-white/10'"
                              class="step-item p-4 rounded-2xl border border-white/15 backdrop-blur-xs transition">
                             <div class="text-[11px] text-slate-300 uppercase font-bold">1. Total SDM Aktif</div>
-                            <div class="text-2xl font-black text-white mt-1">{{ $kpis['total_pegawai'] ?? 83 }} <span class="text-xs font-semibold text-emerald-300">Pegawai</span></div>
+                            <div class="text-2xl font-black text-white mt-1">{{ $kpis['total_aktif'] ?? $kpis['total_pegawai'] ?? 83 }} <span class="text-xs font-semibold text-emerald-300">Pegawai</span></div>
                             <div class="text-[11px] text-slate-300 mt-0.5">Dosen, Tendik &amp; PHL</div>
                         </div>
 
@@ -235,8 +235,8 @@
                              x-transition:enter-end="opacity-100 translate-y-0 scale-100"
                              :class="viewMode === 'slides' && currentStep === 4 ? 'ring-2 ring-emerald-400 bg-white/15' : 'bg-white/10'"
                              class="step-item p-4 rounded-2xl border border-white/15 backdrop-blur-xs transition">
-                            <div class="text-[11px] text-slate-300 uppercase font-bold">4. Radar Pensiun (1–3 Thn)</div>
-                            <div class="text-2xl font-black text-amber-300 mt-1">{{ isset($retirementRadar['within_3_years']) ? count($retirementRadar['within_3_years']) : 0 }} <span class="text-xs font-semibold text-white">ASN</span></div>
+                            <div class="text-[11px] text-slate-300 uppercase font-bold">4. Radar Pensiun (1–5 Thn)</div>
+                            <div class="text-2xl font-black text-amber-300 mt-1">{{ $retirementRadar['summary']['total_5_tahun'] ?? (isset($retirementRadar['within_3_years']) ? count($retirementRadar['within_3_years']) : 0) }} <span class="text-xs font-semibold text-white">ASN</span></div>
                             <div class="text-[11px] text-slate-300 mt-0.5">Perencanaan Regenerasi Dini</div>
                         </div>
                     </div>

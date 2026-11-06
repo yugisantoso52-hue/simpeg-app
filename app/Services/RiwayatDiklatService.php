@@ -100,8 +100,21 @@ class RiwayatDiklatService
 
             }
 
-            return $this->repository
+            $created = $this->repository
                 ->createRiwayat($data);
+
+            if (!empty($data['pegawai_id'])) {
+                try {
+                    $pegawai = Pegawai::find($data['pegawai_id']);
+                    if ($pegawai) {
+                        app(TalentScoringService::class)->calculatePegawaiTalent($pegawai);
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore talent scoring sync errors
+                }
+            }
+
+            return $created;
 
         });
 
@@ -140,11 +153,25 @@ class RiwayatDiklatService
 
             }
 
-            return $this->repository
+            $updated = $this->repository
                 ->updateRiwayat(
                     $id,
                     $data
                 );
+
+            $pegawaiId = $data['pegawai_id'] ?? $riwayat->pegawai_id;
+            if ($pegawaiId) {
+                try {
+                    $pegawai = Pegawai::find($pegawaiId);
+                    if ($pegawai) {
+                        app(TalentScoringService::class)->calculatePegawaiTalent($pegawai);
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore talent scoring sync errors
+                }
+            }
+
+            return $updated;
 
         });
 
@@ -161,6 +188,7 @@ class RiwayatDiklatService
 
             $riwayat = $this->repository
                 ->findOrFail($id);
+            $pegawaiId = $riwayat->pegawai_id;
 
             if ($riwayat->file_sertifikat) {
 
@@ -168,8 +196,21 @@ class RiwayatDiklatService
 
             }
 
-            return $this->repository
+            $deleted = $this->repository
                 ->deleteRiwayat($id);
+
+            if ($deleted && $pegawaiId) {
+                try {
+                    $pegawai = Pegawai::find($pegawaiId);
+                    if ($pegawai) {
+                        app(TalentScoringService::class)->calculatePegawaiTalent($pegawai);
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore talent scoring sync errors
+                }
+            }
+
+            return $deleted;
 
         });
 

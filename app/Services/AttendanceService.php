@@ -727,6 +727,14 @@ class AttendanceService
             ? (clone $attQuery)->where('is_suspicious', true)->count()
             : 0;
 
+        $cutiQuery = \App\Models\PengajuanCuti::where('status', 'Disetujui')
+            ->whereDate('tanggal_mulai', '<=', $today)
+            ->whereDate('tanggal_selesai', '>=', $today);
+        if ($bawahanIds !== null) {
+            $cutiQuery->whereIn('pegawai_id', $bawahanIds);
+        }
+        $cutiCount = $cutiQuery->distinct('pegawai_id')->count('pegawai_id');
+
         return [
             'total_users' => $totalPegawai,
             'total_pegawai' => $totalPegawai,
@@ -735,6 +743,7 @@ class AttendanceService
             'total_wfo' => $wfoCount,
             'total_wfh' => $wfhCount,
             'total_late' => $lateCount,
+            'total_cuti' => $cutiCount,
             'total_suspicious' => $suspiciousCount,
         ];
     }
@@ -999,6 +1008,17 @@ class AttendanceService
             'jabatan',
             'user.attendances' => function ($q) use ($startOfMonth, $endOfMonth) {
                 $q->whereBetween('attendance_date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()]);
+            },
+            'pengajuanCuti' => function ($q) use ($startOfMonth, $endOfMonth) {
+                $q->where('status', 'Disetujui')
+                  ->where(function ($sq) use ($startOfMonth, $endOfMonth) {
+                      $sq->whereBetween('tanggal_mulai', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+                        ->orWhereBetween('tanggal_selesai', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+                        ->orWhere(function ($ssq) use ($startOfMonth, $endOfMonth) {
+                            $ssq->where('tanggal_mulai', '<=', $startOfMonth->toDateString())
+                                ->where('tanggal_selesai', '>=', $endOfMonth->toDateString());
+                        });
+                  });
             }
         ])->where('status_pegawai', 'Aktif');
 
@@ -1025,6 +1045,8 @@ class AttendanceService
                 }
             }
 
+            $cutiList = $pegawai->pengajuanCuti ?? collect();
+
             $totalHadir = 0;
             $totalLateCount = 0;
             $totalEarlyCount = 0;
@@ -1032,6 +1054,7 @@ class AttendanceService
             $totalEarlyMinutes = 0;
             $totalWfo = 0;
             $totalWfh = 0;
+            $totalCuti = 0;
             $totalEffectiveSeconds = 0;
 
             $dayRecords = [];
@@ -1092,18 +1115,34 @@ class AttendanceService
                             'badge' => '—',
                             'badge_color' => 'gray',
                         ];
-                    } elseif ($dayInfo['is_future']) {
-                        $dayRecords[$d] = [
-                            'status' => 'future',
-                            'badge' => '·',
-                            'badge_color' => 'lightgray',
-                        ];
                     } else {
-                        $dayRecords[$d] = [
-                            'status' => 'absent',
-                            'badge' => 'A',
-                            'badge_color' => 'red',
-                        ];
+                        $dateStr = $dayInfo['date'];
+                        $cutiHariIni = $cutiList->first(function ($c) use ($dateStr) {
+                            return $dateStr >= $c->tanggal_mulai->toDateString() && $dateStr <= $c->tanggal_selesai->toDateString();
+                        });
+
+                        if ($cutiHariIni) {
+                            $totalCuti++;
+                            $dayRecords[$d] = [
+                                'status' => 'leave',
+                                'badge' => 'C',
+                                'badge_color' => 'blue',
+                                'jenis_cuti' => $cutiHariIni->jenis_cuti,
+                                'notes' => 'Cuti: ' . ($cutiHariIni->jenis_cuti ?? 'Disetujui'),
+                            ];
+                        } elseif ($dayInfo['is_future']) {
+                            $dayRecords[$d] = [
+                                'status' => 'future',
+                                'badge' => '·',
+                                'badge_color' => 'lightgray',
+                            ];
+                        } else {
+                            $dayRecords[$d] = [
+                                'status' => 'absent',
+                                'badge' => 'A',
+                                'badge_color' => 'red',
+                            ];
+                        }
                     }
                 }
             }
@@ -1129,6 +1168,7 @@ class AttendanceService
                 'pegawai' => $pegawai,
                 'days' => $dayRecords,
                 'total_hadir' => $totalHadir,
+                'total_cuti' => $totalCuti,
                 'total_late' => $totalLateCount,
                 'total_late_minutes' => $totalLateMinutes,
                 'total_early_count' => $totalEarlyCount,

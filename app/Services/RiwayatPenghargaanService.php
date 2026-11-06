@@ -55,11 +55,19 @@ class RiwayatPenghargaanService
         }
         $penghargaan = $this->repository->createRiwayat($data);
 
-        if ($file && !empty($data['pegawai_id'])) {
+        if (!empty($data['pegawai_id'])) {
             $pegawai = Pegawai::find($data['pegawai_id']);
             if ($pegawai) {
-                $namaPenghargaan = strtoupper(str_replace(' ', '_', $data['nama_penghargaan'] ?? 'PENGHARGAAN'));
-                app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, "SK_PENGHARGAAN_{$namaPenghargaan}", '05_DOKUMEN_LAINNYA', 'Riwayat Penghargaan');
+                try {
+                    app(TalentScoringService::class)->calculatePegawaiTalent($pegawai);
+                } catch (\Throwable $e) {
+                    // Ignore talent scoring sync errors
+                }
+
+                if ($file) {
+                    $namaPenghargaan = strtoupper(str_replace(' ', '_', $data['nama_penghargaan'] ?? 'PENGHARGAAN'));
+                    app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, "SK_PENGHARGAAN_{$namaPenghargaan}", '05_DOKUMEN_LAINNYA', 'Riwayat Penghargaan');
+                }
             }
         }
 
@@ -81,10 +89,16 @@ class RiwayatPenghargaanService
 
         $updated = $this->repository->updateRiwayat($id, $data);
 
-        if ($file) {
-            $pegawaiId = $data['pegawai_id'] ?? $updated->pegawai_id;
-            $pegawai = Pegawai::find($pegawaiId);
-            if ($pegawai) {
+        $pegawaiId = $data['pegawai_id'] ?? $updated->pegawai_id;
+        $pegawai = Pegawai::find($pegawaiId);
+        if ($pegawai) {
+            try {
+                app(TalentScoringService::class)->calculatePegawaiTalent($pegawai);
+            } catch (\Throwable $e) {
+                // Ignore talent scoring sync errors
+            }
+
+            if ($file) {
                 $namaPenghargaan = strtoupper(str_replace(' ', '_', $data['nama_penghargaan'] ?? $updated->nama_penghargaan ?? 'PENGHARGAAN'));
                 app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, "SK_PENGHARGAAN_{$namaPenghargaan}", '05_DOKUMEN_LAINNYA', 'Update Riwayat Penghargaan');
             }
@@ -96,7 +110,21 @@ class RiwayatPenghargaanService
     public function delete(int $id): bool
     {
         $existing = $this->find($id);
+        $pegawaiId = $existing->pegawai_id;
         $this->deleteFile($existing->file_sk);
-        return $this->repository->deleteRiwayat($id);
+        $deleted = $this->repository->deleteRiwayat($id);
+
+        if ($deleted && $pegawaiId) {
+            try {
+                $pegawai = Pegawai::find($pegawaiId);
+                if ($pegawai) {
+                    app(TalentScoringService::class)->calculatePegawaiTalent($pegawai);
+                }
+            } catch (\Throwable $e) {
+                // Ignore talent scoring sync errors
+            }
+        }
+
+        return $deleted;
     }
 }

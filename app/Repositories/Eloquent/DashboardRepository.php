@@ -120,10 +120,7 @@ class DashboardRepository implements DashboardRepositoryInterface
     {
         $hariIni    = Carbon::now()->startOfDay()->toDateTimeString();
         $hariTarget = Carbon::now()->addMonths(3)->endOfDay()->toDateTimeString();
-
-        // Khusus Masa Pensiun (BUP 58 Tahun): Radar 1 Tahun ke Depan
-        $tahunLahirPensiunMin  = Carbon::now()->subYears(58)->startOfDay()->toDateTimeString(); 
-        $tahunLahirPensiunMaks = Carbon::now()->subYears(58)->addYear()->endOfDay()->toDateTimeString();
+        $hariTarget1Tahun = Carbon::now()->addYear()->endOfDay();
 
         // 1. KGB (Filter SQL Direct - 3 Bulan ke Depan)
         $kgb = Pegawai::where('status_pegawai', 'Aktif')
@@ -157,22 +154,36 @@ class DashboardRepository implements DashboardRepositoryInterface
                 ];
             });
 
-        // 3. Pensiun (BUP 58 Tahun - Filter SQL Direct - 1 Tahun ke Depan)
-        $pensiun = Pegawai::where('status_pegawai', 'Aktif')
-            ->whereNotNull('tanggal_lahir')
-            ->whereBetween('tanggal_lahir', [$tahunLahirPensiunMin, $tahunLahirPensiunMaks])
-            ->orderBy('tanggal_lahir', 'asc')
-            ->take(20)
+        // 3. Pensiun (BUP Dinamis 58/60/65/70 Tahun sesuai Jabatan & Kategori ASN - Radar 1 Tahun ke Depan)
+        $analyticsService = app(\App\Services\ExecutiveAnalyticsService::class);
+        $nowStart = Carbon::now()->startOfDay();
+
+        $pensiun = Pegawai::with('jabatan')
+            ->where('status_pegawai', 'Aktif')
+            ->where(function ($q) {
+                $q->whereNotNull('tanggal_lahir')->orWhereNotNull('tanggal_pensiun');
+            })
             ->get()
-            ->map(function ($pegawai) {
+            ->map(function ($pegawai) use ($analyticsService) {
+                $bup = $pegawai->batas_usia_pensiun ?: $analyticsService->hitungBup($pegawai);
+                $tglPensiun = $pegawai->tanggal_pensiun
+                    ? Carbon::parse($pegawai->tanggal_pensiun)->startOfDay()
+                    : Carbon::parse($pegawai->tanggal_lahir)->addYears($bup)->startOfDay();
+
                 return (object) [
                     'id'               => $pegawai->id,
                     'nama'             => $pegawai->nama,
                     'nama_lengkap'     => $pegawai->nama_lengkap ?? $pegawai->nama,
                     'nip'              => $pegawai->nip,
-                    'tanggal_kegiatan' => Carbon::parse($pegawai->tanggal_lahir)->addYears(58)->format('d-m-Y'),
+                    'bup'              => $bup,
+                    'tgl_pensiun_raw'  => $tglPensiun,
+                    'tanggal_kegiatan' => $tglPensiun->format('d-m-Y'),
                 ];
-            });
+            })
+            ->filter(fn ($item) => $item->tgl_pensiun_raw->betweenIncluded($nowStart, $hariTarget1Tahun))
+            ->sortBy('tgl_pensiun_raw')
+            ->take(20)
+            ->values();
 
         // 4. Satyalancana (Filter SQL Direct)
         $satyalancana = Pegawai::where('status_pegawai', 'Aktif')

@@ -53,7 +53,7 @@ class RiwayatStrSipService
                     $file,
                     $data['pegawai_id'] ?? null,
                     'str_sip',
-                    $data['jenis'] ?? 'str_sip'
+                    $data['jenis_dokumen'] ?? $data['jenis'] ?? 'str_sip'
                 );
             }
 
@@ -76,11 +76,14 @@ class RiwayatStrSipService
 
             $strSip = $this->repository->create($data);
 
-            if ($file && !empty($data['pegawai_id'])) {
+            if (!empty($data['pegawai_id'])) {
                 $pegawai = Pegawai::find($data['pegawai_id']);
                 if ($pegawai) {
-                    $jenisDok = 'STR_SIP_' . strtoupper($data['jenis'] ?? 'PROFESI');
-                    app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, $jenisDok, '01_DOKUMEN_UTAMA', 'Auto-sync dari Legalitas STR / SIP');
+                    app(PegawaiService::class)->syncPegawaiFromHistories($pegawai);
+                    if ($file) {
+                        $jenisDok = 'STR_SIP_' . strtoupper($data['jenis_dokumen'] ?? $data['jenis'] ?? 'PROFESI');
+                        app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, $jenisDok, '01_DOKUMEN_UTAMA', 'Auto-sync dari Legalitas STR / SIP');
+                    }
                 }
             }
 
@@ -102,7 +105,7 @@ class RiwayatStrSipService
                     $file,
                     $pegawaiId,
                     'str_sip',
-                    $data['jenis'] ?? $riwayat->jenis ?? 'str_sip'
+                    $data['jenis_dokumen'] ?? $data['jenis'] ?? $riwayat->jenis_dokumen ?? 'str_sip'
                 );
             }
 
@@ -123,10 +126,11 @@ class RiwayatStrSipService
 
             $updated = $this->repository->update($id, $data);
 
-            if ($file) {
-                $pegawai = Pegawai::find($pegawaiId);
-                if ($pegawai) {
-                    $jenisDok = 'STR_SIP_' . strtoupper($data['jenis'] ?? 'PROFESI');
+            $pegawai = Pegawai::find($pegawaiId);
+            if ($pegawai) {
+                app(PegawaiService::class)->syncPegawaiFromHistories($pegawai);
+                if ($file) {
+                    $jenisDok = 'STR_SIP_' . strtoupper($data['jenis_dokumen'] ?? $data['jenis'] ?? $riwayat->jenis_dokumen ?? 'PROFESI');
                     app(GoogleDriveGasService::class)->uploadDokumen($pegawai, $file, $jenisDok, '01_DOKUMEN_UTAMA', 'Auto-sync update dari Legalitas STR / SIP');
                 }
             }
@@ -139,12 +143,22 @@ class RiwayatStrSipService
     {
         return DB::transaction(function () use ($id) {
             $riwayat = $this->repository->findOrFail($id);
+            $pegawaiId = $riwayat->pegawai_id;
 
             if ($riwayat->file_dokumen) {
                 PegawaiStorageService::delete($riwayat->file_dokumen);
             }
 
-            return $this->repository->delete($id);
+            $deleted = $this->repository->delete($id);
+
+            if ($pegawaiId) {
+                $pegawai = Pegawai::find($pegawaiId);
+                if ($pegawai) {
+                    app(PegawaiService::class)->syncPegawaiFromHistories($pegawai);
+                }
+            }
+
+            return $deleted;
         });
     }
 

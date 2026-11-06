@@ -262,9 +262,32 @@ class SatyalancanaController extends Controller
                     ]
                 );
 
+                $tmtMasuk = $usulan->pegawai->tanggal_masuk ?? $usulan->pegawai->tmt_sk_pertama;
+                $satyalancanaBerikutnya = $usulan->pegawai->satyalancana_berikutnya;
+                if ($tmtMasuk) {
+                    $start = \Carbon\Carbon::parse($tmtMasuk);
+                    if (str_contains((string) $usulan->kategori, '10')) {
+                        $satyalancanaBerikutnya = $start->copy()->addYears(20)->toDateString();
+                    } elseif (str_contains((string) $usulan->kategori, '20')) {
+                        $satyalancanaBerikutnya = $start->copy()->addYears(30)->toDateString();
+                    } elseif (str_contains((string) $usulan->kategori, '30')) {
+                        $satyalancanaBerikutnya = null;
+                    }
+                }
+
                 $usulan->pegawai->update([
-                    'satyalancana_terakhir' => $usulan->kategori
+                    'satyalancana_terakhir'   => $usulan->kategori,
+                    'satyalancana_berikutnya' => $satyalancanaBerikutnya,
                 ]);
+
+                try {
+                    app(\App\Services\TalentScoringService::class)->calculatePegawaiTalent($usulan->pegawai->fresh());
+                } catch (\Throwable $e) {
+                    // Ignore talent scoring sync errors
+                }
+
+                \Illuminate\Support\Facades\Cache::forget('dashboard_reminder');
+                \Illuminate\Support\Facades\Cache::forget('dashboard_workflow_stats');
             }
 
             $msg = 'Pengesahan Tanda Tangan Elektronik (TTE) Wakil Dekan II berhasil. Berkas sah, tercatat pada riwayat penghargaan, dan siap dikirimkan ke Rektorat / BKN.';

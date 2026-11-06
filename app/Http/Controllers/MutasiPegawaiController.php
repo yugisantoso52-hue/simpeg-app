@@ -82,12 +82,34 @@ class MutasiPegawaiController extends Controller
                     'keterangan'       => $request->keterangan,
                 ]);
 
-                // 2. Update status terkini di master tabel Pegawai
+                // 2. Sinkronkan ke RiwayatJabatan & master tabel Pegawai
                 $pegawai = Pegawai::findOrFail($request->pegawai_id);
+
+                \App\Models\RiwayatJabatan::where('pegawai_id', $pegawai->id)
+                    ->whereIn('status', ['aktif', 'Aktif'])
+                    ->update(['status' => 'Tidak Aktif']);
+
+                \App\Models\RiwayatJabatan::create([
+                    'pegawai_id'    => $pegawai->id,
+                    'jabatan_id'    => $request->jabatan_baru_id,
+                    'unit_kerja_id' => $request->unit_baru_id,
+                    'tmt_jabatan'   => $request->tmt ?? now()->toDateString(),
+                    'nomor_sk'      => $request->nomor_sk,
+                    'file_sk'       => $file,
+                    'status'        => 'Aktif',
+                    'keterangan'    => $request->keterangan ?: 'Sinkronisasi otomatis dari Mutasi Pegawai',
+                ]);
+
                 $pegawai->update([
                     'unit_kerja_id' => $request->unit_baru_id,
                     'jabatan_id'    => $request->jabatan_baru_id,
                 ]);
+
+                app(\App\Services\PegawaiService::class)->syncPegawaiFromHistories($pegawai->fresh());
+
+                \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
+                \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+                \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_unit');
 
                 if ($request->hasFile('file_sk')) {
                     app(\App\Services\GoogleDriveGasService::class)->uploadDokumen($pegawai, $request->file('file_sk'), 'SK_MUTASI', '02_RIWAYAT_SK', 'Riwayat Mutasi Pegawai');
@@ -170,12 +192,38 @@ class MutasiPegawaiController extends Controller
                     'keterangan'       => $request->filled('keterangan') ? $request->keterangan : $mutasi->keterangan,
                 ]);
 
-                // Update kembali master tabel Pegawai dengan data terbaru
+                // Update kembali RiwayatJabatan & master tabel Pegawai dengan data terbaru
                 $pegawai = Pegawai::findOrFail($request->pegawai_id);
+
+                \App\Models\RiwayatJabatan::where('pegawai_id', $pegawai->id)
+                    ->whereIn('status', ['aktif', 'Aktif'])
+                    ->update(['status' => 'Tidak Aktif']);
+
+                \App\Models\RiwayatJabatan::updateOrCreate(
+                    [
+                        'pegawai_id'  => $pegawai->id,
+                        'jabatan_id'  => $request->jabatan_baru_id,
+                        'tmt_jabatan' => $request->tmt ?? $mutasi->tmt,
+                    ],
+                    [
+                        'unit_kerja_id' => $request->unit_baru_id,
+                        'nomor_sk'      => $request->filled('nomor_sk') ? $request->nomor_sk : $mutasi->nomor_sk,
+                        'file_sk'       => $file,
+                        'status'        => 'Aktif',
+                        'keterangan'    => $request->filled('keterangan') ? $request->keterangan : ($mutasi->keterangan ?: 'Sinkronisasi otomatis dari Mutasi Pegawai'),
+                    ]
+                );
+
                 $pegawai->update([
                     'unit_kerja_id' => $request->unit_baru_id,
                     'jabatan_id'    => $request->jabatan_baru_id,
                 ]);
+
+                app(\App\Services\PegawaiService::class)->syncPegawaiFromHistories($pegawai->fresh());
+
+                \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
+                \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+                \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_unit');
 
                 if ($request->hasFile('file_sk')) {
                     app(\App\Services\GoogleDriveGasService::class)->uploadDokumen($pegawai, $request->file('file_sk'), 'SK_MUTASI', '02_RIWAYAT_SK', 'Update Riwayat Mutasi Pegawai');
@@ -202,10 +250,33 @@ class MutasiPegawaiController extends Controller
 
                 // Kembalikan posisi unit kerja dan jabatan pegawai ke "Unit Lama" & "Jabatan Lama" sebelum dihapus
                 $pegawai = Pegawai::findOrFail($mutasi->pegawai_id);
+
+                // Hapus riwayat jabatan yang dibuat dari mutasi ini (jika ada) & aktifkan kembali jabatan sebelumnya
+                \App\Models\RiwayatJabatan::where('pegawai_id', $pegawai->id)
+                    ->where('jabatan_id', $mutasi->jabatan_baru_id)
+                    ->where('unit_kerja_id', $mutasi->unit_baru_id)
+                    ->when($mutasi->tmt, fn($q) => $q->whereDate('tmt_jabatan', $mutasi->tmt))
+                    ->delete();
+
+                $prevRiwayat = \App\Models\RiwayatJabatan::where('pegawai_id', $pegawai->id)
+                    ->where('jabatan_id', $mutasi->jabatan_lama_id)
+                    ->orderByDesc('tmt_jabatan')
+                    ->first();
+
+                if ($prevRiwayat) {
+                    $prevRiwayat->update(['status' => 'Aktif']);
+                }
+
                 $pegawai->update([
                     'unit_kerja_id' => $mutasi->unit_lama_id,
                     'jabatan_id'    => $mutasi->jabatan_lama_id,
                 ]);
+
+                app(\App\Services\PegawaiService::class)->syncPegawaiFromHistories($pegawai->fresh());
+
+                \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
+                \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+                \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_unit');
 
                 if ($mutasi->file_sk) {
                     PegawaiStorageService::delete($mutasi->file_sk);

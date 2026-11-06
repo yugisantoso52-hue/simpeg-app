@@ -486,7 +486,58 @@ class PegawaiService
             $pegawai->pendidikan_terakhir = $highestPendidikan->jenjang;
         }
 
+        // 4. Sinkronisasi Legalitas Profesi (STR & SIP) ke Kolom Induk Pegawai
+        try {
+            if (method_exists($pegawai, 'riwayatStrSip')) {
+                $strSipRecords = $pegawai->riwayatStrSip()->orderByDesc('tanggal_terbit')->orderByDesc('id')->get();
+
+                $latestStr = $strSipRecords->first(fn ($item) => str_contains(strtoupper((string) $item->jenis_dokumen), 'STR'));
+                if ($latestStr) {
+                    if ($this->hasPegawaiColumn('nomor_str', $columns) && !empty($latestStr->nomor_registrasi)) {
+                        $pegawai->nomor_str = $latestStr->nomor_registrasi;
+                    }
+                    if ($this->hasPegawaiColumn('tanggal_kadaluarsa_str', $columns)) {
+                        $pegawai->tanggal_kadaluarsa_str = $latestStr->is_seumur_hidup ? null : $latestStr->tanggal_berakhir;
+                    }
+                    if ($this->hasPegawaiColumn('file_str', $columns) && !empty($latestStr->file_dokumen)) {
+                        $pegawai->file_str = $latestStr->file_dokumen;
+                    }
+                }
+
+                $latestSip = $strSipRecords->first(fn ($item) => str_contains(strtoupper((string) $item->jenis_dokumen), 'SIP'));
+                if ($latestSip) {
+                    if ($this->hasPegawaiColumn('nomor_sip', $columns) && !empty($latestSip->nomor_registrasi)) {
+                        $pegawai->nomor_sip = $latestSip->nomor_registrasi;
+                    }
+                    if ($this->hasPegawaiColumn('tanggal_kadaluarsa_sip', $columns)) {
+                        $pegawai->tanggal_kadaluarsa_sip = $latestSip->is_seumur_hidup ? null : $latestSip->tanggal_berakhir;
+                    }
+                    if ($this->hasPegawaiColumn('file_sip', $columns) && !empty($latestSip->file_dokumen)) {
+                        $pegawai->file_sip = $latestSip->file_dokumen;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Abaikan jika tabel riwayat_str_sip belum termigrasi
+        }
+
         $pegawai->save();
+
+        // 5. Otomatisasi Sinkronisasi Matriks 9-Kotak Talenta ASN (Pendidikan, Pangkat, Jabatan)
+        try {
+            app(TalentScoringService::class)->calculatePegawaiTalent($pegawai);
+        } catch (\Throwable $e) {
+            // Abaikan jika tabel talent_mappings belum termigrasi
+        }
+
+        // Bersihkan cache lintas menu yang bergantung pada data induk pegawai
+        \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_akademik_stats');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_reminder');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_golongan');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_pendidikan');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_unit');
     }
 
     /**

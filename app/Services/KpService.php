@@ -43,22 +43,51 @@ class KpService
         return DB::transaction(function () use ($pegawai, $data) {
             // 1. Nonaktifkan riwayat pangkat lama jika ada
             if (method_exists($pegawai, 'riwayatPangkat')) {
-                $pegawai->riwayatPangkat()->where('status', 'aktif')->update(['status' => 'nonaktif']);
+                $pegawai->riwayatPangkat()->whereIn('status', ['aktif', 'Aktif'])->update(['status' => 'nonaktif']);
 
-                // 2. Buat riwayat pangkat baru
+                // 2. Buat riwayat pangkat baru lengkap dengan atribut SK
                 $pegawai->riwayatPangkat()->create([
                     'golongan_id' => $data['golongan_baru_id'],
                     'tmt'         => $data['tmt_pangkat_baru'],
-                    'status'      => 'aktif'
+                    'nomor_sk'    => $data['nomor_sk'] ?? null,
+                    'tanggal_sk'  => $data['tanggal_sk'] ?? null,
+                    'file_sk'     => $data['file_sk'] ?? null,
+                    'keterangan'  => $data['keterangan'] ?? 'Disahkan melalui Kenaikan Pangkat SIKAP',
+                    'status'      => 'aktif',
                 ]);
             }
 
             // 3. Update data induk pegawai
-            $pegawai->update([
+            $updateData = [
                 'golongan_id'          => $data['golongan_baru_id'],
                 'tmt_pangkat_terakhir' => $data['tmt_pangkat_baru'],
                 'kp_berikutnya'        => Carbon::parse($data['tmt_pangkat_baru'])->addYears(4)->toDateString(),
-            ]);
+            ];
+            if (!empty($data['nomor_sk'])) {
+                $updateData['nomor_sk_pangkat_terakhir'] = $data['nomor_sk'];
+            }
+            if (!empty($data['tanggal_sk'])) {
+                $updateData['tanggal_sk_pangkat_terakhir'] = $data['tanggal_sk'];
+            }
+            if (!empty($data['file_sk'])) {
+                $updateData['file_sk_pangkat_terakhir'] = $data['file_sk'];
+            }
+
+            $pegawai->update($updateData);
+
+            $freshPegawai = $pegawai->fresh();
+            if ($freshPegawai) {
+                app(PegawaiService::class)->syncPegawaiFromHistories($freshPegawai);
+                try {
+                    app(TalentScoringService::class)->calculatePegawaiTalent($freshPegawai->fresh());
+                } catch (\Throwable $e) {
+                    // Ignore talent scoring sync errors
+                }
+            }
+
+            \Illuminate\Support\Facades\Cache::forget('dashboard_reminder');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_golongan');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_workflow_stats');
 
             return true;
         });

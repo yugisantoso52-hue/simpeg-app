@@ -69,11 +69,28 @@ class KgbService
         $tmtBaru = $datask['tmt_kgb_baru'] ?? $datask['tmt_baru'] ?? null;
         if (!$tmtBaru) return false;
 
-        return DB::transaction(function () use ($pegawai, $tmtBaru) {
-            $pegawai->update([
+        return DB::transaction(function () use ($pegawai, $tmtBaru, $datask) {
+            $updateData = [
                 'tmt_kgb_terakhir' => $tmtBaru,
                 'kgb_berikutnya'   => Carbon::parse($tmtBaru)->addYears(2)->toDateString(),
-            ]);
+            ];
+
+            if (!empty($datask['gaji_pokok_baru']) && \Illuminate\Support\Facades\Schema::hasColumn('pegawai', 'gaji_pokok')) {
+                $updateData['gaji_pokok'] = $datask['gaji_pokok_baru'];
+            }
+
+            if (!empty($datask['nomor_sk']) && \Illuminate\Support\Facades\Schema::hasColumn('pegawai', 'nomor_sk_kgb_terakhir')) {
+                $updateData['nomor_sk_kgb_terakhir'] = $datask['nomor_sk'];
+            }
+
+            if (!empty($datask['file_sk']) && \Illuminate\Support\Facades\Schema::hasColumn('pegawai', 'file_sk_kgb_terakhir')) {
+                $updateData['file_sk_kgb_terakhir'] = $datask['file_sk'];
+            }
+
+            $pegawai->update($updateData);
+
+            \Illuminate\Support\Facades\Cache::forget('dashboard_reminder');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_workflow_stats');
 
             return true;
         });

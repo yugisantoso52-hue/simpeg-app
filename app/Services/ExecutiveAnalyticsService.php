@@ -49,6 +49,7 @@ class ExecutiveAnalyticsService
 
         return [
             'total_aktif'       => $totalAktif,
+            'total_pegawai'     => $totalAktif,
             'total_dosen'       => $totalDosen,
             'total_tendik'      => $totalTendik,
             'total_phl'         => $totalPhl,
@@ -135,11 +136,23 @@ class ExecutiveAnalyticsService
         $endDate = $startDate->copy()->endOfMonth();
         $today = Carbon::today('Asia/Jakarta');
 
-        $attendances = Attendance::whereBetween('attendance_date', [$startDate->toDateString(), $endDate->toDateString()])
+        $attendances = Attendance::with('user')
+            ->whereBetween('attendance_date', [$startDate->toDateString(), $endDate->toDateString()])
             ->get()
             ->groupBy(function ($item) {
                 return Carbon::parse($item->attendance_date)->format('Y-m-d');
             });
+
+        $approvedLeaves = \App\Models\PengajuanCuti::where('status', 'Disetujui')
+            ->where(function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('tanggal_mulai', [$startDate->toDateString(), $endDate->toDateString()])
+                  ->orWhereBetween('tanggal_selesai', [$startDate->toDateString(), $endDate->toDateString()])
+                  ->orWhere(function ($sq) use ($startDate, $endDate) {
+                      $sq->where('tanggal_mulai', '<=', $startDate->toDateString())
+                         ->where('tanggal_selesai', '>=', $endDate->toDateString());
+                  });
+            })
+            ->get();
 
         $labels = [];
         $presentCounts = [];
@@ -154,9 +167,20 @@ class ExecutiveAnalyticsService
                 $labels[] = $current->format('d M');
                 
                 $dayLogs = $attendances->get($dateStr, collect());
-                $presentCounts[] = $dayLogs->where('status', 'present')->count();
+                $presentCounts[] = $dayLogs->whereIn('status', ['present', 'hadir'])->count();
                 $lateCounts[] = $dayLogs->where('status', 'late')->count();
-                $leaveCounts[] = $dayLogs->filter(fn($a) => in_array($a->status, ['leave', 'sick', 'permit']))->count();
+
+                $attLeavePegawaiIds = $dayLogs
+                    ->filter(fn($a) => in_array($a->status, ['leave', 'sick', 'permit']))
+                    ->map(fn($a) => $a->user?->pegawai_id ?? ('u_' . $a->user_id))
+                    ->all();
+
+                $cutiPegawaiIds = $approvedLeaves
+                    ->filter(fn($c) => $dateStr >= $c->tanggal_mulai->toDateString() && $dateStr <= $c->tanggal_selesai->toDateString())
+                    ->pluck('pegawai_id')
+                    ->all();
+
+                $leaveCounts[] = count(array_unique(array_merge($attLeavePegawaiIds, $cutiPegawaiIds)));
             }
             $current->addDay();
         }
@@ -226,13 +250,16 @@ class ExecutiveAnalyticsService
         }
 
         $total5Th = $tahunIniList->count() + $tahun1List->count() + $tahun2List->count() + $tahun3sd5List->count();
+        $within3YearsList = $tahunIniList->concat($tahun1List)->concat($tahun2List)->sortBy('sisa_bulan')->values();
 
         return [
+            'within_3_years' => $within3YearsList,
             'summary' => [
                 'tahun_ini'      => $tahunIniList->count(),
                 'tahun_1'        => $tahun1List->count(),
                 'tahun_2'        => $tahun2List->count(),
                 'tahun_3_sd_5'   => $tahun3sd5List->count(),
+                'within_3_years' => $within3YearsList->count(),
                 'total_5_tahun'  => $total5Th,
             ],
             'details' => [
@@ -346,17 +373,20 @@ class ExecutiveAnalyticsService
     /**
      * Menentukan Batas Usia Pensiun (BUP)
      */
-    private function hitungBup(Pegawai $pegawai): int
+    public function hitungBup(Pegawai $pegawai): int
     {
         $jabatan = strtolower($pegawai->jabatan?->nama_jabatan ?? $pegawai->jenis_jabatan ?? '');
         $jenisJabatan = strtolower($pegawai->jenis_jabatan ?? '');
 
         if (str_contains($jabatan, 'profesor') || str_contains($jabatan, 'guru besar') || 
-            str_contains($jabatan, 'peneliti ahli utama') || str_contains($jabatan, 'perekayasa ahli utama')) {
+            str_contains($jabatan, 'peneliti ahli utama') || str_contains($jabatan, 'perekayasa ahli utama') ||
+            str_contains(strtolower($pegawai->gelar_depan ?? ''), 'prof')) {
             return 70;
         }
 
-        if (str_contains($jabatan, 'dosen') || str_contains($jabatan, 'ahli utama') || strtolower($pegawai->jenis_pegawai ?? '') === 'dosen') {
+        if (str_contains($jabatan, 'dosen') || str_contains($jabatan, 'lektor') || str_contains($jabatan, 'asisten ahli') ||
+            str_contains($jabatan, 'ahli utama') || strtolower($pegawai->jenis_pegawai ?? '') === 'dosen' ||
+            $pegawai->kategori_kepegawaian === 'Dosen') {
             return 65;
         }
 

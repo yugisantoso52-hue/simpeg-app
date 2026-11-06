@@ -298,7 +298,7 @@ class TalentScoringService
 
         $hadirTepatWaktu = Attendance::where('user_id', $userId)
             ->whereYear('attendance_date', $year)
-            ->where('status', 'hadir')
+            ->whereIn('status', ['present', 'hadir'])
             ->where(function ($q) {
                 $q->whereNull('is_suspicious')->orWhere('is_suspicious', false);
             })

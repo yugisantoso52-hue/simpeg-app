@@ -41,7 +41,8 @@ class TugasBelajarService
     {
         return DB::transaction(function () use ($data, $fileSk, $fileProgress) {
             $pegawaiId = $data['pegawai_id'] ?? null;
-            $jenisPengembangan = $data['jenis_pengembangan'] ?? 'tubel';
+            $jenisPengembangan = $data['jenis_pengembangan'] ?? 'Tugas Belajar';
+            $data['jenis_pengembangan'] = $jenisPengembangan;
 
             if ($fileSk) {
                 $data['file_sk'] = PegawaiStorageService::store(
@@ -168,10 +169,10 @@ class TugasBelajarService
             return;
         }
 
-        // Cek apakah ada tugas belajar aktif (Sedang Studi / Perpanjangan)
+        // Cek apakah ada tugas belajar aktif (Sedang Studi / Perpanjangan / Aktif)
         $hasActiveTubel = TugasBelajar::where('pegawai_id', $pegawaiId)
-            ->where('jenis_pengembangan', 'Tugas Belajar')
-            ->whereIn('status_studi', ['Sedang Studi', 'Perpanjangan'])
+            ->whereIn('jenis_pengembangan', ['Tugas Belajar', 'tubel', 'TUGAS BELAJAR'])
+            ->whereIn('status_studi', ['Sedang Studi', 'Perpanjangan', 'Aktif', 'aktif'])
             ->exists();
 
         if ($hasActiveTubel) {
@@ -182,5 +183,9 @@ class TugasBelajarService
                 $pegawai->update(['status_pegawai' => Pegawai::STATUS_AKTIF]);
             }
         }
+
+        \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_akademik_stats');
     }
 }

@@ -347,6 +347,15 @@ class LogbookService
 
         if ($updated) {
             try {
+                if ($logbook->pegawai) {
+                    $tahun = $logbook->tanggal ? (int) Carbon::parse($logbook->tanggal)->format('Y') : (int) date('Y');
+                    app(TalentScoringService::class)->calculatePegawaiTalent($logbook->pegawai, $tahun);
+                }
+            } catch (\Throwable $e) {
+                // Ignore talent scoring sync errors
+            }
+
+            try {
                 $verifier = User::find($verifierUserId);
                 $owner = $logbook->user;
                 if ($owner && $verifier) {
@@ -365,7 +374,7 @@ class LogbookService
      */
     public function verifyBulk(array $ids, string $status, ?string $catatanAtasan, int $verifierUserId): int
     {
-        $logbooks = Logbook::whereIn('id', $ids)->where('status', Logbook::STATUS_DIAJUKAN)->get();
+        $logbooks = Logbook::with('pegawai')->whereIn('id', $ids)->where('status', Logbook::STATUS_DIAJUKAN)->get();
 
         $count = Logbook::whereIn('id', $ids)
             ->where('status', Logbook::STATUS_DIAJUKAN)
@@ -377,6 +386,15 @@ class LogbookService
             ]);
 
         if ($count > 0) {
+            try {
+                $uniquePegawais = $logbooks->pluck('pegawai')->filter()->unique('id');
+                foreach ($uniquePegawais as $pegawai) {
+                    app(TalentScoringService::class)->calculatePegawaiTalent($pegawai);
+                }
+            } catch (\Throwable $e) {
+                // Ignore talent scoring sync errors
+            }
+
             try {
                 $verifier = User::find($verifierUserId);
                 foreach ($logbooks as $lb) {
