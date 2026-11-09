@@ -782,6 +782,16 @@ class SyncRiwayatPegawaiAction
                 $pegawai->tugasBelajar()->create($payload);
             }
         }
+
+        // Sinkronisasi status_pegawai jika terdapat Tugas Belajar yang sedang berjalan
+        $hasActiveTubel = $pegawai->tugasBelajar()
+            ->whereIn('jenis_pengembangan', ['Tugas Belajar', 'tubel', 'TUGAS BELAJAR'])
+            ->whereIn('status_studi', ['Sedang Studi', 'Perpanjangan', 'Aktif', 'aktif'])
+            ->exists();
+
+        if ($hasActiveTubel && $pegawai->status_pegawai !== Pegawai::STATUS_TUGAS_BELAJAR) {
+            $pegawai->update(['status_pegawai' => Pegawai::STATUS_TUGAS_BELAJAR]);
+        }
     }
 
     /**

@@ -24,8 +24,17 @@ class SatyalancanaService
         // Hitung masa kerja riil dalam satuan tahun
         $masaKerjaTahun = TanggalHelper::hitungSelisihTahun($tanggalAcuan->format('Y-m-d'));
         
-        // Ambil riwayat penghargaan terakhir (misal string: '10 Tahun', '20 Tahun')
-        $penghargaanTerakhir = $pegawai->satyalancana_terakhir; 
+        // Ambil riwayat penghargaan terakhir (normalisasi nama lengkap/warna ke '10 Tahun', '20 Tahun', '30 Tahun')
+        $rawTerakhir = (string) ($pegawai->satyalancana_terakhir ?? '');
+        if (str_contains($rawTerakhir, '30') || strcasecmp($rawTerakhir, 'Emas') === 0) {
+            $penghargaanTerakhir = '30 Tahun';
+        } elseif (str_contains($rawTerakhir, '20') || strcasecmp($rawTerakhir, 'Perak') === 0) {
+            $penghargaanTerakhir = '20 Tahun';
+        } elseif (str_contains($rawTerakhir, '10') || strcasecmp($rawTerakhir, 'Perunggu') === 0) {
+            $penghargaanTerakhir = '10 Tahun';
+        } else {
+            $penghargaanTerakhir = $rawTerakhir;
+        } 
 
         // 2. Logika Filter Berlapis (Hanya muncul jika jatuh tempo tepat di kelipatan tahunnya & belum pernah dapat kelas tersebut)
         

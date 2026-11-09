@@ -30,15 +30,17 @@ class StorePegawaiRequest extends FormRequest
             'gelar_belakang'       => 'nullable|string|max:100',
             'tempat_lahir'         => 'nullable|string|max:100',
             'tanggal_lahir'        => 'nullable|date',
-            'jenis_kelamin'        => 'nullable|in:L,P',
+            'jenis_kelamin'        => 'nullable|string|in:L,P,Laki-laki,Perempuan',
             'agama'                => 'nullable|string|max:30',
             'pendidikan_terakhir'  => 'nullable|string|max:100',
             'email'                => 'nullable|email|max:100',
             'no_hp'                => 'nullable|string|max:20',
             'alamat'               => 'nullable|string',
             'jenis_pegawai'        => 'nullable|in:Dosen,PNS,PPPK,PHL',
+            'kategori'             => 'nullable|string',
+            'kategori_kepegawaian' => 'nullable|string|in:Dosen,Tendik,PHL',
             'status_asn'           => 'nullable|in:ASN,Non ASN',
-            'status_pernikahan'    => 'nullable|in:Belum Menikah,Menikah,Cerai',
+            'status_pernikahan'    => 'nullable|string|max:50',
             'nama_pasangan'        => 'nullable|string|max:150',
             'jumlah_anak'          => 'nullable|integer|min:0',
             'mkg_tahun'            => 'nullable|integer|min:0|max:40',
@@ -101,6 +103,12 @@ class StorePegawaiRequest extends FormRequest
             'nomor_pak'                => 'nullable|string|max:100',
             'tanggal_pak'              => 'nullable|date',
 
+            // Penugasan / keanggotaan non-struktural (KJFD, Unit Fungsional, Laboratorium)
+            'penugasan_submitted'                      => 'nullable|boolean',
+            'penugasan'                                => 'nullable|array|max:30',
+            'penugasan.*.kelompok_penugasan_id'        => 'required|integer|exists:kelompok_penugasan,id',
+            'penugasan.*.peran'                        => 'nullable|string|in:Ketua,Sekretaris,Koordinator,Anggota,Staf',
+
             // Validasi Input Multi-Riwayat Pendidikan (Opsional)
             'riwayat_pendidikan'                       => 'nullable|array',
             'riwayat_pendidikan.*.id'                  => 'nullable|integer',
@@ -138,6 +146,7 @@ class StorePegawaiRequest extends FormRequest
             'riwayat_diklat.*.nama_diklat'             => 'nullable|string|max:255',
             'riwayat_diklat.*.penyelenggara'           => 'nullable|string|max:255',
             'riwayat_diklat.*.jenis_diklat'            => 'nullable|string|max:100',
+            'riwayat_diklat.*.nomor_sertifikat'        => 'nullable|string|max:150',
             'riwayat_diklat.*.tanggal_mulai'           => 'nullable|date',
             'riwayat_diklat.*.tanggal_selesai'         => 'nullable|date',
             'riwayat_diklat.*.jumlah_jam'              => 'nullable|integer|min:0',
@@ -222,6 +231,27 @@ class StorePegawaiRequest extends FormRequest
         } elseif ($this->filled('nama') && !$this->filled('nama_lengkap')) {
             $this->merge([
                 'nama_lengkap' => $this->input('nama'),
+            ]);
+        }
+
+        if ($this->filled('jenis_kelamin')) {
+            $jk = strtoupper(trim((string)$this->input('jenis_kelamin')));
+            if (in_array($jk, ['L', 'LAKI-LAKI', 'LAKI LAKI', 'PRIA'], true)) {
+                $this->merge(['jenis_kelamin' => 'L']);
+            } elseif (in_array($jk, ['P', 'PEREMPUAN', 'WANITA'], true)) {
+                $this->merge(['jenis_kelamin' => 'P']);
+            }
+        }
+
+        if ($this->filled('kategori') && !$this->filled('kategori_kepegawaian')) {
+            $katMap = [
+                'dosen'  => 'Dosen',
+                'tendik' => 'Tendik',
+                'phl'    => 'PHL',
+            ];
+            $katVal = strtolower((string)$this->input('kategori'));
+            $this->merge([
+                'kategori_kepegawaian' => $katMap[$katVal] ?? ucfirst($katVal),
             ]);
         }
     }

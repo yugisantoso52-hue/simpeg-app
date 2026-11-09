@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
             tr.setAttribute('data-index', newIndex);
             tr.innerHTML = `
                 <td class="px-3 py-2">
-                    <select name="riwayat_pendidikan[\${newIndex}][jenjang]" class="w-full border rounded px-2 py-1 text-xs">
+                    <select name="riwayat_pendidikan[${newIndex}][jenjang]" class="w-full border rounded px-2 py-1 text-xs">
                         <option value="">-- Pilih --</option>
                         <option value="SD">SD</option>
                         <option value="SMP">SMP</option>
@@ -130,19 +130,19 @@ document.addEventListener('DOMContentLoaded', function () {
                     </select>
                 </td>
                 <td class="px-3 py-2">
-                    <input type="text" name="riwayat_pendidikan[\${newIndex}][institusi]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nama Sekolah/Univ">
+                    <input type="text" name="riwayat_pendidikan[${newIndex}][institusi]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nama Sekolah/Univ">
                 </td>
                 <td class="px-3 py-2">
-                    <input type="text" name="riwayat_pendidikan[\${newIndex}][fakultas]" class="w-full border rounded px-2 py-1 text-xs">
+                    <input type="text" name="riwayat_pendidikan[${newIndex}][fakultas]" class="w-full border rounded px-2 py-1 text-xs">
                 </td>
                 <td class="px-3 py-2">
-                    <input type="text" name="riwayat_pendidikan[\${newIndex}][jurusan]" class="w-full border rounded px-2 py-1 text-xs">
+                    <input type="text" name="riwayat_pendidikan[${newIndex}][jurusan]" class="w-full border rounded px-2 py-1 text-xs">
                 </td>
                 <td class="px-3 py-2">
-                    <input type="number" name="riwayat_pendidikan[\${newIndex}][tahun_lulus]" class="w-full border rounded px-2 py-1 text-xs text-center">
+                    <input type="number" name="riwayat_pendidikan[${newIndex}][tahun_lulus]" class="w-full border rounded px-2 py-1 text-xs text-center">
                 </td>
                 <td class="px-3 py-2">
-                    <input type="file" name="riwayat_pendidikan[\${newIndex}][ijazah]" class="w-full text-xs">
+                    <input type="file" name="riwayat_pendidikan[${newIndex}][ijazah]" accept=".pdf,.jpg,.jpeg,.png" class="w-full text-xs">
                 </td>
                 <td class="px-3 py-2 text-center">
                     <button type="button" class="text-red-600 hover:text-red-800 text-xs remove-pendidikan-btn">Hapus</button>

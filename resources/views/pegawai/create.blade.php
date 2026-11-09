@@ -162,6 +162,9 @@
                         {{-- 8. RIWAYAT JABATAN --}}
                         @include('pegawai.forms._jabatan')
 
+                        {{-- 8b. PENUGASAN & KEANGGOTAAN UNIT (KJFD / UNIT FUNGSIONAL / LABORATORIUM) --}}
+                        @include('pegawai.forms._penugasan')
+
                         {{-- 9. RIWAYAT PENDIDIKAN --}}
                         @include('pegawai.forms._pendidikan')
 

@@ -164,6 +164,9 @@ class PegawaiService
             // 5. Simpan seluruh riwayat awal (Pendidikan, Diklat, Jabatan, Pangkat, SKP, Satyalancana)
             $this->riwayatAction->execute($pegawai, $data, $files, false);
 
+            // 5b. Simpan penugasan / keanggotaan non-struktural (KJFD, Unit Fungsional, Laboratorium)
+            $this->syncPenugasan($pegawai, $data);
+
             // 6. Sinkronisasi data induk dari riwayat aktif
             $this->syncPegawaiFromHistories($pegawai);
 
@@ -282,6 +285,51 @@ class PegawaiService
             }
             RiwayatJabatan::where('pegawai_id', $pegawai->id)->delete();
 
+            // Hapus berkas dan data riwayat lainnya (STR/SIP, SKP, Penghargaan, Publikasi, Organisasi, Tugas Belajar, Penugasan)
+            foreach ($pegawai->riwayatStrSip as $strSip) {
+                if ($strSip->file_dokumen) {
+                    $this->deleteSK($strSip->file_dokumen);
+                }
+            }
+            $pegawai->riwayatStrSip()->delete();
+
+            foreach ($pegawai->riwayatSkp as $skp) {
+                if ($skp->file_rencana_skp) {
+                    $this->deleteSK($skp->file_rencana_skp);
+                }
+                if ($skp->file_evaluasi_skp) {
+                    $this->deleteSK($skp->file_evaluasi_skp);
+                }
+            }
+            $pegawai->riwayatSkp()->delete();
+
+            foreach ($pegawai->riwayatPenghargaan as $penghargaan) {
+                if ($penghargaan->file_sk) {
+                    $this->deleteSK($penghargaan->file_sk);
+                }
+            }
+            $pegawai->riwayatPenghargaan()->delete();
+
+            foreach ($pegawai->riwayatPublikasi as $publikasi) {
+                if ($publikasi->file_publikasi) {
+                    $this->deleteSK($publikasi->file_publikasi);
+                }
+            }
+            $pegawai->riwayatPublikasi()->delete();
+
+            foreach ($pegawai->tugasBelajar as $tubel) {
+                if ($tubel->file_sk) {
+                    $this->deleteSK($tubel->file_sk);
+                }
+                if ($tubel->file_laporan_progress) {
+                    $this->deleteSK($tubel->file_laporan_progress);
+                }
+            }
+            $pegawai->tugasBelajar()->delete();
+
+            $pegawai->riwayatOrganisasi()->delete();
+            $pegawai->penugasan()->delete();
+
             // Hapus berkas SK dan data mutasi jika ada
             $mutasi = \App\Models\MutasiPegawai::where('pegawai_id', $pegawai->id)->get();
             foreach ($mutasi as $m) {
@@ -314,10 +362,19 @@ class PegawaiService
                 Pegawai::whereIn('id', $ids)->pluck('file_sk_kgb_terakhir')->filter()->toArray(),
                 Pegawai::whereIn('id', $ids)->pluck('file_karpeg')->filter()->toArray(),
                 Pegawai::whereIn('id', $ids)->pluck('file_pak')->filter()->toArray(),
+                Pegawai::whereIn('id', $ids)->pluck('file_str')->filter()->toArray(),
+                Pegawai::whereIn('id', $ids)->pluck('file_sip')->filter()->toArray(),
                 RiwayatPendidikan::whereIn('pegawai_id', $ids)->pluck('ijazah')->filter()->toArray(),
                 RiwayatDiklat::whereIn('pegawai_id', $ids)->pluck('file_sertifikat')->filter()->toArray(),
                 RiwayatPangkat::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray(),
                 RiwayatJabatan::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray(),
+                \App\Models\RiwayatStrSip::whereIn('pegawai_id', $ids)->pluck('file_dokumen')->filter()->toArray(),
+                \App\Models\RiwayatSkp::whereIn('pegawai_id', $ids)->pluck('file_rencana_skp')->filter()->toArray(),
+                \App\Models\RiwayatSkp::whereIn('pegawai_id', $ids)->pluck('file_evaluasi_skp')->filter()->toArray(),
+                \App\Models\RiwayatPenghargaan::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray(),
+                \App\Models\RiwayatPublikasi::whereIn('pegawai_id', $ids)->pluck('file_publikasi')->filter()->toArray(),
+                \App\Models\TugasBelajar::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray(),
+                \App\Models\TugasBelajar::whereIn('pegawai_id', $ids)->pluck('file_laporan_progress')->filter()->toArray(),
                 \App\Models\MutasiPegawai::whereIn('pegawai_id', $ids)->pluck('file_sk')->filter()->toArray()
             );
 
@@ -343,6 +400,13 @@ class PegawaiService
             RiwayatDiklat::whereIn('pegawai_id', $ids)->delete();
             RiwayatPangkat::whereIn('pegawai_id', $ids)->delete();
             RiwayatJabatan::whereIn('pegawai_id', $ids)->delete();
+            \App\Models\RiwayatStrSip::whereIn('pegawai_id', $ids)->delete();
+            \App\Models\RiwayatSkp::whereIn('pegawai_id', $ids)->delete();
+            \App\Models\RiwayatPenghargaan::whereIn('pegawai_id', $ids)->delete();
+            \App\Models\RiwayatPublikasi::whereIn('pegawai_id', $ids)->delete();
+            \App\Models\RiwayatOrganisasi::whereIn('pegawai_id', $ids)->delete();
+            \App\Models\TugasBelajar::whereIn('pegawai_id', $ids)->delete();
+            \App\Models\PegawaiPenugasan::whereIn('pegawai_id', $ids)->delete();
             \App\Models\MutasiPegawai::whereIn('pegawai_id', $ids)->delete();
 
             return $this->pegawaiRepository->deleteBulk($ids);

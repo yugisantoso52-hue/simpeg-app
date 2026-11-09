@@ -139,34 +139,34 @@ document.addEventListener('DOMContentLoaded', function () {
             tr.setAttribute('data-index', newIndex);
             tr.innerHTML = `
                 <td class="px-3 py-2">
-                    <select name="riwayat_jabatan[\${newIndex}][jabatan_id]" class="w-full border rounded px-2 py-1 text-xs">
+                    <select name="riwayat_jabatan[${newIndex}][jabatan_id]" class="w-full border rounded px-2 py-1 text-xs">
                         <option value="">-- Pilih Jabatan --</option>
-                        \${jabatanOptions}
+                        ${jabatanOptions}
                     </select>
                 </td>
                 <td class="px-3 py-2">
-                    <select name="riwayat_jabatan[\${newIndex}][unit_kerja_id]" class="w-full border rounded px-2 py-1 text-xs">
+                    <select name="riwayat_jabatan[${newIndex}][unit_kerja_id]" class="w-full border rounded px-2 py-1 text-xs">
                         <option value="">-- Pilih Unit Kerja --</option>
-                        \${unitOptions}
+                        ${unitOptions}
                     </select>
                 </td>
                 <td class="px-3 py-2">
-                    <input type="date" name="riwayat_jabatan[\${newIndex}][tmt_jabatan]" class="w-full border rounded px-2 py-1 text-xs text-center">
+                    <input type="date" name="riwayat_jabatan[${newIndex}][tmt_jabatan]" class="w-full border rounded px-2 py-1 text-xs text-center">
                 </td>
                 <td class="px-3 py-2">
-                    <input type="text" name="riwayat_jabatan[\${newIndex}][nomor_sk]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nomor SK">
+                    <input type="text" name="riwayat_jabatan[${newIndex}][nomor_sk]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nomor SK">
                 </td>
                 <td class="px-3 py-2">
-                    <input type="date" name="riwayat_jabatan[\${newIndex}][tanggal_sk]" class="w-full border rounded px-2 py-1 text-xs text-center">
+                    <input type="date" name="riwayat_jabatan[${newIndex}][tanggal_sk]" class="w-full border rounded px-2 py-1 text-xs text-center">
                 </td>
                 <td class="px-3 py-2">
-                    <select name="riwayat_jabatan[\${newIndex}][status]" class="w-full border rounded px-2 py-1 text-xs">
+                    <select name="riwayat_jabatan[${newIndex}][status]" class="w-full border rounded px-2 py-1 text-xs">
                         <option value="aktif">Aktif</option>
                         <option value="riwayat">Riwayat</option>
                     </select>
                 </td>
                 <td class="px-3 py-2">
-                    <input type="file" name="riwayat_jabatan[\${newIndex}][file_sk]" class="w-full text-xs">
+                    <input type="file" name="riwayat_jabatan[${newIndex}][file_sk]" accept=".pdf,.jpg,.jpeg,.png" class="w-full text-xs">
                 </td>
                 <td class="px-3 py-2 text-center">
                     <button type="button" class="text-red-600 hover:text-red-800 text-xs remove-jabatan-btn">Hapus</button>

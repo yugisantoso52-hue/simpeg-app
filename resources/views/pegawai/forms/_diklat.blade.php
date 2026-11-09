@@ -124,31 +124,31 @@ document.addEventListener('DOMContentLoaded', function () {
             tr.setAttribute('data-index', newIndex);
             tr.innerHTML = `
                 <td class="px-3 py-2">
-                    <input type="text" name="riwayat_diklat[\${newIndex}][nama_diklat]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nama Diklat/Pelatihan">
+                    <input type="text" name="riwayat_diklat[${newIndex}][nama_diklat]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Nama Diklat/Pelatihan">
                 </td>
                 <td class="px-3 py-2">
-                    <input type="text" name="riwayat_diklat[\${newIndex}][penyelenggara]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Penyelenggara">
+                    <input type="text" name="riwayat_diklat[${newIndex}][penyelenggara]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Penyelenggara">
                 </td>
                 <td class="px-3 py-2">
-                    <input type="text" name="riwayat_diklat[\${newIndex}][jenis_diklat]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Jenis">
+                    <input type="text" name="riwayat_diklat[${newIndex}][jenis_diklat]" class="w-full border rounded px-2 py-1 text-xs" placeholder="Jenis">
                 </td>
                 <td class="px-3 py-2">
-                    <input type="date" name="riwayat_diklat[\${newIndex}][tanggal_mulai]" class="w-full border rounded px-2 py-1 text-xs text-center">
+                    <input type="date" name="riwayat_diklat[${newIndex}][tanggal_mulai]" class="w-full border rounded px-2 py-1 text-xs text-center">
                 </td>
                 <td class="px-3 py-2">
-                    <input type="date" name="riwayat_diklat[\${newIndex}][tanggal_selesai]" class="w-full border rounded px-2 py-1 text-xs text-center">
+                    <input type="date" name="riwayat_diklat[${newIndex}][tanggal_selesai]" class="w-full border rounded px-2 py-1 text-xs text-center">
                 </td>
                 <td class="px-3 py-2">
-                    <input type="number" name="riwayat_diklat[\${newIndex}][jumlah_jam]" class="w-full border rounded px-2 py-1 text-xs text-center">
+                    <input type="number" name="riwayat_diklat[${newIndex}][jumlah_jam]" class="w-full border rounded px-2 py-1 text-xs text-center">
                 </td>
                 <td class="px-3 py-2">
-                    <select name="riwayat_diklat[\${newIndex}][status]" class="w-full border rounded px-2 py-1 text-xs">
+                    <select name="riwayat_diklat[${newIndex}][status]" class="w-full border rounded px-2 py-1 text-xs">
                         <option value="Aktif">Aktif</option>
                         <option value="Tidak Aktif">Tidak Aktif</option>
                     </select>
                 </td>
                 <td class="px-3 py-2">
-                    <input type="file" name="riwayat_diklat[\${newIndex}][file_sertifikat]" class="w-full text-xs">
+                    <input type="file" name="riwayat_diklat[${newIndex}][file_sertifikat]" accept=".pdf,.jpg,.jpeg,.png" class="w-full text-xs">
                 </td>
                 <td class="px-3 py-2 text-center">
                     <button type="button" class="text-red-600 hover:text-red-800 text-xs remove-diklat-btn">Hapus</button>

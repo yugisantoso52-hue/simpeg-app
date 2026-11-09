@@ -403,5 +403,270 @@ class PegawaiPartialValidationAndSyncTest extends TestCase
         $editResp->assertSee('PPNI Provinsi Riau');
         $editResp->assertSee('Efektivitas Asuhan Keperawatan Medikal Bedah Modern');
         $editResp->assertSee('SK-TUBEL-2025-07');
+        $editResp->assertDontSee('\${newIndex}', false);
+    }
+
+    /**
+     * Test all 14 modules synchronization, Penugasan Ketua/Sekretaris roles,
+     * Tugas Belajar status_pegawai sync, and Satyalancana eligibility normalization.
+     */
+    public function test_comprehensive_14_modules_synchronization_and_safe_patching(): void
+    {
+        $kelompokSenat = \App\Models\KelompokPenugasan::firstOrCreate(
+            ['kode' => 'senat_ketua_test'],
+            ['nama' => 'Ketua Senat', 'kategori' => 'senat', 'urutan' => 1]
+        );
+        $kelompokSekretaris = \App\Models\KelompokPenugasan::firstOrCreate(
+            ['kode' => 'senat_sekretaris_test'],
+            ['nama' => 'Sekretaris Senat', 'kategori' => 'senat', 'urutan' => 2]
+        );
+
+        // 1. Pastikan template JS pada form create tidak memiliki escaped \${newIndex}
+        $createResp = $this->actingAs($this->adminUser)->get(route('pegawai.create'));
+        $createResp->assertStatus(200);
+        $createResp->assertDontSee('\${newIndex}', false);
+        $createResp->assertDontSee('\${jabatanOptions}', false);
+        $createResp->assertDontSee('\${unitOptions}', false);
+        $createResp->assertSee('Penugasan &amp; Keanggotaan Unit', false);
+
+        // 2. Uji Store Pegawai dengan 14 Modul + Penugasan (Peran Ketua & Sekretaris) + Tugas Belajar Aktif + Piagam Satyalancana
+        $payload = [
+            // Modul 1: Data Pribadi
+            'nip'                  => '198505102010011099',
+            'nik'                  => '1471011005850099',
+            'nidn_nuptk'           => '0010058509',
+            'nama'                 => 'Dr. Hendra Kurniawan',
+            'gelar_depan'          => 'Dr. Ns.',
+            'gelar_belakang'       => 'M.Kep., Sp.Kep.K',
+            'tempat_lahir'         => 'Pekanbaru',
+            'tanggal_lahir'        => '1985-05-10',
+            'jenis_kelamin'        => 'Laki-laki', // Menguji normalisasi prepareForValidation pada Store
+            'agama'                => 'Islam',
+            'karpeg_karis_karsu'   => 'KPG-998877',
+            'npwp'                 => '12.345.678.9-211.000',
+            'bpjs_kesehatan'       => '0009988776655',
+            'bpjs_ketenagakerjaan' => '20099887766',
+
+            // Modul 2: Kontak & Domisili
+            'email'                   => 'hendra.kurniawan@unri.ac.id',
+            'no_hp'                   => '081234567890',
+            'nama_kontak_darurat'     => 'Ratna Sari',
+            'hubungan_kontak_darurat' => 'Istri',
+            'no_hp_darurat'           => '081298765432',
+            'alamat'                  => 'Jl. Pattimura No. 9, Pekanbaru',
+            'alamat_domisili'         => 'Jl. HR Soebrantas Panam, Pekanbaru',
+            'kota_domisili'           => 'Pekanbaru',
+            'provinsi'                => 'Riau',
+            'kode_pos'                => '28293',
+
+            // Modul 3: Data Keluarga
+            'status_pernikahan' => 'Menikah',
+            'nama_pasangan'     => 'Ratna Sari',
+            'jumlah_anak'       => 2,
+
+            // Modul 4: Data Kepegawaian & Jabatan + Penugasan
+            'unit_kerja_id'       => $this->unitKerja1->id,
+            'jabatan_id'          => $this->jabatan1->id,
+            'golongan_id'         => $this->golongan1->id,
+            'jenis_jabatan'       => 'Fungsional Tertentu',
+            'jenis_pegawai'       => 'Dosen',
+            'status_asn'          => 'ASN',
+            'pendidikan_terakhir' => 'S2',
+            'mkg_tahun'           => 16,
+            'mkg_bulan'           => 4,
+            'penugasan_submitted' => 1,
+            'penugasan' => [
+                $kelompokSenat->id => [
+                    'kelompok_penugasan_id' => $kelompokSenat->id,
+                    'peran'                 => 'Ketua',
+                ],
+                $kelompokSekretaris->id => [
+                    'kelompok_penugasan_id' => $kelompokSekretaris->id,
+                    'peran'                 => 'Sekretaris',
+                ],
+            ],
+
+            // Modul 5: Legalitas Profesi Kesehatan (STR & SIP)
+            'nomor_str'              => 'STR-NERS-2026-001',
+            'tanggal_kadaluarsa_str' => '2030-05-10',
+            'nomor_sip'              => 'SIP-NERS-2026-002',
+            'tanggal_kadaluarsa_sip' => '2030-05-10',
+
+            // Modul 6: Penilaian Angka Kredit (PAK)
+            'angka_kredit' => 450.75,
+            'nomor_pak'    => 'SK-PAK/UNRI/2026/01',
+            'tanggal_pak'  => '2026-01-15',
+
+            // Modul 7: Administrasi Kepegawaian & Legalitas
+            'tanggal_masuk'               => '2010-01-01',
+            'status_pegawai'              => 'Aktif',
+            'tmt_sk_pertama'              => '2010-01-01',
+            'nomor_sk_pertama'            => 'SK-CPNS/2010/01',
+            'tanggal_sk_pertama'          => '2009-12-20',
+            'tmt_pangkat_terakhir'        => '2022-04-01',
+            'nomor_sk_pangkat_terakhir'   => 'SK-KP/2022/04',
+            'tanggal_sk_pangkat_terakhir' => '2022-03-15',
+            'tmt_kgb_terakhir'            => '2025-01-01',
+            'batas_usia_pensiun'          => 65,
+
+            // Modul 8: Riwayat Pangkat/Golongan
+            'riwayat_pangkat' => [
+                [
+                    'golongan_id' => $this->golongan1->id,
+                    'tmt'         => '2018-04-01',
+                    'nomor_sk'    => 'SK-KP/2018/01',
+                    'tanggal_sk'  => '2018-03-20',
+                    'status'      => 'riwayat',
+                ],
+                [
+                    'golongan_id' => $this->golongan2->id,
+                    'tmt'         => '2022-04-01',
+                    'nomor_sk'    => 'SK-KP/2022/04',
+                    'tanggal_sk'  => '2022-03-15',
+                    'status'      => 'aktif',
+                ],
+            ],
+
+            // Modul 9: Riwayat Pendidikan & Diklat
+            'riwayat_pendidikan' => [
+                [
+                    'jenjang'     => 'S3',
+                    'institusi'   => 'Universitas Indonesia',
+                    'fakultas'    => 'Fakultas Ilmu Keperawatan',
+                    'jurusan'     => 'Ilmu Keperawatan',
+                    'tahun_lulus' => 2024,
+                ],
+            ],
+            'riwayat_diklat' => [
+                [
+                    'nama_diklat'      => 'Pelatihan Kepemimpinan Akademik',
+                    'penyelenggara'    => 'Kemendikbudristek',
+                    'jenis_diklat'     => 'Struktural / Kepemimpinan',
+                    'nomor_sertifikat' => 'SERT-PKA-2026-09',
+                    'tanggal_mulai'    => '2026-02-01',
+                    'tanggal_selesai'  => '2026-02-07',
+                    'jumlah_jam'       => 40,
+                    'status'           => 'Aktif',
+                ],
+            ],
+
+            // Modul 10 & 11: Pengarsipan SKP (2 Tahun), Piagam Satyalancana Terdahulu & Penghargaan
+            'riwayat_skp' => [
+                0 => [
+                    'tahun'            => 2025,
+                    'predikat_kinerja' => 'Sangat Baik',
+                    'pejabat_penilai'  => 'Dekan FKP UNRI',
+                ],
+                1 => [
+                    'tahun'            => 2024,
+                    'predikat_kinerja' => 'Baik',
+                    'pejabat_penilai'  => 'Dekan FKP UNRI',
+                ],
+            ],
+            'piagam_satyalancana' => [
+                'nama_penghargaan' => 'Satyalancana Karya Satya 10 Tahun',
+                'nomor_sk'         => 'Keppres No. 45/TK/2020',
+                'tanggal_sk'       => '2020-08-17',
+                'instansi_pemberi' => 'Presiden Republik Indonesia',
+            ],
+            'riwayat_penghargaan' => [
+                [
+                    'nama_penghargaan'  => 'Peneliti Terbaik UNRI',
+                    'jenis_penghargaan' => 'Akademik',
+                    'instansi_pemberi'  => 'LPPM UNRI',
+                    'nomor_sk'          => 'SK-LPPM/2025/12',
+                    'tanggal_terima'    => '2025-11-10',
+                ],
+            ],
+
+            // Modul 12: Riwayat Keanggotaan Organisasi
+            'riwayat_organisasi' => [
+                [
+                    'nama_organisasi'    => 'AIPNI Regional Sumatera',
+                    'jabatan_organisasi' => 'Ketua Divisi Kurikulum',
+                    'tahun_mulai'        => 2023,
+                    'masih_aktif'        => 1,
+                ],
+            ],
+
+            // Modul 13: Riwayat Publikasi Ilmiah & Karya
+            'riwayat_publikasi' => [
+                [
+                    'judul_publikasi' => 'Community Nursing Intervention in Coastal Areas',
+                    'jenis_publikasi' => 'Jurnal',
+                    'indeksasi'       => 'Scopus',
+                    'nama_jurnal'     => 'International Journal of Nursing Studies',
+                    'tahun_terbit'    => 2025,
+                    'url_doi'         => 'https://doi.org/10.1016/j.ijnurstu.2025.01',
+                ],
+            ],
+
+            // Modul 14: Tugas Belajar & Izin Belajar (Studi Lanjut)
+            'tugas_belajar' => [
+                [
+                    'jenis_pengembangan' => 'Tugas Belajar',
+                    'jenjang_studi'      => 'Post Doctoral',
+                    'perguruan_tinggi'   => 'University of Melbourne',
+                    'program_studi'      => 'Advanced Nursing Research',
+                    'negara'             => 'Australia',
+                    'sumber_pembiayaan'  => 'Beasiswa Dikti',
+                    'nomor_sk'           => 'SK-POSTDOC/2026/01',
+                    'tanggal_mulai'      => '2026-01-10',
+                    'tanggal_selesai'    => '2027-01-10',
+                    'semester_berjalan'  => 2,
+                    'status_studi'       => 'Sedang Studi',
+                ],
+            ],
+        ];
+
+        $resp = $this->actingAs($this->adminUser)->post(route('pegawai.store'), $payload);
+        $resp->assertSessionHasNoErrors();
+        $resp->assertRedirect(route('pegawai.index'));
+
+        $pegawai = Pegawai::where('nip', '198505102010011099')->first();
+        $this->assertNotNull($pegawai);
+
+        // Verifikasi normalisasi jenis_kelamin & pendidikan_terakhir tertinggi (S3 dari riwayat_pendidikan)
+        $this->assertEquals('L', $pegawai->jenis_kelamin);
+        $this->assertEquals('S3', $pegawai->pendidikan_terakhir);
+
+        // Verifikasi sinkronisasi Penugasan dengan peran Ketua & Sekretaris
+        $this->assertDatabaseHas('pegawai_penugasan', [
+            'pegawai_id'            => $pegawai->id,
+            'kelompok_penugasan_id' => $kelompokSenat->id,
+            'peran'                 => 'Ketua',
+        ]);
+        $this->assertDatabaseHas('pegawai_penugasan', [
+            'pegawai_id'            => $pegawai->id,
+            'kelompok_penugasan_id' => $kelompokSekretaris->id,
+            'peran'                 => 'Sekretaris',
+        ]);
+
+        // Verifikasi sinkronisasi STR & SIP ke tabel riwayat_str_sip
+        $this->assertDatabaseHas('riwayat_str_sip', [
+            'pegawai_id'       => $pegawai->id,
+            'jenis_dokumen'    => 'STR',
+            'nomor_registrasi' => 'STR-NERS-2026-001',
+        ]);
+        $this->assertDatabaseHas('riwayat_str_sip', [
+            'pegawai_id'       => $pegawai->id,
+            'jenis_dokumen'    => 'SIP',
+            'nomor_registrasi' => 'SIP-NERS-2026-002',
+        ]);
+
+        // Verifikasi nomor_sertifikat Diklat tersimpan
+        $this->assertDatabaseHas('riwayat_diklat', [
+            'pegawai_id'       => $pegawai->id,
+            'nomor_sertifikat' => 'SERT-PKA-2026-09',
+            'jumlah_jam'       => 40,
+        ]);
+
+        // Verifikasi status_pegawai otomatis menjadi 'Tugas Belajar' karena ada Tugas Belajar berstatus 'Sedang Studi'
+        $this->assertEquals(Pegawai::STATUS_TUGAS_BELAJAR, $pegawai->status_pegawai);
+
+        // Verifikasi SatyalancanaService: masa kerja ~16 tahun (TMT 2010) dan sudah punya 'Satyalancana Karya Satya 10 Tahun'
+        // maka cekKelayakanSatyalancana harus mengembalikan null (tidak dianggap belum dapat 10 Tahun)
+        $satyalancanaService = app(\App\Services\SatyalancanaService::class);
+        $this->assertNull($satyalancanaService->cekKelayakanSatyalancana($pegawai));
     }
 }

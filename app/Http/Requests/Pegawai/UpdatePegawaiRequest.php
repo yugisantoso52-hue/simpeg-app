@@ -34,9 +34,11 @@ class UpdatePegawaiRequest extends FormRequest
 
         if ($this->filled('jenis_kelamin')) {
             $jk = strtoupper(trim((string)$this->input('jenis_kelamin')));
-            $this->merge([
-                'jenis_kelamin' => str_starts_with($jk, 'P') ? 'P' : 'L',
-            ]);
+            if (in_array($jk, ['L', 'LAKI-LAKI', 'LAKI LAKI', 'PRIA'], true)) {
+                $this->merge(['jenis_kelamin' => 'L']);
+            } elseif (in_array($jk, ['P', 'PEREMPUAN', 'WANITA'], true)) {
+                $this->merge(['jenis_kelamin' => 'P']);
+            }
         }
 
         if ($this->filled('kategori') && !$this->filled('kategori_kepegawaian')) {
@@ -210,7 +212,7 @@ class UpdatePegawaiRequest extends FormRequest
             'penugasan_submitted'                      => 'nullable|boolean',
             'penugasan'                                => 'nullable|array|max:30',
             'penugasan.*.kelompok_penugasan_id'        => 'required|integer|exists:kelompok_penugasan,id',
-            'penugasan.*.peran'                        => 'nullable|string|in:Koordinator,Anggota,Staf',
+            'penugasan.*.peran'                        => 'nullable|string|in:Ketua,Sekretaris,Koordinator,Anggota,Staf',
 
             // Validasi Input Multi-Riwayat Pendidikan (Opsional)
             'riwayat_pendidikan'                       => 'nullable|array',
@@ -249,6 +251,7 @@ class UpdatePegawaiRequest extends FormRequest
             'riwayat_diklat.*.nama_diklat'             => 'nullable|string|max:255',
             'riwayat_diklat.*.penyelenggara'           => 'nullable|string|max:255',
             'riwayat_diklat.*.jenis_diklat'            => 'nullable|string|max:100',
+            'riwayat_diklat.*.nomor_sertifikat'        => 'nullable|string|max:150',
             'riwayat_diklat.*.tanggal_mulai'           => 'nullable|date',
             'riwayat_diklat.*.tanggal_selesai'         => 'nullable|date',
             'riwayat_diklat.*.jumlah_jam'              => 'nullable|integer|min:0',
