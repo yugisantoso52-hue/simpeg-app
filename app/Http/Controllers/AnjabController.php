@@ -95,6 +95,8 @@ class AnjabController extends Controller
             ]);
         }
 
+        \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
+
         return redirect()->route('anjab.show', $anjab)->with('success', 'Dokumen Analisis Jabatan berhasil disimpan.');
     }
 
@@ -141,12 +143,15 @@ class AnjabController extends Controller
             ]);
         }
 
+        \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
+
         return redirect()->route('anjab.show', $anjab)->with('success', 'Dokumen Analisis Jabatan berhasil diperbarui.');
     }
 
     public function destroy(AnalisisJabatan $anjab)
     {
         $anjab->delete();
+        \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
         return redirect()->route('anjab.index')->with('success', 'Dokumen Analisis Jabatan berhasil dihapus.');
     }
 

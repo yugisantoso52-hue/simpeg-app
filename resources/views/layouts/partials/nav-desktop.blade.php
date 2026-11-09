@@ -29,7 +29,7 @@
             || (request()->routeIs('pegawai.show', 'pegawai.edit') && Auth::user()->pegawai_id && (int) $routePegawaiId === (int) Auth::user()->pegawai_id);
         $isProfilKarirActive = $isViewingOwnProfile
             || request()->routeIs('manajemen-talenta.my-talent')
-            || (!Auth::user()->canAccessExecutiveKepegawaianMenus() && request()->routeIs('duk.*', 'pengajuan-karir.*'));
+            || (!Auth::user()->canAccessExecutiveKepegawaianMenus() && request()->routeIs('duk.*', 'pengajuan-karir.*', 'pengajuan-jabatan.*', 'tugas-belajar.*'));
     @endphp
     <x-dropdown align="left" width="w-64">
         <x-slot name="trigger">
@@ -180,8 +180,8 @@
 @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
     <x-dropdown align="left" width="w-68">
         <x-slot name="trigger">
-            <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('kp.*', 'kgb.*', 'satyalancana.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'pengajuan-karir.*') ? 'bg-amber-50 text-amber-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-                <x-icon name="award" class="w-4 h-4 {{ request()->routeIs('kp.*', 'kgb.*', 'satyalancana.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'pengajuan-karir.*') ? 'text-amber-600' : 'text-slate-500' }}" />
+            <button class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs md:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('kp.*', 'kgb.*', 'satyalancana.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'pengajuan-karir.*', 'pengajuan-jabatan.*') ? 'bg-amber-50 text-amber-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                <x-icon name="award" class="w-4 h-4 {{ request()->routeIs('kp.*', 'kgb.*', 'satyalancana.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'pengajuan-karir.*', 'pengajuan-jabatan.*') ? 'text-amber-600' : 'text-slate-500' }}" />
                 <span>Layanan Karir</span>
                 <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
             </button>

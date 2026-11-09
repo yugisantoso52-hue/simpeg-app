@@ -406,14 +406,14 @@ class PegawaiController extends Controller
                 $q->where('jenis_pegawai', 'not like', '%PPPK%')
                   ->where(function ($sq) {
                       $sq->where('status_asn', 'ASN')
-                         ->orWhereRaw('CHAR_LENGTH(nip) = 18');
+                         ->orWhereRaw('LENGTH(nip) = 18');
                   });
             });
         } elseif ($filter === 'pppk') {
             $query->where(function ($q) {
                 $q->where('jenis_pegawai', 'like', '%PPPK%')
                   ->orWhere('status_asn', 'PPPK')
-                  ->orWhereRaw('CHAR_LENGTH(nip) = 21');
+                  ->orWhereRaw('LENGTH(nip) = 21');
             });
         } elseif ($filter === 'aktif') {
             $query->aktif();
@@ -426,8 +426,8 @@ class PegawaiController extends Controller
         $dosenStats = Pegawai::dosen()->selectRaw("
             COUNT(*) as total,
             COALESCE(SUM(CASE WHEN status_pegawai = 'Aktif' THEN 1 ELSE 0 END), 0) as aktif,
-            COALESCE(SUM(CASE WHEN (jenis_pegawai NOT LIKE '%PPPK%' AND (status_asn = 'ASN' OR CHAR_LENGTH(nip) = 18)) THEN 1 ELSE 0 END), 0) as pns,
-            COALESCE(SUM(CASE WHEN (jenis_pegawai LIKE '%PPPK%' OR status_asn = 'PPPK' OR CHAR_LENGTH(nip) = 21) THEN 1 ELSE 0 END), 0) as pppk,
+            COALESCE(SUM(CASE WHEN (jenis_pegawai NOT LIKE '%PPPK%' AND (status_asn = 'ASN' OR LENGTH(nip) = 18)) THEN 1 ELSE 0 END), 0) as pns,
+            COALESCE(SUM(CASE WHEN (jenis_pegawai LIKE '%PPPK%' OR status_asn = 'PPPK' OR LENGTH(nip) = 21) THEN 1 ELSE 0 END), 0) as pppk,
             COALESCE(SUM(CASE WHEN status_pegawai = 'Tugas Belajar' THEN 1 ELSE 0 END), 0) as tubel
         ")->first();
 

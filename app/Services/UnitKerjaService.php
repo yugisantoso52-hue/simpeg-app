@@ -31,7 +31,11 @@ class UnitKerjaService
     public function create(array $data): UnitKerja
     {
         try {
-            return $this->repository->create($data);
+            $unit = $this->repository->create($data);
+            \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_unit');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+            return $unit;
         } catch (Exception $e) {
             Log::error("Gagal menambahkan Unit Kerja: " . $e->getMessage());
             throw new Exception("Terjadi kesalahan saat menyimpan data unit kerja.");
@@ -41,7 +45,11 @@ class UnitKerjaService
     public function update(int|string $id, array $data): UnitKerja
     {
         try {
-            return $this->repository->update($id, $data);
+            $unit = $this->repository->update($id, $data);
+            \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_unit');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+            return $unit;
         } catch (Exception $e) {
             Log::error("Gagal memperbarui Unit Kerja ID {$id}: " . $e->getMessage());
             throw new Exception("Terjadi kesalahan saat memperbarui data unit kerja.");
@@ -51,7 +59,11 @@ class UnitKerjaService
     public function delete(int|string $id): bool
     {
         try {
-            return $this->repository->delete($id);
+            $deleted = $this->repository->delete($id);
+            \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_unit');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+            return $deleted;
         } catch (Exception $e) {
             Log::error("Gagal menghapus Unit Kerja ID {$id}: " . $e->getMessage());
             throw new Exception("Data gagal dihapus. Pastikan unit kerja ini tidak sedang digunakan oleh pegawai.");

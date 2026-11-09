@@ -150,6 +150,10 @@ class PengajuanJabatanController extends Controller
                 $pegawai->save();
 
                 app(PegawaiService::class)->syncPegawaiFromHistories($pegawai);
+
+                \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
+                \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+                \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_unit');
             } else {
                 $pengajuan->update([
                     'status'            => PengajuanJabatan::STATUS_DITOLAK,

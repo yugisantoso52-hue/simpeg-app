@@ -84,9 +84,17 @@ class JenisJabatanController extends Controller
             'nama_jenis_jabatan.max'      => 'Nama Jenis Jabatan maksimal 100 karakter.',
         ]);
 
+        $oldName = $jenisJabatan->nama_jenis_jabatan;
         $validated['nama_jenis_jabatan'] = strtoupper(trim($validated['nama_jenis_jabatan']));
 
         $jenisJabatan->update($validated);
+
+        if ($oldName !== $validated['nama_jenis_jabatan']) {
+            \App\Models\Pegawai::where('jenis_jabatan', $oldName)->update([
+                'jenis_jabatan' => $validated['nama_jenis_jabatan'],
+            ]);
+            \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+        }
 
         return redirect()
             ->route('jenis-jabatan.index')
@@ -98,12 +106,17 @@ class JenisJabatanController extends Controller
      */
     public function destroy($id)
     {
-        $jenisJabatan = JenisJabatan::findOrFail($id);
+        try {
+            $jenisJabatan = JenisJabatan::findOrFail($id);
+            $jenisJabatan->delete();
 
-        $jenisJabatan->delete();
-
-        return redirect()
-            ->route('jenis-jabatan.index')
-            ->with('success', 'Data Jenis Jabatan berhasil dihapus.');
+            return redirect()
+                ->route('jenis-jabatan.index')
+                ->with('success', 'Data Jenis Jabatan berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('jenis-jabatan.index')
+                ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
     }
 }

@@ -206,6 +206,7 @@ class PengajuanKarirController extends Controller
 
         $golongans = Golongan::orderBy('id')->get();
         $syaratKp = $jenis === 'KP' ? $pegawai->evaluasiSyaratKp() : null;
+        $isPns = in_array(strtoupper((string) ($pegawai->jenis_pegawai ?? '')), ['PNS', 'CPNS'], true);
 
         // 6 Periode Kenaikan Pangkat BKN
         $periodeKpList = [

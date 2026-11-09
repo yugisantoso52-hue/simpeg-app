@@ -5,7 +5,7 @@
         || (request()->routeIs('pegawai.show', 'pegawai.edit') && Auth::user()->pegawai_id && (int) $routePegawaiId === (int) Auth::user()->pegawai_id);
 
     $currentSection = '';
-    if ($isViewingOwnProfile || request()->routeIs('manajemen-talenta.my-talent') || (!Auth::user()->canAccessExecutiveKepegawaianMenus() && request()->routeIs('duk.*', 'pengajuan-karir.*'))) {
+    if ($isViewingOwnProfile || request()->routeIs('manajemen-talenta.my-talent') || (!Auth::user()->canAccessExecutiveKepegawaianMenus() && request()->routeIs('duk.*', 'pengajuan-karir.*', 'pengajuan-jabatan.*', 'tugas-belajar.*'))) {
         $currentSection = 'profil-karir';
     } elseif (request()->routeIs('presensi.*', 'admin.presensi.*', 'logbook.*', 'admin.logbook.*')) {
         $currentSection = 'presensi-kinerja';
@@ -13,7 +13,7 @@
         $currentSection = 'tata-naskah';
     } elseif (request()->routeIs('pegawai.*', 'kepegawaian.*', 'duk.*', 'riwayat-*')) {
         $currentSection = 'kepegawaian';
-    } elseif (request()->routeIs('kp.*', 'kgb.*', 'satyalancana.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'pengajuan-karir.*')) {
+    } elseif (request()->routeIs('kp.*', 'kgb.*', 'satyalancana.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'pengajuan-karir.*', 'pengajuan-jabatan.*')) {
         $currentSection = 'karir';
     } elseif (request()->routeIs('anjab.*', 'abk.*', 'manajemen-talenta.*')) {
         $currentSection = 'perencanaan-talenta';
@@ -193,6 +193,10 @@
                 <x-responsive-nav-link :href="route('pengajuan-karir.index')" :active="request()->routeIs('pengajuan-karir.*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="clipboard-check" class="w-3.5 h-3.5 text-indigo-600" />
                     <span>Verifikasi Usulan Karir & SLKS</span>
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('pengajuan-jabatan.index')" :active="request()->routeIs('pengajuan-jabatan.*')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="briefcase" class="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Verifikasi SK Jabatan Struktural</span>
                 </x-responsive-nav-link>
                 @if(Auth::user()->hasRole('admin'))
                     <x-responsive-nav-link :href="route('kp.index')" :active="request()->routeIs('kp.*')" class="flex items-center gap-2 text-xs rounded-lg">

@@ -62,6 +62,7 @@ class AbkController extends Controller
         $validated['analisis_jabatan_id'] = $anjab->id;
 
         AbkUraianTugas::create($validated);
+        \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
 
         return redirect()->route('abk.edit', $anjab)->with('success', 'Butir tugas berhasil ditambahkan ke beban kerja.');
     }
@@ -80,6 +81,7 @@ class AbkController extends Controller
         ]);
 
         $tugas->update($validated);
+        \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
 
         return redirect()->route('abk.edit', $tugas->analisis_jabatan_id)->with('success', 'Butir tugas berhasil diperbarui.');
     }
@@ -91,6 +93,7 @@ class AbkController extends Controller
     {
         $anjabId = $tugas->analisis_jabatan_id;
         $tugas->delete();
+        \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
 
         return redirect()->route('abk.edit', $anjabId)->with('success', 'Butir tugas berhasil dihapus.');
     }

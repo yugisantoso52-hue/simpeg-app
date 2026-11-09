@@ -90,6 +90,9 @@ class JabatanController extends Controller
 
         Jabatan::create($validated);
 
+        \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+
         return redirect()
             ->route('jabatan.index')
             ->with('success', 'Data Jabatan berhasil ditambahkan ke Master Data.');
@@ -129,6 +132,23 @@ class JabatanController extends Controller
 
         try {
             $jabatan->update($validated);
+
+            // Sinkronisasi ke dokumen Analisis Jabatan terkait jika unit kerja atau kelas jabatan berubah
+            if ($jabatan->analisisJabatan) {
+                $anjabSync = [];
+                if (array_key_exists('unit_kerja_id', $validated) && !empty($validated['unit_kerja_id'])) {
+                    $anjabSync['unit_kerja_id'] = $validated['unit_kerja_id'];
+                }
+                if (array_key_exists('kelas_jabatan', $validated) && !empty($validated['kelas_jabatan'])) {
+                    $anjabSync['kelas_jabatan'] = $validated['kelas_jabatan'];
+                }
+                if (!empty($anjabSync)) {
+                    $jabatan->analisisJabatan()->update($anjabSync);
+                }
+            }
+
+            \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
         } catch (\Illuminate\Database\QueryException $e) {
             if ($e->getCode() == 23000) {
                 return redirect()->back()
@@ -149,10 +169,13 @@ class JabatanController extends Controller
             $model = Jabatan::findOrFail($id);
             $model->delete();
 
+            \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+
             return redirect()
                 ->route('jabatan.index')
                 ->with('success', 'Data jabatan berhasil dihapus.');
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (\Exception $e) {
             return redirect()
                 ->route('jabatan.index')
                 ->with('error', 'Gagal menghapus! Jabatan ini sedang digunakan oleh data pegawai atau dokumen Anjab.');

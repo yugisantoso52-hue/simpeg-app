@@ -41,6 +41,9 @@ class GolonganController extends Controller
             'keterangan' => $request->keterangan,
         ]);
 
+        \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_golongan');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+
         return redirect()
             ->route('golongan.index')
             ->with('success', 'Data berhasil disimpan');
@@ -69,6 +72,9 @@ class GolonganController extends Controller
             'keterangan' => $request->keterangan,
         ]);
 
+        \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_golongan');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
+
         return redirect()
             ->route('golongan.index')
             ->with('success', 'Data berhasil diupdate');
@@ -79,6 +85,9 @@ class GolonganController extends Controller
         try {
             $model = Golongan::findOrFail($id);
             $model->delete();
+
+            \Illuminate\Support\Facades\Cache::forget('dashboard_grafik_golongan');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_statistics');
 
             return redirect()
                 ->route('golongan.index')
