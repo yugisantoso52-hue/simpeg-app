@@ -5,10 +5,22 @@ namespace App\Http\Controllers;
 use App\Models\AnalisisJabatan;
 use App\Models\Jabatan;
 use App\Models\UnitKerja;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class AnjabController extends Controller
 {
+    use AuthorizesRequests;
+
+    public function __construct()
+    {
+        if (!Gate::has('canManageAnjabAbk')) {
+            Gate::define('canManageAnjabAbk', fn ($user) => $user->canManageAnjabAbk());
+        }
+    }
+
     public function index(Request $request)
     {
         $query = AnalisisJabatan::with(['jabatan', 'unitKerja', 'uraianTugas']);
@@ -48,6 +60,8 @@ class AnjabController extends Controller
 
     public function create()
     {
+        Gate::authorize('canManageAnjabAbk');
+
         $existingJabatanIds = AnalisisJabatan::pluck('jabatan_id')->toArray();
         $jabatans = Jabatan::whereNotIn('id', $existingJabatanIds)->orderBy('nama_jabatan')->get();
         if ($jabatans->isEmpty()) {
@@ -60,6 +74,8 @@ class AnjabController extends Controller
 
     public function store(Request $request)
     {
+        Gate::authorize('canManageAnjabAbk');
+
         $validated = $request->validate([
             'jabatan_id'             => 'required|exists:jabatan,id',
             'unit_kerja_id'          => 'nullable|exists:unit_kerja,id',
@@ -102,6 +118,8 @@ class AnjabController extends Controller
 
     public function edit(AnalisisJabatan $anjab)
     {
+        Gate::authorize('canManageAnjabAbk');
+
         $jabatans = Jabatan::orderBy('nama_jabatan')->get();
         $unitKerjas = UnitKerja::orderBy('urutan')->get();
 
@@ -110,6 +128,8 @@ class AnjabController extends Controller
 
     public function update(Request $request, AnalisisJabatan $anjab)
     {
+        Gate::authorize('canManageAnjabAbk');
+
         $validated = $request->validate([
             'unit_kerja_id'          => 'nullable|exists:unit_kerja,id',
             'kode_anjab'             => 'nullable|string|max:50',
@@ -150,6 +170,8 @@ class AnjabController extends Controller
 
     public function destroy(AnalisisJabatan $anjab)
     {
+        Gate::authorize('canManageAnjabAbk');
+
         $anjab->delete();
         \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
         return redirect()->route('anjab.index')->with('success', 'Dokumen Analisis Jabatan berhasil dihapus.');
@@ -171,10 +193,7 @@ class AnjabController extends Controller
      */
     public function verifikasi(Request $request, AnalisisJabatan $anjab)
     {
-        $user = auth()->user();
-        if (!$user->canAccessExecutiveKepegawaianMenus()) {
-            abort(403, 'Akses terbatas untuk pimpinan dan pengelola kepegawaian.');
-        }
+        Gate::authorize('canManageAnjabAbk');
 
         $action = $request->input('action', 'setujui');
         $namaJabatan = $anjab->jabatan->nama_jabatan ?? 'Jabatan';
@@ -191,10 +210,36 @@ class AnjabController extends Controller
     }
 
     /**
+     * Unggah Dokumen Pendukung Anjab
+     */
+    public function uploadDoc(Request $request, AnalisisJabatan $anjab)
+    {
+        Gate::authorize('canManageAnjabAbk');
+
+        $request->validate([
+            'file_dokumen' => 'required|file|mimes:pdf,doc,docx|max:5120',
+        ]);
+
+        if ($request->hasFile('file_dokumen')) {
+            $path = $request->file('file_dokumen')->store('anjab-docs', 'public');
+            if (\Illuminate\Support\Facades\Schema::hasColumn('analisis_jabatan', 'file_dokumen')) {
+                if ($anjab->file_dokumen) {
+                    Storage::disk('public')->delete($anjab->file_dokumen);
+                }
+                $anjab->update(['file_dokumen' => $path]);
+            }
+        }
+
+        return back()->with('success', 'Dokumen pendukung Analisis Jabatan berhasil diunggah.');
+    }
+
+    /**
      * Halaman Evaluasi Jabatan FES (Factor Evaluation System) PermenPAN-RB No. 34/2011 & 39/2013
      */
     public function evaluasiJabatan(AnalisisJabatan $anjab)
     {
+        Gate::authorize('canManageAnjabAbk');
+
         $anjab->load(['jabatan', 'unitKerja', 'uraianTugas']);
         return view('anjab.evaluasi_jabatan', compact('anjab'));
     }
@@ -204,6 +249,8 @@ class AnjabController extends Controller
      */
     public function updateEvaluasiJabatan(Request $request, AnalisisJabatan $anjab)
     {
+        Gate::authorize('canManageAnjabAbk');
+
         $validated = $request->validate([
             'faktor_1' => 'required|integer',
             'faktor_2' => 'required|integer',

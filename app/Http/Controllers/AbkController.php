@@ -7,10 +7,21 @@ use App\Models\AbkUraianTugas;
 use App\Models\UnitKerja;
 use App\Models\Pegawai;
 use Carbon\Carbon;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class AbkController extends Controller
 {
+    use AuthorizesRequests;
+
+    public function __construct()
+    {
+        if (!Gate::has('canManageAnjabAbk')) {
+            Gate::define('canManageAnjabAbk', fn ($user) => $user->canManageAnjabAbk());
+        }
+    }
+
     /**
      * Dashboard Rekapitulasi Formasi & Analisis Beban Kerja
      */
@@ -49,6 +60,8 @@ class AbkController extends Controller
      */
     public function storeTugas(Request $request, AnalisisJabatan $anjab)
     {
+        Gate::authorize('canManageAnjabAbk');
+
         $validated = $request->validate([
             'uraian_tugas'       => 'required|string',
             'satuan_hasil'       => 'required|string|max:100',
@@ -67,11 +80,20 @@ class AbkController extends Controller
         return redirect()->route('abk.edit', $anjab)->with('success', 'Butir tugas berhasil ditambahkan ke beban kerja.');
     }
 
+    public function store(Request $request, AnalisisJabatan $anjab)
+    {
+        Gate::authorize('canManageAnjabAbk');
+
+        return $this->storeTugas($request, $anjab);
+    }
+
     /**
      * Update Butir Tugas
      */
     public function updateTugas(Request $request, AbkUraianTugas $tugas)
     {
+        Gate::authorize('canManageAnjabAbk');
+
         $validated = $request->validate([
             'uraian_tugas'       => 'required|string',
             'satuan_hasil'       => 'required|string|max:100',
@@ -86,16 +108,32 @@ class AbkController extends Controller
         return redirect()->route('abk.edit', $tugas->analisis_jabatan_id)->with('success', 'Butir tugas berhasil diperbarui.');
     }
 
+    public function update(Request $request, AbkUraianTugas $tugas)
+    {
+        Gate::authorize('canManageAnjabAbk');
+
+        return $this->updateTugas($request, $tugas);
+    }
+
     /**
      * Hapus Butir Tugas
      */
     public function destroyTugas(AbkUraianTugas $tugas)
     {
+        Gate::authorize('canManageAnjabAbk');
+
         $anjabId = $tugas->analisis_jabatan_id;
         $tugas->delete();
         \Illuminate\Support\Facades\Cache::forget('dashboard_abk_summary_v2');
 
         return redirect()->route('abk.edit', $anjabId)->with('success', 'Butir tugas berhasil dihapus.');
+    }
+
+    public function destroy(AbkUraianTugas $tugas)
+    {
+        Gate::authorize('canManageAnjabAbk');
+
+        return $this->destroyTugas($tugas);
     }
 
     /**

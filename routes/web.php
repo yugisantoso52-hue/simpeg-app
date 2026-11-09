@@ -450,27 +450,36 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
          * MODUL ANALISIS JABATAN (ANJAB) & ANALISIS BEBAN KERJA (ABK)
          * Acuan: PermenPAN-RB No. 1/2020 & Peraturan BKN No. 12 & 19/2011
          * ====================================================================== */
-        // Analisis Beban Kerja (ABK) & Formasi
+        if (!\Illuminate\Support\Facades\Gate::has('canManageAnjabAbk')) {
+            \Illuminate\Support\Facades\Gate::define('canManageAnjabAbk', fn ($user) => $user->canManageAnjabAbk());
+        }
+
+        // Analisis Beban Kerja (ABK) & Formasi — Read/Monitoring
         Route::get('/abk', [\App\Http\Controllers\AbkController::class, 'index'])->name('abk.index');
         Route::get('/abk/simulasi-formasi', [\App\Http\Controllers\AbkController::class, 'simulasiFormasi'])->name('abk.simulasi-formasi');
         Route::get('/abk/{anjab}/edit', [\App\Http\Controllers\AbkController::class, 'edit'])->name('abk.edit');
-        Route::post('/abk/{anjab}/tugas', [\App\Http\Controllers\AbkController::class, 'storeTugas'])->name('abk.tugas.store');
-        Route::put('/abk/tugas/{tugas}', [\App\Http\Controllers\AbkController::class, 'updateTugas'])->name('abk.tugas.update');
-        Route::delete('/abk/tugas/{tugas}', [\App\Http\Controllers\AbkController::class, 'destroyTugas'])->name('abk.tugas.destroy');
         Route::get('/abk/print/rekap', [\App\Http\Controllers\AbkController::class, 'printRekap'])->name('abk.print.rekap');
 
-        // Analisis Jabatan (E-Anjab - 17 Butir PermenPAN-RB No. 1/2020)
+        // Analisis Jabatan (E-Anjab - 17 Butir PermenPAN-RB No. 1/2020) — Read/Monitoring
         Route::get('/anjab', [\App\Http\Controllers\AnjabController::class, 'index'])->name('anjab.index');
-        Route::get('/anjab/create', [\App\Http\Controllers\AnjabController::class, 'create'])->name('anjab.create');
-        Route::post('/anjab', [\App\Http\Controllers\AnjabController::class, 'store'])->name('anjab.store');
+        Route::middleware('can:canManageAnjabAbk')->group(function () {
+            Route::get('/anjab/create', [\App\Http\Controllers\AnjabController::class, 'create'])->name('anjab.create');
+            Route::post('/anjab', [\App\Http\Controllers\AnjabController::class, 'store'])->name('anjab.store');
+            Route::get('/anjab/{anjab}/edit', [\App\Http\Controllers\AnjabController::class, 'edit'])->name('anjab.edit');
+            Route::put('/anjab/{anjab}', [\App\Http\Controllers\AnjabController::class, 'update'])->name('anjab.update');
+            Route::delete('/anjab/{anjab}', [\App\Http\Controllers\AnjabController::class, 'destroy'])->name('anjab.destroy');
+            Route::post('/anjab/{anjab}/verifikasi', [\App\Http\Controllers\AnjabController::class, 'verifikasi'])->name('anjab.verifikasi');
+            Route::post('/anjab/{anjab}/upload-doc', [\App\Http\Controllers\AnjabController::class, 'uploadDoc'])->name('anjab.upload-doc');
+            Route::get('/anjab/{anjab}/evaluasi-jabatan', [\App\Http\Controllers\AnjabController::class, 'evaluasiJabatan'])->name('anjab.evaluasi-jabatan');
+            Route::post('/anjab/{anjab}/evaluasi-jabatan', [\App\Http\Controllers\AnjabController::class, 'updateEvaluasiJabatan'])->name('anjab.evaluasi-jabatan.update');
+
+            // Write/Mutasi Butir Tugas ABK (Khusus Pengelola Anjab & ABK: Admin & Ka Pokja Kepegawaian)
+            Route::post('/abk/{anjab}/tugas', [\App\Http\Controllers\AbkController::class, 'storeTugas'])->name('abk.tugas.store');
+            Route::put('/abk/tugas/{tugas}', [\App\Http\Controllers\AbkController::class, 'updateTugas'])->name('abk.tugas.update');
+            Route::delete('/abk/tugas/{tugas}', [\App\Http\Controllers\AbkController::class, 'destroyTugas'])->name('abk.tugas.destroy');
+        });
         Route::get('/anjab/{anjab}', [\App\Http\Controllers\AnjabController::class, 'show'])->name('anjab.show');
-        Route::get('/anjab/{anjab}/edit', [\App\Http\Controllers\AnjabController::class, 'edit'])->name('anjab.edit');
-        Route::put('/anjab/{anjab}', [\App\Http\Controllers\AnjabController::class, 'update'])->name('anjab.update');
-        Route::delete('/anjab/{anjab}', [\App\Http\Controllers\AnjabController::class, 'destroy'])->name('anjab.destroy');
         Route::get('/anjab/{anjab}/print', [\App\Http\Controllers\AnjabController::class, 'print'])->name('anjab.print');
-        Route::post('/anjab/{anjab}/verifikasi', [\App\Http\Controllers\AnjabController::class, 'verifikasi'])->name('anjab.verifikasi');
-        Route::get('/anjab/{anjab}/evaluasi-jabatan', [\App\Http\Controllers\AnjabController::class, 'evaluasiJabatan'])->name('anjab.evaluasi-jabatan');
-        Route::post('/anjab/{anjab}/evaluasi-jabatan', [\App\Http\Controllers\AnjabController::class, 'updateEvaluasiJabatan'])->name('anjab.evaluasi-jabatan.update');
 
         /* ======================================================================
          * MODUL MANAJEMEN TALENTA ASN (PermenPAN-RB No. 3/2020 & UU No. 20/2023)

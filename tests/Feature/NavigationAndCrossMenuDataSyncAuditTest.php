@@ -263,4 +263,156 @@ class NavigationAndCrossMenuDataSyncAuditTest extends TestCase
             'nomor_sk'   => 'SK-JAB/2026/01',
         ]);
     }
+
+    /**
+     * Audit proteksi keamanan route write Anjab & ABK:
+     * Eksekutif Read-Only (Kajur, Sekjur, Ka Pokja Akademik, Ka Pokja Sarpras) wajib mendapat HTTP 403
+     * saat mengakses endpoint POST/PUT/DELETE Anjab & ABK, sedangkan Admin & Ka Pokja Kepegawaian diizinkan.
+     */
+    public function test_anjab_and_abk_write_routes_enforce_can_manage_anjab_abk_authorization(): void
+    {
+        $anjab = AnalisisJabatan::create([
+            'jabatan_id'    => $this->jabatan1->id,
+            'unit_kerja_id' => $this->unitKerja1->id,
+            'kode_anjab'    => 'ANJAB-SEC-01',
+            'kelas_jabatan' => 7,
+            'status'        => 'draft',
+        ]);
+
+        $tugas = \App\Models\AbkUraianTugas::create([
+            'analisis_jabatan_id' => $anjab->id,
+            'urutan'              => 1,
+            'uraian_tugas'        => 'Menyusun laporan kepegawaian',
+            'satuan_hasil'        => 'Dokumen',
+            'norma_waktu_menit'   => 60,
+            'volume_1_tahun'      => 12,
+        ]);
+
+        $pegawaiRole = Role::firstOrCreate(['name' => 'pegawai'], ['display_name' => 'Pegawai']);
+
+        $readOnlyPositions = [
+            'Ketua Jurusan Keperawatan',
+            'Sekretaris Jurusan Keperawatan',
+            'Ka Pokja Akademik dan Kemahasiswaan',
+            'Ka Pokja Umum dan Sarpras',
+        ];
+
+        foreach ($readOnlyPositions as $idx => $namaJabatan) {
+            $jabatan = Jabatan::create([
+                'kode_jabatan'      => 'J-RO-' . $idx,
+                'nama_jabatan'      => $namaJabatan,
+                'jenis_jabatan_id'  => $this->jenisJabatan1->id,
+                'unit_kerja_id'     => $this->unitKerja1->id,
+                'level_hirarki'     => 4,
+            ]);
+
+            $pegawai = Pegawai::create([
+                'nip'             => '19880101201504101' . $idx,
+                'nama'            => 'Pejabat ' . $namaJabatan,
+                'jenis_kelamin'   => 'L',
+                'tempat_lahir'    => 'Pekanbaru',
+                'tanggal_lahir'   => '1988-01-01',
+                'status_pegawai'  => 'Aktif',
+                'jenis_pegawai'   => 'PNS',
+                'jenis_jabatan'   => 'JABATAN STRUKTURAL',
+                'golongan_id'     => $this->golongan1->id,
+                'jabatan_id'      => $jabatan->id,
+                'unit_kerja_id'   => $this->unitKerja1->id,
+                'tmt_cpns'        => '2015-04-01',
+            ]);
+
+            $user = User::factory()->create([
+                'name'                 => $pegawai->nama,
+                'email'                => "readonly{$idx}@unri.ac.id",
+                'role_id'              => $pegawaiRole->id,
+                'pegawai_id'           => $pegawai->id,
+                'must_change_password' => false,
+            ]);
+
+            $this->assertFalse($user->canManageAnjabAbk(), "{$namaJabatan} seharusnya read-only pada Anjab/ABK");
+
+            // Read endpoints harus 200 OK
+            $this->actingAs($user)->get(route('anjab.index'))->assertStatus(200);
+            $this->actingAs($user)->get(route('abk.index'))->assertStatus(200);
+
+            // Write endpoints Anjab harus 403 Forbidden
+            $this->actingAs($user)->post(route('anjab.store'), [
+                'jabatan_id' => $this->jabatan2->id,
+                'status'     => 'draft',
+            ])->assertStatus(403);
+
+            $this->actingAs($user)->put(route('anjab.update', $anjab), [
+                'status' => 'disetujui',
+            ])->assertStatus(403);
+
+            $this->actingAs($user)->post(route('anjab.verifikasi', $anjab), [
+                'action' => 'setujui',
+            ])->assertStatus(403);
+
+            $this->actingAs($user)->post(route('anjab.upload-doc', $anjab), [])->assertStatus(403);
+
+            $this->actingAs($user)->delete(route('anjab.destroy', $anjab))->assertStatus(403);
+
+            // Write endpoints ABK harus 403 Forbidden
+            $this->actingAs($user)->post(route('abk.tugas.store', $anjab), [
+                'uraian_tugas'      => 'Tugas Ilegal',
+                'satuan_hasil'      => 'Berkas',
+                'norma_waktu_menit' => 30,
+                'volume_1_tahun'    => 10,
+            ])->assertStatus(403);
+
+            $this->actingAs($user)->put(route('abk.tugas.update', $tugas), [
+                'uraian_tugas'      => 'Ubah Ilegal',
+                'satuan_hasil'      => 'Berkas',
+                'norma_waktu_menit' => 45,
+                'volume_1_tahun'    => 10,
+            ])->assertStatus(403);
+
+            $this->actingAs($user)->delete(route('abk.tugas.destroy', $tugas))->assertStatus(403);
+        }
+
+        // Ka Pokja Keuangan & Kepegawaian (canManageAnjabAbk === true) harus diizinkan (bukan 403)
+        $jabatanKaPokjaKepeg = Jabatan::create([
+            'kode_jabatan'      => 'J-KPK-01',
+            'nama_jabatan'      => 'Ka Pokja Keuangan dan Kepegawaian',
+            'jenis_jabatan_id'  => $this->jenisJabatan1->id,
+            'unit_kerja_id'     => $this->unitKerja1->id,
+            'level_hirarki'     => 4,
+        ]);
+        $pegawaiKaPokjaKepeg = Pegawai::create([
+            'nip'             => '198705052014042001',
+            'nama'            => 'Ka Pokja Kepegawaian',
+            'jenis_kelamin'   => 'P',
+            'tempat_lahir'    => 'Pekanbaru',
+            'tanggal_lahir'   => '1987-05-05',
+            'status_pegawai'  => 'Aktif',
+            'jenis_pegawai'   => 'PNS',
+            'jenis_jabatan'   => 'JABATAN STRUKTURAL',
+            'golongan_id'     => $this->golongan1->id,
+            'jabatan_id'      => $jabatanKaPokjaKepeg->id,
+            'unit_kerja_id'   => $this->unitKerja1->id,
+            'tmt_cpns'        => '2014-04-01',
+        ]);
+        $userKaPokjaKepeg = User::factory()->create([
+            'name'                 => $pegawaiKaPokjaKepeg->nama,
+            'email'                => 'kapokja.kepeg@unri.ac.id',
+            'role_id'              => $pegawaiRole->id,
+            'pegawai_id'           => $pegawaiKaPokjaKepeg->id,
+            'must_change_password' => false,
+        ]);
+
+        $this->assertTrue($userKaPokjaKepeg->canManageAnjabAbk());
+
+        $this->actingAs($userKaPokjaKepeg)->put(route('anjab.update', $anjab), [
+            'kode_anjab' => 'ANJAB-SEC-UPDATED',
+            'status'     => 'draft',
+        ])->assertRedirect(route('anjab.show', $anjab));
+
+        $this->actingAs($userKaPokjaKepeg)->post(route('abk.tugas.store', $anjab), [
+            'uraian_tugas'      => 'Tugas Valid Ka Pokja Kepegawaian',
+            'satuan_hasil'      => 'Dokumen',
+            'norma_waktu_menit' => 120,
+            'volume_1_tahun'    => 24,
+        ])->assertRedirect(route('abk.edit', $anjab));
+    }
 }
