@@ -72,7 +72,6 @@ Route::get('/sitemap.xml', function () {
     return response($xml, 200, [
         'Content-Type' => 'application/xml; charset=utf-8',
         'Cache-Control' => 'public, max-age=86400',
-        'X-Content-Type-Options' => 'nosniff',
     ]);
 })->name('sitemap');
 

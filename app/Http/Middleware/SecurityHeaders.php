@@ -15,11 +15,17 @@ class SecurityHeaders
     {
         $response = $next($request);
 
-        // 1. MIME type sniffing prevention
-        $response->headers->set('X-Content-Type-Options', 'nosniff');
+        // Deteksi apakah berjalan di balik Reverse Proxy produksi (sikap.fkp.unri.ac.id)
+        // yang sudah menyuntikkan X-Content-Type-Options, X-Frame-Options, dan HSTS dari level Nginx.
+        $isProdProxy = str_ends_with(strtolower($request->getHost()), 'unri.ac.id');
 
-        // 2. Clickjacking prevention
-        $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+        if (! $isProdProxy) {
+            // 1. MIME type sniffing prevention
+            $response->headers->set('X-Content-Type-Options', 'nosniff');
+
+            // 2. Clickjacking prevention
+            $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+        }
 
         // 3. Referrer policy
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -78,7 +84,9 @@ class SecurityHeaders
         }
 
         // 8. Perlindungan HSTS secara konsisten (Mengatasi ZAP 'Strict-Transport-Security Header Not Set')
-        $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        if (! $isProdProxy) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        }
 
         // 9. Manajemen Cache Ketat pada seluruh halaman HTML dinamis & redirect (Mengatasi ZAP 'Re-examine Cache-control Directives')
         if ($isHtml || $response->isRedirection()) {
