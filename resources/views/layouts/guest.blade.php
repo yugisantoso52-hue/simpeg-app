@@ -15,9 +15,9 @@
         <link rel="manifest" href="/manifest.json">
         <meta name="theme-color" content="#0b3b7c">
 
-        <!-- Self-Hosted Fonts & Portal Styles (With Cache Busting) -->
-        <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}?v={{ file_exists(public_path('fonts/fonts.css')) ? filemtime(public_path('fonts/fonts.css')) : time() }}">
-        <link rel="stylesheet" href="{{ asset('css/auth.css') }}?v={{ file_exists(public_path('css/auth.css')) ? filemtime(public_path('css/auth.css')) : time() }}">
+        <!-- Self-Hosted Fonts & Portal Styles (With Non-Timestamp Hex Cache Busting) -->
+        <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}?v=v{{ file_exists(public_path('fonts/fonts.css')) ? dechex(filemtime(public_path('fonts/fonts.css'))) : '1' }}">
+        <link rel="stylesheet" href="{{ asset('css/auth.css') }}?v=v{{ file_exists(public_path('css/auth.css')) ? dechex(filemtime(public_path('css/auth.css'))) : '1' }}">
 
         <!-- Scripts & Tailwind Bundle -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -37,7 +37,7 @@
                 </div>
 
                 <div class="mt-6 text-center text-xs text-slate-500 font-medium space-y-1">
-                    <div>&copy; {{ date('Y') }} <strong>SIKAP</strong> — Fakultas Keperawatan Universitas Riau</div>
+                    <div>&copy; {{ date('Y') }} <a href="{{ route('login') }}" class="font-bold hover:text-slate-700 hover:underline">SIKAP</a> — Fakultas Keperawatan Universitas Riau</div>
                     <div class="text-[11px] text-slate-500">Pengembang Sistem: Rahmad Hidayat Majlan, S.T. (RHM)</div>
                 </div>
             </div>

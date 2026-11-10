@@ -36,6 +36,12 @@
         <button type="button" data-action="reload" class="w-full py-3 bg-[#007a3d] hover:bg-[#006030] text-white rounded-xl text-xs font-bold transition shadow-md cursor-pointer">
             🔄 Coba Hubungkan Kembali
         </button>
+
+        <div class="mt-4">
+            <a href="{{ route('login') }}" class="text-xs font-semibold text-slate-500 hover:text-slate-800 hover:underline">
+                &larr; Kembali ke Halaman Login
+            </a>
+        </div>
     </div>
 
 </body>
