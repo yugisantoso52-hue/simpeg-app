@@ -9,7 +9,7 @@
                     Informasi lengkap permohonan cuti dan riwayat persetujuan pimpinan
                 </p>
             </div>
-            <div class="flex items-center gap-2" x-data="{ openModalCetak: false, nomorInput: '{{ $cuti->nomor_surat ? explode('/', $cuti->nomor_surat)[0] : '' }}' }">
+            <div class="flex items-center gap-2" x-data="{ openModalCetak: false, nomorInput: '{{ $cuti->nomor_surat ? explode('/UN19', $cuti->nomor_surat)[0] : '' }}' }">
                 <button type="button" @click="openModalCetak = true"
                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">
                     <span>📄</span> Cetak Formulir Cuti (PDF)
@@ -37,12 +37,13 @@
                         </p>
 
                         @php
-                            $userIsAdmin = Auth::user()->hasRole('admin') || Auth::user()->canAccessExecutiveKepegawaianMenus();
+                            $userIsAdmin = Auth::user()->isScreeningAdmin();
+                            $tahunSurat = $cuti->created_at ? $cuti->created_at->format('Y') : date('Y');
                         @endphp
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
-                                    Nomor Surat @if($userIsAdmin) (Diisi Manual oleh Admin) @else (Ditetapkan oleh Admin) @endif
+                                    Nomor Surat @if($userIsAdmin) (Diisi Manual oleh Admin) @else (Ditetapkan oleh Admin Kepegawaian) @endif
                                 </label>
                                 @if($userIsAdmin)
                                     <div class="flex items-center">
@@ -50,22 +51,22 @@
                                                placeholder="Isi nomor manual..."
                                                class="w-full rounded-l-lg border-slate-300 font-mono text-sm focus:ring-emerald-500 focus:border-emerald-500">
                                         <span class="inline-flex items-center px-3 py-2 rounded-r-lg border border-l-0 border-slate-300 bg-slate-100 text-slate-700 text-xs font-mono font-bold whitespace-nowrap">
-                                            /UN19.5.1.1.10/KP/{{ date('Y') }}
+                                            /UN19.5.1.1.10/KP/{{ $tahunSurat }}
                                         </span>
                                     </div>
                                     <span class="text-[10px] text-slate-500 mt-1 block">
-                                        Format Surat: <span class="font-mono text-emerald-700 font-bold" x-text="(nomorInput ? nomorInput : '......') + '/UN19.5.1.1.10/KP/{{ date('Y') }}'"></span>
+                                        Format Surat: <span class="font-mono text-emerald-700 font-bold" x-text="(nomorInput ? nomorInput : '......') + '/UN19.5.1.1.10/KP/{{ $tahunSurat }}'"></span>
                                     </span>
                                 @else
                                     <div class="flex items-center">
                                         <input type="text" :value="nomorInput ? nomorInput : '[Belum Diterbitkan Admin]'" disabled
                                                class="w-full rounded-l-lg border-slate-300 bg-slate-100 text-slate-500 font-mono text-sm cursor-not-allowed">
                                         <span class="inline-flex items-center px-3 py-2 rounded-r-lg border border-l-0 border-slate-300 bg-slate-100 text-slate-400 text-xs font-mono font-bold whitespace-nowrap">
-                                            /UN19.5.1.1.10/KP/{{ date('Y') }}
+                                            /UN19.5.1.1.10/KP/{{ $tahunSurat }}
                                         </span>
                                     </div>
                                     <span class="text-[11px] text-amber-600 mt-1 block font-medium">
-                                        ℹ️ Sesuai Tata Naskah Dinas, pengisian nomor surat dinas resmi dilakukan oleh Admin Kepegawaian.
+                                        ℹ️ Sesuai Tata Naskah Dinas, pengisian dan perubahan nomor surat dinas resmi hanya dilakukan oleh Admin Kepegawaian.
                                     </span>
                                 @endif
                             </div>
@@ -75,12 +76,21 @@
                                         class="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
                                     Batal
                                 </button>
-                                <a :href="'{{ route('pengajuan-cuti.cetak-pdf', $cuti->id) }}' + (nomorInput ? '?nomor_surat_input=' + encodeURIComponent(nomorInput) : '')"
-                                   target="_blank"
-                                   @click="openModalCetak = false"
-                                   class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow transition flex items-center gap-1.5">
-                                    <span>🖨️</span> Buka & Cetak PDF
-                                </a>
+                                @if($userIsAdmin)
+                                    <a :href="'{{ route('pengajuan-cuti.cetak-pdf', $cuti->id) }}' + (nomorInput ? '?nomor_surat_input=' + encodeURIComponent(nomorInput) : '')"
+                                       target="_blank"
+                                       @click="openModalCetak = false"
+                                       class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow transition flex items-center gap-1.5">
+                                        <span>🖨️</span> Buka & Cetak PDF
+                                    </a>
+                                @else
+                                    <a href="{{ route('pengajuan-cuti.cetak-pdf', $cuti->id) }}"
+                                       target="_blank"
+                                       @click="openModalCetak = false"
+                                       class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow transition flex items-center gap-1.5">
+                                        <span>🖨️</span> Buka & Cetak PDF
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -137,7 +147,7 @@
                     <x-workflow-tracker :model="$cuti" type="cuti" />
                 </div>
 
-                @if(Auth::user()->hasRole('admin'))
+                @if(Auth::user()->isScreeningAdmin())
                     {{-- PANEL KHUSUS ADMIN: INPUT / UPDATE NOMOR SURAT RESMI INSTANSI --}}
                     <div class="mt-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50/40">
                         <div class="flex items-center justify-between pb-2 border-b border-emerald-200/60 mb-2.5">

@@ -498,10 +498,10 @@ class PengajuanCutiController extends Controller
         }
 
         // Format Nomor Surat: Nomor: (nomor buat diisi manual)/UN19.5.1.1.10/KP/2026
-        // Pengisian nomor surat dinas hanya diakomodasi dari Admin / Executive
-        $isAdminOrExecutive = $user->hasRole('admin') || $user->hasRole('pimpinan') || $user->canAccessExecutiveKepegawaianMenus();
+        // Pengisian nomor surat dinas hanya diakomodasi dari Admin Kepegawaian
+        $isScreeningAdmin = $user->isScreeningAdmin();
         $tahunSurat = $cuti->created_at ? $cuti->created_at->format('Y') : date('Y');
-        $nomorInput = $isAdminOrExecutive 
+        $nomorInput = $isScreeningAdmin
             ? trim((string) $request->input('nomor_surat_input', $request->input('nomor_surat', '')))
             : '';
 
@@ -509,8 +509,8 @@ class PengajuanCutiController extends Controller
         if ($nomorInput !== '') {
             $nomorSuratFormatted = $nomorSuratService->formatCuti($nomorInput, (int) $tahunSurat);
 
-            // Simpan ke database jika belum tersimpan dan user adalah admin/pimpinan
-            if (empty($cuti->nomor_surat) && $isAdminOrExecutive) {
+            // Simpan ke database jika user adalah Admin Kepegawaian dan nomor surat belum tersimpan atau diperbarui
+            if ($isScreeningAdmin && $cuti->nomor_surat !== $nomorSuratFormatted) {
                 $cuti->update(['nomor_surat' => $nomorSuratFormatted]);
             }
         } elseif (!empty($cuti->nomor_surat)) {
