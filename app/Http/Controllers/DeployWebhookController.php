@@ -107,10 +107,14 @@ class DeployWebhookController extends Controller
                 @chmod($dir, 0777);
             }
 
+            // Hapus file statis legacy public/sitemap.xml agar ditangani dinamis oleh Route::get('/sitemap.xml')
+            @unlink(public_path('sitemap.xml'));
+
             // Sinkronisasi ke Web Server DOCUMENT_ROOT jika Nginx menggunakan path berbeda
             $docRoot = isset($_SERVER['DOCUMENT_ROOT']) ? rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']), '/') : '';
             $pubPath = rtrim(str_replace('\\', '/', public_path()), '/');
             if (!empty($docRoot) && $docRoot !== $pubPath && is_dir($docRoot)) {
+                @unlink($docRoot . '/sitemap.xml');
                 if (is_dir(public_path('build'))) {
                     File::copyDirectory(public_path('build'), $docRoot . '/build');
                 }
@@ -349,6 +353,13 @@ class DeployWebhookController extends Controller
                 File::ensureDirectoryExists(dirname($targetFile));
                 File::put($targetFile, $content);
                 $updatedCount++;
+            }
+        }
+
+        foreach (array_keys($filesToDelete) as $relativePath) {
+            $targetFile = base_path($relativePath);
+            if (is_file($targetFile)) {
+                @unlink($targetFile);
             }
         }
 
