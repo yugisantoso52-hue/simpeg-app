@@ -37,6 +37,7 @@ class PengajuanKarir extends Model
         'file_pak',
         'file_pendukung',
         'status',
+        'metode_ttd',
         'catatan_pegawai',
         'catatan_verifikator',
         'verifikasi_admin_at',

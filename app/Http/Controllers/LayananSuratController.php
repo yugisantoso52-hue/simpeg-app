@@ -290,8 +290,13 @@ class LayananSuratController extends Controller
                 'catatan'         => $catatan ?? 'Telah disetujui dan ditandatangani secara elektronik oleh Pimpinan.',
             ];
 
+            if ($request->filled('metode_ttd')) {
+                $request->validate(['metode_ttd' => 'in:elektronik,manual']);
+                $dataTtd['metode_ttd'] = $request->metode_ttd;
+            }
+
             $surat->update($dataTtd);
-            $msg = '4. Surat Keterangan Aktif Bekerja resmi disahkan dan ditandatangani secara elektronik oleh Pimpinan.';
+            $msg = '4. Surat Keterangan Aktif Bekerja resmi disahkan dan ditandatangani oleh Pimpinan.';
         } elseif ($tahap === 'tolak') {
             $canUserReject = false;
             if (!$surat->verifikasi_admin_at && $isAdmin) {
@@ -379,6 +384,9 @@ class LayananSuratController extends Controller
 
         $watermarkService = app(DocumentWatermarkService::class);
 
+        $metodeTtd = request()->query('metode_ttd', $surat->metode_ttd ?? 'elektronik');
+        $isManualTtd = ($metodeTtd === 'manual');
+
         $pdf = Pdf::loadView('layanan-surat.surat_aktif_print', compact(
             'surat',
             'pegawai',
@@ -395,7 +403,9 @@ class LayananSuratController extends Controller
             'parafKabagAt',
             'isDisahkan',
             'sudahParafPokja',
-            'sudahParafKabag'
+            'sudahParafKabag',
+            'metodeTtd',
+            'isManualTtd'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);

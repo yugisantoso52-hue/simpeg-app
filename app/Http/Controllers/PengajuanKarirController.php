@@ -636,6 +636,10 @@ class PengajuanKarirController extends Controller
                     $dataWd2['ttd_wd2_at'] = $nowTime;
                 }
 
+                if ($request->filled('metode_ttd')) {
+                    $dataWd2['metode_ttd'] = in_array($request->input('metode_ttd'), ['elektronik', 'manual'], true) ? $request->input('metode_ttd') : 'elektronik';
+                }
+
                 $pengajuan->update($dataWd2);
 
                 // SINKRONISASI OTOMATIS: Eksekusi perubahan ke master data pegawai & riwayat

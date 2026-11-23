@@ -181,12 +181,17 @@ class ReportController extends Controller
             ? $pengajuan->nomor_surat 
             : app(\App\Services\NomorSuratService::class)->formatKarir('', (int) ($tahunSurat ?? date('Y')), false);
 
+        $metodeTtd = request()->query('metode_ttd', $pengajuan?->metode_ttd ?? 'elektronik');
+        if (!in_array($metodeTtd, ['elektronik', 'manual'], true)) {
+            $metodeTtd = 'elektronik';
+        }
+
         $pdf = Pdf::loadView('exports.pdf.sk-kgb', compact(
             'kgb', 'pegawai', 'verifyUrl', 'verifyCode', 'qrCodeDataUri', 'qrTteWd2Uri', 'disahkanAt',
             'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja', 'isPppk',
             'tahunSurat', 'tanggalSurat', 'dasarSkTanggal', 'dasarSkNomor', 'dasarSkTmt', 'dasarMkgTahun',
             'pengajuan', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri',
-            'isDisahkan', 'sudahParafPokja', 'sudahParafKabag', 'nomorSuratFormatted'
+            'isDisahkan', 'sudahParafPokja', 'sudahParafKabag', 'nomorSuratFormatted', 'metodeTtd'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);
@@ -279,10 +284,15 @@ class ReportController extends Controller
             ? $pengajuan->nomor_surat
             : app(\App\Services\NomorSuratService::class)->formatKarir('', (int) ($pengajuan->tahun_periode ?? date('Y')), true);
 
+        $metodeTtd = request()->query('metode_ttd', $pengajuan?->metode_ttd ?? 'elektronik');
+        if (!in_array($metodeTtd, ['elektronik', 'manual'], true)) {
+            $metodeTtd = 'elektronik';
+        }
+
         $pdf = Pdf::loadView('exports.pdf.surat-usulan-kp', compact(
             'pengajuan', 'pejabatDekan', 'pejabatWd2', 'pejabatKabag', 'pejabatKaPokja',
             'verifyUrl', 'verifyCode', 'qrCodeDataUri', 'qrTteWd2Uri', 'disahkanAt', 'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri',
-            'isDisahkan', 'sudahParafPokja', 'sudahParafKabag', 'nomorSuratFormatted'
+            'isDisahkan', 'sudahParafPokja', 'sudahParafKabag', 'nomorSuratFormatted', 'metodeTtd'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);

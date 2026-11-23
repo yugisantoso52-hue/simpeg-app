@@ -249,12 +249,19 @@ class SatyalancanaController extends Controller
                 return back()->with('error', 'Usulan belum lengkap diparaf berjenjang (Ka Pokja & Kabag Umum). Dokumen tidak dapat disahkan sebelum paraf koordinasi selesai.');
             }
 
-            $usulan->update([
+            $dataTtd = [
                 'status'      => 'disetujui_wd2',
                 'ttd_wd2_at'  => now(),
                 'ttd_wd2_by'  => $pejabatLogin?->id,
                 'catatan'     => $catatan ?? 'Telah ditandatangani dan disetujui resmi oleh Wakil Dekan Bidang Keuangan dan Umum.',
-            ]);
+            ];
+
+            if ($request->filled('metode_ttd')) {
+                $request->validate(['metode_ttd' => 'in:elektronik,manual']);
+                $dataTtd['metode_ttd'] = $request->metode_ttd;
+            }
+
+            $usulan->update($dataTtd);
 
             // SINKRONISASI OTOMATIS: Catat ke Riwayat Penghargaan & update satyalancana_terakhir di profil pegawai
             if ($usulan->pegawai) {
@@ -515,13 +522,17 @@ class SatyalancanaController extends Controller
         $qrKabagUri    = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '?paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) : null;
         $qrCodeDataUri = QrCodeService::generateDataUri($verifyUrl);
 
+        $metodeTtd = request()->query('metode_ttd', $usulan->metode_ttd ?? 'elektronik');
+        $isManualTtd = ($metodeTtd === 'manual');
+
         $pdf = Pdf::loadView('satyalancana.surat_pengantar_print', compact(
             'periodeUsulan', 'nomorSurat', 'tanggalSurat', 'daftarPegawai',
             'suratRujukanNomor', 'suratRujukanTanggal', 'suratRujukanPerihal',
             'pejabatWd2', 'pejabatKaPokja', 'pejabatKabag',
             'sudahParafPokja', 'sudahParafKabag', 'sudahTtdWd2',
             'parafPokjaAt', 'parafKabagAt', 'ttdWd2At',
-            'verifyCode', 'verifyUrl', 'qrCodeDataUri', 'qrWd2Uri', 'qrPokjaUri', 'qrKabagUri'
+            'verifyCode', 'verifyUrl', 'qrCodeDataUri', 'qrWd2Uri', 'qrPokjaUri', 'qrKabagUri',
+            'metodeTtd', 'isManualTtd'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);
@@ -632,13 +643,17 @@ class SatyalancanaController extends Controller
         $qrKabagUri    = $sudahParafKabag ? QrCodeService::generateDataUri($verifyUrl . '?paraf=kabag&nip=' . ($pejabatKabag?->nip ?? '197507122005011002')) : null;
         $qrCodeDataUri = QrCodeService::generateDataUri($verifyUrl);
 
+        $metodeTtd = request()->query('metode_ttd', $usulan->metode_ttd ?? 'elektronik');
+        $isManualTtd = ($metodeTtd === 'manual');
+
         $pdf = Pdf::loadView('satyalancana.surat_pengantar_print', compact(
             'periodeUsulan', 'nomorSurat', 'tanggalSurat', 'daftarPegawai',
             'suratRujukanNomor', 'suratRujukanTanggal', 'suratRujukanPerihal',
             'pejabatWd2', 'pejabatKaPokja', 'pejabatKabag',
             'sudahParafPokja', 'sudahParafKabag', 'sudahTtdWd2',
             'parafPokjaAt', 'parafKabagAt', 'ttdWd2At',
-            'verifyCode', 'verifyUrl', 'qrCodeDataUri', 'qrWd2Uri', 'qrPokjaUri', 'qrKabagUri'
+            'verifyCode', 'verifyUrl', 'qrCodeDataUri', 'qrWd2Uri', 'qrPokjaUri', 'qrKabagUri',
+            'metodeTtd', 'isManualTtd'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);

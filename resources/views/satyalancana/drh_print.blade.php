@@ -344,6 +344,10 @@
     </table>
 
     <!-- TANDA TANGAN DENGAN FORMAT TTE ELEKTRONIK SEPERTI FORMULIR CUTI & PARAF TATA NASKAH -->
+    @php
+        $metodeTtd = request()->query('metode_ttd', $metodeTtd ?? 'elektronik');
+        $isManualTtd = ($metodeTtd === 'manual');
+    @endphp
     <div class="ttd-container">
         <!-- SISI KIRI: Mengetahui Wakil Dekan Bidang Keuangan dan Umum & Paraf Koordinasi Tata Naskah -->
         <div class="ttd-box-left">
@@ -351,9 +355,11 @@
             <div>a.n. Dekan Fakultas Keperawatan</div>
             <div>Wakil Dekan II (Bid. Keuangan dan Umum)</div>
             
-            {{-- TTE Digital Signature (QR Code Otentikasi) - HANYA MUNCUL JIKA SUDAH DISAHKAN WAKIL DEKAN II --}}
-            <div style="text-align: left; margin: 3px 0 3px 0; min-height: 48px;">
-                @if(!empty($sudahTtdWd2) && !empty($qrWd2Uri))
+            @if($isManualTtd)
+                <div style="height: 48px;"></div>
+            @elseif(!empty($sudahTtdWd2) && !empty($qrWd2Uri))
+                {{-- TTE Digital Signature (QR Code Otentikasi) - HANYA MUNCUL JIKA SUDAH DISAHKAN WAKIL DEKAN II --}}
+                <div style="text-align: left; margin: 3px 0 3px 0; min-height: 48px;">
                     <img src="{{ $qrWd2Uri }}" style="width: 46px; height: 46px; display: inline-block;" />
                     <div style="font-size: 6.2pt; color: #15803d; font-weight: bold; margin-top: 1px;">
                         Ditandatangani secara Elektronik (TTE)
@@ -361,26 +367,28 @@
                     <div style="font-size: 5.6pt; color: #64748b;">
                         SIKAP FKP UNRI &bull; {{ $ttdWd2At }}
                     </div>
-                @else
-                    <div style="height: 38px; padding-top: 10px; font-size: 7.5pt; color: #64748b; font-style: italic;">
-                        [ Menunggu Verifikasi & Pengesahan TTE ]
-                    </div>
-                @endif
-            </div>
+                </div>
+            @else
+                <div style="height: 38px; padding-top: 10px; font-size: 7.5pt; color: #64748b; font-style: italic;">
+                    [ Menunggu Verifikasi & Pengesahan TTE ]
+                </div>
+            @endif
 
             <div style="font-weight: bold; text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? 'Dr. Safri, M.Kep, Sp.Kep.M.B' }}</div>
             <div>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</div>
 
-            {{-- KOTAK PARAF DIGITAL KOORDINASI TATA NASKAH (Urutan: 1. Ka Pokja Keu-Kepeg, 2. Kepala Bagian Umum) --}}
+            {{-- KOTAK PARAF KOORDINASI TATA NASKAH (Urutan: 1. Ka Pokja Keu-Kepeg, 2. Kepala Bagian Umum) --}}
             <div style="margin-top: 6px; border: 1px solid #1e293b; padding: 3px 5px; border-radius: 4px; background-color: #f8fafc; width: 94%;">
                 <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 2px; color: #0f172a; border-bottom: 1px solid #94a3b8; padding-bottom: 1px; font-size: 6.5pt; letter-spacing: 0.2px;">
-                    PARAF DIGITAL KOORDINASI TATA NASKAH:
+                    {{ $isManualTtd ? 'PARAF KOORDINASI TATA NASKAH:' : 'PARAF DIGITAL KOORDINASI TATA NASKAH:' }}
                 </div>
                 <table style="width: 100%; border-collapse: collapse; font-size: 6.5pt; line-height: 1.15;">
                     {{-- 1. Ka Pokja Keu-Kepeg --}}
                     <tr style="border-bottom: 1px dashed #cbd5e1;">
                         <td style="width: 26px; vertical-align: middle; padding: 1.5px 3px 1.5px 0; text-align: center;">
-                            @if(!empty($sudahParafPokja) && !empty($qrPokjaUri))
+                            @if($isManualTtd)
+                                <span style="font-size: 6pt; color: #475569;">[ Paraf ]</span>
+                            @elseif(!empty($sudahParafPokja) && !empty($qrPokjaUri))
                                 <img src="{{ $qrPokjaUri }}" style="width: 22px; height: 22px; display: block; margin: 0 auto;" />
                             @else
                                 <span style="font-size: 6pt; color: #94a3b8;">[ - ]</span>
@@ -389,7 +397,9 @@
                         <td style="vertical-align: middle; padding: 1.5px 0;">
                             <div style="font-weight: bold; color: #0f172a;">1. Ka Pokja Keu-Kepeg</div>
                             <div style="color: #1e293b;">{{ $pejabatKaPokja->nama_lengkap ?? ($pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina, SE') }}</div>
-                            @if(!empty($sudahParafPokja))
+                            @if($isManualTtd)
+                                <div style="color: #475569; font-size: 5.8pt;">[ Paraf Manual ]</div>
+                            @elseif(!empty($sudahParafPokja))
                                 <div style="color: #047857; font-weight: bold; font-size: 5.8pt;">
                                     [ Terverifikasi & Diparaf ] &bull; {{ $parafPokjaAt }}
                                 </div>
@@ -403,7 +413,9 @@
                     {{-- 2. Kepala Bagian Umum --}}
                     <tr>
                         <td style="width: 26px; vertical-align: middle; padding: 2px 3px 1.5px 0; text-align: center;">
-                            @if(!empty($sudahParafKabag) && !empty($qrKabagUri))
+                            @if($isManualTtd)
+                                <span style="font-size: 6pt; color: #475569;">[ Paraf ]</span>
+                            @elseif(!empty($sudahParafKabag) && !empty($qrKabagUri))
                                 <img src="{{ $qrKabagUri }}" style="width: 22px; height: 22px; display: block; margin: 0 auto;" />
                             @else
                                 <span style="font-size: 6pt; color: #94a3b8;">[ - ]</span>
@@ -412,7 +424,9 @@
                         <td style="vertical-align: middle; padding: 2px 0;">
                             <div style="font-weight: bold; color: #0f172a;">2. Kepala Bagian Umum</div>
                             <div style="color: #1e293b;">{{ $pejabatKabag->nama_lengkap ?? ($pejabatKabag->nama ?? 'Bakhtiar, S.Sos., M.Si') }}</div>
-                            @if(!empty($sudahParafKabag))
+                            @if($isManualTtd)
+                                <div style="color: #475569; font-size: 5.8pt;">[ Paraf Manual ]</div>
+                            @elseif(!empty($sudahParafKabag))
                                 <div style="color: #047857; font-weight: bold; font-size: 5.8pt;">
                                     [ Terverifikasi & Diparaf ] &bull; {{ $parafKabagAt }}
                                 </div>
@@ -432,16 +446,20 @@
             <div>Pekanbaru, {{ $tglDokumen }}</div>
             <div style="margin-top: 0;">Yang Membuat,</div>
 
-            {{-- TTE Digital Signature Pegawai --}}
-            <div style="text-align: left; margin: 3px 0 3px 0;">
-                <img src="{{ $qrCodeDataUri }}" style="width: 44px; height: 44px; display: inline-block;" />
-                <div style="font-size: 6pt; color: #15803d; font-weight: bold; margin-top: 1px;">
-                    Ditandatangani secara Elektronik (TTE)
+            @if($isManualTtd)
+                <div style="height: 48px;"></div>
+            @else
+                {{-- TTE Digital Signature Pegawai --}}
+                <div style="text-align: left; margin: 3px 0 3px 0;">
+                    <img src="{{ $qrCodeDataUri }}" style="width: 44px; height: 44px; display: inline-block;" />
+                    <div style="font-size: 6pt; color: #15803d; font-weight: bold; margin-top: 1px;">
+                        Ditandatangani secara Elektronik (TTE)
+                    </div>
+                    <div style="font-size: 5.5pt; color: #64748b;">
+                        SIKAP FKP UNRI &bull; {{ $tglDokumenFormatWib }}
+                    </div>
                 </div>
-                <div style="font-size: 5.5pt; color: #64748b;">
-                    SIKAP FKP UNRI &bull; {{ $tglDokumenFormatWib }}
-                </div>
-            </div>
+            @endif
 
             <div style="font-weight: bold; text-decoration: underline;">{{ $namaLengkap }}</div>
             <div>NIP. {{ $nip }}</div>
@@ -451,9 +469,9 @@
     </div>
 
     {{-- OTENTIKASI DIGITAL SIKAP FKP UNRI (DOKUMEN RESMI ELEKTRONIK DENGAN QR CODE) --}}
-    @if(!empty($sudahTtdWd2))
+    @if(!$isManualTtd && !empty($sudahTtdWd2))
         @include('exports.pdf.partials.otentikasi_dokumen')
-    @else
+    @elseif(!$isManualTtd)
         <div style="border: 1px dashed #f59e0b; background-color: #fffbeb; padding: 4px 8px; margin-top: 6px; font-size: 7pt; color: #b45309; text-align: center; font-style: italic;">
             [ DOKUMEN DRAF DRH / BELUM DISAHKAN PIMPINAN - TTE AKAN TERBIT SETELAH PARAF KOORDINASI & DISETUJUI RESMI ]
         </div>

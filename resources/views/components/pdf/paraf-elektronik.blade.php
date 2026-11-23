@@ -1,8 +1,110 @@
 @props([
-    'title'   => 'PARAF DIGITAL KOORDINASI TATA NASKAH:',
-    'items'   => [],
-    'variant' => 'list', // 'cuti' | 'list'
+    'title'    => 'PARAF DIGITAL KOORDINASI TATA NASKAH:',
+    'items'    => [],
+    'variant'  => 'list', // 'cuti' | 'list'
+    'isManual' => false,
 ])
+
+@if($variant === 'cuti')
+    @php
+        $item = $items[0] ?? [];
+        $isSigned     = !empty($item['isSigned']);
+        $qrDataUri    = $item['qrDataUri'] ?? null;
+        $roleLabel    = $item['roleLabel'] ?? 'Ka Pokja Keu-Kepeg';
+        $pejabatNama  = $item['pejabatNama'] ?? 'Dolli Vita Zenitha Harning Arivina, SE';
+        $pejabatNip   = $item['pejabatNip'] ?? '197605212014092001';
+        $signedAt     = $item['signedAt'] ?? '';
+        $waitingLabel = $item['waitingLabel'] ?? '[ Menunggu Verifikasi & Paraf Tata Naskah ]';
+    @endphp
+    <div style="font-weight: bold; color: #0f172a; margin-bottom: 2px; border-bottom: 1px solid #94a3b8; padding-bottom: 1.5px; font-size: 7pt;">
+        {{ $isManual ? 'PARAF KOORDINASI TATA NASKAH (MANUAL):' : $title }}
+    </div>
+    <table style="width: 100%; border-collapse: collapse; font-size: 7pt; line-height: 1.2;">
+        <tr>
+            <td style="width: 36px; vertical-align: middle; padding: 2px 5px 2px 0; text-align: center;">
+                @if($isManual)
+                    <div style="font-size: 5.5pt; color: #64748b; border: 1px dashed #cbd5e1; padding: 6px 2px; border-radius: 2px; line-height: 1.1;">Paraf<br>Manual</div>
+                @elseif($isSigned && !empty($qrDataUri))
+                    <img src="{{ $qrDataUri }}" style="width: 32px; height: 32px; display: block; margin: 0 auto;" alt="QR Paraf Elektronik" />
+                @else
+                    <div style="font-size: 5.5pt; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 4px 2px; border-radius: 2px; line-height: 1.1;">Belum<br>Paraf</div>
+                @endif
+            </td>
+            <td style="vertical-align: middle; padding: 1px 0;">
+                <div>
+                    <span style="font-weight: bold; color: #0f172a;">{{ $roleLabel }}:</span>
+                    @if($isManual)
+                        <span style="color: #64748b; font-weight: bold;">[Paraf Basah]</span>
+                    @elseif($isSigned)
+                        <span style="color: #047857; font-weight: bold;">[Diparaf <span class="checkbox-mark" style="font-size: 7.5pt;">&#10003;</span>]</span>
+                    @else
+                        <span style="color: #94a3b8;">[Menunggu Paraf]</span>
+                    @endif
+                </div>
+                <div style="color: #1e293b; font-size: 6.8pt; font-weight: bold;">{{ $pejabatNama }}</div>
+                <div style="color: #475569; font-size: 6.2pt;">NIP. {{ $pejabatNip }}</div>
+                @if($isManual)
+                    <div style="color: #475569; font-size: 6pt; font-style: italic;">
+                        [ Dokumen diproses dengan verifikasi berkas manual ]
+                    </div>
+                @elseif($isSigned)
+                    <div style="color: #047857; font-weight: bold; font-size: 6pt;">
+                        [ Terverifikasi &amp; Diparaf Digital ] @if(!empty($signedAt)) &bull; {{ $signedAt }} @endif
+                    </div>
+                @else
+                    <div style="color: #64748b; font-size: 6pt; font-style: italic;">
+                        {{ $waitingLabel }}
+                    </div>
+                @endif
+            </td>
+        </tr>
+    </table>
+@else
+    {{-- Variant List --}}
+    <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 3px; color: #0f172a; border-bottom: 1px solid #94a3b8; padding-bottom: 2px; font-size: 7pt; letter-spacing: 0.2px;">
+        {{ $isManual ? 'PARAF KOORDINASI TATA NASKAH (MANUAL):' : $title }}
+    </div>
+    <table style="width: 100%; border-collapse: collapse; font-size: 7pt; line-height: 1.15;">
+        @foreach($items as $idx => $it)
+            @php
+                $itSigned   = !empty($it['isSigned']);
+                $itQr       = $it['qrDataUri'] ?? null;
+                $itRole     = $it['roleLabel'] ?? ('Pejabat ' . ($idx + 1));
+                $itNama     = $it['pejabatNama'] ?? '-';
+                $itAt       = $it['signedAt'] ?? '';
+                $itWait     = $it['waitingLabel'] ?? '[ Menunggu Paraf ]';
+            @endphp
+            <tr style="{{ !$loop->last ? 'border-bottom: 1px dashed #cbd5e1;' : '' }}">
+                <td style="width: 32px; vertical-align: middle; padding: 2px 4px 2px 0; text-align: center;">
+                    @if($isManual)
+                        <div style="font-size: 5.5pt; color: #64748b; border: 1px dashed #cbd5e1; padding: 4px 1px; border-radius: 2px; line-height: 1.1;">Paraf<br>Manual</div>
+                    @elseif($itSigned && !empty($itQr))
+                        <img src="{{ $itQr }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
+                    @else
+                        <div style="font-size: 5.5pt; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 4px 1px; border-radius: 2px; line-height: 1.1;">Belum<br>Paraf</div>
+                    @endif
+                </td>
+                <td style="vertical-align: middle; padding: 2px 0;">
+                    <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">{{ $itRole }}</div>
+                    <div style="color: #1e293b; font-size: 6.8pt;">{{ $itNama }}</div>
+                    @if($isManual)
+                        <div style="color: #64748b; font-size: 6pt; font-style: italic;">
+                            [ Lembar Verifikasi Manual ]
+                        </div>
+                    @elseif($itSigned)
+                        <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
+                            [ Terverifikasi &amp; Diparaf Digital ] @if(!empty($itAt)) &bull; {{ $itAt }} @endif
+                        </div>
+                    @else
+                        <div style="color: #b45309; font-weight: bold; font-size: 6.2pt;">
+                            {{ $itWait }}
+                        </div>
+                    @endif
+                </td>
+            </tr>
+        @endforeach
+    </table>
+@endif
 
 @if($variant === 'cuti')
     @php

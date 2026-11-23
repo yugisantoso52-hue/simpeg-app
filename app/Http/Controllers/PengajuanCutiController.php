@@ -545,10 +545,16 @@ class PengajuanCutiController extends Controller
         $qrPokjaUri      = $sudahParafPokja ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '?paraf=kapokja&nip=' . $kaPokjaNip) : null;
         $qrKabagUri      = $sudahParafKabag ? \App\Services\QrCodeService::generateDataUri($verifyUrl . '?paraf=kabag&nip=' . $kabagNip) : null;
 
+        // Tangkap preferensi metode tanda tangan (bisa dari query url atau database)
+        $metodeTtd = $request->query('metode_ttd', $cuti->metode_ttd ?? 'elektronik');
+        if (!in_array($metodeTtd, ['elektronik', 'manual'], true)) {
+            $metodeTtd = 'elektronik';
+        }
+
         $pdf = Pdf::loadView('exports.pdf.formulir_cuti', compact(
             'cuti', 'verifyUrl', 'verifyCode', 'qrCodeDataUri', 'nomorSuratFormatted',
             'pejabatKabag', 'pejabatKaPokja', 'sudahParafPokja', 'sudahParafKabag',
-            'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri'
+            'parafPokjaAt', 'parafKabagAt', 'qrPokjaUri', 'qrKabagUri', 'metodeTtd'
         ))->setPaper('a4', 'portrait');
 
         $pdf = $watermarkService->applyWatermark($pdf);

@@ -272,15 +272,21 @@
         <tr>
             <!-- SISI KIRI: PARAF DIGITAL KOORDINASI TATA NASKAH & QR OTENTIKASI -->
             <td style="width: 53%; vertical-align: top; padding-right: 12px;">
+                @php
+                    $metodeTtd = $metodeTtd ?? ($surat->metode_ttd ?? 'elektronik');
+                    $isManualTtd = ($metodeTtd === 'manual');
+                @endphp
                 <div class="paraf-box">
                     <div class="paraf-header">
-                        PARAF DIGITAL KOORDINASI TATA NASKAH:
+                        {{ $isManualTtd ? 'PARAF KOORDINASI TATA NASKAH:' : 'PARAF DIGITAL KOORDINASI TATA NASKAH:' }}
                     </div>
                     <table style="width: 100%; border-collapse: collapse; font-size: 7pt; line-height: 1.15;">
                         <!-- 1. Kepala Bagian Umum -->
                         <tr style="border-bottom: 1px dashed #cbd5e1;">
                             <td style="width: 32px; vertical-align: middle; padding: 2px 4px 2px 0; text-align: center;">
-                                @if(!empty($sudahParafKabag) && isset($qrKabagUri))
+                                @if($isManualTtd)
+                                    <div style="font-size: 5.5pt; color: #64748b; border: 1px solid #94a3b8; height: 26px; border-radius: 2px; line-height: 26px;">Paraf</div>
+                                @elseif(!empty($sudahParafKabag) && isset($qrKabagUri))
                                     <img src="{{ $qrKabagUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
                                 @else
                                     <div style="font-size: 5.5pt; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 4px 1px; border-radius: 2px; line-height: 1.1;">Belum<br>Paraf</div>
@@ -289,7 +295,9 @@
                             <td style="vertical-align: middle; padding: 2px 0;">
                                 <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">1. Kepala Bagian Umum</div>
                                 <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKabag->nama_lengkap ?? ($pejabatKabag->nama ?? 'Bakhtiar, S.Sos., M.Si') }}</div>
-                                @if(!empty($sudahParafKabag))
+                                @if($isManualTtd)
+                                    <div style="color: #475569; font-size: 6.2pt;">[ Verifikasi & Paraf Manual ]</div>
+                                @elseif(!empty($sudahParafKabag))
                                     <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
                                         [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafKabagAt }}
                                     </div>
@@ -303,7 +311,9 @@
                         <!-- 2. Ka Pokja Keu-Kepeg -->
                         <tr>
                             <td style="width: 32px; vertical-align: middle; padding: 3px 4px 2px 0; text-align: center;">
-                                @if(!empty($sudahParafPokja) && isset($qrPokjaUri))
+                                @if($isManualTtd)
+                                    <div style="font-size: 5.5pt; color: #64748b; border: 1px solid #94a3b8; height: 26px; border-radius: 2px; line-height: 26px;">Paraf</div>
+                                @elseif(!empty($sudahParafPokja) && isset($qrPokjaUri))
                                     <img src="{{ $qrPokjaUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
                                 @else
                                     <div style="font-size: 5.5pt; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 4px 1px; border-radius: 2px; line-height: 1.1;">Belum<br>Paraf</div>
@@ -312,7 +322,9 @@
                             <td style="vertical-align: middle; padding: 3px 0;">
                                 <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">2. Ka Pokja Keu-Kepeg</div>
                                 <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKaPokja->nama_lengkap ?? ($pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina, SE') }}</div>
-                                @if(!empty($sudahParafPokja))
+                                @if($isManualTtd)
+                                    <div style="color: #475569; font-size: 6.2pt;">[ Verifikasi & Paraf Manual ]</div>
+                                @elseif(!empty($sudahParafPokja))
                                     <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
                                         [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafPokjaAt }}
                                     </div>
@@ -327,7 +339,7 @@
                 </div>
 
                 <!-- KOTAK OTENTIKASI RESMI DOKUMEN ELEKTRONIK -->
-                @if(!empty($isDisahkan) && isset($qrCodeDataUri))
+                @if(!$isManualTtd && !empty($isDisahkan) && isset($qrCodeDataUri))
                     <div style="border: 1px dashed #0284c7; padding: 4px 6px; border-radius: 4px; background-color: #f0f9ff; font-family: Arial, sans-serif;">
                         <table style="width: 100%; border-collapse: collapse;">
                             <tr>
@@ -342,7 +354,7 @@
                             </tr>
                         </table>
                     </div>
-                @else
+                @elseif(!$isManualTtd)
                     <div style="border: 1px dashed #e11d48; padding: 5px 8px; border-radius: 4px; background-color: #fff1f2; font-family: Arial, sans-serif;">
                         <div style="font-size: 6.8pt; font-weight: bold; color: #be123c;">STATUS: DRAF SURAT KETERANGAN (BELUM DISAHKAN)</div>
                         <div style="font-size: 5.8pt; color: #9f1239; line-height: 1.2; margin-top: 1px;">
@@ -365,7 +377,12 @@
                     @php
                         $isSuratSah = !empty($isDisahkan) || !empty($surat->ttd_pimpinan_at) || $surat->status === 'selesai';
                     @endphp
-                    @if($isSuratSah)
+                    @if($isManualTtd)
+                        {{-- Ruang tanda tangan manual basah --}}
+                        <div style="height: 60px;"></div>
+                        <strong style="text-decoration: underline;">{{ str_replace(['M.kep', 'Sp.kep'], ['M.Kep', 'Sp.Kep'], $surat->penandatangan_nama) }}</strong><br>
+                        <span>NIP. {{ $surat->penandatangan_nip }}</span>
+                    @elseif($isSuratSah)
                         <div style="text-align: left; margin: 4px 0 4px 0;">
                             @if(!empty($qrTtePimpinanUri))
                                 <img src="{{ $qrTtePimpinanUri }}" style="width: 46px; height: 46px; display: inline-block;" />

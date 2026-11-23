@@ -21,6 +21,7 @@ class UsulanSatyalancana extends Model
         'periode_usulan',
         'nomor_surat_usulan',
         'status', // draft, diajukan, diverifikasi_admin, diparaf_kabag, diparaf_kapokja, disetujui_wd2, selesai, ditolak
+        'metode_ttd',
         'catatan',
         'file_drh',
         'file_sk_cpns',

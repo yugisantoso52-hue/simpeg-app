@@ -9,6 +9,7 @@
     'align'             => 'left', // 'left' | 'center'
     'showDraftBadge'    => true,
     'manualSpaceHeight' => '58px',
+    'isManual'          => false,
 ])
 
 @php
@@ -26,7 +27,12 @@
     {{ $jabatan }}
 </div>
 
-@if($isSigned && !empty($qrDataUri))
+@if($isManual)
+    {{-- METODE MANUAL: TANDA TANGAN BASAH (KOSONGKAN RUANG UNTUK TTD & STEMPEL) --}}
+    <div style="height: {{ $manualSpaceHeight }};">&nbsp;</div>
+    <div style="text-align: {{ $align }}; font-weight: bold; text-decoration: underline;">{{ $normalizedNama }}</div>
+    <div style="text-align: {{ $align }}; font-size: 8.5pt;">NIP. {{ $pejabatNip ?: '.....................................................' }}</div>
+@elseif($isSigned && !empty($qrDataUri))
     <div style="text-align: {{ $align }}; margin: 4px {{ $align === 'center' ? 'auto' : '0' }} 4px {{ $align === 'center' ? 'auto' : '0' }};">
         <img src="{{ $qrDataUri }}" style="width: 46px; height: 46px; display: inline-block;" alt="QR TTE" />
         <div style="font-size: 6.2pt; color: #15803d; font-weight: bold; margin-top: 1px;">

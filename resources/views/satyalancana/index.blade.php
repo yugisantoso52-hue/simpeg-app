@@ -603,11 +603,15 @@
                                                             🔒 4. WD2
                                                         </button>
                                                     @elseif($isWd2 || $isDekan)
-                                                        <form method="POST" action="{{ route('satyalancana.verifikasi', $usulan->id) }}" onsubmit="return confirm('Sahkan usulan secara resmi dengan TTE Wakil Dekan II?')">
+                                                        <form method="POST" action="{{ route('satyalancana.verifikasi', $usulan->id) }}" onsubmit="return confirm('Sahkan usulan secara resmi dengan Tanda Tangan Wakil Dekan II?')" class="inline-flex items-center gap-1">
                                                             @csrf
                                                             <input type="hidden" name="tahap" value="ttd_wd2">
-                                                            <button type="submit" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10.5px] font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-2xs transition" title="4. Sahkan Usulan Resmi dengan TTE WD II">
-                                                                ✍ 4. TTE WD2
+                                                            <select name="metode_ttd" class="text-[10px] py-0.5 px-1 rounded border-slate-300 bg-white text-slate-700 font-semibold focus:ring-emerald-500">
+                                                                <option value="elektronik">TTE</option>
+                                                                <option value="manual">Manual</option>
+                                                            </select>
+                                                            <button type="submit" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10.5px] font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-2xs transition" title="4. Sahkan Usulan Resmi">
+                                                                ✍ WD2
                                                             </button>
                                                         </form>
                                                     @else
@@ -736,6 +740,22 @@
                                        required
                                        placeholder="Perihal surat rujukan dari Rektorat"
                                        class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+
+                            <div class="md:col-span-2 pt-2 border-t border-slate-100">
+                                <label class="block text-xs font-bold text-slate-700 mb-1">
+                                    Metode Tanda Tangan Dokumen <span class="text-rose-500">*</span>
+                                </label>
+                                <div class="flex flex-wrap items-center gap-4 text-xs">
+                                    <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                                        <input type="radio" name="metode_ttd" value="elektronik" checked class="text-blue-600 focus:ring-blue-500">
+                                        <span class="font-semibold text-slate-700">Elektronik (TTE QR Code)</span>
+                                    </label>
+                                    <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                                        <input type="radio" name="metode_ttd" value="manual" class="text-blue-600 focus:ring-blue-500">
+                                        <span class="font-semibold text-slate-700">Manual (Kosong / TTD Basah)</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -1130,9 +1150,13 @@
 
                                     {{-- 5. AKSI DIPARAF_KABAG -> PENGESAHAN TTE WAKIL DEKAN II --}}
                                     <template x-if="currentPegawai?.usulan_id && currentPegawai?.usulan_status_raw === 'diparaf_kabag' && {{ (($isWd2 ?? false) || ($isDekan ?? false)) ? 'true' : 'false' }}">
-                                        <form method="POST" :action="'{{ url('satyalancana/verifikasi') }}/' + currentPegawai?.usulan_id" onsubmit="return confirm('Sahkan resmi berkas tanda kehormatan dengan Tanda Tangan Elektronik (TTE) Wakil Dekan II?')">
+                                        <form method="POST" :action="'{{ url('satyalancana/verifikasi') }}/' + currentPegawai?.usulan_id" onsubmit="return confirm('Sahkan resmi berkas tanda kehormatan dengan Tanda Tangan Wakil Dekan II?')" class="inline-flex items-center gap-2">
                                             @csrf
                                             <input type="hidden" name="tahap" value="ttd_wd2">
+                                            <select name="metode_ttd" class="text-xs py-1.5 px-2 rounded-lg border-slate-300 bg-white text-slate-700 font-semibold focus:ring-emerald-500">
+                                                <option value="elektronik">TTE (Elektronik)</option>
+                                                <option value="manual">Manual (Basah)</option>
+                                            </select>
                                             <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-sm transition">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                                 Sahkan & TTE WD II

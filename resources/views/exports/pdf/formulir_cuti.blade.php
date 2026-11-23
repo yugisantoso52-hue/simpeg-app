@@ -364,6 +364,8 @@
         if ($sudahParafPokja && empty($qrPokjaUri) && isset($verifyUrl)) {
             $qrPokjaUri = \App\Services\QrCodeService::generateDataUri($verifyUrl . '?paraf=kapokja&nip=' . $kaPokjaNip);
         }
+
+        $isManualTtd = ($metodeTtd ?? ($cuti->metode_ttd ?? 'elektronik')) === 'manual';
     @endphp
     <table class="bkn-table">
         <tr class="section-title">
@@ -385,6 +387,7 @@
                     align="center"
                     :showDraftBadge="false"
                     manualSpaceHeight="58px"
+                    :isManual="$isManualTtd"
                 />
                 {{-- Status dan Catatan di pojok bawah kiri --}}
                 <div style="margin-top: 6px; font-size: 8.5pt; text-align: left;">
@@ -406,6 +409,7 @@
                     align="center"
                     :showDraftBadge="false"
                     manualSpaceHeight="58px"
+                    :isManual="$isManualTtd"
                 />
                 {{-- Status dan No. SK di pojok bawah kiri --}}
                 <div style="margin-top: 6px; font-size: 8.5pt; text-align: left;">
@@ -438,6 +442,7 @@
                     title="Paraf Koordinasi Tata Naskah & Verifikasi Kepegawaian:"
                     variant="cuti"
                     :items="$parafCutiItems"
+                    :isManual="$isManualTtd"
                 />
             </td>
             <td style="width: 46%; vertical-align: middle; border: 1px solid #1e293b; background-color: #f8fafc; padding: 4px 6px; font-size: 7pt; color: #334155;">
@@ -450,9 +455,9 @@
     </table>
     @endif
 
-    @if($isPejabatSigned)
+    @if(!$isManualTtd && $isPejabatSigned)
         @include('exports.pdf.partials.otentikasi_dokumen')
-    @else
+    @elseif(!$isPejabatSigned)
         <div style="border: 1px dashed #f59e0b; background-color: #fffbeb; padding: 4px 8px; margin-top: 6px; font-size: 7pt; color: #b45309; text-align: center; font-style: italic;">
             [ DOKUMEN DRAF FORMULIR CUTI / BELUM DISETUJUI PEJABAT YANG BERWENANG - TTE AKAN TERBIT SETELAH PERMOHONAN CUTI DISETUJUI ]
         </div>

@@ -63,24 +63,42 @@
                             $isSah = in_array($pengajuan->status, ['disetujui_wd2', 'disetujui_dekan', 'selesai']);
                         @endphp
                         @if($pengajuan->jenis_pengajuan === 'SATYALANCANA')
-                            <a href="{{ route('satyalancana.cetak-pdf', $pengajuan->id) }}" target="_blank"
-                               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold {{ $isSah ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300' }} transition">
-                                <span>📄 Cetak Surat Usulan {{ $isSah ? '(Resmi Sah)' : '(Konsep Draf)' }}</span>
-                            </a>
+                            <div class="inline-flex items-center rounded-xl shadow-xs overflow-hidden border border-slate-300">
+                                <a href="{{ route('satyalancana.cetak-pdf', [$pengajuan->id, 'metode_ttd' => $pengajuan->metode_ttd ?? 'elektronik']) }}" target="_blank"
+                                   class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold {{ $isSah ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }} transition">
+                                    <span>📄 Cetak Surat Usulan ({{ ucfirst($pengajuan->metode_ttd ?? 'Elektronik') }})</span>
+                                </a>
+                                <a href="{{ route('satyalancana.cetak-pdf', [$pengajuan->id, 'metode_ttd' => ($pengajuan->metode_ttd === 'manual' ? 'elektronik' : 'manual')]) }}" target="_blank" title="Cetak versi alternatif"
+                                   class="px-2 py-2 text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 transition border-l border-slate-300">
+                                    {{ $pengajuan->metode_ttd === 'manual' ? '⚡ TTE' : '✍️ Manual' }}
+                                </a>
+                            </div>
                             <a href="{{ route('satyalancana.cetak-drh', $pengajuan->pegawai_id) }}" target="_blank"
                                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition shadow-xs">
                                 <span>📄 Cetak DRH 12 Poin</span>
                             </a>
                         @elseif($pengajuan->jenis_pengajuan === 'KP')
-                            <a href="{{ route('reports.kp.pdf', $pengajuan->id) }}" target="_blank"
-                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold {{ $isSah ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300' }} transition">
-                                <span>📄 Cetak Usulan KP {{ $isSah ? '(Resmi Sah)' : '(Konsep Draf)' }}</span>
-                            </a>
+                            <div class="inline-flex items-center rounded-xl shadow-xs overflow-hidden border border-slate-300">
+                                <a href="{{ route('reports.kp.pdf', [$pengajuan->id, 'metode_ttd' => $pengajuan->metode_ttd ?? 'elektronik']) }}" target="_blank"
+                                   class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold {{ $isSah ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }} transition">
+                                    <span>📄 Cetak Usulan KP ({{ ucfirst($pengajuan->metode_ttd ?? 'Elektronik') }})</span>
+                                </a>
+                                <a href="{{ route('reports.kp.pdf', [$pengajuan->id, 'metode_ttd' => ($pengajuan->metode_ttd === 'manual' ? 'elektronik' : 'manual')]) }}" target="_blank" title="Cetak versi alternatif"
+                                   class="px-2 py-2 text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 transition border-l border-slate-300">
+                                    {{ $pengajuan->metode_ttd === 'manual' ? '⚡ TTE' : '✍️ Manual' }}
+                                </a>
+                            </div>
                         @else
-                            <a href="{{ route('reports.kgb.pdf', $pengajuan->pegawai_id ?? $pengajuan->id) }}" target="_blank"
-                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold {{ $isSah ? 'bg-amber-600 text-white hover:bg-amber-700 shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300' }} transition">
-                                <span>📄 Cetak SK KGB {{ $isSah ? '(Resmi Sah)' : '(Konsep Draf)' }}</span>
-                            </a>
+                            <div class="inline-flex items-center rounded-xl shadow-xs overflow-hidden border border-slate-300">
+                                <a href="{{ route('reports.kgb.pdf', [$pengajuan->pegawai_id ?? $pengajuan->id, 'metode_ttd' => $pengajuan->metode_ttd ?? 'elektronik']) }}" target="_blank"
+                                   class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold {{ $isSah ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }} transition">
+                                    <span>📄 Cetak SK KGB ({{ ucfirst($pengajuan->metode_ttd ?? 'Elektronik') }})</span>
+                                </a>
+                                <a href="{{ route('reports.kgb.pdf', [$pengajuan->pegawai_id ?? $pengajuan->id, 'metode_ttd' => ($pengajuan->metode_ttd === 'manual' ? 'elektronik' : 'manual')]) }}" target="_blank" title="Cetak versi alternatif"
+                                   class="px-2 py-2 text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 transition border-l border-slate-300">
+                                    {{ $pengajuan->metode_ttd === 'manual' ? '⚡ TTE' : '✍️ Manual' }}
+                                </a>
+                            </div>
                         @endif
 
                         {{-- Tombol Batal untuk Pemohon --}}
@@ -620,6 +638,30 @@
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan Verifikasi / Disposisi (Opsional)</label>
                             <input type="text" name="catatan" placeholder="Contoh: Berkas telah lengkap dan sesuai syarat masa kerja" class="w-full rounded-lg border-slate-300 text-xs focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
+
+                        @php
+                            $isApprovedWd2Check = $pengajuan->paraf_wd2_at || $pengajuan->ttd_wd2_at || $pengajuan->status === 'disetujui_wd2';
+                        @endphp
+                        @if(($isWd2 || $isDekan) && $pengajuan->paraf_kabag_at && !$isApprovedWd2Check)
+                            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-800">
+                                    Metode Tanda Tangan Dokumen <span class="text-rose-500">*</span>
+                                </label>
+                                <div class="flex flex-wrap items-center gap-4 text-xs">
+                                    <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                                        <input type="radio" name="metode_ttd" value="elektronik" checked class="text-indigo-600 focus:ring-indigo-500">
+                                        <span class="font-semibold text-slate-700">Elektronik (TTE QR Code & Paraf Digital)</span>
+                                    </label>
+                                    <label class="inline-flex items-center gap-1.5 cursor-pointer">
+                                        <input type="radio" name="metode_ttd" value="manual" class="text-indigo-600 focus:ring-indigo-500">
+                                        <span class="font-semibold text-slate-700">Manual (Dikosongkan untuk Tanda Tangan Basah)</span>
+                                    </label>
+                                </div>
+                                <p class="text-[11px] text-slate-500">
+                                    Pilih "Manual" jika dokumen ini akan dicetak fisik dan ditandatangani basah oleh Pimpinan.
+                                </p>
+                            </div>
+                        @endif
 
                         <div class="flex flex-wrap items-center gap-2 pt-2">
                             {{-- 1. Tombol Admin Screening Berkas --}}

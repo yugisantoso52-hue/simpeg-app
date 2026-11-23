@@ -21,6 +21,7 @@ class LayananSurat extends Model
         'keperluan',
         'tanggal_surat',
         'status',
+        'metode_ttd',
         'penandatangan_nama',
         'penandatangan_nip',
         'penandatangan_jabatan',

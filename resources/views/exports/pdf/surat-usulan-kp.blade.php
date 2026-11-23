@@ -187,19 +187,25 @@
 </p>
 
 {{-- AREA PENANDATANGANAN & PARAF DIGITAL KOORDINASI TATA NASKAH --}}
+@php
+    $metodeTtd = $metodeTtd ?? ($pengajuan?->metode_ttd ?? 'elektronik');
+    $isManualTtd = ($metodeTtd === 'manual');
+@endphp
 <table class="ttd-paraf-table">
     <tr>
         {{-- Sisi Kiri: Kotak Paraf Koordinasi Tata Naskah (Ka Pokja & Kabag Umum) --}}
         <td style="width: 53%; vertical-align: bottom; padding-right: 12px;">
             <div style="border: 1px solid #1e293b; padding: 4px 6px; border-radius: 4px; background-color: #f8fafc; font-family: 'Times New Roman', Times, serif;">
                 <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 3px; color: #0f172a; border-bottom: 1px solid #94a3b8; padding-bottom: 2px; font-size: 7pt; letter-spacing: 0.2px;">
-                    PARAF DIGITAL KOORDINASI TATA NASKAH:
+                    {{ $isManualTtd ? 'PARAF KOORDINASI TATA NASKAH:' : 'PARAF DIGITAL KOORDINASI TATA NASKAH:' }}
                 </div>
                 <table style="width: 100%; border-collapse: collapse; font-size: 7pt; line-height: 1.15;">
                     {{-- 1. Kepala Bagian Umum --}}
                     <tr style="border-bottom: 1px dashed #cbd5e1;">
                         <td style="width: 32px; vertical-align: middle; padding: 2px 4px 2px 0; text-align: center;">
-                            @if(!empty($sudahParafKabag) && isset($qrKabagUri))
+                            @if($isManualTtd)
+                                <div style="font-size: 5.5pt; color: #64748b; border: 1px solid #94a3b8; height: 26px; border-radius: 2px; line-height: 26px;">Paraf</div>
+                            @elseif(!empty($sudahParafKabag) && isset($qrKabagUri))
                                 <img src="{{ $qrKabagUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
                             @else
                                 <div style="font-size: 5.5pt; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 4px 1px; border-radius: 2px; line-height: 1.1;">Belum<br>Paraf</div>
@@ -208,7 +214,9 @@
                         <td style="vertical-align: middle; padding: 2px 0;">
                             <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">1. Kepala Bagian Umum</div>
                             <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKabag->nama_lengkap ?? ($pejabatKabag->nama ?? 'Bakhtiar, S.Sos., M.Si') }}</div>
-                            @if(!empty($sudahParafKabag))
+                            @if($isManualTtd)
+                                <div style="color: #475569; font-size: 6.2pt;">[ Verifikasi & Paraf Manual ]</div>
+                            @elseif(!empty($sudahParafKabag))
                                 <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
                                     [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafKabagAt }}
                                 </div>
@@ -222,7 +230,9 @@
                     {{-- 2. Ka Pokja Keu-Kepeg --}}
                     <tr>
                         <td style="width: 32px; vertical-align: middle; padding: 3px 4px 2px 0; text-align: center;">
-                            @if(!empty($sudahParafPokja) && isset($qrPokjaUri))
+                            @if($isManualTtd)
+                                <div style="font-size: 5.5pt; color: #64748b; border: 1px solid #94a3b8; height: 26px; border-radius: 2px; line-height: 26px;">Paraf</div>
+                            @elseif(!empty($sudahParafPokja) && isset($qrPokjaUri))
                                 <img src="{{ $qrPokjaUri }}" style="width: 28px; height: 28px; display: block; margin: 0 auto;" />
                             @else
                                 <div style="font-size: 5.5pt; color: #94a3b8; border: 1px dashed #cbd5e1; padding: 4px 1px; border-radius: 2px; line-height: 1.1;">Belum<br>Paraf</div>
@@ -231,7 +241,9 @@
                         <td style="vertical-align: middle; padding: 3px 0;">
                             <div style="font-weight: bold; color: #0f172a; font-size: 7pt;">2. Ka Pokja Keu-Kepeg</div>
                             <div style="color: #1e293b; font-size: 6.8pt;">{{ $pejabatKaPokja->nama_lengkap ?? ($pejabatKaPokja->nama ?? 'Dolli Vita Zenitha Harning Arivina, SE') }}</div>
-                            @if(!empty($sudahParafPokja))
+                            @if($isManualTtd)
+                                <div style="color: #475569; font-size: 6.2pt;">[ Verifikasi & Paraf Manual ]</div>
+                            @elseif(!empty($sudahParafPokja))
                                 <div style="color: #047857; font-weight: bold; font-size: 6.2pt;">
                                     [ Terverifikasi & Diparaf Digital ] &bull; {{ $parafPokjaAt }}
                                 </div>
@@ -254,7 +266,12 @@
                 @php
                     $isWd2Approved = !empty($isDisahkan) || !empty($pengajuan?->paraf_wd2_at) || !empty($pengajuan?->ttd_wd2_at) || in_array($pengajuan?->status ?? '', ['disetujui_wd2', 'diverifikasi_wd2', 'disetujui_dekan', 'selesai']);
                 @endphp
-                @if($isWd2Approved)
+                @if($isManualTtd)
+                    {{-- Ruang tanda tangan manual basah --}}
+                    <div style="height: 60px;"></div>
+                    <strong style="text-decoration: underline;">{{ $pejabatWd2->nama_lengkap ?? ($pejabatWd2->nama ?? 'Dr. Safri, M.Kep, Sp.Kep.M.B') }}</strong><br>
+                    <span>NIP. {{ $pejabatWd2->nip ?? '198509092014041001' }}</span>
+                @elseif($isWd2Approved)
                     {{-- Ruang tanda tangan elektronik resmi --}}
                     <div style="text-align: left; margin: 4px 0 4px 0;">
                         @if(!empty($qrTteWd2Uri))
@@ -306,8 +323,10 @@
     </table>
 </div>
 
+@if(!$isManualTtd)
 {{-- OTENTIKASI DIGITAL SIKAP FKP UNRI (DOKUMEN RESMI ELEKTRONIK DENGAN QR CODE) --}}
 @include('exports.pdf.partials.otentikasi_dokumen')
+@endif
 @endsection
 
 {{-- Suppress default ttd from master layout --}}

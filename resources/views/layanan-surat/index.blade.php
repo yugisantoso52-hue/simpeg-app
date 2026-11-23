@@ -283,12 +283,20 @@
                                         <td class="px-4 py-3 text-center">
                                             <div class="flex flex-col items-center gap-1.5">
                                                 <div class="flex items-center justify-center gap-1.5 flex-wrap">
-                                                    <a href="{{ route('layanan-surat.surat-aktif.cetak', $item->id) }}"
-                                                       target="_blank"
-                                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg {{ ($item->status === 'selesai' || !empty($item->ttd_pimpinan_at)) ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300' }} transition shadow-xs">
-                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                                                        {{ ($item->status === 'selesai' || !empty($item->ttd_pimpinan_at)) ? 'Cetak PDF (Sah)' : 'Cetak (Draf)' }}
-                                                    </a>
+                                                    <div class="inline-flex items-center rounded-lg shadow-xs overflow-hidden border border-slate-300">
+                                                        <a href="{{ route('layanan-surat.surat-aktif.cetak', [$item->id, 'metode_ttd' => $item->metode_ttd ?? 'elektronik']) }}"
+                                                           target="_blank"
+                                                           class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold {{ ($item->status === 'selesai' || !empty($item->ttd_pimpinan_at)) ? 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }} transition">
+                                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                                            {{ ($item->status === 'selesai' || !empty($item->ttd_pimpinan_at)) ? 'Cetak ('.ucfirst($item->metode_ttd ?? 'Elektronik').')' : 'Cetak (Draf)' }}
+                                                        </a>
+                                                        <a href="{{ route('layanan-surat.surat-aktif.cetak', [$item->id, 'metode_ttd' => ($item->metode_ttd === 'manual' ? 'elektronik' : 'manual')]) }}"
+                                                           target="_blank"
+                                                           title="Cetak versi alternatif ({{ $item->metode_ttd === 'manual' ? 'Elektronik' : 'Manual' }})"
+                                                           class="px-1.5 py-1.5 text-[10px] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 transition border-l border-slate-300">
+                                                            {{ $item->metode_ttd === 'manual' ? '⚡ TTE' : '✍️ Manual' }}
+                                                        </a>
+                                                    </div>
 
                                                     {{-- Tombol Batal oleh Pemohon --}}
                                                     @if((int)Auth::user()->pegawai_id === (int)$item->pegawai_id && !in_array($item->status, ['disetujui', 'selesai', 'dibatalkan']))
@@ -403,11 +411,15 @@
                                                             </button>
                                                         @elseif($item->status !== 'ditolak')
                                                             @if($canUserTte)
-                                                                <form action="{{ route('layanan-surat.surat-aktif.verifikasi', $item->id) }}" method="POST">
+                                                                <form action="{{ route('layanan-surat.surat-aktif.verifikasi', $item->id) }}" method="POST" class="inline-flex items-center gap-1">
                                                                     @csrf
                                                                     <input type="hidden" name="tahap" value="ttd_pimpinan">
+                                                                    <select name="metode_ttd" class="text-[10px] py-0.5 px-1 rounded border-slate-300 bg-white text-slate-700 font-semibold focus:ring-emerald-500">
+                                                                        <option value="elektronik">TTE</option>
+                                                                        <option value="manual">Manual</option>
+                                                                    </select>
                                                                     <button type="submit" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition" title="4. Sahkan & tanda tangani resmi Pimpinan">
-                                                                        ✍ 4. Sahkan
+                                                                        ✍ Sahkan
                                                                     </button>
                                                                 </form>
                                                             @else

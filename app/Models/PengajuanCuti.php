@@ -31,6 +31,7 @@ class PengajuanCuti extends Model
         'nomor_telepon',
         'file_lampiran',
         'status',
+        'metode_ttd',
         'atasan_langsung_id',
         'pertimbangan_atasan',
         'catatan_atasan_langsung',

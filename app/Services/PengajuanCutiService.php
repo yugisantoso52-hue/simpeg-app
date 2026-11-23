@@ -272,6 +272,9 @@ class PengajuanCutiService
                 if (!empty($data['nomor_surat'])) {
                     $updateData['nomor_surat'] = $data['nomor_surat'];
                 }
+                if (!empty($data['metode_ttd'])) {
+                    $updateData['metode_ttd'] = $data['metode_ttd'];
+                }
                 $isKeputusanFinal = true;
             }
 

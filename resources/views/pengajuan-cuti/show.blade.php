@@ -9,7 +9,7 @@
                     Informasi lengkap permohonan cuti dan riwayat persetujuan pimpinan
                 </p>
             </div>
-            <div class="flex items-center gap-2" x-data="{ openModalCetak: false, nomorInput: '{{ $cuti->nomor_surat ? explode('/UN19', $cuti->nomor_surat)[0] : '' }}' }">
+            <div class="flex items-center gap-2" x-data="{ openModalCetak: false, nomorInput: '{{ $cuti->nomor_surat ? explode('/UN19', $cuti->nomor_surat)[0] : '' }}', metodeCetak: '{{ $cuti->metode_ttd ?? 'elektronik' }}' }">
                 <button type="button" @click="openModalCetak = true"
                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">
                     <span>📄</span> Cetak Formulir Cuti (PDF)
@@ -19,7 +19,7 @@
                     ← Kembali
                 </a>
 
-                {{-- MODAL CETAK FORMULIR CUTI DENGAN INPUT NOMOR SURAT MANUAL --}}
+                {{-- MODAL CETAK FORMULIR CUTI DENGAN INPUT NOMOR SURAT MANUAL & METODE TTD --}}
                 <div x-show="openModalCetak" x-cloak
                      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
                      @keydown.escape.window="openModalCetak = false">
@@ -33,7 +33,7 @@
                         </div>
                         
                         <p class="text-xs text-slate-600 mb-4 leading-relaxed">
-                            Pastikan nomor surat dinas sesuai format resmi institusi Fakultas Keperawatan Universitas Riau sebelum mencetak dokumen.
+                            Pastikan nomor surat dinas dan metode pengesahan tanda tangan sesuai kebutuhan dokumen sebelum mencetak.
                         </p>
 
                         @php
@@ -71,20 +71,42 @@
                                 @endif
                             </div>
 
+                            {{-- Opsi Metode Tanda Tangan --}}
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+                                    Metode Tanda Tangan Cetak
+                                </label>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <label class="flex items-center p-2.5 rounded-lg border cursor-pointer transition"
+                                           :class="metodeCetak === 'elektronik' ? 'border-emerald-500 bg-emerald-50/70 font-bold text-emerald-900' : 'border-slate-200 bg-white text-slate-700'">
+                                        <input type="radio" value="elektronik" x-model="metodeCetak" class="text-emerald-600 focus:ring-emerald-500 mr-2">
+                                        <span>Elektronik (QR Code)</span>
+                                    </label>
+                                    <label class="flex items-center p-2.5 rounded-lg border cursor-pointer transition"
+                                           :class="metodeCetak === 'manual' ? 'border-amber-500 bg-amber-50/70 font-bold text-amber-900' : 'border-slate-200 bg-white text-slate-700'">
+                                        <input type="radio" value="manual" x-model="metodeCetak" class="text-amber-600 focus:ring-amber-500 mr-2">
+                                        <span>Manual (Basah/Kosong)</span>
+                                    </label>
+                                </div>
+                                <span class="text-[10px] text-slate-500 mt-1 block" x-show="metodeCetak === 'manual'">
+                                    ℹ️ Area tanda tangan &amp; paraf akan dikosongkan untuk tanda tangan basah dan cap basah.
+                                </span>
+                            </div>
+
                             <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                                 <button type="button" @click="openModalCetak = false"
                                         class="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
                                     Batal
                                 </button>
                                 @if($userIsAdmin)
-                                    <a :href="'{{ route('pengajuan-cuti.cetak-pdf', $cuti->id) }}' + (nomorInput ? '?nomor_surat_input=' + encodeURIComponent(nomorInput) : '')"
+                                    <a :href="'{{ route('pengajuan-cuti.cetak-pdf', $cuti->id) }}' + '?metode_ttd=' + encodeURIComponent(metodeCetak) + (nomorInput ? '&nomor_surat_input=' + encodeURIComponent(nomorInput) : '')"
                                        target="_blank"
                                        @click="openModalCetak = false"
                                        class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow transition flex items-center gap-1.5">
                                         <span>🖨️</span> Buka & Cetak PDF
                                     </a>
                                 @else
-                                    <a href="{{ route('pengajuan-cuti.cetak-pdf', $cuti->id) }}"
+                                    <a :href="'{{ route('pengajuan-cuti.cetak-pdf', $cuti->id) }}' + '?metode_ttd=' + encodeURIComponent(metodeCetak)"
                                        target="_blank"
                                        @click="openModalCetak = false"
                                        class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow transition flex items-center gap-1.5">
@@ -783,6 +805,16 @@
                                         class="w-full rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500 font-medium">
                                     <option value="Disetujui" @selected(old('status') == 'Disetujui')>✅ Disetujui — Cuti Diberikan</option>
                                     <option value="Ditolak" @selected(old('status') == 'Ditolak')>❌ Ditolak — Tidak Disetujui</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="metode_ttd" class="block text-xs font-semibold text-gray-700 uppercase mb-1">
+                                    Metode Tanda Tangan &amp; Pengesahan
+                                </label>
+                                <select name="metode_ttd" id="metode_ttd"
+                                        class="w-full rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500 font-medium">
+                                    <option value="elektronik" @selected(old('metode_ttd', $cuti->metode_ttd ?? 'elektronik') === 'elektronik')>Elektronik (TTE QR Code &amp; Paraf Digital)</option>
+                                    <option value="manual" @selected(old('metode_ttd', $cuti->metode_ttd ?? 'elektronik') === 'manual')>Manual (Ruang Tanda Tangan Basah &amp; Stempel)</option>
                                 </select>
                             </div>
                             <div>
