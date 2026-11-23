@@ -258,6 +258,54 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- V. CATATAN CUTI TAHUNAN (N, N-1, N-2 sesuai Anak Lampiran 1.b Peraturan BKN No. 24 Tahun 2017) --}}
+                @php
+                    $tahunCutiShow = $cuti->tanggal_mulai ? (int) $cuti->tanggal_mulai->format('Y') : ($cuti->created_at ? (int) $cuti->created_at->format('Y') : (int) now()->year);
+                    $catatanCutiShow = $cuti->pegawai
+                        ? $cuti->pegawai->getCatatanCutiTahunan($tahunCutiShow)
+                        : [
+                            'N'   => ['kode' => 'N',   'tahun' => $tahunCutiShow,     'label_tahun' => "{$tahunCutiShow} (N)",         'sisa' => 12,   'sisa_formatted' => '12 Hari', 'keterangan' => 'Hak Cuti Tahun Berjalan (N)'],
+                            'N-1' => ['kode' => 'N-1', 'tahun' => $tahunCutiShow - 1, 'label_tahun' => ($tahunCutiShow - 1) . ' (N-1)', 'sisa' => null, 'sisa_formatted' => '-',       'keterangan' => 'Sisa Cuti 1 Tahun Sebelumnya (N-1)'],
+                            'N-2' => ['kode' => 'N-2', 'tahun' => $tahunCutiShow - 2, 'label_tahun' => ($tahunCutiShow - 2) . ' (N-2)', 'sisa' => null, 'sisa_formatted' => '-',       'keterangan' => 'Sisa Cuti 2 Tahun Lalu (N-2)'],
+                        ];
+                @endphp
+                <div class="mt-5 pt-4 border-t border-gray-100">
+                    <div class="rounded-lg border border-gray-200 overflow-hidden bg-white">
+                        <div class="bg-gray-50 px-4 py-2 border-b border-gray-200 flex flex-wrap items-center justify-between gap-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-gray-700">
+                                V. Catatan Cuti Tahunan (Peraturan BKN No. 24 Tahun 2017)
+                            </span>
+                            <span class="text-[11px] text-gray-500">N = Tahun Berjalan | N-1 = 1 Tahun Sebelumnya | N-2 = 2 Tahun Lalu</span>
+                        </div>
+                        <table class="w-full text-xs text-left text-gray-700">
+                            <thead class="bg-gray-50/60 text-gray-600 uppercase border-b border-gray-200">
+                                <tr>
+                                    <th class="py-2 px-4 text-center w-28">Tahun</th>
+                                    <th class="py-2 px-4 text-center w-32">Sisa Kuota</th>
+                                    <th class="py-2 px-4">Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <tr>
+                                    <td class="py-2 px-4 text-center font-semibold">{{ $catatanCutiShow['N']['label_tahun'] }}</td>
+                                    <td class="py-2 px-4 text-center font-bold text-emerald-700">{{ $catatanCutiShow['N']['sisa_formatted'] }}</td>
+                                    <td class="py-2 px-4">{{ $catatanCutiShow['N']['keterangan'] }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-4 text-center font-medium text-gray-600">{{ $catatanCutiShow['N-1']['label_tahun'] }}</td>
+                                    <td class="py-2 px-4 text-center font-semibold text-gray-600">{{ $catatanCutiShow['N-1']['sisa_formatted'] }}</td>
+                                    <td class="py-2 px-4 text-gray-600">{{ $catatanCutiShow['N-1']['keterangan'] }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-4 text-center font-medium text-gray-600">{{ $catatanCutiShow['N-2']['label_tahun'] }}</td>
+                                    <td class="py-2 px-4 text-center font-semibold text-gray-600">{{ $catatanCutiShow['N-2']['sisa_formatted'] }}</td>
+                                    <td class="py-2 px-4 text-gray-600">{{ $catatanCutiShow['N-2']['keterangan'] }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             {{-- ===== ALUR PERSETUJUAN 2-TAHAP (PerBKN No. 7 Tahun 2022) ===== --}}

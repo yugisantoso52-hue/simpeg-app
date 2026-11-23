@@ -95,8 +95,11 @@
                 </div>
             @endif
 
-            {{-- JIKA PEGAWAI BIASA: TAMPILKAN KARTU KUOTA CUTI TAHUNAN --}}
+            {{-- JIKA PEGAWAI BIASA: TAMPILKAN KARTU KUOTA CUTI TAHUNAN (N, N-1, N-2) --}}
             @if($isPegawaiOnly && $pegawai)
+                @php
+                    $catatanCutiIndex = $pegawai->getCatatanCutiTahunan((int) now()->year);
+                @endphp
                 <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-xl shadow-md p-6 text-white flex flex-col md:flex-row items-center justify-between gap-6">
                     <div>
                         <div class="text-emerald-100 text-xs uppercase tracking-wider font-semibold">Sisa Kuota Cuti Tahunan (Tahun {{ now()->year }})</div>
@@ -106,6 +109,17 @@
                         <p class="text-xs text-emerald-100 mt-2">
                             Setiap PNS/PPPK berhak atas 12 hari kerja cuti tahunan sesuai Peraturan BKN No. 24/2017.
                         </p>
+                        <div class="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
+                            <span class="px-2.5 py-1 rounded-lg bg-white/15 border border-white/20 font-semibold">
+                                {{ $catatanCutiIndex['N']['label_tahun'] }}: <strong>{{ $catatanCutiIndex['N']['sisa_formatted'] }}</strong>
+                            </span>
+                            <span class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15">
+                                {{ $catatanCutiIndex['N-1']['label_tahun'] }}: <strong>{{ $catatanCutiIndex['N-1']['sisa_formatted'] }}</strong>
+                            </span>
+                            <span class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15">
+                                {{ $catatanCutiIndex['N-2']['label_tahun'] }}: <strong>{{ $catatanCutiIndex['N-2']['sisa_formatted'] }}</strong>
+                            </span>
+                        </div>
                     </div>
                     <div class="flex items-center gap-4 border-t md:border-t-0 md:border-l border-emerald-400/40 pt-4 md:pt-0 md:ps-6 text-center">
                         <div>

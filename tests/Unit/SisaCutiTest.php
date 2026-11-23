@@ -168,4 +168,47 @@ class SisaCutiTest extends TestCase
         $this->assertTrue($eagerLoadedPegawai->relationLoaded('pengajuanCuti'));
         $this->assertEquals(8, $eagerLoadedPegawai->sisa_cuti_tahunan);
     }
+
+    /**
+     * Test catatan cuti tahunan 3 tahun (N, N-1, N-2) sesuai Anak Lampiran 1.b Peraturan BKN No. 24 Tahun 2017
+     */
+    public function test_catatan_cuti_tahunan_returns_three_years_n_n1_n2(): void
+    {
+        $tahunN = (int) now()->year;
+
+        // Cuti tahun berjalan (N): 5 hari -> sisa 7 hari
+        PengajuanCuti::create([
+            'pegawai_id'      => $this->pegawai->id,
+            'jenis_cuti'      => 'Cuti Tahunan',
+            'tanggal_mulai'   => "{$tahunN}-08-10",
+            'tanggal_selesai' => "{$tahunN}-08-14",
+            'jumlah_hari'     => 5,
+            'alasan'          => 'Urusan keluarga',
+            'status'          => 'Disetujui',
+        ]);
+
+        $catatan = $this->pegawai->fresh()->getCatatanCutiTahunan($tahunN);
+
+        $this->assertArrayHasKey('N', $catatan);
+        $this->assertArrayHasKey('N-1', $catatan);
+        $this->assertArrayHasKey('N-2', $catatan);
+
+        $this->assertEquals($tahunN, $catatan['N']['tahun']);
+        $this->assertEquals("{$tahunN} (N)", $catatan['N']['label_tahun']);
+        $this->assertEquals(7, $catatan['N']['sisa']);
+        $this->assertEquals('7 Hari', $catatan['N']['sisa_formatted']);
+        $this->assertEquals('Hak Cuti Tahun Berjalan (N)', $catatan['N']['keterangan']);
+
+        $this->assertEquals($tahunN - 1, $catatan['N-1']['tahun']);
+        $this->assertEquals(($tahunN - 1) . ' (N-1)', $catatan['N-1']['label_tahun']);
+        $this->assertNull($catatan['N-1']['sisa']);
+        $this->assertEquals('-', $catatan['N-1']['sisa_formatted']);
+        $this->assertEquals('Sisa Cuti 1 Tahun Sebelumnya (N-1)', $catatan['N-1']['keterangan']);
+
+        $this->assertEquals($tahunN - 2, $catatan['N-2']['tahun']);
+        $this->assertEquals(($tahunN - 2) . ' (N-2)', $catatan['N-2']['label_tahun']);
+        $this->assertNull($catatan['N-2']['sisa']);
+        $this->assertEquals('-', $catatan['N-2']['sisa_formatted']);
+        $this->assertEquals('Sisa Cuti 2 Tahun Lalu (N-2)', $catatan['N-2']['keterangan']);
+    }
 }

@@ -445,6 +445,14 @@ class PengajuanCutiTest extends TestCase
         // Pastikan di bagian Paraf Koordinasi Tata Naskah tidak ada "2. Kabag Umum:"
         $this->assertStringNotContainsString('2. Kabag Umum:', $renderedHtml);
         $this->assertStringContainsString('Ka Pokja Keu-Kepeg:', $renderedHtml);
+
+        // Pastikan di bagian V. CATATAN CUTI TAHUNAN tercetak lengkap 3 tahun: N (2026), N-1 (2025), dan N-2 (2024)
+        $this->assertStringContainsString('2026 (N)', $renderedHtml);
+        $this->assertStringContainsString('Hak Cuti Tahun Berjalan (N)', $renderedHtml);
+        $this->assertStringContainsString('2025 (N-1)', $renderedHtml);
+        $this->assertStringContainsString('Sisa Cuti 1 Tahun Sebelumnya (N-1)', $renderedHtml);
+        $this->assertStringContainsString('2024 (N-2)', $renderedHtml);
+        $this->assertStringContainsString('Sisa Cuti 2 Tahun Lalu (N-2)', $renderedHtml);
     }
 
     public function test_strict_4_stage_cuti_workflow_enforces_each_role_authority_only(): void
@@ -604,5 +612,49 @@ class PengajuanCutiTest extends TestCase
             'catatan_pimpinan' => 'Disetujui oleh Wakil Dekan II.',
         ])->assertSessionHas('success');
         $this->assertEquals('Disetujui', $cuti->fresh()->status);
+    }
+
+    public function test_catatan_cuti_tahunan_3_years_n_n1_n2_displayed_in_create_show_index_and_pdf(): void
+    {
+        $tahunN  = (int) now()->year;
+        $tahunN1 = $tahunN - 1;
+        $tahunN2 = $tahunN - 2;
+
+        $cuti = PengajuanCuti::create([
+            'pegawai_id'      => $this->pegawai->id,
+            'jenis_cuti'      => 'Cuti Tahunan',
+            'tanggal_mulai'   => "{$tahunN}-10-12",
+            'tanggal_selesai' => "{$tahunN}-10-16",
+            'jumlah_hari'     => 5,
+            'alasan'          => 'Urusan keluarga',
+            'status'          => 'Disetujui',
+        ]);
+
+        // 1. Halaman Index E-Cuti Pegawai
+        $indexResponse = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.index'));
+        $indexResponse->assertStatus(200);
+        $indexResponse->assertSee("{$tahunN} (N)");
+        $indexResponse->assertSee("{$tahunN1} (N-1)");
+        $indexResponse->assertSee("{$tahunN2} (N-2)");
+
+        // 2. Halaman Form Permohonan Cuti (Create)
+        $createResponse = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.create'));
+        $createResponse->assertStatus(200);
+        $createResponse->assertSee('V. Catatan Cuti Tahunan (Peraturan BKN No. 24 Tahun 2017)');
+        $createResponse->assertSee("{$tahunN} (N)");
+        $createResponse->assertSee('7 Hari');
+        $createResponse->assertSee('Hak Cuti Tahun Berjalan (N)');
+        $createResponse->assertSee("{$tahunN1} (N-1)");
+        $createResponse->assertSee('Sisa Cuti 1 Tahun Sebelumnya (N-1)');
+        $createResponse->assertSee("{$tahunN2} (N-2)");
+        $createResponse->assertSee('Sisa Cuti 2 Tahun Lalu (N-2)');
+
+        // 3. Halaman Detail Permohonan Cuti (Show)
+        $showResponse = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.show', $cuti->id));
+        $showResponse->assertStatus(200);
+        $showResponse->assertSee('V. Catatan Cuti Tahunan (Peraturan BKN No. 24 Tahun 2017)');
+        $showResponse->assertSee("{$tahunN} (N)");
+        $showResponse->assertSee("{$tahunN1} (N-1)");
+        $showResponse->assertSee("{$tahunN2} (N-2)");
     }
 }

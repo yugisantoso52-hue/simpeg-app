@@ -31,12 +31,35 @@
                     </div>
                 @endif
 
+                @php
+                    $tahunBerjalan = (int) now()->year;
+                    $catatanCutiPemohon = $pegawai
+                        ? $pegawai->getCatatanCutiTahunan($tahunBerjalan)
+                        : [
+                            'N'   => ['kode' => 'N',   'tahun' => $tahunBerjalan,     'label_tahun' => "{$tahunBerjalan} (N)",         'sisa' => 12,   'sisa_formatted' => '12 Hari', 'keterangan' => 'Hak Cuti Tahun Berjalan (N)'],
+                            'N-1' => ['kode' => 'N-1', 'tahun' => $tahunBerjalan - 1, 'label_tahun' => ($tahunBerjalan - 1) . ' (N-1)', 'sisa' => null, 'sisa_formatted' => '-',       'keterangan' => 'Sisa Cuti 1 Tahun Sebelumnya (N-1)'],
+                            'N-2' => ['kode' => 'N-2', 'tahun' => $tahunBerjalan - 2, 'label_tahun' => ($tahunBerjalan - 2) . ' (N-2)', 'sisa' => null, 'sisa_formatted' => '-',       'keterangan' => 'Sisa Cuti 2 Tahun Lalu (N-2)'],
+                        ];
+                @endphp
+
                 <form action="{{ route('pengajuan-cuti.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6"
                       x-data="{
                           jenisCuti: '{{ old('jenis_cuti', 'Cuti Tahunan') }}',
                           tglMulai: '{{ old('tanggal_mulai') }}',
                           tglSelesai: '{{ old('tanggal_selesai') }}',
-                          sisaCuti: {{ $pegawai ? $pegawai->sisa_cuti_tahunan : 12 }},
+                          sisaCuti: {{ $catatanCutiPemohon['N']['sisa'] ?? 12 }},
+                          sisaNFormatted: '{{ $catatanCutiPemohon['N']['sisa_formatted'] }}',
+                          sisaN1Formatted: '{{ $catatanCutiPemohon['N-1']['sisa_formatted'] }}',
+                          sisaN2Formatted: '{{ $catatanCutiPemohon['N-2']['sisa_formatted'] }}',
+                          updatePegawaiQuota(event) {
+                              let opt = event.target.selectedOptions[0];
+                              if (opt && opt.dataset.sisaN !== undefined) {
+                                  this.sisaCuti = parseInt(opt.dataset.sisaN, 10) || 12;
+                                  this.sisaNFormatted = opt.dataset.sisaNFormatted || (this.sisaCuti + ' Hari');
+                                  this.sisaN1Formatted = opt.dataset.sisaN1Formatted || '-';
+                                  this.sisaN2Formatted = opt.dataset.sisaN2Formatted || '-';
+                              }
+                          },
                           get durasiHari() {
                               if (!this.tglMulai || !this.tglSelesai) return 0;
                               let start = new Date(this.tglMulai);
@@ -61,10 +84,19 @@
                                 Pilih Pegawai yang Mengajukan Cuti <span class="text-red-500">*</span>
                             </label>
                             <select name="pegawai_id" id="pegawai_id" required
+                                    @change="updatePegawaiQuota($event)"
                                     class="w-full rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500">
                                 <option value="">-- Pilih Pegawai --</option>
                                 @foreach($pegawaiList as $p)
-                                    <option value="{{ $p->id }}" @selected(old('pegawai_id') == $p->id)>
+                                    @php
+                                        $catatanP = $p->getCatatanCutiTahunan($tahunBerjalan);
+                                    @endphp
+                                    <option value="{{ $p->id }}"
+                                            data-sisa-n="{{ $catatanP['N']['sisa'] }}"
+                                            data-sisa-n-formatted="{{ $catatanP['N']['sisa_formatted'] }}"
+                                            data-sisa-n1-formatted="{{ $catatanP['N-1']['sisa_formatted'] }}"
+                                            data-sisa-n2-formatted="{{ $catatanP['N-2']['sisa_formatted'] }}"
+                                            @selected(old('pegawai_id') == $p->id)>
                                         {{ $p->nama_lengkap ?? $p->nama }} (NIP: {{ $p->nip ?? '-' }}) - Sisa Cuti: {{ $p->sisa_cuti_tahunan }} Hari
                                     </option>
                                 @endforeach
@@ -84,6 +116,42 @@
                             </div>
                         </div>
                     @endif
+
+                    {{-- V. Catatan Cuti Tahunan (N, N-1, N-2 sesuai Anak Lampiran 1.b Peraturan BKN No. 24 Tahun 2017) --}}
+                    <div class="rounded-lg border border-gray-200 overflow-hidden bg-white">
+                        <div class="bg-gray-50 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase tracking-wider text-gray-700">
+                                V. Catatan Cuti Tahunan (Peraturan BKN No. 24 Tahun 2017)
+                            </span>
+                            <span class="text-[11px] text-gray-500">N = Tahun Berjalan | N-1 = 1 Tahun Sebelumnya | N-2 = 2 Tahun Lalu</span>
+                        </div>
+                        <table class="w-full text-xs text-left text-gray-700">
+                            <thead class="bg-gray-50/60 text-gray-600 uppercase border-b border-gray-200">
+                                <tr>
+                                    <th class="py-2 px-4 text-center w-28">Tahun</th>
+                                    <th class="py-2 px-4 text-center w-32">Sisa Kuota</th>
+                                    <th class="py-2 px-4">Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <tr>
+                                    <td class="py-2 px-4 text-center font-semibold">{{ $catatanCutiPemohon['N']['label_tahun'] }}</td>
+                                    <td class="py-2 px-4 text-center font-bold text-emerald-700" x-text="sisaNFormatted">{{ $catatanCutiPemohon['N']['sisa_formatted'] }}</td>
+                                    <td class="py-2 px-4">{{ $catatanCutiPemohon['N']['keterangan'] }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-4 text-center font-medium text-gray-600">{{ $catatanCutiPemohon['N-1']['label_tahun'] }}</td>
+                                    <td class="py-2 px-4 text-center font-semibold text-gray-600" x-text="sisaN1Formatted">{{ $catatanCutiPemohon['N-1']['sisa_formatted'] }}</td>
+                                    <td class="py-2 px-4 text-gray-600">{{ $catatanCutiPemohon['N-1']['keterangan'] }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-4 text-center font-medium text-gray-600">{{ $catatanCutiPemohon['N-2']['label_tahun'] }}</td>
+                                    <td class="py-2 px-4 text-center font-semibold text-gray-600" x-text="sisaN2Formatted">{{ $catatanCutiPemohon['N-2']['sisa_formatted'] }}</td>
+                                    <td class="py-2 px-4 text-gray-600">{{ $catatanCutiPemohon['N-2']['keterangan'] }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
                     {{-- Jenis Cuti --}}
                     <div>

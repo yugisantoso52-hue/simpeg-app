@@ -320,28 +320,90 @@ class Pegawai extends Model
      */
     public function getSisaCutiTahunanAttribute(): int
     {
-        $currentYear = now()->year;
+        return $this->getSisaCutiTahunanByYear((int) now()->year, false) ?? 12;
+    }
+
+    /**
+     * Hitung sisa kuota cuti tahunan pada tahun tertentu (Standar: 12 hari kerja).
+     * Jika $onlyIfRecorded = true (untuk tahun historis N-1 dan N-2), hanya mengembalikan angka
+     * apabila terdapat riwayat Cuti Tahunan yang tercatat pada tahun tersebut; jika tidak ada, mengembalikan null ('-').
+     */
+    public function getSisaCutiTahunanByYear(int $year, bool $onlyIfRecorded = false): ?int
+    {
         $validStatuses = [
             'Disetujui',
             'Menunggu Persetujuan',
             'Disetujui Atasan (Menunggu PYBMC)',
-            'Disetujui Atasan (Menunggu Keputusan Akhir)'
+            'Disetujui Atasan (Menunggu Keputusan Akhir)',
         ];
 
         if ($this->relationLoaded('pengajuanCuti')) {
-            $cutiTerpakai = $this->pengajuanCuti
+            $records = $this->pengajuanCuti
                 ->where('jenis_cuti', 'Cuti Tahunan')
-                ->filter(fn($c) => in_array($c->status, $validStatuses, true) && \Carbon\Carbon::parse($c->tanggal_mulai)->year === $currentYear)
-                ->sum('jumlah_hari');
+                ->filter(fn($c) => in_array($c->status, $validStatuses, true) && $c->tanggal_mulai && \Carbon\Carbon::parse($c->tanggal_mulai)->year === $year);
+
+            if ($onlyIfRecorded && $records->isEmpty()) {
+                return null;
+            }
+
+            $cutiTerpakai = $records->sum('jumlah_hari');
         } else {
-            $cutiTerpakai = $this->pengajuanCuti()
+            $query = $this->pengajuanCuti()
                 ->where('jenis_cuti', 'Cuti Tahunan')
                 ->whereIn('status', $validStatuses)
-                ->whereYear('tanggal_mulai', $currentYear)
-                ->sum('jumlah_hari');
+                ->whereYear('tanggal_mulai', $year);
+
+            if ($onlyIfRecorded && !(clone $query)->exists()) {
+                return null;
+            }
+
+            $cutiTerpakai = $query->sum('jumlah_hari');
         }
 
-        return max(0, 12 - (int)$cutiTerpakai);
+        return max(0, 12 - (int) $cutiTerpakai);
+    }
+
+    /**
+     * Dapatkan ringkasan V. Catatan Cuti Tahunan untuk 3 tahun:
+     * N (Tahun Berjalan), N-1 (1 Tahun Sebelumnya), dan N-2 (2 Tahun Lalu)
+     * sesuai Anak Lampiran 1.b Peraturan BKN Nomor 24 Tahun 2017.
+     */
+    public function getCatatanCutiTahunan(?int $baseYear = null): array
+    {
+        $tahunN  = $baseYear ?: (int) now()->year;
+        $tahunN1 = $tahunN - 1;
+        $tahunN2 = $tahunN - 2;
+
+        $sisaN  = $this->getSisaCutiTahunanByYear($tahunN, false) ?? 12;
+        $sisaN1 = $this->getSisaCutiTahunanByYear($tahunN1, true);
+        $sisaN2 = $this->getSisaCutiTahunanByYear($tahunN2, true);
+
+        return [
+            'N' => [
+                'kode'           => 'N',
+                'tahun'          => $tahunN,
+                'label_tahun'    => "{$tahunN} (N)",
+                'sisa'           => $sisaN,
+                'sisa_formatted' => "{$sisaN} Hari",
+                'keterangan'     => 'Hak Cuti Tahun Berjalan (N)',
+            ],
+            'N-1' => [
+                'kode'           => 'N-1',
+                'tahun'          => $tahunN1,
+                'label_tahun'    => "{$tahunN1} (N-1)",
+                'sisa'           => $sisaN1,
+                'sisa_formatted' => $sisaN1 !== null ? "{$sisaN1} Hari" : '-',
+                'keterangan'     => 'Sisa Cuti 1 Tahun Sebelumnya (N-1)',
+            ],
+            'N-2' => [
+                'kode'           => 'N-2',
+                'tahun'          => $tahunN2,
+                'label_tahun'    => "{$tahunN2} (N-2)",
+                'sisa'           => $sisaN2,
+                'sisa_formatted' => $sisaN2 !== null ? "{$sisaN2} Hari" : '-',
+                'keterangan'     => 'Sisa Cuti 2 Tahun Lalu (N-2)',
+            ],
+        ];
     }
 
     /* --- ACCESSORS --- */

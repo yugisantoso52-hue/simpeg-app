@@ -248,30 +248,45 @@
         </tr>
     </table>
 
-    {{-- V. CATATAN CUTI TAHUNAN & ALAMAT --}}
+    {{-- V. CATATAN CUTI TAHUNAN & ALAMAT (Sesuai Anak Lampiran 1.b Peraturan BKN No. 24 Tahun 2017: N, N-1, N-2) --}}
+    @php
+        $tahunCutiN = $cuti->tanggal_mulai ? (int) $cuti->tanggal_mulai->format('Y') : ($cuti->created_at ? (int) $cuti->created_at->format('Y') : (int) now()->year);
+        $catatanCuti = $cuti->pegawai
+            ? $cuti->pegawai->getCatatanCutiTahunan($tahunCutiN)
+            : [
+                'N'   => ['kode' => 'N',   'tahun' => $tahunCutiN,     'label_tahun' => "{$tahunCutiN} (N)",         'sisa' => 12,   'sisa_formatted' => '12 Hari', 'keterangan' => 'Hak Cuti Tahun Berjalan (N)'],
+                'N-1' => ['kode' => 'N-1', 'tahun' => $tahunCutiN - 1, 'label_tahun' => ($tahunCutiN - 1) . ' (N-1)', 'sisa' => null, 'sisa_formatted' => '-',       'keterangan' => 'Sisa Cuti 1 Tahun Sebelumnya (N-1)'],
+                'N-2' => ['kode' => 'N-2', 'tahun' => $tahunCutiN - 2, 'label_tahun' => ($tahunCutiN - 2) . ' (N-2)', 'sisa' => null, 'sisa_formatted' => '-',       'keterangan' => 'Sisa Cuti 2 Tahun Lalu (N-2)'],
+            ];
+    @endphp
     <table class="bkn-table">
         <tr class="section-title">
             <td colspan="5">V. CATATAN CUTI TAHUNAN</td>
         </tr>
         <tr class="section-title" style="font-size: 8pt;">
-            <td style="width: 12%; text-align: center;">Tahun</td>
-            <td style="width: 15%; text-align: center;">Sisa Kuota</td>
-            <td style="width: 28%;">Keterangan</td>
+            <td style="width: 14%; text-align: center;">Tahun</td>
+            <td style="width: 14%; text-align: center;">Sisa Kuota</td>
+            <td style="width: 27%;">Keterangan</td>
             <td colspan="2" style="width: 45%;">Alamat Selama Menjalankan Cuti</td>
         </tr>
         <tr>
-            <td class="text-center">{{ now()->year }}</td>
-            <td class="text-center text-bold">{{ $cuti->pegawai->sisa_cuti_tahunan ?? 12 }} Hari</td>
-            <td>Hak Cuti Tahun Berjalan</td>
-            <td colspan="2" rowspan="2">
+            <td class="text-center">{{ $catatanCuti['N']['label_tahun'] }}</td>
+            <td class="text-center text-bold">{{ $catatanCuti['N']['sisa_formatted'] }}</td>
+            <td>{{ $catatanCuti['N']['keterangan'] }}</td>
+            <td colspan="2" rowspan="3" style="vertical-align: middle;">
                 {{ $cuti->alamat_selama_cuti ?: '-' }}<br>
                 <small>No. Telp/WA: {{ $cuti->nomor_telepon ?: '-' }}</small>
             </td>
         </tr>
         <tr>
-            <td class="text-center">{{ now()->year - 1 }}</td>
-            <td class="text-center">-</td>
-            <td>Tahun N-1</td>
+            <td class="text-center">{{ $catatanCuti['N-1']['label_tahun'] }}</td>
+            <td class="text-center {{ $catatanCuti['N-1']['sisa'] !== null ? 'text-bold' : '' }}">{{ $catatanCuti['N-1']['sisa_formatted'] }}</td>
+            <td>{{ $catatanCuti['N-1']['keterangan'] }}</td>
+        </tr>
+        <tr>
+            <td class="text-center">{{ $catatanCuti['N-2']['label_tahun'] }}</td>
+            <td class="text-center {{ $catatanCuti['N-2']['sisa'] !== null ? 'text-bold' : '' }}">{{ $catatanCuti['N-2']['sisa_formatted'] }}</td>
+            <td>{{ $catatanCuti['N-2']['keterangan'] }}</td>
         </tr>
     </table>
 
