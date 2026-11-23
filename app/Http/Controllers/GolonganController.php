@@ -17,7 +17,7 @@ class GolonganController extends Controller
                   ->orWhere('keterangan', 'like', '%'.$request->search.'%');
         }
 
-        $golongan = $query->latest()->paginate(10);
+        $golongan = $query->latest()->paginate(10)->withQueryString();
 
         return view('golongan.index', compact('golongan'));
     }

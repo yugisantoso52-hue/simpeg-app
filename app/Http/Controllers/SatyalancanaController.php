@@ -60,7 +60,7 @@ class SatyalancanaController extends Controller
             'pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan',
             'pegawai.riwayatSkp', 'pegawai.riwayatPangkat.golongan', 'pegawai.riwayatJabatan.jabatan', 'pegawai.riwayatPenghargaan',
             'diajukanOleh', 'verifikasiAdminBy', 'parafKabagBy', 'parafKaPokjaBy', 'ttdWd2By'
-        ])->orderByDesc('id')->paginate(15);
+        ])->orderByDesc('id')->paginate(15)->withQueryString();
 
         // Jabatan login untuk otorisasi tombol paraf / tanda tangan
         $jabatan = strtoupper(trim((string)($user->pegawai?->jabatan->nama_jabatan ?? '')));

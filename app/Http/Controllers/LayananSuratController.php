@@ -31,13 +31,13 @@ class LayananSuratController extends Controller
         if ($isExecutiveOrAdmin) {
             $surats = LayananSurat::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])
                 ->orderByDesc('id')
-                ->paginate(15);
+                ->paginate(15)->withQueryString();
         } else {
             $pegawaiId = $user->pegawai_id ?? $user->pegawai?->id;
             $surats = LayananSurat::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])
                 ->where('pegawai_id', $pegawaiId)
                 ->orderByDesc('id')
-                ->paginate(15);
+                ->paginate(15)->withQueryString();
         }
 
         $myPegawai = $user->pegawai ?? ($user->pegawai_id ? Pegawai::find($user->pegawai_id) : null);

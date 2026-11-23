@@ -59,7 +59,7 @@ class PengajuanKarirController extends Controller
             $query->where('status', $request->status);
         }
 
-        $pengajuans = $query->latest()->paginate(15);
+        $pengajuans = $query->latest()->paginate(15)->withQueryString();
         $userPegawai = $user->pegawai;
 
         $pegawaiId = $user->pegawai_id ?? $user->pegawai?->id;
@@ -118,7 +118,7 @@ class PengajuanKarirController extends Controller
                 $usulanQuery->where('pegawai_id', $pegawaiId);
             }
 
-            $daftarUsulanSatyalancana = $usulanQuery->orderByDesc('id')->paginate(15, ['*'], 'sl_page');
+            $daftarUsulanSatyalancana = $usulanQuery->orderByDesc('id')->paginate(15, ['*'], 'sl_page')->withQueryString();
         }
 
         // Data Radar Jatuh Tempo (Monitoring KP & KGB)

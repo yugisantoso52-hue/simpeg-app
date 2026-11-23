@@ -121,7 +121,7 @@
             </x-dropdown-link>
             <x-dropdown-link :href="route('kepegawaian.phl.index')" class="flex items-center gap-2 {{ request()->routeIs('kepegawaian.phl.*') ? 'bg-amber-50 text-amber-700 font-semibold' : '' }}">
                 <x-icon name="user" class="w-4 h-4 text-amber-600 shrink-0" />
-                <span>Data PHL / Pegawai Honorer</span>
+                <span>Data PHL / Honorer</span>
             </x-dropdown-link>
             <x-dropdown-link :href="route('duk.index')" class="flex items-center gap-2 {{ request()->routeIs('duk.*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
                 <x-icon name="list-ordered" class="w-4 h-4 text-indigo-600 shrink-0" />
@@ -255,7 +255,7 @@
             @if(Auth::user()->hasRole('admin') || Auth::user()->canAccessExecutiveKepegawaianMenus())
                 <x-dropdown-link :href="route('admin.presensi.locations')" class="flex items-center gap-2 {{ request()->routeIs('admin.presensi.locations') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
                     <x-icon name="map-pin" class="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Titik Lokasi Pegawai (GPS)</span>
+                    <span>Titik Acuan Lokasi GPS</span>
                 </x-dropdown-link>
             @endif
         @endif

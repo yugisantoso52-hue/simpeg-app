@@ -27,14 +27,14 @@
     {{-- 1. DASHBOARD UTAMA --}}
     <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="flex items-center gap-2.5 rounded-xl font-bold">
         <x-icon name="dashboard" class="w-4 h-4 text-[#007a3d]" />
-        <span>Dashboard Utama</span>
+        <span>Dashboard</span>
     </x-responsive-nav-link>
 
     {{-- 2. ANALITIK EKSEKUTIF --}}
     @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
         <x-responsive-nav-link :href="route('pimpinan.analytics')" :active="request()->routeIs('pimpinan.analytics*')" class="flex items-center gap-2.5 rounded-xl font-bold">
             <x-icon name="chart" class="w-4 h-4 text-indigo-600" />
-            <span>Analitik Eksekutif Dekanat</span>
+            <span>Analitik Eksekutif</span>
         </x-responsive-nav-link>
     @endif
 
@@ -318,7 +318,7 @@
                 <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Layanan Persuratan Mandiri</div>
                 <x-responsive-nav-link :href="route('layanan-surat.index')" :active="request()->routeIs('layanan-surat.*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="file-text" class="w-3.5 h-3.5 text-blue-600" />
-                    <span>E-Surat Keterangan Aktif Bekerja</span>
+                    <span>E-Surat Keterangan Aktif</span>
                 </x-responsive-nav-link>
             @endif
 
@@ -344,7 +344,7 @@
             @if(Auth::user()->hasRole('admin'))
                 <x-responsive-nav-link :href="route('pengajuan-cuti.rekap-kuota')" :active="request()->routeIs('pengajuan-cuti.rekap-kuota*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="table" class="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Rekap Kuota Cuti (N, N-1, N-2)</span>
+                    <span>Rekap Kuota Cuti Pegawai (N, N-1, N-2)</span>
                 </x-responsive-nav-link>
             @endif
             @if(Auth::user()->hasRole('pimpinan') || Auth::user()->hasRole('admin') || Auth::user()->isAtasan())
@@ -470,7 +470,7 @@
                 <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Keamanan & Pemeliharaan</div>
                 <x-responsive-nav-link :href="route('audit-logs.index')" :active="request()->routeIs('audit-logs.*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="shield-check" class="w-3.5 h-3.5 text-violet-600" />
-                    <span>Audit Log System</span>
+                    <span>Audit Log Sistem</span>
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('backup.index')" :active="request()->routeIs('backup.*')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="database" class="w-3.5 h-3.5 text-rose-600" />

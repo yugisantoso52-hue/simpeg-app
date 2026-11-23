@@ -92,8 +92,7 @@ class TalentManagementController extends Controller
 
         $mappings = $query->orderBy('kuadran_box', 'desc')
                           ->orderBy('sumbu_kinerja_nilai', 'desc')
-                          ->paginate(20)
-                          ->withQueryString();
+                          ->paginate(20)->withQueryString();
 
         $unitKerjas = UnitKerja::orderBy('nama_unit')->get();
         $availableYears = range(date('Y'), date('Y') - 4);

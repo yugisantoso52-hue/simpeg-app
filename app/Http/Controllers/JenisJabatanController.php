@@ -22,7 +22,7 @@ class JenisJabatanController extends Controller
             });
         }
 
-        $jenisJabatan = $query->orderBy('nama_jenis_jabatan', 'asc')->paginate(10);
+        $jenisJabatan = $query->orderBy('nama_jenis_jabatan', 'asc')->paginate(10)->withQueryString();
 
         return view('jenis-jabatan.index', compact('jenisJabatan'));
     }

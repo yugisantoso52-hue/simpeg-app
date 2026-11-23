@@ -35,8 +35,7 @@ class RiwayatPendidikanController extends Controller
                 });
             })
             ->latest()
-            ->paginate(10)
-            ->withQueryString();
+            ->paginate(10)->withQueryString();
 
         return view('riwayat-pendidikan.index', compact('data'));
     }

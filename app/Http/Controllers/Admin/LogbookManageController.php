@@ -48,8 +48,7 @@ class LogbookManageController extends Controller
         $pegawaiRecap = $this->service->getAdminPegawaiRecap($month, $year, $unitKerjaId, $kategoriPegawai, $status, $search, $bawahanIds);
 
         $logbooks = $this->service->getAdminQuery($month, $year, $unitKerjaId, $kategoriPegawai, $status, $search, $bawahanIds)
-            ->paginate(20)
-            ->withQueryString();
+            ->paginate(20)->withQueryString();
 
         $unitKerjaList = UnitKerja::orderBy('nama_unit')->get();
 
