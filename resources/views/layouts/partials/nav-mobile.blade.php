@@ -337,6 +337,22 @@
                 <x-icon name="plus" class="w-3.5 h-3.5 text-blue-600" />
                 <span>+ Buat Permohonan Cuti Baru</span>
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('pengajuan-cuti.buku-cuti')" :active="request()->routeIs('pengajuan-cuti.buku-cuti*')" class="flex items-center gap-2 text-xs rounded-lg">
+                <x-icon name="book-open" class="w-3.5 h-3.5 text-teal-600" />
+                <span>Buku Kendali Cuti Saya</span>
+            </x-responsive-nav-link>
+            @if(Auth::user()->hasRole('admin'))
+                <x-responsive-nav-link :href="route('pengajuan-cuti.rekap-kuota')" :active="request()->routeIs('pengajuan-cuti.rekap-kuota*')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="table" class="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Rekap Kuota Cuti (N, N-1, N-2)</span>
+                </x-responsive-nav-link>
+            @endif
+            @if(Auth::user()->hasRole('pimpinan') || Auth::user()->hasRole('admin') || Auth::user()->isAtasan())
+                <x-responsive-nav-link :href="route('pengajuan-cuti.monitoring-pimpinan')" :active="request()->routeIs('pengajuan-cuti.monitoring-pimpinan*')" class="flex items-center gap-2 text-xs rounded-lg">
+                    <x-icon name="chart-bar" class="w-3.5 h-3.5 text-purple-600" />
+                    <span>Monitoring Eksekutif Cuti</span>
+                </x-responsive-nav-link>
+            @endif
 
             <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tata Naskah & SOP</div>
             <x-responsive-nav-link :href="route('regulasi-tata-naskah.index')" :active="request()->routeIs('regulasi-tata-naskah.*')" class="flex items-center gap-2 text-xs rounded-lg">

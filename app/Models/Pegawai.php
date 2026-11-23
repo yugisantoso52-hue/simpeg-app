@@ -254,6 +254,11 @@ class Pegawai extends Model
         return $this->hasMany(PengajuanCuti::class, 'pegawai_id');
     }
 
+    public function kuotaCuti(): HasMany
+    {
+        return $this->hasMany(KuotaCutiPegawai::class, 'pegawai_id');
+    }
+
     public function tugasBelajar(): HasMany
     {
         return $this->hasMany(TugasBelajar::class, 'pegawai_id');
@@ -325,11 +330,21 @@ class Pegawai extends Model
 
     /**
      * Hitung sisa kuota cuti tahunan pada tahun tertentu (Standar: 12 hari kerja).
+     * Memprioritaskan data definitif dari tabel kuota_cuti_pegawai jika sudah diset Admin,
+     * kemudian mengkalkulasi dengan pemakaian cuti di sistem.
      * Jika $onlyIfRecorded = true (untuk tahun historis N-1 dan N-2), hanya mengembalikan angka
-     * apabila terdapat riwayat Cuti Tahunan yang tercatat pada tahun tersebut; jika tidak ada, mengembalikan null ('-').
+     * apabila terdapat riwayat Cuti Tahunan yang tercatat pada tahun tersebut atau ada kuota_cuti_pegawai; jika tidak ada, mengembalikan null ('-').
      */
     public function getSisaCutiTahunanByYear(int $year, bool $onlyIfRecorded = false): ?int
     {
+        // 1. Cek apakah ada record manual di tabel kuota_cuti_pegawai
+        $kuotaRecord = null;
+        if ($this->relationLoaded('kuotaCuti')) {
+            $kuotaRecord = $this->kuotaCuti->firstWhere('tahun', $year);
+        } else {
+            $kuotaRecord = $this->kuotaCuti()->where('tahun', $year)->first();
+        }
+
         $validStatuses = [
             'Disetujui',
             'Menunggu Persetujuan',
@@ -337,15 +352,15 @@ class Pegawai extends Model
             'Disetujui Atasan (Menunggu Keputusan Akhir)',
         ];
 
+        $cutiTerpakai = 0;
+        $hasCutiTransaksi = false;
+
         if ($this->relationLoaded('pengajuanCuti')) {
             $records = $this->pengajuanCuti
                 ->where('jenis_cuti', 'Cuti Tahunan')
                 ->filter(fn($c) => in_array($c->status, $validStatuses, true) && $c->tanggal_mulai && \Carbon\Carbon::parse($c->tanggal_mulai)->year === $year);
 
-            if ($onlyIfRecorded && $records->isEmpty()) {
-                return null;
-            }
-
+            $hasCutiTransaksi = $records->isNotEmpty();
             $cutiTerpakai = $records->sum('jumlah_hari');
         } else {
             $query = $this->pengajuanCuti()
@@ -353,11 +368,18 @@ class Pegawai extends Model
                 ->whereIn('status', $validStatuses)
                 ->whereYear('tanggal_mulai', $year);
 
-            if ($onlyIfRecorded && !(clone $query)->exists()) {
-                return null;
-            }
-
+            $hasCutiTransaksi = (clone $query)->exists();
             $cutiTerpakai = $query->sum('jumlah_hari');
+        }
+
+        if ($onlyIfRecorded && !$kuotaRecord && !$hasCutiTransaksi) {
+            return null;
+        }
+
+        if ($kuotaRecord) {
+            // Jika ada record master kuota, gunakan kuota_awal dikurangi cuti terpakai (atau kuota_terpakai jika lebih besar)
+            $totalTerpakai = max((int) $kuotaRecord->kuota_terpakai, (int) $cutiTerpakai);
+            return max(0, (int) $kuotaRecord->kuota_awal - $totalTerpakai);
         }
 
         return max(0, 12 - (int) $cutiTerpakai);

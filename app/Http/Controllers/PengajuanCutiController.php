@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PengajuanCuti\ApprovePengajuanCutiRequest;
 use App\Http\Requests\PengajuanCuti\StorePengajuanCutiRequest;
 use App\Models\Pegawai;
+use App\Models\PengajuanCuti;
 use App\Models\User;
 use App\Services\NomorSuratService;
 use App\Services\PengajuanCutiService;
@@ -554,5 +555,274 @@ class PengajuanCutiController extends Controller
 
         $filename = 'Formulir_Cuti_' . ($cuti->pegawai->nip ?? 'Pegawai') . '_' . $cuti->id . '.pdf';
         return $pdf->stream($filename);
+    }
+
+    /**
+     * Rekapitulasi Kuota Cuti Tahunan (N, N-1, N-2) Khusus Admin Kepegawaian
+     */
+    public function rekapKuotaAdmin(Request $request)
+    {
+        $user = $request->user();
+        if (!$user->hasRole('admin')) {
+            abort(403, 'Hanya Administrator Kepegawaian yang berhak mengelola rekap kuota cuti.');
+        }
+
+        $tahun = (int) $request->input('tahun', now()->year);
+        $search = trim((string) $request->input('search', ''));
+        $unitKerjaId = $request->filled('unit_kerja_id') ? (int) $request->input('unit_kerja_id') : null;
+        $jenisPegawai = $request->input('jenis_pegawai');
+
+        $query = Pegawai::with(['unitKerja', 'jabatan', 'kuotaCuti', 'pengajuanCuti'])
+            ->where('status_pegawai', 'Aktif');
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%");
+            });
+        }
+
+        if ($unitKerjaId) {
+            $query->where('unit_kerja_id', $unitKerjaId);
+        }
+
+        if ($jenisPegawai === 'Dosen') {
+            $query->dosen();
+        } elseif ($jenisPegawai === 'Tendik') {
+            $query->tendik();
+        }
+
+        $pegawaiList = $query->orderBy('nama')->paginate(15)->withQueryString();
+        $unitKerjaList = \App\Models\UnitKerja::orderBy('nama_unit')->get();
+
+        return view('pengajuan-cuti.rekap-kuota-admin', compact('pegawaiList', 'unitKerjaList', 'tahun', 'search', 'unitKerjaId', 'jenisPegawai'));
+    }
+
+    /**
+     * Simpan / Perbarui Saldo Kuota Cuti Pegawai (N, N-1, atau N-2) oleh Admin
+     */
+    public function simpanKuotaAdmin(Request $request)
+    {
+        $user = $request->user();
+        if (!$user->hasRole('admin')) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $validated = $request->validate([
+            'pegawai_id'          => 'required|exists:pegawai,id',
+            'tahun'               => 'required|integer|min:2020|max:2035',
+            'kuota_awal'          => 'required|integer|min:0|max:30',
+            'kuota_terpakai'      => 'required|integer|min:0|max:30',
+            'catatan_penyesuaian' => 'nullable|string|max:255',
+        ]);
+
+        $sisaKuota = max(0, $validated['kuota_awal'] - $validated['kuota_terpakai']);
+
+        \App\Models\KuotaCutiPegawai::updateOrCreate(
+            [
+                'pegawai_id' => $validated['pegawai_id'],
+                'tahun'      => $validated['tahun'],
+            ],
+            [
+                'kuota_awal'          => $validated['kuota_awal'],
+                'kuota_terpakai'      => $validated['kuota_terpakai'],
+                'sisa_kuota'          => $sisaKuota,
+                'catatan_penyesuaian' => $validated['catatan_penyesuaian'] ?? null,
+                'updated_by'          => $user->id,
+            ]
+        );
+
+        return redirect()->back()->with('success', "Saldo kuota cuti tahun {$validated['tahun']} berhasil diperbarui.");
+    }
+
+    /**
+     * Inisialisasi Massal (Bulk Seed) Kuota Awal Tahun Berjalan untuk Seluruh Pegawai Aktif
+     */
+    public function bulkInitKuotaAdmin(Request $request)
+    {
+        $user = $request->user();
+        if (!$user->hasRole('admin')) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $tahun = (int) $request->input('tahun', now()->year);
+        $kuotaAwal = (int) $request->input('kuota_awal', 12);
+
+        $pegawaiAktif = Pegawai::where('status_pegawai', 'Aktif')->get();
+        $count = 0;
+
+        foreach ($pegawaiAktif as $pegawai) {
+            $exists = \App\Models\KuotaCutiPegawai::where('pegawai_id', $pegawai->id)
+                ->where('tahun', $tahun)
+                ->exists();
+
+            if (!$exists) {
+                \App\Models\KuotaCutiPegawai::create([
+                    'pegawai_id'          => $pegawai->id,
+                    'tahun'               => $tahun,
+                    'kuota_awal'          => $kuotaAwal,
+                    'kuota_terpakai'      => 0,
+                    'sisa_kuota'          => $kuotaAwal,
+                    'catatan_penyesuaian' => "Inisialisasi Otomatis Kuota Cuti Tahun {$tahun}",
+                    'updated_by'          => $user->id,
+                ]);
+                $count++;
+            }
+        }
+
+        return redirect()->back()->with('success', "Inisialisasi kuota cuti tahun {$tahun} berhasil diterapkan pada {$count} pegawai.");
+    }
+
+    /**
+     * Ekspor Dokumen Resmi Rekapitulasi Kuota Cuti Tahunan (PDF)
+     */
+    public function exportRekapPdf(Request $request)
+    {
+        $user = $request->user();
+        if (!$user->hasRole(['admin', 'pimpinan'])) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $tahun = (int) $request->input('tahun', now()->year);
+        $unitKerjaId = $request->filled('unit_kerja_id') ? (int) $request->input('unit_kerja_id') : null;
+        $jenisPegawai = $request->input('jenis_pegawai');
+
+        $query = Pegawai::with(['unitKerja', 'jabatan', 'kuotaCuti', 'pengajuanCuti'])
+            ->where('status_pegawai', 'Aktif');
+
+        if ($unitKerjaId) {
+            $query->where('unit_kerja_id', $unitKerjaId);
+        }
+
+        if ($jenisPegawai === 'Dosen') {
+            $query->dosen();
+        } elseif ($jenisPegawai === 'Tendik') {
+            $query->tendik();
+        }
+
+        $pegawaiList = $query->orderBy('nama')->get();
+        $unitKerja = $unitKerjaId ? \App\Models\UnitKerja::find($unitKerjaId) : null;
+
+        $pdf = Pdf::loadView('exports.pdf.rekap_kuota_cuti', compact('pegawaiList', 'tahun', 'unitKerja', 'jenisPegawai'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->stream("Rekap_Kuota_Cuti_FKP_{$tahun}.pdf");
+    }
+
+    /**
+     * Buku Cuti Saya / Kartu Kendali Cuti Mandiri Pegawai (Self-Service)
+     */
+    public function bukuCutiSaya(Request $request)
+    {
+        $user = $request->user();
+        $pegawai = $this->resolveUserPegawai($user);
+
+        // Jika admin atau pimpinan ingin melihat buku cuti pegawai tertentu
+        if (($user->hasRole('admin') || $user->hasRole('pimpinan') || $user->isAtasan()) && $request->filled('pegawai_id')) {
+            $pegawai = Pegawai::findOrFail((int) $request->input('pegawai_id'));
+        }
+
+        if (!$pegawai) {
+            return redirect()->route('dashboard')->with('error', 'Akun Anda belum terhubung dengan data pegawai.');
+        }
+
+        $tahun = (int) $request->input('tahun', now()->year);
+        $catatanCuti = $pegawai->getCatatanCutiTahunan($tahun);
+
+        // Riwayat Transaksi Cuti yang telah diajukan/disetujui
+        $riwayatCuti = PengajuanCuti::where('pegawai_id', $pegawai->id)
+            ->whereYear('tanggal_mulai', $tahun)
+            ->orderBy('tanggal_mulai', 'asc')
+            ->get();
+
+        return view('pengajuan-cuti.buku-cuti', compact('pegawai', 'catatanCuti', 'riwayatCuti', 'tahun'));
+    }
+
+    /**
+     * Ekspor PDF Buku Cuti Mandiri Pegawai (Kartu Kendali Cuti)
+     */
+    public function exportBukuCutiPdf(Request $request)
+    {
+        $user = $request->user();
+        $pegawai = $this->resolveUserPegawai($user);
+
+        if (($user->hasRole('admin') || $user->hasRole('pimpinan') || $user->isAtasan()) && $request->filled('pegawai_id')) {
+            $pegawai = Pegawai::findOrFail((int) $request->input('pegawai_id'));
+        }
+
+        if (!$pegawai) {
+            abort(404, 'Data pegawai tidak ditemukan.');
+        }
+
+        $tahun = (int) $request->input('tahun', now()->year);
+        $catatanCuti = $pegawai->getCatatanCutiTahunan($tahun);
+
+        $riwayatCuti = PengajuanCuti::where('pegawai_id', $pegawai->id)
+            ->whereYear('tanggal_mulai', $tahun)
+            ->orderBy('tanggal_mulai', 'asc')
+            ->get();
+
+        $pdf = Pdf::loadView('exports.pdf.buku_cuti_pegawai', compact('pegawai', 'catatanCuti', 'riwayatCuti', 'tahun'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream("Buku_Cuti_{$pegawai->nip}_{$tahun}.pdf");
+    }
+
+    /**
+     * Dashboard Monitoring Eksekutif Cuti untuk Pimpinan (Dekan, Wadek II, Kabag Umum)
+     */
+    public function monitoringPimpinan(Request $request)
+    {
+        $user = $request->user();
+        if (!$user->hasRole('pimpinan') && !$user->hasRole('admin') && !$user->isAtasan()) {
+            abort(403, 'Menu ini khusus untuk jajaran Pimpinan & Pejabat Berwenang.');
+        }
+
+        $tahun = (int) $request->input('tahun', now()->year);
+
+        // Statistik Utama
+        $totalPegawaiAktif = Pegawai::where('status_pegawai', 'Aktif')->count();
+        $totalCutiTahunIni = PengajuanCuti::whereYear('tanggal_mulai', $tahun)->count();
+        $cutiDisetujui     = PengajuanCuti::whereYear('tanggal_mulai', $tahun)->where('status', 'Disetujui')->count();
+        $cutiMenunggu      = PengajuanCuti::whereYear('tanggal_mulai', $tahun)->whereIn('status', [
+            'Menunggu Persetujuan',
+            'Disetujui Atasan (Menunggu PYBMC)',
+            'Disetujui Atasan (Menunggu Keputusan Akhir)'
+        ])->count();
+
+        // Pegawai dengan sisa cuti N-2 yang rawan hangus (jika ada sisa di N-2 > 0)
+        $tahunN2 = $tahun - 2;
+        $rawanHangusList = \App\Models\KuotaCutiPegawai::with('pegawai.unitKerja')
+            ->where('tahun', $tahunN2)
+            ->where('sisa_kuota', '>', 0)
+            ->whereHas('pegawai', fn($q) => $q->where('status_pegawai', 'Aktif'))
+            ->orderBy('sisa_kuota', 'desc')
+            ->take(10)
+            ->get();
+
+        // Pengajuan cuti khusus (Cuti Melahirkan, Cuti Besar, CLTN, Cuti Sakit > 3 hari)
+        $cutiKhusus = PengajuanCuti::with(['pegawai.unitKerja'])
+            ->whereYear('tanggal_mulai', $tahun)
+            ->where(function ($q) {
+                $q->whereIn('jenis_cuti', ['Cuti Melahirkan', 'Cuti Besar', 'Cuti di Luar Tanggungan Negara'])
+                  ->orWhere(function ($sq) {
+                      $sq->where('jenis_cuti', 'Cuti Sakit')->where('jumlah_hari', '>', 3);
+                  });
+            })
+            ->latest()
+            ->take(10)
+            ->get();
+
+        // Rekap distribusi cuti per Unit Kerja
+        $unitCutiStats = \App\Models\UnitKerja::withCount(['pegawai as jumlah_cuti' => function ($q) use ($tahun) {
+            $q->whereHas('pengajuanCuti', function ($cq) use ($tahun) {
+                $cq->whereYear('tanggal_mulai', $tahun)->where('status', 'Disetujui');
+            });
+        }])->get();
+
+        return view('pengajuan-cuti.monitoring-pimpinan', compact(
+            'tahun', 'totalPegawaiAktif', 'totalCutiTahunIni', 'cutiDisetujui',
+            'cutiMenunggu', 'rawanHangusList', 'cutiKhusus', 'unitCutiStats'
+        ));
     }
 }

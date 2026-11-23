@@ -657,4 +657,54 @@ class PengajuanCutiTest extends TestCase
         $showResponse->assertSee("{$tahunN1} (N-1)");
         $showResponse->assertSee("{$tahunN2} (N-2)");
     }
+
+    public function test_admin_can_manage_kuota_rekap_and_pegawai_can_view_buku_cuti(): void
+    {
+        $tahunN  = (int) now()->year;
+        $tahunN1 = $tahunN - 1;
+
+        // Admin simpan saldo kuota N-1 untuk pegawai
+        $responseSimpan = $this->actingAs($this->adminUser)->post(route('pengajuan-cuti.rekap-kuota.simpan'), [
+            'pegawai_id'          => $this->pegawai->id,
+            'tahun'               => $tahunN1,
+            'kuota_awal'          => 12,
+            'kuota_terpakai'      => 4,
+            'catatan_penyesuaian' => 'Sisa 8 hari kerja sesuai arsip fisik',
+        ]);
+        $responseSimpan->assertSessionHas('success');
+
+        $this->assertDatabaseHas('kuota_cuti_pegawai', [
+            'pegawai_id'     => $this->pegawai->id,
+            'tahun'          => $tahunN1,
+            'kuota_awal'     => 12,
+            'kuota_terpakai' => 4,
+            'sisa_kuota'     => 8,
+        ]);
+
+        // Admin buka halaman rekap kuota
+        $rekapResponse = $this->actingAs($this->adminUser)->get(route('pengajuan-cuti.rekap-kuota', ['tahun' => $tahunN]));
+        $rekapResponse->assertStatus(200);
+        $rekapResponse->assertSee('Rekapitulasi Kuota Cuti Pegawai');
+
+        // Pegawai buka halaman Buku Cuti Saya
+        $bukuCutiResponse = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.buku-cuti', ['tahun' => $tahunN]));
+        $bukuCutiResponse->assertStatus(200);
+        $bukuCutiResponse->assertSee('Buku Kendali Cuti Pegawai');
+        $bukuCutiResponse->assertSee('8 Hari'); // Sisa kuota N-1 yang diinput admin
+
+        // Pimpinan buka halaman Monitoring Eksekutif Cuti
+        $pimpinanResponse = $this->actingAs($this->pimpinanUser)->get(route('pengajuan-cuti.monitoring-pimpinan', ['tahun' => $tahunN]));
+        $pimpinanResponse->assertStatus(200);
+        $pimpinanResponse->assertSee('Monitoring Eksekutif E-Cuti');
+
+        // Test export PDF Rekap Kuota
+        $exportPdfResponse = $this->actingAs($this->adminUser)->get(route('pengajuan-cuti.rekap-kuota.export-pdf', ['tahun' => $tahunN]));
+        $exportPdfResponse->assertStatus(200);
+        $this->assertStringContainsString('application/pdf', $exportPdfResponse->headers->get('Content-Type'));
+
+        // Test export PDF Buku Cuti
+        $exportBukuPdfResponse = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.buku-cuti.pdf', ['tahun' => $tahunN]));
+        $exportBukuPdfResponse->assertStatus(200);
+        $this->assertStringContainsString('application/pdf', $exportBukuPdfResponse->headers->get('Content-Type'));
+    }
 }

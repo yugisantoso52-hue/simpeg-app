@@ -11,6 +11,27 @@
             </div>
 
             <div class="flex items-center gap-2">
+                {{-- Tombol Buku Cuti Mandiri --}}
+                <a href="{{ route('pengajuan-cuti.buku-cuti') }}"
+                   class="inline-flex items-center gap-1.5 rounded-lg border border-teal-300 bg-teal-50 px-3.5 py-2.5 text-xs font-semibold text-teal-800 shadow-xs hover:bg-teal-100 transition">
+                    <span>📖</span> Buku Cuti Saya
+                </a>
+
+                {{-- Khusus Admin & Pimpinan --}}
+                @if(Auth::user()->hasRole('admin'))
+                    <a href="{{ route('pengajuan-cuti.rekap-kuota') }}"
+                       class="inline-flex items-center gap-1.5 rounded-lg border border-indigo-300 bg-indigo-50 px-3.5 py-2.5 text-xs font-semibold text-indigo-800 shadow-xs hover:bg-indigo-100 transition">
+                        <span>📊</span> Rekap Kuota Pegawai
+                    </a>
+                @endif
+
+                @if(Auth::user()->hasRole('pimpinan') || Auth::user()->hasRole('admin') || Auth::user()->isAtasan())
+                    <a href="{{ route('pengajuan-cuti.monitoring-pimpinan') }}"
+                       class="inline-flex items-center gap-1.5 rounded-lg border border-purple-300 bg-purple-50 px-3.5 py-2.5 text-xs font-semibold text-purple-800 shadow-xs hover:bg-purple-100 transition">
+                        <span>🏛️</span> Monitoring Pimpinan
+                    </a>
+                @endif
+
                 {{-- Tombol SOP E-Cuti --}}
                 <x-sop-modal title="SOP Pengajuan & Persetujuan Cuti ASN" 
                              buttonLabel="SOP & Syarat Cuti" 

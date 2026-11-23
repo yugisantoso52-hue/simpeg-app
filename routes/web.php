@@ -299,6 +299,10 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         Route::delete('/satyalancana/{id}', [SatyalancanaController::class, 'destroy'])->name('satyalancana.destroy');
         Route::delete('/layanan-surat/{id}', [\App\Http\Controllers\LayananSuratController::class, 'destroy'])->name('layanan-surat.destroy');
         Route::post('/pengajuan-cuti/{id}/update-nomor', [PengajuanCutiController::class, 'updateNomorSurat'])->name('pengajuan-cuti.update-nomor');
+        Route::get('/pengajuan-cuti/rekap-kuota', [PengajuanCutiController::class, 'rekapKuotaAdmin'])->name('pengajuan-cuti.rekap-kuota');
+        Route::post('/pengajuan-cuti/rekap-kuota/simpan', [PengajuanCutiController::class, 'simpanKuotaAdmin'])->name('pengajuan-cuti.rekap-kuota.simpan');
+        Route::post('/pengajuan-cuti/rekap-kuota/bulk-init', [PengajuanCutiController::class, 'bulkInitKuotaAdmin'])->name('pengajuan-cuti.rekap-kuota.bulk-init');
+        Route::get('/pengajuan-cuti/rekap-kuota/export-pdf', [PengajuanCutiController::class, 'exportRekapPdf'])->name('pengajuan-cuti.rekap-kuota.export-pdf');
 
         // Manajemen Akun & Keamanan Pegawai (Khusus Admin)
         Route::post('/pegawai/{pegawai}/unsuspend-account', [PegawaiController::class, 'unsuspendAccount'])->name('pegawai.unsuspend');
@@ -323,6 +327,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
 
         /* Modul E-Cuti Pegawai (Self-Service) */
         Route::get('/pengajuan-cuti', [PengajuanCutiController::class, 'index'])->name('pengajuan-cuti.index');
+        Route::get('/pengajuan-cuti/buku-cuti', [PengajuanCutiController::class, 'bukuCutiSaya'])->name('pengajuan-cuti.buku-cuti');
+        Route::get('/pengajuan-cuti/buku-cuti/pdf', [PengajuanCutiController::class, 'exportBukuCutiPdf'])->name('pengajuan-cuti.buku-cuti.pdf');
+        Route::get('/pengajuan-cuti/monitoring-pimpinan', [PengajuanCutiController::class, 'monitoringPimpinan'])->name('pengajuan-cuti.monitoring-pimpinan');
         Route::get('/pengajuan-cuti/create', [PengajuanCutiController::class, 'create'])->name('pengajuan-cuti.create');
         Route::post('/pengajuan-cuti', [PengajuanCutiController::class, 'store'])->name('pengajuan-cuti.store');
         Route::get('/pengajuan-cuti/{id}', [PengajuanCutiController::class, 'show'])->name('pengajuan-cuti.show');

@@ -351,6 +351,22 @@
             <x-icon name="plus" class="w-4 h-4 text-blue-600 shrink-0" />
             <span>+ Buat Permohonan Cuti Baru</span>
         </x-dropdown-link>
+        <x-dropdown-link :href="route('pengajuan-cuti.buku-cuti')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-cuti.buku-cuti*') ? 'bg-teal-50 text-teal-700 font-semibold' : '' }}">
+            <x-icon name="book-open" class="w-4 h-4 text-teal-600 shrink-0" />
+            <span>Buku Kendali Cuti Saya</span>
+        </x-dropdown-link>
+        @if(Auth::user()->hasRole('admin'))
+            <x-dropdown-link :href="route('pengajuan-cuti.rekap-kuota')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-cuti.rekap-kuota*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
+                <x-icon name="table" class="w-4 h-4 text-indigo-600 shrink-0" />
+                <span>Rekap Kuota Cuti Pegawai (N, N-1, N-2)</span>
+            </x-dropdown-link>
+        @endif
+        @if(Auth::user()->hasRole('pimpinan') || Auth::user()->hasRole('admin') || Auth::user()->isAtasan())
+            <x-dropdown-link :href="route('pengajuan-cuti.monitoring-pimpinan')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-cuti.monitoring-pimpinan*') ? 'bg-purple-50 text-purple-700 font-semibold' : '' }}">
+                <x-icon name="chart-bar" class="w-4 h-4 text-purple-600 shrink-0" />
+                <span>Monitoring Eksekutif Cuti</span>
+            </x-dropdown-link>
+        @endif
 
         {{-- REGULASI & TATA NASKAH --}}
         <div class="border-t border-slate-100 my-1"></div>
