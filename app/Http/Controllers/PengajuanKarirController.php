@@ -400,7 +400,10 @@ class PengajuanKarirController extends Controller
      */
     public function previewDokumen(int $id, string $jenis, Request $request)
     {
-        $pengajuan = PengajuanKarir::with(['pegawai.riwayatSkp', 'pegawai.riwayatPangkat'])->findOrFail($id);
+        $pengajuan = PengajuanKarir::with(['pegawai.riwayatSkp', 'pegawai.riwayatPangkat'])->find($id);
+        if (!$pengajuan) {
+            $pengajuan = \App\Models\UsulanSatyalancana::with(['pegawai.riwayatSkp', 'pegawai.riwayatPangkat'])->findOrFail($id);
+        }
 
         $user = Auth::user();
         if (!$user) {

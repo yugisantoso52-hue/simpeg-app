@@ -579,7 +579,11 @@ class DashboardController extends Controller
                 ->get();
 
             foreach ($satyaList as $st) {
-                $judul = 'Satyalancana ' . ($st->kategori ? $st->kategori . ' Tahun' : 'Karya Satya');
+                $kat = trim($st->kategori ?? '');
+                if ($kat && !str_ends_with(strtolower($kat), 'tahun')) {
+                    $kat .= ' Tahun';
+                }
+                $judul = 'Satyalancana ' . ($kat ?: 'Karya Satya');
                 $item = [
                     'id'           => $st->id,
                     'modul'        => 'satya',
