@@ -149,31 +149,44 @@
                 </form>
             </div>
 
-            {{-- TABEL REKAPITULASI RESMI SESUAI PERATURAN BKN NOMOR 7 TAHUN 2022 --}}
+            {{-- TABEL REKAPITULASI RESMI SESUAI PERATURAN BKN NOMOR 7 TAHUN 2022 (DENGAN SCROLL VERTIKAL & HORIZONTAL) --}}
             <div class="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden">
-                <div class="overflow-x-auto">
+                <div class="px-4 py-2.5 bg-slate-50 border-b border-gray-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div class="font-bold text-slate-800 flex items-center gap-2">
+                        <span>📋</span>
+                        <span>Daftar Rekapitulasi Kuota &amp; Realisasi Cuti Pegawai (Tahun {{ $tahun }})</span>
+                        <span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-800 text-[11px] font-extrabold">
+                            {{ $pegawaiList->total() }} Pegawai
+                        </span>
+                    </div>
+                    <span class="text-[11px] text-slate-500">
+                        💡 Tabel dilengkapi fitur gulir (scroll) otomatis agar tampilan halaman tetap ringkas
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto overflow-y-auto" style="max-height: 540px;">
                     <table class="w-full text-xs text-left text-gray-700 border-collapse">
-                        <thead class="text-[11px] uppercase bg-slate-50 text-slate-700 font-bold border-b border-gray-200">
+                        <thead class="text-[11px] uppercase bg-slate-100 text-slate-800 font-bold border-b border-gray-300 sticky top-0 z-20 shadow-2xs">
                             <tr>
-                                <th rowspan="2" class="py-3 px-2 text-center w-10 border-r border-gray-200 bg-gray-100/70">No</th>
-                                <th rowspan="2" class="py-3 px-3 border-r border-gray-200 min-w-[210px] bg-gray-100/70">Pegawai, NIP &amp; Status ASN</th>
-                                <th rowspan="2" class="py-3 px-3 border-r border-gray-200 min-w-[180px] bg-gray-100/70">Unit Kerja &amp; Jabatan</th>
-                                <th colspan="9" class="py-2 px-3 text-center bg-slate-100 border-b border-r border-gray-200 text-slate-800 tracking-wider">
+                                <th rowspan="2" class="py-3 px-2 text-center w-10 border-r border-gray-200 bg-slate-100">No</th>
+                                <th rowspan="2" class="py-3 px-3 border-r border-gray-200 min-w-[210px] bg-slate-100">Pegawai, NIP &amp; Status ASN</th>
+                                <th rowspan="2" class="py-3 px-3 border-r border-gray-200 min-w-[180px] bg-slate-100">Unit Kerja &amp; Jabatan</th>
+                                <th colspan="9" class="py-2 px-3 text-center bg-slate-200/90 border-b border-r border-gray-300 text-slate-900 tracking-wider">
                                     JENIS CUTI (Peraturan BKN No. 7 Tahun 2022 — Pemisahan Hak PNS &amp; PPPK)
                                 </th>
-                                <th rowspan="2" class="py-3 px-3 text-center border-r border-gray-200 min-w-[160px] bg-gray-100/70">Tgl Pengajuan</th>
-                                <th rowspan="2" class="py-3 px-2 text-center w-24 bg-gray-100/70">Aksi</th>
+                                <th rowspan="2" class="py-3 px-3 text-center border-r border-gray-200 min-w-[160px] bg-slate-100">Tgl Pengajuan</th>
+                                <th rowspan="2" class="py-3 px-2 text-center w-24 bg-slate-100">Aksi</th>
                             </tr>
-                            <tr class="bg-gray-50 text-[10px] text-slate-600">
-                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-red-50/40 text-red-900" title="Sisa Cuti Tahun {{ $tahun - 2 }}">{{ $tahun - 2 }} (N-2)</th>
-                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-amber-50/40 text-amber-900" title="Sisa Cuti Tahun {{ $tahun - 1 }}">{{ $tahun - 1 }} (N-1)</th>
-                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-emerald-50/50 text-emerald-900 font-bold" title="Cuti Tahunan Terpakai Tahun {{ $tahun }}">{{ $tahun }} (N)</th>
-                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-teal-100/60 text-teal-900 font-black">Sisa</th>
-                                <th class="py-2 px-2 text-center border-r border-gray-200" title="Khusus PNS (Masa Kerja ≥ 5 Tahun)">Cuti Besar <span class="block text-[8px] font-normal text-blue-700">(PNS)</span></th>
-                                <th class="py-2 px-2 text-center border-r border-gray-200">Cuti Sakit</th>
-                                <th class="py-2 px-2 text-center border-r border-gray-200">Cuti Melahirkan</th>
-                                <th class="py-2 px-2 text-center border-r border-gray-200" title="Khusus PNS (PPPK menggunakan Cuti Tahunan Pasal 9)">CAP <span class="block text-[8px] font-normal text-blue-700">(PNS)</span></th>
-                                <th class="py-2 px-2 text-center border-r border-gray-200" title="Khusus PNS (Masa Kerja ≥ 5 Tahun)">CLTN <span class="block text-[8px] font-normal text-blue-700">(PNS)</span></th>
+                            <tr class="bg-slate-50 text-[10px] text-slate-700 border-b border-gray-200">
+                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-red-50 text-red-900" title="Sisa Cuti Tahun {{ $tahun - 2 }}">{{ $tahun - 2 }} (N-2)</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-amber-50 text-amber-900" title="Sisa Cuti Tahun {{ $tahun - 1 }}">{{ $tahun - 1 }} (N-1)</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-emerald-50 text-emerald-900 font-bold" title="Cuti Tahunan Terpakai Tahun {{ $tahun }}">{{ $tahun }} (N)</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-teal-100 text-teal-950 font-black">Sisa</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-slate-50" title="Khusus PNS (Masa Kerja ≥ 5 Tahun)">Cuti Besar <span class="block text-[8px] font-normal text-blue-700">(PNS)</span></th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-slate-50">Cuti Sakit</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-slate-50">Cuti Melahirkan</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-slate-50" title="Khusus PNS (PPPK menggunakan Cuti Tahunan Pasal 9)">CAP <span class="block text-[8px] font-normal text-blue-700">(PNS)</span></th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-slate-50" title="Khusus PNS (Masa Kerja ≥ 5 Tahun)">CLTN <span class="block text-[8px] font-normal text-blue-700">(PNS)</span></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">

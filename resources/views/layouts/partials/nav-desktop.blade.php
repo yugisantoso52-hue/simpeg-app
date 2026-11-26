@@ -349,7 +349,7 @@
         </x-dropdown-link>
         <x-dropdown-link :href="route('pengajuan-cuti.create')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-cuti.create') ? 'bg-amber-50 text-amber-700 font-semibold' : '' }}">
             <x-icon name="plus" class="w-4 h-4 text-blue-600 shrink-0" />
-            <span>+ Buat Permohonan Cuti Baru</span>
+            <span>Buat Permohonan Cuti Baru</span>
         </x-dropdown-link>
         <x-dropdown-link :href="route('pengajuan-cuti.buku-cuti')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-cuti.buku-cuti*') ? 'bg-teal-50 text-teal-700 font-semibold' : '' }}">
             <x-icon name="book-open" class="w-4 h-4 text-teal-600 shrink-0" />

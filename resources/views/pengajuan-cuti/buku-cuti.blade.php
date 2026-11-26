@@ -46,8 +46,18 @@
                     </div>
                 </div>
 
-                <form method="GET" action="{{ route('pengajuan-cuti.buku-cuti') }}" class="flex items-center gap-2">
-                    @if(request()->filled('pegawai_id'))
+                <form method="GET" action="{{ route('pengajuan-cuti.buku-cuti') }}" class="flex flex-wrap items-center gap-2">
+                    @if(($canSelectPegawai ?? false) && isset($pegawaiList) && $pegawaiList->isNotEmpty())
+                        <label class="text-xs font-bold text-gray-700 uppercase">Pegawai:</label>
+                        <select name="pegawai_id" onchange="this.form.submit()"
+                                class="rounded-lg border-gray-300 text-xs focus:ring-emerald-500 focus:border-emerald-500 font-semibold py-1.5 max-w-xs">
+                            @foreach($pegawaiList as $pItem)
+                                <option value="{{ $pItem->id }}" @selected($pegawai->id == $pItem->id)>
+                                    [{{ $pItem->status_asn_cuti }}] {{ $pItem->nama_lengkap ?? $pItem->nama }}
+                                </option>
+                            @endforeach
+                        </select>
+                    @elseif(request()->filled('pegawai_id'))
                         <input type="hidden" name="pegawai_id" value="{{ $pegawai->id }}">
                     @endif
                     <label class="text-xs font-bold text-gray-700 uppercase">Tahun:</label>

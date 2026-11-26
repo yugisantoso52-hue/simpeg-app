@@ -124,6 +124,9 @@
     <div class="py-6">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
+            {{-- PANEL RINGKASAN SYARAT, KETENTUAN & PEMISAHAN HAK CUTI PNS vs PPPK --}}
+            @include('pengajuan-cuti._ringkasan_regulasi_bkn', ['defaultOpen' => false])
+
             @if(session('success'))
                 <div class="rounded-lg border border-green-300 bg-green-50 px-5 py-4 text-green-700 flex items-center justify-between shadow-sm">
                     <div class="flex items-center gap-2">
@@ -224,14 +227,19 @@
                     <div class="space-y-4">
                         <div>
                             <div class="text-xs text-gray-500 font-semibold uppercase">Nama Pegawai / Pemohon</div>
-                            <div class="font-bold text-gray-900 text-base mt-0.5">
+                            <div class="flex flex-wrap items-center gap-2 font-bold text-gray-900 text-base mt-0.5">
                                 <a href="{{ $cuti->pegawai_id ? route('pegawai.show', $cuti->pegawai_id) : '#' }}" class="hover:text-emerald-600">
                                     {{ $cuti->pegawai?->nama_lengkap ?? $cuti->pegawai?->nama ?? '-' }}
                                 </a>
+                                @if($cuti->pegawai)
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase {{ $cuti->pegawai->isPppk() ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-200' }}">
+                                        {{ $cuti->pegawai->status_asn_cuti }}
+                                    </span>
+                                @endif
                             </div>
                             <div class="text-xs text-gray-500 font-mono">NIP. {{ $cuti->pegawai?->nip ?? '-' }}</div>
                             <div class="text-xs text-gray-600 mt-0.5">
-                                {{ $cuti->pegawai?->jabatan?->nama_jabatan ?? '-' }} - {{ $cuti->pegawai?->unitKerja?->nama_unit ?? '-' }}
+                                {{ $cuti->pegawai?->jabatan_tampil ?? '-' }} — {{ $cuti->pegawai?->unit_kerja_tampil ?? '-' }}
                             </div>
                         </div>
 

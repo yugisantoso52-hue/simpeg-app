@@ -31,6 +31,9 @@
     <div class="py-6">
         <div class="w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 space-y-6">
 
+            {{-- PANEL RINGKASAN SYARAT, KETENTUAN & PEMISAHAN HAK CUTI PNS vs PPPK --}}
+            @include('pengajuan-cuti._ringkasan_regulasi_bkn', ['defaultOpen' => false])
+
             {{-- INDIKATOR KUNCI --}}
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-4">
@@ -74,8 +77,13 @@
                             @forelse($rawanHangusList as $item)
                                 <div class="py-2 flex items-center justify-between text-xs">
                                     <div>
-                                        <div class="font-bold text-slate-900">{{ $item->pegawai->nama_lengkap ?? $item->pegawai->nama }}</div>
-                                        <div class="text-[10px] text-slate-500">{{ $item->pegawai->unitKerja?->nama_unit ?? '-' }}</div>
+                                        <div class="flex items-center gap-1.5 font-bold text-slate-900">
+                                            <span>{{ $item->pegawai->nama_lengkap ?? $item->pegawai->nama }}</span>
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase {{ $item->pegawai->isPppk() ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-200' }}">
+                                                {{ $item->pegawai->status_asn_cuti }}
+                                            </span>
+                                        </div>
+                                        <div class="text-[10px] text-slate-500">{{ $item->pegawai->unit_kerja_tampil }} — {{ $item->pegawai->jabatan_tampil }}</div>
                                     </div>
                                     <div class="text-right">
                                         <span class="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 font-mono font-bold text-xs">

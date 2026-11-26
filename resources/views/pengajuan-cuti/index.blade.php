@@ -3,10 +3,10 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                    <span>🏖️</span> E-Cuti Pegawai
+                    <span>🏖️</span> {{ ($isPegawaiOnly || ($showMine ?? false)) ? 'Permohonan Cuti Saya' : 'E-Cuti Pegawai (Monitoring Seluruh Cuti)' }}
                 </h2>
                 <p class="text-sm text-gray-500 mt-1">
-                    Layanan Mandiri Pengajuan Cuti Online & Verifikasi Persetujuan Pimpinan
+                    Layanan Mandiri Pengajuan Cuti Online &amp; Verifikasi Persetujuan Pimpinan — Mengacu Peraturan BKN Nomor 7 Tahun 2022
                 </p>
             </div>
 
@@ -117,13 +117,13 @@
                 </div>
             @endif
 
-            {{-- JIKA PEGAWAI BIASA: TAMPILKAN KARTU KUOTA CUTI TAHUNAN (N, N-1, N-2) --}}
-            @if($isPegawaiOnly && $pegawai)
+            {{-- JIKA PEGAWAI BIASA ATAU TAB PERMOHONAN CUTI SAYA: TAMPILKAN KARTU KUOTA CUTI TAHUNAN (N, N-1, N-2) --}}
+            @if(($isPegawaiOnly || ($showMine ?? false)) && $pegawai)
                 @php
                     $catatanCutiIndex = $pegawai->getCatatanCutiTahunan((int) now()->year);
                     $isPppkIndex = $pegawai->isPppk();
                 @endphp
-                <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-xl shadow-md p-6 text-white flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="bg-emerald-700 rounded-xl shadow-md p-6 text-white flex flex-col md:flex-row items-center justify-between gap-6" style="background: linear-gradient(135deg, #047857 0%, #0f766e 100%);">
                     <div>
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="text-emerald-100 text-xs uppercase tracking-wider font-semibold">Sisa Kuota Cuti Tahunan (Tahun {{ now()->year }})</span>
@@ -201,6 +201,9 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-200">
                 <div class="p-5 border-b border-gray-100">
                     <form method="GET" action="{{ route('pengajuan-cuti.index') }}">
+                        @if($showMine ?? false)
+                            <input type="hidden" name="mine" value="1">
+                        @endif
                         <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
                             <div class="md:col-span-5">
                                 <input type="text" name="search" value="{{ request('search') }}"
@@ -269,12 +272,20 @@
                                     </td>
                                     @if(!$isPegawaiOnly)
                                         <td class="py-3 px-4">
-                                            <div class="font-bold text-gray-900">
+                                            <div class="flex items-center gap-1.5 font-bold text-gray-900">
                                                 <a href="{{ $row->pegawai_id ? route('pegawai.show', $row->pegawai_id) : '#' }}" class="hover:text-emerald-600">
                                                     {{ $row->pegawai?->nama_lengkap ?? $row->pegawai?->nama ?? '-' }}
                                                 </a>
+                                                @if($row->pegawai)
+                                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase {{ $row->pegawai->isPppk() ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-200' }}">
+                                                        {{ $row->pegawai->status_asn_cuti }}
+                                                    </span>
+                                                @endif
                                             </div>
                                             <div class="text-xs text-gray-500 font-mono">NIP. {{ $row->pegawai?->nip ?? '-' }}</div>
+                                            @if($row->pegawai)
+                                                <div class="text-[11px] text-gray-600 mt-0.5">{{ $row->pegawai->unit_kerja_tampil }} — {{ $row->pegawai->jabatan_tampil }}</div>
+                                            @endif
                                         </td>
                                     @endif
                                     <td class="py-3 px-4 font-semibold text-gray-800">

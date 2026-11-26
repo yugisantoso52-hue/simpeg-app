@@ -88,7 +88,7 @@ class PengajuanCutiController extends Controller
 
         $statistics = $this->service->statistics($pegawaiId, $scopedPegawaiIds);
 
-        return view('pengajuan-cuti.index', compact('data', 'statistics', 'isPegawaiOnly', 'pegawai', 'isAtasan', 'isAdmin'));
+        return view('pengajuan-cuti.index', compact('data', 'statistics', 'isPegawaiOnly', 'pegawai', 'isAtasan', 'isAdmin', 'showMine'));
     }
 
     public function create(Request $request)
@@ -755,10 +755,16 @@ class PengajuanCutiController extends Controller
     {
         $user = $request->user();
         $pegawai = $this->resolveUserPegawai($user);
+        $canSelectPegawai = $user->hasRole('admin') || $user->hasRole('pimpinan') || $user->isAtasan();
 
         // Jika admin atau pimpinan ingin melihat buku cuti pegawai tertentu
-        if (($user->hasRole('admin') || $user->hasRole('pimpinan') || $user->isAtasan()) && $request->filled('pegawai_id')) {
+        if ($canSelectPegawai && $request->filled('pegawai_id')) {
             $pegawai = Pegawai::findOrFail((int) $request->input('pegawai_id'));
+        }
+
+        // Fallback bagi akun Administrator murni yang belum memiliki pegawai_id
+        if (!$pegawai && $canSelectPegawai) {
+            $pegawai = Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->first();
         }
 
         if (!$pegawai) {
@@ -767,14 +773,22 @@ class PengajuanCutiController extends Controller
 
         $tahun = (int) $request->input('tahun', now()->year);
         $catatanCuti = $pegawai->getCatatanCutiTahunan($tahun);
+        $rekapBkn = $pegawai->getCutiRekapBkn($tahun);
 
-        // Riwayat Transaksi Cuti yang telah diajukan/disetujui
+        // Riwayat Transaksi Cuti yang telah diajukan/disetujui (sinkron dengan lintas tahun mulai/selesai)
         $riwayatCuti = PengajuanCuti::where('pegawai_id', $pegawai->id)
-            ->whereYear('tanggal_mulai', $tahun)
+            ->where(function ($q) use ($tahun) {
+                $q->whereYear('tanggal_mulai', $tahun)
+                  ->orWhereYear('tanggal_selesai', $tahun);
+            })
             ->orderBy('tanggal_mulai', 'asc')
             ->get();
 
-        return view('pengajuan-cuti.buku-cuti', compact('pegawai', 'catatanCuti', 'riwayatCuti', 'tahun'));
+        $pegawaiList = $canSelectPegawai
+            ? Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->get(['id', 'nama', 'nip', 'gelar_depan', 'gelar_belakang', 'status_asn', 'jenis_pegawai'])
+            : collect();
+
+        return view('pengajuan-cuti.buku-cuti', compact('pegawai', 'catatanCuti', 'rekapBkn', 'riwayatCuti', 'tahun', 'canSelectPegawai', 'pegawaiList'));
     }
 
     /**
@@ -784,9 +798,14 @@ class PengajuanCutiController extends Controller
     {
         $user = $request->user();
         $pegawai = $this->resolveUserPegawai($user);
+        $canSelectPegawai = $user->hasRole('admin') || $user->hasRole('pimpinan') || $user->isAtasan();
 
-        if (($user->hasRole('admin') || $user->hasRole('pimpinan') || $user->isAtasan()) && $request->filled('pegawai_id')) {
+        if ($canSelectPegawai && $request->filled('pegawai_id')) {
             $pegawai = Pegawai::findOrFail((int) $request->input('pegawai_id'));
+        }
+
+        if (!$pegawai && $canSelectPegawai) {
+            $pegawai = Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->first();
         }
 
         if (!$pegawai) {
@@ -797,7 +816,10 @@ class PengajuanCutiController extends Controller
         $catatanCuti = $pegawai->getCatatanCutiTahunan($tahun);
 
         $riwayatCuti = PengajuanCuti::where('pegawai_id', $pegawai->id)
-            ->whereYear('tanggal_mulai', $tahun)
+            ->where(function ($q) use ($tahun) {
+                $q->whereYear('tanggal_mulai', $tahun)
+                  ->orWhereYear('tanggal_selesai', $tahun);
+            })
             ->orderBy('tanggal_mulai', 'asc')
             ->get();
 
@@ -819,11 +841,16 @@ class PengajuanCutiController extends Controller
 
         $tahun = (int) $request->input('tahun', now()->year);
 
-        // Statistik Utama
+        // Statistik Utama (Sinkron penuh dengan Rekap Kuota Cuti)
         $totalPegawaiAktif = Pegawai::where('status_pegawai', 'Aktif')->count();
-        $totalCutiTahunIni = PengajuanCuti::whereYear('tanggal_mulai', $tahun)->count();
-        $cutiDisetujui     = PengajuanCuti::whereYear('tanggal_mulai', $tahun)->where('status', 'Disetujui')->count();
-        $cutiMenunggu      = PengajuanCuti::whereYear('tanggal_mulai', $tahun)->whereIn('status', [
+        $yearFilter = function ($q) use ($tahun) {
+            $q->whereYear('tanggal_mulai', $tahun)
+              ->orWhereYear('tanggal_selesai', $tahun);
+        };
+
+        $totalCutiTahunIni = PengajuanCuti::where($yearFilter)->count();
+        $cutiDisetujui     = PengajuanCuti::where($yearFilter)->whereIn('status', ['Disetujui', 'Selesai'])->count();
+        $cutiMenunggu      = PengajuanCuti::where($yearFilter)->whereIn('status', [
             'Menunggu Persetujuan',
             'Disetujui Atasan (Menunggu PYBMC)',
             'Disetujui Atasan (Menunggu Keputusan Akhir)'
@@ -831,7 +858,7 @@ class PengajuanCutiController extends Controller
 
         // Pegawai dengan sisa cuti N-2 yang rawan hangus (jika ada sisa di N-2 > 0)
         $tahunN2 = $tahun - 2;
-        $rawanHangusList = \App\Models\KuotaCutiPegawai::with('pegawai.unitKerja')
+        $rawanHangusList = \App\Models\KuotaCutiPegawai::with(['pegawai.unitKerja', 'pegawai.jabatan'])
             ->where('tahun', $tahunN2)
             ->where('sisa_kuota', '>', 0)
             ->whereHas('pegawai', fn($q) => $q->where('status_pegawai', 'Aktif'))
@@ -840,22 +867,22 @@ class PengajuanCutiController extends Controller
             ->get();
 
         // Pengajuan cuti khusus (Cuti Melahirkan, Cuti Besar, CLTN, Cuti Sakit > 3 hari)
-        $cutiKhusus = PengajuanCuti::with(['pegawai.unitKerja'])
-            ->whereYear('tanggal_mulai', $tahun)
+        $cutiKhusus = PengajuanCuti::with(['pegawai.unitKerja', 'pegawai.jabatan'])
+            ->where($yearFilter)
             ->where(function ($q) {
                 $q->whereIn('jenis_cuti', ['Cuti Melahirkan', 'Cuti Besar', 'Cuti di Luar Tanggungan Negara'])
                   ->orWhere(function ($sq) {
                       $sq->where('jenis_cuti', 'Cuti Sakit')->where('jumlah_hari', '>', 3);
                   });
             })
-            ->latest()
+            ->latest('tanggal_mulai')
             ->take(10)
             ->get();
 
         // Rekap distribusi cuti per Unit Kerja
-        $unitCutiStats = \App\Models\UnitKerja::withCount(['pegawai as jumlah_cuti' => function ($q) use ($tahun) {
-            $q->whereHas('pengajuanCuti', function ($cq) use ($tahun) {
-                $cq->whereYear('tanggal_mulai', $tahun)->where('status', 'Disetujui');
+        $unitCutiStats = \App\Models\UnitKerja::withCount(['pegawai as jumlah_cuti' => function ($q) use ($yearFilter) {
+            $q->whereHas('pengajuanCuti', function ($cq) use ($yearFilter) {
+                $cq->where($yearFilter)->whereIn('status', ['Disetujui', 'Selesai']);
             });
         }])->get();
 

@@ -335,7 +335,7 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('pengajuan-cuti.create')" :active="request()->routeIs('pengajuan-cuti.create')" class="flex items-center gap-2 text-xs rounded-lg">
                 <x-icon name="plus" class="w-3.5 h-3.5 text-blue-600" />
-                <span>+ Buat Permohonan Cuti Baru</span>
+                <span>Buat Permohonan Cuti Baru</span>
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('pengajuan-cuti.buku-cuti')" :active="request()->routeIs('pengajuan-cuti.buku-cuti*')" class="flex items-center gap-2 text-xs rounded-lg">
                 <x-icon name="book-open" class="w-3.5 h-3.5 text-teal-600" />

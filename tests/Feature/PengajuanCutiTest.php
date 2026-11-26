@@ -778,13 +778,34 @@ class PengajuanCutiTest extends TestCase
         ]);
         $responseValid->assertRedirect(route('pengajuan-cuti.index'));
 
-        // 4. Pastikan ringkasan syarat & ketentuan tampil di halaman utama E-Cuti dan Form Create
+        // 4. Pastikan seluruh 6 menu Layanan Cuti ASN sinkron dan menampilkan ringkasan peraturan BKN No. 7 Tahun 2022
         $indexRes = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.index'));
         $indexRes->assertStatus(200);
         $indexRes->assertSee('Ringkasan Syarat, Ketentuan & Pemisahan Hak Cuti ASN (PNS vs PPPK)');
 
+        $monitoringAllRes = $this->actingAs($this->adminUser)->get(route('pengajuan-cuti.index'));
+        $monitoringAllRes->assertStatus(200);
+        $monitoringAllRes->assertSee('Ringkasan Syarat, Ketentuan & Pemisahan Hak Cuti ASN (PNS vs PPPK)');
+
+        $mineRes = $this->actingAs($this->adminUser)->get(route('pengajuan-cuti.index', ['mine' => 1]));
+        $mineRes->assertStatus(200);
+        $mineRes->assertSee('Permohonan Cuti Saya');
+
         $createRes = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.create'));
         $createRes->assertStatus(200);
         $createRes->assertSee('Ringkasan Syarat, Ketentuan & Pemisahan Hak Cuti ASN (PNS vs PPPK)');
+
+        $bukuRes = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.buku-cuti'));
+        $bukuRes->assertStatus(200);
+        $bukuRes->assertSee('Ringkasan Syarat, Ketentuan & Pemisahan Hak Cuti ASN (PNS vs PPPK)');
+
+        $rekapRes = $this->actingAs($this->adminUser)->get(route('pengajuan-cuti.rekap-kuota'));
+        $rekapRes->assertStatus(200);
+        $rekapRes->assertSee('Ringkasan Syarat, Ketentuan & Pemisahan Hak Cuti ASN (PNS vs PPPK)');
+        $rekapRes->assertSee('max-height: 540px;', false);
+
+        $eksekutifRes = $this->actingAs($this->pimpinanUser)->get(route('pengajuan-cuti.monitoring-pimpinan'));
+        $eksekutifRes->assertStatus(200);
+        $eksekutifRes->assertSee('Ringkasan Syarat, Ketentuan & Pemisahan Hak Cuti ASN (PNS vs PPPK)');
     }
 }

@@ -28,12 +28,20 @@
             @break
 
         @case('chart')
+        @case('chart-bar')
         @case('bar-chart')
         @case('bar-chart-3')
             <path d="M3 3v18h18"/>
             <path d="M18 17V9"/>
             <path d="M13 17V5"/>
             <path d="M8 17v-3"/>
+            @break
+
+        @case('table')
+            <path d="M12 3v18"/>
+            <rect width="18" height="18" x="3" y="3" rx="2"/>
+            <path d="M3 9h18"/>
+            <path d="M3 15h18"/>
             @break
 
         @case('line-chart')
