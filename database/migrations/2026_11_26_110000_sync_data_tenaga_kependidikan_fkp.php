@@ -4,7 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use App\Models\Pegawai;
 use App\Models\KuotaCutiPegawai;
-use Carbon\Carbon;
 
 return new class extends Migration
 {
@@ -16,6 +15,74 @@ return new class extends Migration
     public function up(): void
     {
         DB::transaction(function () {
+            // Helper Resolusi ID Jabatan berdasarkan Nama
+            $resolveJabatan = function ($namaJabatan, $unitKerjaId = null) {
+                if (empty($namaJabatan)) return null;
+
+                $j = DB::table('jabatan')->where('nama_jabatan', $namaJabatan)->first()
+                   ?? DB::table('jabatan')->where('nama_jabatan', 'like', $namaJabatan . '%')->first()
+                   ?? DB::table('jabatan')->where('nama_jabatan', 'like', '%' . $namaJabatan . '%')->first();
+
+                if ($j) return $j->id;
+
+                $kode = 'JB-' . strtoupper(substr(md5($namaJabatan), 0, 6));
+                return DB::table('jabatan')->insertGetId([
+                    'kode_jabatan'  => $kode,
+                    'nama_jabatan'  => $namaJabatan,
+                    'keterangan'    => $namaJabatan,
+                    'unit_kerja_id' => $unitKerjaId,
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                ]);
+            };
+
+            // Helper Resolusi ID Unit Kerja berdasarkan Nama
+            $resolveUnitKerja = function ($namaUnit) {
+                if (empty($namaUnit)) return null;
+
+                $u = DB::table('unit_kerja')->where('nama_unit', $namaUnit)->first();
+                if ($u) return $u->id;
+
+                if (str_contains(strtolower($namaUnit), 'keuangan') || str_contains(strtolower($namaUnit), 'kepegawaian')) {
+                    $u = DB::table('unit_kerja')->where('nama_unit', 'like', '%Keuangan%')->first();
+                    if ($u) return $u->id;
+                }
+
+                if (str_contains(strtolower($namaUnit), 'akademik') && str_contains(strtolower($namaUnit), 'kemahasiswaan')) {
+                    $u = DB::table('unit_kerja')->where('nama_unit', 'like', '%Akademik dan Kemahasiswaan%')->first();
+                    if ($u) return $u->id;
+                }
+
+                if (str_contains(strtolower($namaUnit), 'umum') && str_contains(strtolower($namaUnit), 'sarana')) {
+                    $u = DB::table('unit_kerja')->where('nama_unit', 'like', '%Umum%')->where('nama_unit', 'like', '%Sarana%')->first();
+                    if ($u) return $u->id;
+                }
+
+                if (str_contains(strtolower($namaUnit), 'laboratorium')) {
+                    $u = DB::table('unit_kerja')->where('nama_unit', 'like', '%Laboratorium%')->first();
+                    if ($u) return $u->id;
+                }
+
+                $u = DB::table('unit_kerja')->where('nama_unit', 'like', '%' . $namaUnit . '%')->first();
+                if ($u) return $u->id;
+
+                $kode = 'UK-' . strtoupper(substr(md5($namaUnit), 0, 6));
+                return DB::table('unit_kerja')->insertGetId([
+                    'kode_unit'  => $kode,
+                    'nama_unit'  => $namaUnit,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            };
+
+            // Helper Resolusi ID Golongan berdasarkan Nama
+            $resolveGolongan = function ($namaGol) {
+                if (empty($namaGol)) return null;
+                $g = DB::table('golongan')->where('nama_golongan', $namaGol)->first()
+                   ?? DB::table('golongan')->where('nama_golongan', 'like', '%' . $namaGol . '%')->first();
+                return $g?->id;
+            };
+
             $tendikData = [
                 // === 14 TENDIK PNS ===
                 [
@@ -27,9 +94,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1975-07-12',
                     'jenis_pegawai'        => 'PNS',
                     'status_asn'           => 'ASN',
-                    'golongan_id'          => 10, // IV/b - Pembina Tingkat I
-                    'jabatan_id'           => 1,  // Kepala Bagian Umum
-                    'unit_kerja_id'        => 2,  // Keuangan dan Kepegawaian (Subbag Tata Usaha)
+                    'golongan_nama'        => 'IV/b',
+                    'jabatan_nama'         => 'Kepala Bagian Umum',
+                    'unit_kerja_nama'      => 'Keuangan dan Kepegawaian',
                     'pendidikan_terakhir'  => 'S2',
                     'tmt_sk_pertama'       => '2005-11-01',
                     'tanggal_masuk'        => '2005-11-01',
@@ -48,9 +115,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1971-12-23',
                     'jenis_pegawai'        => 'PNS',
                     'status_asn'           => 'ASN',
-                    'golongan_id'          => 7, // III/c - Penata
-                    'jabatan_id'           => 4, // Ketua Pokja Akademik dan Kemahasiswaan
-                    'unit_kerja_id'        => 1, // Akademik dan Kemahasiswaan
+                    'golongan_nama'        => 'III/c',
+                    'jabatan_nama'         => 'Ketua Pokja Akademik dan Kemahasiswaan',
+                    'unit_kerja_nama'      => 'Akademik dan Kemahasiswaan',
                     'pendidikan_terakhir'  => 'S1',
                     'tmt_sk_pertama'       => '2014-09-01',
                     'tanggal_masuk'        => '2014-09-01',
@@ -69,9 +136,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1969-01-14',
                     'jenis_pegawai'        => 'PNS',
                     'status_asn'           => 'ASN',
-                    'golongan_id'          => 8, // III/d - Penata Tingkat I
-                    'jabatan_id'           => 3, // Ketua Pokja Umum dan Sarana Akademik
-                    'unit_kerja_id'        => 3, // Umum dan Sarana Akademik
+                    'golongan_nama'        => 'III/d',
+                    'jabatan_nama'         => 'Ketua Pokja Umum dan Sarana Akademik',
+                    'unit_kerja_nama'      => 'Umum dan Sarana Akademik',
                     'pendidikan_terakhir'  => 'S1',
                     'tmt_sk_pertama'       => '1995-03-01',
                     'tanggal_masuk'        => '1995-03-01',
@@ -90,9 +157,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1976-05-21',
                     'jenis_pegawai'        => 'PNS',
                     'status_asn'           => 'ASN',
-                    'golongan_id'          => 6, // III/b - Penata Muda Tingkat I
-                    'jabatan_id'           => 2, // Ketua Pokja Keuangan dan Kepegawaian
-                    'unit_kerja_id'        => 2, // Keuangan dan Kepegawaian
+                    'golongan_nama'        => 'III/b',
+                    'jabatan_nama'         => 'Ketua Pokja Keuangan dan Kepegawaian',
+                    'unit_kerja_nama'      => 'Keuangan dan Kepegawaian',
                     'pendidikan_terakhir'  => 'S1',
                     'tmt_sk_pertama'       => '2014-09-01',
                     'tanggal_masuk'        => '2014-09-01',
@@ -112,9 +179,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1983-02-17',
                     'jenis_pegawai'        => 'PNS',
                     'status_asn'           => 'ASN',
-                    'golongan_id'          => 7, // III/c - Penata
-                    'jabatan_id'           => 7, // Pranata Laboratorium Pendidikan Ahli Muda
-                    'unit_kerja_id'        => 13, // Laboratorium Keperawatan
+                    'golongan_nama'        => 'III/c',
+                    'jabatan_nama'         => 'Pranata Laboratorium Pendidikan Ahli Muda',
+                    'unit_kerja_nama'      => 'Laboratorium Keperawatan',
                     'pendidikan_terakhir'  => 'S2',
                     'tmt_sk_pertama'       => '2005-01-01',
                     'tanggal_masuk'        => '2005-01-01',
@@ -133,9 +200,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1987-06-22',
                     'jenis_pegawai'        => 'PNS',
                     'status_asn'           => 'ASN',
-                    'golongan_id'          => 8, // III/d - Penata Tingkat I
-                    'jabatan_id'           => 7, // Pranata Laboratorium Pendidikan Ahli Muda
-                    'unit_kerja_id'        => 13, // Laboratorium Keperawatan
+                    'golongan_nama'        => 'III/d',
+                    'jabatan_nama'         => 'Pranata Laboratorium Pendidikan Ahli Muda',
+                    'unit_kerja_nama'      => 'Laboratorium Keperawatan',
                     'pendidikan_terakhir'  => 'S2',
                     'tmt_sk_pertama'       => '2010-12-01',
                     'tanggal_masuk'        => '2010-12-01',
@@ -154,9 +221,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1987-02-13',
                     'jenis_pegawai'        => 'PNS',
                     'status_asn'           => 'ASN',
-                    'golongan_id'          => 8, // III/d - Penata Tingkat I
-                    'jabatan_id'           => 5, // Pengolah Data dan Informasi
-                    'unit_kerja_id'        => 2, // Keuangan dan Kepegawaian
+                    'golongan_nama'        => 'III/d',
+                    'jabatan_nama'         => 'Pengolah Data dan Informasi',
+                    'unit_kerja_nama'      => 'Keuangan dan Kepegawaian',
                     'pendidikan_terakhir'  => 'S1',
                     'tmt_sk_pertama'       => '2010-12-01',
                     'tanggal_masuk'        => '2010-12-01',
@@ -175,9 +242,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1987-04-21',
                     'jenis_pegawai'        => 'PNS',
                     'status_asn'           => 'ASN',
-                    'golongan_id'          => 8, // III/d - Penata Tingkat I
-                    'jabatan_id'           => 7, // Pranata Laboratorium Pendidikan Ahli Muda
-                    'unit_kerja_id'        => 13, // Laboratorium Keperawatan
+                    'golongan_nama'        => 'III/d',
+                    'jabatan_nama'         => 'Pranata Laboratorium Pendidikan Ahli Muda',
+                    'unit_kerja_nama'      => 'Laboratorium Keperawatan',
                     'pendidikan_terakhir'  => 'S2',
                     'tmt_sk_pertama'       => '2010-12-01',
                     'tanggal_masuk'        => '2010-12-01',
@@ -196,9 +263,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1971-06-14',
                     'jenis_pegawai'        => 'PNS',
                     'status_asn'           => 'ASN',
-                    'golongan_id'          => 8, // III/d - Penata Tingkat I
-                    'jabatan_id'           => 5, // Pengolah Data dan Informasi
-                    'unit_kerja_id'        => 1, // Akademik dan Kemahasiswaan
+                    'golongan_nama'        => 'III/d',
+                    'jabatan_nama'         => 'Pengolah Data dan Informasi',
+                    'unit_kerja_nama'      => 'Akademik dan Kemahasiswaan',
                     'pendidikan_terakhir'  => 'S1',
                     'tmt_sk_pertama'       => '2007-01-01',
                     'tanggal_masuk'        => '2007-01-01',
@@ -217,9 +284,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1971-01-02',
                     'jenis_pegawai'        => 'PNS',
                     'status_asn'           => 'ASN',
-                    'golongan_id'          => 7, // III/c - Penata
-                    'jabatan_id'           => 8, // Pengadministrasi Perkantoran
-                    'unit_kerja_id'        => 1, // Akademik dan Kemahasiswaan
+                    'golongan_nama'        => 'III/c',
+                    'jabatan_nama'         => 'Pengadministrasi Perkantoran',
+                    'unit_kerja_nama'      => 'Akademik dan Kemahasiswaan',
                     'pendidikan_terakhir'  => 'S1',
                     'tmt_sk_pertama'       => '2014-09-01',
                     'tanggal_masuk'        => '2014-09-01',
@@ -238,9 +305,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1970-01-16',
                     'jenis_pegawai'        => 'PNS',
                     'status_asn'           => 'ASN',
-                    'golongan_id'          => 7, // III/c - Penata
-                    'jabatan_id'           => 5, // Pengolah Data dan Informasi
-                    'unit_kerja_id'        => 1, // Akademik dan Kemahasiswaan
+                    'golongan_nama'        => 'III/c',
+                    'jabatan_nama'         => 'Pengolah Data dan Informasi',
+                    'unit_kerja_nama'      => 'Akademik dan Kemahasiswaan',
                     'pendidikan_terakhir'  => 'S1',
                     'tmt_sk_pertama'       => '1999-03-01',
                     'tanggal_masuk'        => '1999-03-01',
@@ -260,9 +327,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1969-06-14',
                     'jenis_pegawai'        => 'PNS',
                     'status_asn'           => 'ASN',
-                    'golongan_id'          => 3, // II/c - Pengatur
-                    'jabatan_id'           => 8, // Pengadministrasi Perkantoran
-                    'unit_kerja_id'        => 3, // Umum dan Sarana Akademik
+                    'golongan_nama'        => 'II/c',
+                    'jabatan_nama'         => 'Pengadministrasi Perkantoran',
+                    'unit_kerja_nama'      => 'Umum dan Sarana Akademik',
                     'pendidikan_terakhir'  => 'SMA',
                     'tmt_sk_pertama'       => '2008-10-01',
                     'tanggal_masuk'        => '2008-10-01',
@@ -281,9 +348,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1994-09-02',
                     'jenis_pegawai'        => 'PNS',
                     'status_asn'           => 'ASN',
-                    'golongan_id'          => 3, // II/c - Pengatur
-                    'jabatan_id'           => 9, // Pranata Laboratorium Pendidikan Terampil
-                    'unit_kerja_id'        => 1, // Akademik dan Kemahasiswaan
+                    'golongan_nama'        => 'II/c',
+                    'jabatan_nama'         => 'Pranata Laboratorium Pendidikan Terampil',
+                    'unit_kerja_nama'      => 'Akademik dan Kemahasiswaan',
                     'pendidikan_terakhir'  => 'D3 Teknik Informatika',
                     'tmt_sk_pertama'       => '2025-06-01',
                     'tanggal_masuk'        => '2025-06-01',
@@ -302,9 +369,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1974-01-24',
                     'jenis_pegawai'        => 'PNS',
                     'status_asn'           => 'ASN',
-                    'golongan_id'          => 8, // III/d - Penata Tingkat I
-                    'jabatan_id'           => 5, // Pengolah Data dan Informasi
-                    'unit_kerja_id'        => 2, // Keuangan dan Kepegawaian
+                    'golongan_nama'        => 'III/d',
+                    'jabatan_nama'         => 'Pengolah Data dan Informasi',
+                    'unit_kerja_nama'      => 'Keuangan dan Kepegawaian',
                     'pendidikan_terakhir'  => 'S1',
                     'tmt_sk_pertama'       => '1995-03-01',
                     'tanggal_masuk'        => '1995-03-01',
@@ -325,9 +392,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1979-09-11',
                     'jenis_pegawai'        => 'PPPK',
                     'status_asn'           => 'PPPK',
-                    'golongan_id'          => null,
-                    'jabatan_id'           => 10, // Penata Layanan Operasional
-                    'unit_kerja_id'        => 2,  // Keuangan dan Kepegawaian
+                    'golongan_nama'        => null,
+                    'jabatan_nama'         => 'Penata Layanan Operasional',
+                    'unit_kerja_nama'      => 'Keuangan dan Kepegawaian',
                     'pendidikan_terakhir'  => 'S1 Ekonomi Manajemen',
                     'tmt_sk_pertama'       => '2025-10-01',
                     'tanggal_masuk'        => '2025-10-01',
@@ -346,9 +413,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1983-08-06',
                     'jenis_pegawai'        => 'PPPK',
                     'status_asn'           => 'PPPK',
-                    'golongan_id'          => null,
-                    'jabatan_id'           => 11, // Pengelola Layanan Operasional
-                    'unit_kerja_id'        => 2,  // Keuangan dan Kepegawaian
+                    'golongan_nama'        => null,
+                    'jabatan_nama'         => 'Pengelola Layanan Operasional',
+                    'unit_kerja_nama'      => 'Keuangan dan Kepegawaian',
                     'pendidikan_terakhir'  => 'D3 Keuangan',
                     'tmt_sk_pertama'       => '2025-10-01',
                     'tanggal_masuk'        => '2025-10-01',
@@ -367,9 +434,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1990-01-02',
                     'jenis_pegawai'        => 'PPPK',
                     'status_asn'           => 'PPPK',
-                    'golongan_id'          => null,
-                    'jabatan_id'           => 11, // Pengelola Layanan Operasional
-                    'unit_kerja_id'        => 13, // Laboratorium Keperawatan
+                    'golongan_nama'        => null,
+                    'jabatan_nama'         => 'Pengelola Layanan Operasional',
+                    'unit_kerja_nama'      => 'Laboratorium Keperawatan',
                     'pendidikan_terakhir'  => 'D3 Keperawatan',
                     'tmt_sk_pertama'       => '2025-10-01',
                     'tanggal_masuk'        => '2025-10-01',
@@ -388,9 +455,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1991-01-27',
                     'jenis_pegawai'        => 'PPPK',
                     'status_asn'           => 'PPPK',
-                    'golongan_id'          => null,
-                    'jabatan_id'           => 11, // Pengelola Layanan Operasional
-                    'unit_kerja_id'        => 3,  // Umum dan Sarana Akademik
+                    'golongan_nama'        => null,
+                    'jabatan_nama'         => 'Pengelola Layanan Operasional',
+                    'unit_kerja_nama'      => 'Umum dan Sarana Akademik',
                     'pendidikan_terakhir'  => 'D3 Manajemen',
                     'tmt_sk_pertama'       => '2025-10-01',
                     'tanggal_masuk'        => '2025-10-01',
@@ -409,9 +476,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1992-09-07',
                     'jenis_pegawai'        => 'PPPK',
                     'status_asn'           => 'PPPK',
-                    'golongan_id'          => null,
-                    'jabatan_id'           => 8, // Pengadministrasi Perkantoran
-                    'unit_kerja_id'        => 3, // Umum dan Sarana Akademik
+                    'golongan_nama'        => null,
+                    'jabatan_nama'         => 'Pengadministrasi Perkantoran',
+                    'unit_kerja_nama'      => 'Umum dan Sarana Akademik',
                     'pendidikan_terakhir'  => 'SMU',
                     'tmt_sk_pertama'       => '2025-10-01',
                     'tanggal_masuk'        => '2025-10-01',
@@ -430,9 +497,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1993-04-04',
                     'jenis_pegawai'        => 'PPPK',
                     'status_asn'           => 'PPPK',
-                    'golongan_id'          => null,
-                    'jabatan_id'           => 10, // Penata Layanan Operasional
-                    'unit_kerja_id'        => 13, // Laboratorium Keperawatan
+                    'golongan_nama'        => null,
+                    'jabatan_nama'         => 'Penata Layanan Operasional',
+                    'unit_kerja_nama'      => 'Laboratorium Keperawatan',
                     'pendidikan_terakhir'  => 'S1 Keperawatan',
                     'tmt_sk_pertama'       => '2025-10-01',
                     'tanggal_masuk'        => '2025-10-01',
@@ -451,9 +518,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1993-03-24',
                     'jenis_pegawai'        => 'PPPK',
                     'status_asn'           => 'PPPK',
-                    'golongan_id'          => null,
-                    'jabatan_id'           => 10, // Penata Layanan Operasional
-                    'unit_kerja_id'        => 13, // Laboratorium Keperawatan
+                    'golongan_nama'        => null,
+                    'jabatan_nama'         => 'Penata Layanan Operasional',
+                    'unit_kerja_nama'      => 'Laboratorium Keperawatan',
                     'pendidikan_terakhir'  => 'S1 Keperawatan',
                     'tmt_sk_pertama'       => '2025-10-01',
                     'tanggal_masuk'        => '2025-10-01',
@@ -472,9 +539,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1990-08-21',
                     'jenis_pegawai'        => 'PPPK',
                     'status_asn'           => 'PPPK',
-                    'golongan_id'          => null,
-                    'jabatan_id'           => 10, // Penata Layanan Operasional
-                    'unit_kerja_id'        => 3,  // Umum dan Sarana Akademik
+                    'golongan_nama'        => null,
+                    'jabatan_nama'         => 'Penata Layanan Operasional',
+                    'unit_kerja_nama'      => 'Umum dan Sarana Akademik',
                     'pendidikan_terakhir'  => 'S1 Ilmu Komunikasi',
                     'tmt_sk_pertama'       => '2025-10-01',
                     'tanggal_masuk'        => '2025-10-01',
@@ -493,9 +560,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1980-06-15',
                     'jenis_pegawai'        => 'PPPK',
                     'status_asn'           => 'PPPK',
-                    'golongan_id'          => null,
-                    'jabatan_id'           => 10, // Penata Layanan Operasional
-                    'unit_kerja_id'        => 2,  // Keuangan dan Kepegawaian
+                    'golongan_nama'        => null,
+                    'jabatan_nama'         => 'Penata Layanan Operasional',
+                    'unit_kerja_nama'      => 'Keuangan dan Kepegawaian',
                     'pendidikan_terakhir'  => 'S1 Teknik Sipil',
                     'tmt_sk_pertama'       => '2025-10-01',
                     'tanggal_masuk'        => '2025-10-01',
@@ -514,9 +581,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1994-04-26',
                     'jenis_pegawai'        => 'PPPK',
                     'status_asn'           => 'PPPK',
-                    'golongan_id'          => null,
-                    'jabatan_id'           => 11, // Pengelola Layanan Operasional
-                    'unit_kerja_id'        => 1,  // Akademik dan Kemahasiswaan
+                    'golongan_nama'        => null,
+                    'jabatan_nama'         => 'Pengelola Layanan Operasional',
+                    'unit_kerja_nama'      => 'Akademik dan Kemahasiswaan',
                     'pendidikan_terakhir'  => 'D3 Komputer',
                     'tmt_sk_pertama'       => '2025-10-01',
                     'tanggal_masuk'        => '2025-10-01',
@@ -535,9 +602,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1977-12-16',
                     'jenis_pegawai'        => 'PPPK',
                     'status_asn'           => 'PPPK',
-                    'golongan_id'          => null,
-                    'jabatan_id'           => 10, // Penata Layanan Operasional
-                    'unit_kerja_id'        => 1,  // Akademik dan Kemahasiswaan
+                    'golongan_nama'        => null,
+                    'jabatan_nama'         => 'Penata Layanan Operasional',
+                    'unit_kerja_nama'      => 'Akademik dan Kemahasiswaan',
                     'pendidikan_terakhir'  => 'S1 Manajemen',
                     'tmt_sk_pertama'       => '2025-10-01',
                     'tanggal_masuk'        => '2025-10-01',
@@ -556,9 +623,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1984-01-01',
                     'jenis_pegawai'        => 'PPPK',
                     'status_asn'           => 'PPPK',
-                    'golongan_id'          => null,
-                    'jabatan_id'           => 12, // Operator Layanan Operasional
-                    'unit_kerja_id'        => 3,  // Umum dan Sarana Akademik
+                    'golongan_nama'        => null,
+                    'jabatan_nama'         => 'Operator Layanan Operasional',
+                    'unit_kerja_nama'      => 'Umum dan Sarana Akademik',
                     'pendidikan_terakhir'  => 'SMA',
                     'tmt_sk_pertama'       => '2025-10-01',
                     'tanggal_masuk'        => '2025-10-01',
@@ -577,9 +644,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1973-07-30',
                     'jenis_pegawai'        => 'PPPK',
                     'status_asn'           => 'PPPK',
-                    'golongan_id'          => null,
-                    'jabatan_id'           => 8, // Pengadministrasi Perkantoran
-                    'unit_kerja_id'        => 3, // Umum dan Sarana Akademik
+                    'golongan_nama'        => null,
+                    'jabatan_nama'         => 'Pengadministrasi Perkantoran',
+                    'unit_kerja_nama'      => 'Umum dan Sarana Akademik',
                     'pendidikan_terakhir'  => 'SMA',
                     'tmt_sk_pertama'       => '2025-10-01',
                     'tanggal_masuk'        => '2025-10-01',
@@ -598,9 +665,9 @@ return new class extends Migration
                     'tanggal_lahir'        => '1981-07-21',
                     'jenis_pegawai'        => 'PPPK',
                     'status_asn'           => 'PPPK',
-                    'golongan_id'          => null,
-                    'jabatan_id'           => 12, // Operator Layanan Operasional
-                    'unit_kerja_id'        => 3,  // Umum dan Sarana Akademik
+                    'golongan_nama'        => null,
+                    'jabatan_nama'         => 'Operator Layanan Operasional',
+                    'unit_kerja_nama'      => 'Umum dan Sarana Akademik',
                     'pendidikan_terakhir'  => 'S1 Hukum',
                     'tmt_sk_pertama'       => '2025-10-01',
                     'tanggal_masuk'        => '2025-10-01',
@@ -616,12 +683,22 @@ return new class extends Migration
                 $cutiRecords = $item['cuti'] ?? [];
                 unset($item['cuti']);
 
+                $unitKerjaId = $resolveUnitKerja($item['unit_kerja_nama']);
+                $jabatanId   = $resolveJabatan($item['jabatan_nama'], $unitKerjaId);
+                $golonganId  = $resolveGolongan($item['golongan_nama']);
+
+                unset($item['unit_kerja_nama'], $item['jabatan_nama'], $item['golongan_nama']);
+
+                $item['unit_kerja_id'] = $unitKerjaId;
+                $item['jabatan_id']    = $jabatanId;
+                if ($golonganId !== null) {
+                    $item['golongan_id'] = $golonganId;
+                }
+
                 $pegawai = Pegawai::where('nip', $item['nip'])->first();
                 if ($pegawai) {
-                    // Update field pegawai
                     $pegawai->update($item);
 
-                    // Sinkronisasi Kuota Cuti
                     foreach ($cutiRecords as $tahun => $cuti) {
                         KuotaCutiPegawai::updateOrCreate(
                             [
@@ -646,6 +723,5 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Data sync reversible if needed, but keeping data intact is safer
     }
 };
