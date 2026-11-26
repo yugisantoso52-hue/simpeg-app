@@ -248,7 +248,7 @@
         </tr>
     </table>
 
-    {{-- V. CATATAN CUTI TAHUNAN & ALAMAT (Sesuai Anak Lampiran 1.b Peraturan BKN No. 24 Tahun 2017: N, N-1, N-2) --}}
+    {{-- V. CATATAN CUTI TAHUNAN & ALAMAT (Sesuai Peraturan BKN Nomor 7 Tahun 2022: N, N-1, N-2) --}}
     @php
         $tahunCutiN = $cuti->tanggal_mulai ? (int) $cuti->tanggal_mulai->format('Y') : ($cuti->created_at ? (int) $cuti->created_at->format('Y') : (int) now()->year);
         $catatanCuti = $cuti->pegawai

@@ -51,10 +51,10 @@
 <body>
 
     <div class="header">
-        <h3>REKAPITULASI KUOTA CUTI TAHUNAN PEGAWAI (N, N-1, N-2)</h3>
+        <h3>REKAPITULASI REALISASI & KUOTA CUTI PEGAWAI</h3>
         <h4>FAKULTAS KEPERAWATAN UNIVERSITAS RIAU — TAHUN ANGGARAN {{ $tahun }}</h4>
         <div style="font-size: 8pt; color: #444; margin-top: 2px;">
-            Dasar Hukum: Peraturan Badan Kepegawaian Negara Republik Indonesia Nomor 24 Tahun 2017
+            Dasar Hukum: Peraturan Badan Kepegawaian Negara Republik Indonesia Nomor 7 Tahun 2022
             @if($unitKerja) | Unit Kerja: {{ $unitKerja->nama_unit }} @endif
             @if($jenisPegawai) | Kategori: {{ $jenisPegawai }} @endif
         </div>
@@ -63,38 +63,53 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 4%;">NO</th>
-                <th style="width: 20%;">NAMA PEGAWAI</th>
-                <th style="width: 15%;">NIP</th>
-                <th style="width: 22%;">JABATAN & UNIT KERJA</th>
-                <th style="width: 9%;">SISA {{ $tahun - 2 }}<br>(N-2)</th>
-                <th style="width: 9%;">SISA {{ $tahun - 1 }}<br>(N-1)</th>
-                <th style="width: 9%;">SISA {{ $tahun }}<br>(N)</th>
-                <th style="width: 12%;">TOTAL SISA AKTIF</th>
+                <th rowspan="2" style="width: 3%;">NO</th>
+                <th rowspan="2" style="width: 17%;">NAMA PEGAWAI & NIP</th>
+                <th rowspan="2" style="width: 16%;">JABATAN & UNIT KERJA</th>
+                <th colspan="9" style="background-color: #e6edf5;">JENIS CUTI (PERATURAN BKN NO. 7 TAHUN 2022)</th>
+                <th rowspan="2" style="width: 16%;">TGL PENGAJUAN</th>
+            </tr>
+            <tr>
+                <th style="width: 5%;">{{ $tahun - 2 }}<br>(N-2)</th>
+                <th style="width: 5%;">{{ $tahun - 1 }}<br>(N-1)</th>
+                <th style="width: 5%;">{{ $tahun }}<br>(N)</th>
+                <th style="width: 5%; background-color: #e0f2fe; font-weight: bold;">SISA</th>
+                <th style="width: 5%;">BESAR</th>
+                <th style="width: 5%;">SAKIT</th>
+                <th style="width: 6%;">LAHIR</th>
+                <th style="width: 4%;">CAP</th>
+                <th style="width: 4%;">CLTN</th>
             </tr>
         </thead>
         <tbody>
             @forelse($pegawaiList as $p)
                 @php
-                    $catatan = $p->getCatatanCutiTahunan($tahun);
-                    $sisaN   = $catatan['N']['sisa'] ?? 12;
-                    $sisaN1  = $catatan['N-1']['sisa'];
-                    $sisaN2  = $catatan['N-2']['sisa'];
-                    $totalAktif = $sisaN + ($sisaN1 ?? 0) + ($sisaN2 ?? 0);
+                    $rekap = $p->getCutiRekapBkn($tahun);
                 @endphp
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
-                    <td class="font-bold">{{ $p->nama_lengkap ?? $p->nama }}</td>
-                    <td class="text-center">{{ $p->nip ?? '-' }}</td>
-                    <td>{{ $p->jabatan?->nama_jabatan ?? '-' }} - {{ $p->unitKerja?->nama_unit ?? '-' }}</td>
-                    <td class="text-center">{{ $catatan['N-2']['sisa_formatted'] }}</td>
-                    <td class="text-center">{{ $catatan['N-1']['sisa_formatted'] }}</td>
-                    <td class="text-center font-bold">{{ $catatan['N']['sisa_formatted'] }}</td>
-                    <td class="text-center font-bold">{{ $totalAktif }} Hari</td>
+                    <td>
+                        <strong>{{ $p->nama_lengkap ?? $p->nama }}</strong><br>
+                        <span style="font-size: 7.5pt; color: #444;">NIP. {{ $p->nip ?? '-' }}</span>
+                    </td>
+                    <td style="font-size: 7.5pt;">
+                        {{ $p->jabatan?->nama_jabatan ?? '-' }}<br>
+                        <span style="color: #555;">{{ $p->unitKerja?->nama_unit ?? '-' }}</span>
+                    </td>
+                    <td class="text-center">{{ $rekap['n2'] ?? '-' }}</td>
+                    <td class="text-center">{{ $rekap['n1'] ?? '-' }}</td>
+                    <td class="text-center font-bold">{{ $rekap['n_terpakai'] ?? '-' }}</td>
+                    <td class="text-center font-bold" style="background-color: #f0f9ff;">{{ $rekap['sisa'] }}</td>
+                    <td class="text-center">{{ $rekap['cuti_besar'] ?? '-' }}</td>
+                    <td class="text-center">{{ $rekap['cuti_sakit'] ?? '-' }}</td>
+                    <td class="text-center font-bold">{{ $rekap['cuti_melahirkan'] ? $rekap['cuti_melahirkan'] . ' Bln' : '-' }}</td>
+                    <td class="text-center">{{ $rekap['cuti_cap'] ?? '-' }}</td>
+                    <td class="text-center">{{ $rekap['cuti_cltn'] ?? '-' }}</td>
+                    <td style="font-size: 7.5pt;">{{ $rekap['tgl_pengajuan'] }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="text-center">Tidak ada data pegawai.</td>
+                    <td colspan="13" class="text-center">Tidak ada data pegawai.</td>
                 </tr>
             @endforelse
         </tbody>

@@ -598,7 +598,8 @@ class PengajuanCutiController extends Controller
             $query->tendik();
         }
 
-        $pegawaiList = $query->orderBy('nama')->paginate(15)->withQueryString();
+        $perPage = (int) $request->input('per_page', 50);
+        $pegawaiList = $query->orderBy('nama')->paginate($perPage)->withQueryString();
         $unitKerjaList = \App\Models\UnitKerja::orderBy('nama_unit')->get();
 
         return view('pengajuan-cuti.rekap-kuota-admin', compact('pegawaiList', 'unitKerjaList', 'tahun', 'search', 'unitKerjaId', 'jenisPegawai'));

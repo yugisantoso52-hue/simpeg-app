@@ -388,7 +388,7 @@ class Pegawai extends Model
     /**
      * Dapatkan ringkasan V. Catatan Cuti Tahunan untuk 3 tahun:
      * N (Tahun Berjalan), N-1 (1 Tahun Sebelumnya), dan N-2 (2 Tahun Lalu)
-     * sesuai Anak Lampiran 1.b Peraturan BKN Nomor 24 Tahun 2017.
+     * sesuai Peraturan BKN Nomor 7 Tahun 2022 (Tata Cara Pemberian Cuti PPPK & ASN).
      */
     public function getCatatanCutiTahunan(?int $baseYear = null): array
     {
@@ -425,6 +425,106 @@ class Pegawai extends Model
                 'sisa_formatted' => $sisaN2 !== null ? "{$sisaN2} Hari" : '-',
                 'keterangan'     => 'Sisa Cuti 2 Tahun Lalu (N-2)',
             ],
+        ];
+    }
+
+    /**
+     * Dapatkan data rekapitulasi kuota dan realisasi seluruh jenis cuti
+     * mengacu ke Peraturan BKN Nomor 7 Tahun 2022.
+     * Mencakup: Cuti Tahunan (N-2, N-1, N, Sisa), Cuti Besar, Cuti Sakit, Cuti Melahirkan, CAP, CLTN, Tgl Pengajuan.
+     */
+    public function getCutiRekapBkn(?int $baseYear = null): array
+    {
+        $tahunN  = $baseYear ?: (int) now()->year;
+        $tahunN1 = $tahunN - 1;
+        $tahunN2 = $tahunN - 2;
+
+        // Ambil kuota manual / tersimpan untuk N-1 dan N-2
+        $sisaN2 = $this->getSisaCutiTahunanByYear($tahunN2, true);
+        $sisaN1 = $this->getSisaCutiTahunanByYear($tahunN1, true);
+
+        // Ambil transaksi cuti yang disetujui yang bersinggungan dengan tahun N
+        $pengajuansTahunN = $this->pengajuanCuti()
+            ->whereIn('status', ['Disetujui', 'Selesai', 'disetujui', 'selesai'])
+            ->where(function ($q) use ($tahunN) {
+                $q->whereYear('tanggal_mulai', $tahunN)
+                  ->orWhereYear('tanggal_selesai', $tahunN);
+            })
+            ->orderBy('tanggal_mulai', 'asc')
+            ->get();
+
+        // 1. Cuti Tahunan terpakai tahun N
+        $cutiTahunanItems = $pengajuansTahunN->filter(function ($item) {
+            $j = strtolower($item->jenis_cuti ?? '');
+            return str_contains($j, 'tahunan');
+        });
+        $nTerpakai = (int) $cutiTahunanItems->sum('jumlah_hari');
+
+        // Sisa Cuti Tahunan N (Hak dasar 12 hari - pemakaian N)
+        $kuotaRecN = $this->kuotaCuti()->where('tahun', $tahunN)->first();
+        if ($kuotaRecN && $kuotaRecN->sisa_kuota !== null) {
+            $sisaN = (int) $kuotaRecN->sisa_kuota;
+        } else {
+            $sisaN = max(0, 12 - $nTerpakai);
+        }
+
+        // 2. Cuti Besar
+        $cutiBesar = (int) $pengajuansTahunN->filter(fn($i) => str_contains(strtolower($i->jenis_cuti ?? ''), 'besar'))->sum('jumlah_hari');
+
+        // 3. Cuti Sakit
+        $cutiSakit = (int) $pengajuansTahunN->filter(fn($i) => str_contains(strtolower($i->jenis_cuti ?? ''), 'sakit'))->sum('jumlah_hari');
+
+        // 4. Cuti Melahirkan (Peraturan BKN No. 7/2022 Pasal 18: Hak 3 bulan)
+        $melahirkanItems = $pengajuansTahunN->filter(fn($i) => str_contains(strtolower($i->jenis_cuti ?? ''), 'melahirkan'));
+        $cutiMelahirkan = null;
+        if ($melahirkanItems->isNotEmpty()) {
+            $cutiMelahirkan = '3'; // 3 bulan sesuai format rekap BKN
+        }
+
+        // 5. CAP (Cuti Alasan Penting)
+        $cutiCap = (int) $pengajuansTahunN->filter(fn($i) => str_contains(strtolower($i->jenis_cuti ?? ''), 'penting') || strtolower($i->jenis_cuti ?? '') === 'cap')->sum('jumlah_hari');
+
+        // 6. CLTN (Cuti di Luar Tanggungan Negara)
+        $cutiCltn = (int) $pengajuansTahunN->filter(fn($i) => str_contains(strtolower($i->jenis_cuti ?? ''), 'tanggungan') || strtolower($i->jenis_cuti ?? '') === 'cltn')->sum('jumlah_hari');
+
+        // 7. Format Tanggal Pengajuan
+        $tglPengajuanList = [];
+        $bulanIndoSingkat = [
+            1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 6 => 'Juni',
+            7 => 'Juli', 8 => 'Agus', 9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des'
+        ];
+
+        foreach ($pengajuansTahunN as $pCuti) {
+            if ($pCuti->keterangan && str_starts_with($pCuti->keterangan, '[Rekap Resmi BKN]')) {
+                $matches = [];
+                if (preg_match('/\[Rekap Resmi BKN\] Tanggal Cuti: (.*)/', $pCuti->keterangan, $matches)) {
+                    $tglPengajuanList[] = trim($matches[1]);
+                    continue;
+                }
+            }
+            if ($pCuti->tanggal_mulai) {
+                $d = \Carbon\Carbon::parse($pCuti->tanggal_mulai);
+                $b = $bulanIndoSingkat[(int)$d->format('n')] ?? $d->format('M');
+                $tglPengajuanList[] = $d->format('j') . ' ' . $b . ' ' . $d->format('Y');
+            }
+        }
+        $tglPengajuanStr = !empty($tglPengajuanList) ? implode(', ', array_unique($tglPengajuanList)) : '-';
+
+        return [
+            'tahun_n'          => $tahunN,
+            'tahun_n1'         => $tahunN1,
+            'tahun_n2'         => $tahunN2,
+            'n2'               => $sisaN2 !== null && $sisaN2 > 0 ? $sisaN2 : null,
+            'n1'               => $sisaN1 !== null && $sisaN1 > 0 ? $sisaN1 : null,
+            'n_terpakai'       => $nTerpakai > 0 ? $nTerpakai : null,
+            'sisa'             => $sisaN,
+            'cuti_besar'       => $cutiBesar > 0 ? $cutiBesar : null,
+            'cuti_sakit'       => $cutiSakit > 0 ? $cutiSakit : null,
+            'cuti_melahirkan'  => $cutiMelahirkan,
+            'cuti_cap'         => $cutiCap > 0 ? $cutiCap : null,
+            'cuti_cltn'        => $cutiCltn > 0 ? $cutiCltn : null,
+            'tgl_pengajuan'    => $tglPengajuanStr,
+            'total_transaksi'  => $pengajuansTahunN->count(),
         ];
     }
 

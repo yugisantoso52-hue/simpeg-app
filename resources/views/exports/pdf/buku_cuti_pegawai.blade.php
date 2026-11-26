@@ -74,7 +74,7 @@
 
     {{-- REKAP SALDO KUOTA CUTI TAHUNAN (N, N-1, N-2) --}}
     <div style="font-weight: bold; font-size: 9.5pt; margin-top: 6px; margin-bottom: 2px;">
-        I. REKAPITULASI KUOTA CUTI TAHUNAN (PERATURAN BKN NO. 24 TAHUN 2017)
+        I. REKAPITULASI KUOTA CUTI TAHUNAN (PERATURAN BKN NOMOR 7 TAHUN 2022)
     </div>
     <table class="border-table">
         <thead>

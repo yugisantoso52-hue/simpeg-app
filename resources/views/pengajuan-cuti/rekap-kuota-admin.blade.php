@@ -6,7 +6,7 @@
                     <span>📊</span> Rekapitulasi Kuota Cuti Pegawai (N, N-1, N-2)
                 </h2>
                 <p class="text-sm text-gray-500 mt-1">
-                    Pengelolaan Saldo & Monitoring Kuota Cuti Tahunan Sesuai Peraturan BKN No. 24 Tahun 2017
+                    Pengelolaan Saldo & Monitoring Kuota Cuti Sesuai Peraturan BKN Nomor 7 Tahun 2022
                 </p>
             </div>
 
@@ -138,103 +138,161 @@
                 </form>
             </div>
 
-            {{-- TABEL REKAPITULASI --}}
+            {{-- TABEL REKAPITULASI RESMI SESUAI PERATURAN BKN NOMOR 7 TAHUN 2022 --}}
             <div class="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-xs text-left text-gray-600">
-                        <thead class="text-[11px] uppercase bg-gray-50 text-gray-700 border-b border-gray-200 font-bold">
+                    <table class="w-full text-xs text-left text-gray-700 border-collapse">
+                        <thead class="text-[11px] uppercase bg-slate-50 text-slate-700 font-bold border-b border-gray-200">
                             <tr>
-                                <th class="py-3 px-3 text-center w-10">No</th>
-                                <th class="py-3 px-3">Pegawai & NIP</th>
-                                <th class="py-3 px-3">Unit Kerja / Jabatan</th>
-                                <th class="py-3 px-3 text-center bg-blue-50/60 border-l border-r border-blue-100">
-                                    {{ $tahun - 2 }} (N-2)
+                                <th rowspan="2" class="py-3 px-2 text-center w-10 border-r border-gray-200 bg-gray-100/70">No</th>
+                                <th rowspan="2" class="py-3 px-3 border-r border-gray-200 min-w-[200px] bg-gray-100/70">Pegawai & NIP</th>
+                                <th rowspan="2" class="py-3 px-3 border-r border-gray-200 min-w-[180px] bg-gray-100/70">Unit Kerja & Jabatan</th>
+                                <th colspan="9" class="py-2 px-3 text-center bg-slate-100 border-b border-r border-gray-200 text-slate-800 tracking-wider">
+                                    JENIS CUTI (Peraturan BKN No. 7 Tahun 2022)
                                 </th>
-                                <th class="py-3 px-3 text-center bg-indigo-50/60 border-r border-indigo-100">
-                                    {{ $tahun - 1 }} (N-1)
-                                </th>
-                                <th class="py-3 px-3 text-center bg-emerald-50/60 border-r border-emerald-100">
-                                    {{ $tahun }} (N)
-                                </th>
-                                <th class="py-3 px-3 text-center bg-teal-50/80 font-black text-teal-900 border-r border-teal-100">
-                                    Total Sisa Aktif
-                                </th>
-                                <th class="py-3 px-3 text-center w-28">Aksi</th>
+                                <th rowspan="2" class="py-3 px-3 text-center border-r border-gray-200 min-w-[160px] bg-gray-100/70">Tgl Pengajuan</th>
+                                <th rowspan="2" class="py-3 px-2 text-center w-24 bg-gray-100/70">Aksi</th>
+                            </tr>
+                            <tr class="bg-gray-50 text-[10px] text-slate-600">
+                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-red-50/40 text-red-900" title="Sisa Cuti Tahun {{ $tahun - 2 }}">{{ $tahun - 2 }} (N-2)</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-amber-50/40 text-amber-900" title="Sisa Cuti Tahun {{ $tahun - 1 }}">{{ $tahun - 1 }} (N-1)</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-emerald-50/50 text-emerald-900 font-bold" title="Cuti Tahunan Terpakai Tahun {{ $tahun }}">{{ $tahun }} (N)</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200 bg-teal-100/60 text-teal-900 font-black">Sisa</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200">Cuti Besar</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200">Cuti Sakit</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200">Cuti Melahirkan</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200">CAP</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200">CLTN</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse($pegawaiList as $p)
                                 @php
-                                    $catatan = $p->getCatatanCutiTahunan($tahun);
-                                    $sisaN   = $catatan['N']['sisa'] ?? 12;
-                                    $sisaN1  = $catatan['N-1']['sisa'];
-                                    $sisaN2  = $catatan['N-2']['sisa'];
-                                    $totalAktif = $sisaN + ($sisaN1 ?? 0) + ($sisaN2 ?? 0);
+                                    $rekap = $p->getCutiRekapBkn($tahun);
 
                                     $recN  = $p->kuotaCuti->firstWhere('tahun', $tahun);
                                     $recN1 = $p->kuotaCuti->firstWhere('tahun', $tahun - 1);
                                     $recN2 = $p->kuotaCuti->firstWhere('tahun', $tahun - 2);
                                 @endphp
-                                <tr class="hover:bg-gray-50/70 transition">
-                                    <td class="py-2.5 px-3 text-center font-mono text-gray-400">
+                                <tr class="hover:bg-slate-50/80 transition">
+                                    {{-- No --}}
+                                    <td class="py-2.5 px-2 text-center font-mono text-gray-400 border-r border-gray-100">
                                         {{ ($pegawaiList->currentPage() - 1) * $pegawaiList->perPage() + $loop->iteration }}
                                     </td>
-                                    <td class="py-2.5 px-3">
-                                        <div class="font-bold text-gray-900">{{ $p->nama_lengkap ?? $p->nama }}</div>
-                                        <div class="text-[10px] text-gray-500 font-mono">NIP. {{ $p->nip ?? '-' }}</div>
+                                    {{-- Nama & NIP --}}
+                                    <td class="py-2.5 px-3 border-r border-gray-100">
+                                        <div class="font-bold text-gray-900 leading-tight">{{ $p->nama_lengkap ?? $p->nama }}</div>
+                                        <div class="text-[10px] text-gray-500 font-mono mt-0.5">NIP. {{ $p->nip ?? '-' }}</div>
                                     </td>
-                                    <td class="py-2.5 px-3">
-                                        <div class="text-gray-800">{{ $p->unitKerja?->nama_unit ?? '-' }}</div>
-                                        <div class="text-[10px] text-gray-500">{{ $p->jabatan?->nama_jabatan ?? '-' }}</div>
+                                    {{-- Unit Kerja & Jabatan --}}
+                                    <td class="py-2.5 px-3 border-r border-gray-100">
+                                        <div class="text-gray-800 leading-tight">{{ $p->unitKerja?->nama_unit ?? '-' }}</div>
+                                        <div class="text-[10px] text-gray-500 mt-0.5">{{ $p->jabatan?->nama_jabatan ?? '-' }}</div>
                                     </td>
                                     {{-- N-2 --}}
-                                    <td class="py-2.5 px-3 text-center border-l border-r border-gray-100 font-mono">
+                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono">
                                         <div class="flex items-center justify-center gap-1">
-                                            <span class="font-semibold {{ $sisaN2 !== null ? 'text-blue-700' : 'text-gray-400' }}">
-                                                {{ $catatan['N-2']['sisa_formatted'] }}
-                                            </span>
-                                            <button type="button" title="Koreksi N-2"
+                                            @if($rekap['n2'] !== null)
+                                                <span class="font-bold text-slate-800">{{ $rekap['n2'] }}</span>
+                                            @else
+                                                <span class="text-slate-300">-</span>
+                                            @endif
+                                            <button type="button" title="Koreksi Kuota N-2"
                                                     @click="openEdit({{ $p->id }}, '{{ addslashes($p->nama_lengkap ?? $p->nama) }}', {{ $tahun - 2 }}, {{ $recN2?->kuota_awal ?? 12 }}, {{ $recN2?->kuota_terpakai ?? 0 }}, '{{ addslashes($recN2?->catatan_penyesuaian ?? '') }}')"
-                                                    class="text-[10px] text-gray-400 hover:text-blue-600">✏️</button>
+                                                    class="text-[9px] text-gray-300 hover:text-blue-600">✏️</button>
                                         </div>
                                     </td>
                                     {{-- N-1 --}}
-                                    <td class="py-2.5 px-3 text-center border-r border-gray-100 font-mono">
+                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono">
                                         <div class="flex items-center justify-center gap-1">
-                                            <span class="font-semibold {{ $sisaN1 !== null ? 'text-indigo-700' : 'text-gray-400' }}">
-                                                {{ $catatan['N-1']['sisa_formatted'] }}
-                                            </span>
-                                            <button type="button" title="Koreksi N-1"
+                                            @if($rekap['n1'] !== null)
+                                                <span class="font-bold text-amber-700">{{ $rekap['n1'] }}</span>
+                                            @else
+                                                <span class="text-slate-300">-</span>
+                                            @endif
+                                            <button type="button" title="Koreksi Kuota N-1"
                                                     @click="openEdit({{ $p->id }}, '{{ addslashes($p->nama_lengkap ?? $p->nama) }}', {{ $tahun - 1 }}, {{ $recN1?->kuota_awal ?? 12 }}, {{ $recN1?->kuota_terpakai ?? 0 }}, '{{ addslashes($recN1?->catatan_penyesuaian ?? '') }}')"
-                                                    class="text-[10px] text-gray-400 hover:text-indigo-600">✏️</button>
+                                                    class="text-[9px] text-gray-300 hover:text-amber-600">✏️</button>
                                         </div>
                                     </td>
-                                    {{-- N --}}
-                                    <td class="py-2.5 px-3 text-center border-r border-gray-100 font-mono">
+                                    {{-- N (Terpakai) --}}
+                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono">
                                         <div class="flex items-center justify-center gap-1">
-                                            <span class="font-bold text-emerald-700">
-                                                {{ $catatan['N']['sisa_formatted'] }}
-                                            </span>
-                                            <button type="button" title="Koreksi N"
+                                            @if($rekap['n_terpakai'] !== null)
+                                                <span class="font-bold text-emerald-700">{{ $rekap['n_terpakai'] }}</span>
+                                            @else
+                                                <span class="text-slate-300">-</span>
+                                            @endif
+                                            <button type="button" title="Koreksi Kuota N"
                                                     @click="openEdit({{ $p->id }}, '{{ addslashes($p->nama_lengkap ?? $p->nama) }}', {{ $tahun }}, {{ $recN?->kuota_awal ?? 12 }}, {{ $recN?->kuota_terpakai ?? 0 }}, '{{ addslashes($recN?->catatan_penyesuaian ?? '') }}')"
-                                                    class="text-[10px] text-gray-400 hover:text-emerald-600">✏️</button>
+                                                    class="text-[9px] text-gray-300 hover:text-emerald-600">✏️</button>
                                         </div>
                                     </td>
-                                    {{-- Total --}}
-                                    <td class="py-2.5 px-3 text-center font-bold font-mono text-teal-800 bg-teal-50/40 border-r border-gray-100">
-                                        {{ $totalAktif }} Hari
+                                    {{-- Sisa N --}}
+                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono font-bold bg-teal-50/20">
+                                        <span class="inline-flex items-center justify-center min-w-[24px] px-1.5 py-0.5 rounded text-xs font-bold {{ $rekap['sisa'] > 0 ? 'text-teal-800' : 'text-rose-600 font-black' }}">
+                                            {{ $rekap['sisa'] }}
+                                        </span>
+                                    </td>
+                                    {{-- Cuti Besar --}}
+                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono">
+                                        @if($rekap['cuti_besar'] !== null)
+                                            <span class="font-semibold text-purple-700">{{ $rekap['cuti_besar'] }}</span>
+                                        @else
+                                            <span class="text-slate-300">-</span>
+                                        @endif
+                                    </td>
+                                    {{-- Cuti Sakit --}}
+                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono">
+                                        @if($rekap['cuti_sakit'] !== null)
+                                            <span class="font-semibold text-rose-700">{{ $rekap['cuti_sakit'] }}</span>
+                                        @else
+                                            <span class="text-slate-300">-</span>
+                                        @endif
+                                    </td>
+                                    {{-- Cuti Melahirkan --}}
+                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono">
+                                        @if($rekap['cuti_melahirkan'] !== null)
+                                            <span class="font-bold text-pink-700 bg-pink-50 px-2 py-0.5 rounded border border-pink-200">{{ $rekap['cuti_melahirkan'] }}</span>
+                                        @else
+                                            <span class="text-slate-300">-</span>
+                                        @endif
+                                    </td>
+                                    {{-- CAP --}}
+                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono">
+                                        @if($rekap['cuti_cap'] !== null)
+                                            <span class="font-semibold text-cyan-700">{{ $rekap['cuti_cap'] }}</span>
+                                        @else
+                                            <span class="text-slate-300">-</span>
+                                        @endif
+                                    </td>
+                                    {{-- CLTN --}}
+                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono">
+                                        @if($rekap['cuti_cltn'] !== null)
+                                            <span class="font-semibold text-slate-700">{{ $rekap['cuti_cltn'] }}</span>
+                                        @else
+                                            <span class="text-slate-300">-</span>
+                                        @endif
+                                    </td>
+                                    {{-- Tgl Pengajuan --}}
+                                    <td class="py-2.5 px-3 border-r border-gray-100 text-[11px] leading-tight">
+                                        @if($rekap['tgl_pengajuan'] !== '-')
+                                            <span class="font-medium text-slate-800">{{ $rekap['tgl_pengajuan'] }}</span>
+                                        @else
+                                            <span class="text-slate-300">-</span>
+                                        @endif
                                     </td>
                                     {{-- Aksi --}}
-                                    <td class="py-2.5 px-3 text-center">
+                                    <td class="py-2.5 px-2 text-center">
                                         <a href="{{ route('pengajuan-cuti.buku-cuti', ['pegawai_id' => $p->id, 'tahun' => $tahun]) }}"
-                                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition" title="Lihat Buku Cuti">
+                                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition shadow-2xs" title="Lihat Buku Cuti Pegawai">
                                             📖 Buku Cuti
                                         </a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="py-8 text-center text-gray-400 italic">
+                                    <td colspan="14" class="py-8 text-center text-gray-400 italic">
                                         Tidak ada data pegawai yang sesuai dengan filter.
                                     </td>
                                 </tr>

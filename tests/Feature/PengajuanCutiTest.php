@@ -640,7 +640,7 @@ class PengajuanCutiTest extends TestCase
         // 2. Halaman Form Permohonan Cuti (Create)
         $createResponse = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.create'));
         $createResponse->assertStatus(200);
-        $createResponse->assertSee('V. Catatan Cuti Tahunan (Peraturan BKN No. 24 Tahun 2017)');
+        $createResponse->assertSee('V. Catatan Cuti Tahunan (Peraturan BKN Nomor 7 Tahun 2022)');
         $createResponse->assertSee("{$tahunN} (N)");
         $createResponse->assertSee('7 Hari');
         $createResponse->assertSee('Hak Cuti Tahun Berjalan (N)');
@@ -652,7 +652,7 @@ class PengajuanCutiTest extends TestCase
         // 3. Halaman Detail Permohonan Cuti (Show)
         $showResponse = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.show', $cuti->id));
         $showResponse->assertStatus(200);
-        $showResponse->assertSee('V. Catatan Cuti Tahunan (Peraturan BKN No. 24 Tahun 2017)');
+        $showResponse->assertSee('V. Catatan Cuti Tahunan (Peraturan BKN Nomor 7 Tahun 2022)');
         $showResponse->assertSee("{$tahunN} (N)");
         $showResponse->assertSee("{$tahunN1} (N-1)");
         $showResponse->assertSee("{$tahunN2} (N-2)");
@@ -706,5 +706,34 @@ class PengajuanCutiTest extends TestCase
         $exportBukuPdfResponse = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.buku-cuti.pdf', ['tahun' => $tahunN]));
         $exportBukuPdfResponse->assertStatus(200);
         $this->assertStringContainsString('application/pdf', $exportBukuPdfResponse->headers->get('Content-Type'));
+    }
+
+    public function test_tendik_official_bkn_records_and_rekap_columns(): void
+    {
+        // Pastikan halaman rekap kuota admin menampilkan rujukan Peraturan BKN Nomor 7 Tahun 2022
+        $response = $this->actingAs($this->adminUser)->get(route('pengajuan-cuti.rekap-kuota', ['tahun' => 2026, 'jenis_pegawai' => 'Tendik']));
+        $response->assertStatus(200);
+        $response->assertSee('Peraturan BKN Nomor 7 Tahun 2022');
+        $response->assertSee('JENIS CUTI (Peraturan BKN No. 7 Tahun 2022)');
+
+        // Periksa data pegawai jika data seeding ada di DB lokal
+        $dolli = Pegawai::where('nip', '197605212014092001')->first();
+        if ($dolli) {
+            $rDolli = $dolli->getCutiRekapBkn(2026);
+            $this->assertEquals(6, $rDolli['n1']);
+            $this->assertEquals(12, $rDolli['n_terpakai']);
+            $this->assertEquals(0, $rDolli['sisa']);
+            $this->assertStringContainsString('4 Mei 2026', $rDolli['tgl_pengajuan']);
+        }
+
+        $rahayu = Pegawai::where('nip', '199101272025212049')->first();
+        if ($rahayu) {
+            $rRahayu = $rahayu->getCutiRekapBkn(2026);
+            $this->assertEquals(7, $rRahayu['n_terpakai']);
+            $this->assertEquals(5, $rRahayu['sisa']);
+            $this->assertEquals('3', $rRahayu['cuti_melahirkan']);
+            $this->assertStringContainsString('23 Des 2025', $rRahayu['tgl_pengajuan']);
+            $this->assertStringContainsString('2 Nov 2026', $rRahayu['tgl_pengajuan']);
+        }
     }
 }

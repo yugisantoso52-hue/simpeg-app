@@ -68,7 +68,7 @@
                     </div>
                     <div class="p-4">
                         <p class="text-xs text-slate-600 mb-3 leading-relaxed">
-                            Berdasarkan <strong>Peraturan BKN No. 24 Tahun 2017</strong>, hak cuti tahunan yang ditangguhkan maksimal berlaku selama 2 tahun kalender berturut-turut. Daftar berikut memiliki sisa kuota <strong>N-2 ({{ $tahun - 2 }})</strong> yang akan kedaluwarsa jika tidak digunakan:
+                            Berdasarkan <strong>Peraturan BKN Nomor 7 Tahun 2022</strong>, hak cuti tahunan yang ditangguhkan maksimal berlaku selama 2 tahun kalender berturut-turut. Daftar berikut memiliki sisa kuota <strong>N-2 ({{ $tahun - 2 }})</strong> yang akan kedaluwarsa jika tidak digunakan:
                         </p>
                         <div class="divide-y divide-gray-100 max-h-80 overflow-y-auto">
                             @forelse($rawanHangusList as $item)

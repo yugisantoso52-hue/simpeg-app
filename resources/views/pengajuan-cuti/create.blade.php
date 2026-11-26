@@ -117,11 +117,11 @@
                         </div>
                     @endif
 
-                    {{-- V. Catatan Cuti Tahunan (N, N-1, N-2 sesuai Anak Lampiran 1.b Peraturan BKN No. 24 Tahun 2017) --}}
+                    {{-- V. Catatan Cuti Tahunan (N, N-1, N-2 sesuai Peraturan BKN Nomor 7 Tahun 2022) --}}
                     <div class="rounded-lg border border-gray-200 overflow-hidden bg-white">
                         <div class="bg-gray-50 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between">
                             <span class="text-xs font-bold uppercase tracking-wider text-gray-700">
-                                V. Catatan Cuti Tahunan (Peraturan BKN No. 24 Tahun 2017)
+                                V. Catatan Cuti Tahunan (Peraturan BKN Nomor 7 Tahun 2022)
                             </span>
                             <span class="text-[11px] text-gray-500">N = Tahun Berjalan | N-1 = 1 Tahun Sebelumnya | N-2 = 2 Tahun Lalu</span>
                         </div>

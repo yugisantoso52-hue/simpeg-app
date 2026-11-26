@@ -170,7 +170,7 @@ class SisaCutiTest extends TestCase
     }
 
     /**
-     * Test catatan cuti tahunan 3 tahun (N, N-1, N-2) sesuai Anak Lampiran 1.b Peraturan BKN No. 24 Tahun 2017
+     * Test catatan cuti tahunan 3 tahun (N, N-1, N-2) sesuai Peraturan BKN Nomor 7 Tahun 2022
      */
     public function test_catatan_cuti_tahunan_returns_three_years_n_n1_n2(): void
     {
