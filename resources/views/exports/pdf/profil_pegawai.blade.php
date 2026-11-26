@@ -115,11 +115,6 @@
             <td>{{ $namaCore }}</td>
         </tr>
         <tr>
-            <td class="bold">Gelar Depan / Belakang</td>
-            <td>:</td>
-            <td>Depan: {{ $pegawai->gelar_depan ?: '-' }} | Belakang: {{ $pegawai->gelar_belakang ?: '-' }}</td>
-        </tr>
-        <tr>
             <td class="bold">Jenis Kelamin</td>
             <td>:</td>
             <td>{{ $pegawai->jenis_kelamin == 'L' ? 'Laki-laki' : ($pegawai->jenis_kelamin == 'P' ? 'Perempuan' : ($pegawai->jenis_kelamin ?? '-')) }}</td>

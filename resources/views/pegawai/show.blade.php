@@ -153,14 +153,6 @@
                                         <td class="py-1.5 text-gray-900 font-semibold">{{ $pegawai->nama_lengkap ?? $pegawai->nama }}</td>
                                     </tr>
                                     <tr class="border-b border-gray-50">
-                                        <td class="py-1.5 font-medium text-gray-500">Gelar Depan / Gelar Belakang</td>
-                                        <td class="py-1.5 text-gray-900">
-                                            <span class="text-xs text-gray-500">Depan:</span> <span class="font-medium">{{ $pegawai->gelar_depan ?: '-' }}</span>
-                                            <span class="mx-2 text-gray-300">|</span>
-                                            <span class="text-xs text-gray-500">Belakang:</span> <span class="font-medium">{{ $pegawai->gelar_belakang ?: '-' }}</span>
-                                        </td>
-                                    </tr>
-                                    <tr class="border-b border-gray-50">
                                         <td class="py-1.5 font-medium text-gray-500">Tempat, Tanggal Lahir</td>
                                         <td class="py-1.5 text-gray-900">
                                             {{ $pegawai->tempat_lahir ?? '-' }}, 
