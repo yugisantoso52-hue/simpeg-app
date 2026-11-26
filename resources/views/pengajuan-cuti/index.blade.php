@@ -33,38 +33,39 @@
                 @endif
 
                 {{-- Tombol SOP E-Cuti --}}
-                <x-sop-modal title="SOP Pengajuan & Persetujuan Cuti ASN" 
+                <x-sop-modal title="SOP Pengajuan & Pemisahan Hak Cuti ASN (PNS vs PPPK)" 
                              buttonLabel="SOP & Syarat Cuti" 
-                             badge="Peraturan BKN No. 24/2017" 
+                             badge="Peraturan BKN Nomor 7 Tahun 2022" 
                              color="amber">
                     <div class="space-y-4">
                         <div class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200">
                             <h4 class="font-bold text-amber-950 text-xs mb-1 flex items-center gap-1.5">
                                 <x-icon name="calendar-off" class="w-4 h-4 text-amber-700" />
-                                Ketentuan Pokok Hak Cuti Pegawai
+                                Pemisahan Hak Cuti PNS dan PPPK (Peraturan BKN Nomor 7 Tahun 2022)
                             </h4>
                             <p class="text-amber-900 text-[11px] leading-relaxed">
-                                Setiap PNS &amp; PPPK berhak atas cuti tahunan sebanyak <strong>12 hari kerja per tahun</strong> (setelah bekerja minimal 1 tahun terus-menerus). Permohonan diajukan secara elektronik minimal <strong>3 hari kerja sebelum pelaksanaan</strong> (kecuali Cuti Sakit mendadak).
+                                • <strong>PNS (7 Jenis Cuti)</strong>: Cuti Tahunan (12 hk), Cuti Besar (3 bln, MK ≥ 5 thn), Cuti Sakit, Cuti Melahirkan (3 bln), Cuti Alasan Penting / CAP (maks 1 bln), CLTN (maks 3 thn), dan Cuti Bersama.<br>
+                                • <strong>PPPK (4 Jenis Cuti — Pasal 4 Perbkn No. 7/2022)</strong>: Hanya berhak atas <strong>Cuti Tahunan (12 hk), Cuti Sakit (maks 1 bln / kecelakaan kerja), Cuti Melahirkan (3 bln), dan Cuti Bersama</strong>. PPPK tidak memiliki Cuti Besar, CAP tersendiri, maupun CLTN. Keperluan mendesak keluarga inti sakit keras/meninggal atau pernikahan pertama bagi PPPK menggunakan <strong>Cuti Tahunan Pasal 9 (maks 6 hari kerja)</strong>.
                             </p>
                         </div>
 
                         <div>
                             <h4 class="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wider flex items-center gap-1.5">
                                 <span class="w-5 h-5 rounded-full bg-amber-600 text-white flex items-center justify-center text-[10px]">1</span>
-                                Jenis Cuti &amp; Berkas Bukti Dukung
+                                Syarat &amp; Berkas Bukti Dukung Utama
                             </h4>
                             <div class="space-y-2 ps-2 border-l-2 border-amber-200">
                                 <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                                    <strong class="text-slate-800 block text-xs">Cuti Sakit (&gt; 1 hari)</strong>
-                                    <span class="text-slate-600 text-[11px]">Wajib melampirkan Surat Keterangan Dokter dari Fasilitas Kesehatan / RS pemerintah.</span>
+                                    <strong class="text-slate-800 block text-xs">Cuti Tahunan &amp; Pengecualian Pasal 9 PPPK</strong>
+                                    <span class="text-slate-600 text-[11px]">Masa kerja minimal 1 tahun (12 hk). Akumulasi N-1 maks 18 hk (kontrak &gt; 2 thn), N-2 maks 24 hk (kontrak &gt; 3 thn). Khusus PPPK masa kerja &lt; 1 tahun dengan alasan mendesak Pasal 9 diberikan maks 6 hk (wajib Surat Rawat Inap jika keluarga sakit keras).</span>
                                 </div>
                                 <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                                    <strong class="text-slate-800 block text-xs">Cuti Melahirkan</strong>
-                                    <span class="text-slate-600 text-[11px]">Berhak hingga 3 bulan (anak ke-1 s.d ke-3). Melampirkan surat rujukan/surat keterangan HPL dari dokter spesialis/bidan.</span>
+                                    <strong class="text-slate-800 block text-xs">Cuti Sakit (Pasal 12 – 17)</strong>
+                                    <span class="text-slate-600 text-[11px]">Sakit 1–14 hari wajib melampirkan Surat Keterangan Dokter. Bagi PPPK sakit &gt; 14 hari (maks 1 bulan) wajib melampirkan <strong>Surat Keterangan Dokter Pemerintah</strong>. Gugur kandungan maks 1,5 bulan.</span>
                                 </div>
                                 <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                                    <strong class="text-slate-800 block text-xs">Cuti Karena Alasan Penting (CAP)</strong>
-                                    <span class="text-slate-600 text-[11px]">Untuk keperluan keluarga dekat sakit keras/meninggal, atau pernikahan yang sah. Wajib menyertakan bukti keterangan.</span>
+                                    <strong class="text-slate-800 block text-xs">Cuti Melahirkan (Pasal 18 – 19)</strong>
+                                    <span class="text-slate-600 text-[11px]">Diberikan selama 3 bulan untuk kelahiran anak ke-1 s.d. ke-3 (bagi PPPK dihitung saat sudah berstatus PPPK). Melampirkan surat keterangan HPL dari dokter/bidan.</span>
                                 </div>
                             </div>
                         </div>
@@ -76,12 +77,12 @@
                             </h4>
                             <div class="space-y-2 ps-2 border-l-2 border-emerald-200">
                                 <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                                    <strong class="text-slate-800 block text-xs">Tahap 1: Verifikasi Atasan Langsung</strong>
-                                    <span class="text-slate-600 text-[11px]">Atasan langsung (Ka Pokja/Kajur/Koorprodi/Kabag) memberikan pertimbangan teknis ketersediaan pengganti tugas.</span>
+                                    <strong class="text-slate-800 block text-xs">Tahap 1: Pertimbangan Atasan Langsung</strong>
+                                    <span class="text-slate-600 text-[11px]">Atasan langsung (Ka Pokja/Kajur/Koorprodi/Kabag) memberikan pertimbangan menyetujui, mengubah, menangguhkan, atau menolak.</span>
                                 </div>
                                 <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                                    <strong class="text-slate-800 block text-xs">Tahap 2: Pengesahan PPK / Dekan</strong>
-                                    <span class="text-slate-600 text-[11px]">Dekan / Wakil Dekan II menerbitkan Surat Keputusan Cuti resmi bertanda tangan elektronik QR Code.</span>
+                                    <strong class="text-slate-800 block text-xs">Tahap 2: Keputusan Pejabat Yang Berwenang (PYBMC / Dekan)</strong>
+                                    <span class="text-slate-600 text-[11px]">Dekan / Pejabat berwenang menerbitkan Surat Keputusan Cuti resmi bertanda tangan elektronik QR Code.</span>
                                 </div>
                             </div>
                         </div>
@@ -120,15 +121,25 @@
             @if($isPegawaiOnly && $pegawai)
                 @php
                     $catatanCutiIndex = $pegawai->getCatatanCutiTahunan((int) now()->year);
+                    $isPppkIndex = $pegawai->isPppk();
                 @endphp
                 <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-xl shadow-md p-6 text-white flex flex-col md:flex-row items-center justify-between gap-6">
                     <div>
-                        <div class="text-emerald-100 text-xs uppercase tracking-wider font-semibold">Sisa Kuota Cuti Tahunan (Tahun {{ now()->year }})</div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-emerald-100 text-xs uppercase tracking-wider font-semibold">Sisa Kuota Cuti Tahunan (Tahun {{ now()->year }})</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-white/20 text-white border border-white/30">
+                                Status: {{ $pegawai->status_asn_cuti }} ({{ $isPppkIndex ? '4 Jenis Hak Cuti — Perbkn No. 7/2022' : '7 Jenis Hak Cuti ASN' }})
+                            </span>
+                        </div>
                         <div class="text-3xl md:text-4xl font-extrabold mt-1">
                             {{ $pegawai->sisa_cuti_tahunan }} <span class="text-lg font-normal text-emerald-200">/ 12 Hari Kerja</span>
                         </div>
                         <p class="text-xs text-emerald-100 mt-2">
-                            Setiap PNS/PPPK berhak atas 12 hari kerja cuti tahunan sesuai Peraturan BKN No. 24/2017.
+                            @if($isPppkIndex)
+                                Hak Cuti PPPK (Pasal 4 Peraturan BKN Nomor 7 Tahun 2022): Cuti Tahunan (12 hk), Cuti Sakit, Cuti Melahirkan (3 bln), dan Cuti Bersama.
+                            @else
+                                Hak Cuti PNS: Cuti Tahunan (12 hk), Cuti Besar, Cuti Sakit, Cuti Melahirkan, Cuti Alasan Penting (CAP), CLTN, dan Cuti Bersama.
+                            @endif
                         </p>
                         <div class="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
                             <span class="px-2.5 py-1 rounded-lg bg-white/15 border border-white/20 font-semibold">
@@ -182,6 +193,9 @@
                     </div>
                 </div>
             @endif
+
+            {{-- PANEL RINGKASAN SYARAT, KETENTUAN & PEMISAHAN HAK CUTI PNS vs PPPK --}}
+            @include('pengajuan-cuti._ringkasan_regulasi_bkn', ['defaultOpen' => false])
 
             {{-- FILTER & PENCARIAN --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200">

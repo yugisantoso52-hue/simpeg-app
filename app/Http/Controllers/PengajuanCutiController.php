@@ -577,6 +577,7 @@ class PengajuanCutiController extends Controller
         $search = trim((string) $request->input('search', ''));
         $unitKerjaId = $request->filled('unit_kerja_id') ? (int) $request->input('unit_kerja_id') : null;
         $jenisPegawai = $request->input('jenis_pegawai');
+        $statusAsn = $request->input('status_asn');
 
         $query = Pegawai::with(['unitKerja', 'jabatan', 'kuotaCuti', 'pengajuanCuti'])
             ->where('status_pegawai', 'Aktif');
@@ -598,11 +599,26 @@ class PengajuanCutiController extends Controller
             $query->tendik();
         }
 
+        if ($statusAsn === 'PPPK') {
+            $query->where(function ($q) {
+                $q->where('status_asn', 'PPPK')
+                  ->orWhere('jenis_pegawai', 'like', '%PPPK%');
+            });
+        } elseif ($statusAsn === 'PNS') {
+            $query->where(function ($q) {
+                $q->where(function ($sq) {
+                    $sq->where('status_asn', '!=', 'PPPK')->orWhereNull('status_asn');
+                })->where(function ($sq) {
+                    $sq->where('jenis_pegawai', 'not like', '%PPPK%')->orWhereNull('jenis_pegawai');
+                });
+            });
+        }
+
         $perPage = (int) $request->input('per_page', 50);
         $pegawaiList = $query->orderBy('nama')->paginate($perPage)->withQueryString();
         $unitKerjaList = \App\Models\UnitKerja::orderBy('nama_unit')->get();
 
-        return view('pengajuan-cuti.rekap-kuota-admin', compact('pegawaiList', 'unitKerjaList', 'tahun', 'search', 'unitKerjaId', 'jenisPegawai'));
+        return view('pengajuan-cuti.rekap-kuota-admin', compact('pegawaiList', 'unitKerjaList', 'tahun', 'search', 'unitKerjaId', 'jenisPegawai', 'statusAsn'));
     }
 
     /**
@@ -693,6 +709,7 @@ class PengajuanCutiController extends Controller
         $tahun = (int) $request->input('tahun', now()->year);
         $unitKerjaId = $request->filled('unit_kerja_id') ? (int) $request->input('unit_kerja_id') : null;
         $jenisPegawai = $request->input('jenis_pegawai');
+        $statusAsn = $request->input('status_asn');
 
         $query = Pegawai::with(['unitKerja', 'jabatan', 'kuotaCuti', 'pengajuanCuti'])
             ->where('status_pegawai', 'Aktif');
@@ -707,10 +724,25 @@ class PengajuanCutiController extends Controller
             $query->tendik();
         }
 
+        if ($statusAsn === 'PPPK') {
+            $query->where(function ($q) {
+                $q->where('status_asn', 'PPPK')
+                  ->orWhere('jenis_pegawai', 'like', '%PPPK%');
+            });
+        } elseif ($statusAsn === 'PNS') {
+            $query->where(function ($q) {
+                $q->where(function ($sq) {
+                    $sq->where('status_asn', '!=', 'PPPK')->orWhereNull('status_asn');
+                })->where(function ($sq) {
+                    $sq->where('jenis_pegawai', 'not like', '%PPPK%')->orWhereNull('jenis_pegawai');
+                });
+            });
+        }
+
         $pegawaiList = $query->orderBy('nama')->get();
         $unitKerja = $unitKerjaId ? \App\Models\UnitKerja::find($unitKerjaId) : null;
 
-        $pdf = Pdf::loadView('exports.pdf.rekap_kuota_cuti', compact('pegawaiList', 'tahun', 'unitKerja', 'jenisPegawai'))
+        $pdf = Pdf::loadView('exports.pdf.rekap_kuota_cuti', compact('pegawaiList', 'tahun', 'unitKerja', 'jenisPegawai', 'statusAsn'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->stream("Rekap_Kuota_Cuti_FKP_{$tahun}.pdf");

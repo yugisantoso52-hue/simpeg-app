@@ -92,6 +92,9 @@
                 </div>
             @endif
 
+            {{-- PANEL RINGKASAN SYARAT, KETENTUAN & PEMISAHAN HAK CUTI PNS vs PPPK --}}
+            @include('pengajuan-cuti._ringkasan_regulasi_bkn', ['defaultOpen' => false])
+
             {{-- FILTER & PENCARIAN --}}
             <div class="bg-white rounded-xl shadow-xs border border-gray-200 p-4">
                 <form method="GET" action="{{ route('pengajuan-cuti.rekap-kuota') }}" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
@@ -100,15 +103,15 @@
                         <input type="text" name="search" value="{{ $search }}" placeholder="Ketik nama atau NIP..."
                                class="w-full rounded-lg border-gray-300 text-xs focus:ring-emerald-500 focus:border-emerald-500">
                     </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Tahun Anggaran (N)</label>
+                    <div class="md:col-span-1">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Tahun (N)</label>
                         <select name="tahun" class="w-full rounded-lg border-gray-300 text-xs focus:ring-emerald-500 focus:border-emerald-500">
                             @for($y = now()->year + 1; $y >= 2024; $y--)
-                                <option value="{{ $y }}" @selected($tahun == $y)>Tahun {{ $y }}</option>
+                                <option value="{{ $y }}" @selected($tahun == $y)>{{ $y }}</option>
                             @endfor
                         </select>
                     </div>
-                    <div class="md:col-span-3">
+                    <div class="md:col-span-2">
                         <label class="block text-xs font-bold text-gray-700 mb-1">Unit Kerja</label>
                         <select name="unit_kerja_id" class="w-full rounded-lg border-gray-300 text-xs focus:ring-emerald-500 focus:border-emerald-500">
                             <option value="">Semua Unit Kerja</option>
@@ -125,11 +128,19 @@
                             <option value="Tendik" @selected($jenisPegawai === 'Tendik')>Tenaga Kependidikan</option>
                         </select>
                     </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Skema Hak Cuti (ASN)</label>
+                        <select name="status_asn" class="w-full rounded-lg border-gray-300 text-xs focus:ring-emerald-500 focus:border-emerald-500">
+                            <option value="">Semua (PNS &amp; PPPK)</option>
+                            <option value="PNS" @selected(($statusAsn ?? '') === 'PNS')>PNS (7 Hak Cuti)</option>
+                            <option value="PPPK" @selected(($statusAsn ?? '') === 'PPPK')>PPPK (4 Hak Cuti - Perbkn 7/2022)</option>
+                        </select>
+                    </div>
                     <div class="md:col-span-2 flex gap-2">
                         <button type="submit" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold py-2 transition">
                             Terapkan Filter
                         </button>
-                        @if(request()->hasAny(['search', 'unit_kerja_id', 'jenis_pegawai']) || $tahun != now()->year)
+                        @if(request()->hasAny(['search', 'unit_kerja_id', 'jenis_pegawai', 'status_asn']) || $tahun != now()->year)
                             <a href="{{ route('pengajuan-cuti.rekap-kuota') }}" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs transition">
                                 Reset
                             </a>
@@ -145,10 +156,10 @@
                         <thead class="text-[11px] uppercase bg-slate-50 text-slate-700 font-bold border-b border-gray-200">
                             <tr>
                                 <th rowspan="2" class="py-3 px-2 text-center w-10 border-r border-gray-200 bg-gray-100/70">No</th>
-                                <th rowspan="2" class="py-3 px-3 border-r border-gray-200 min-w-[200px] bg-gray-100/70">Pegawai & NIP</th>
-                                <th rowspan="2" class="py-3 px-3 border-r border-gray-200 min-w-[180px] bg-gray-100/70">Unit Kerja & Jabatan</th>
+                                <th rowspan="2" class="py-3 px-3 border-r border-gray-200 min-w-[210px] bg-gray-100/70">Pegawai, NIP &amp; Status ASN</th>
+                                <th rowspan="2" class="py-3 px-3 border-r border-gray-200 min-w-[180px] bg-gray-100/70">Unit Kerja &amp; Jabatan</th>
                                 <th colspan="9" class="py-2 px-3 text-center bg-slate-100 border-b border-r border-gray-200 text-slate-800 tracking-wider">
-                                    JENIS CUTI (Peraturan BKN No. 7 Tahun 2022)
+                                    JENIS CUTI (Peraturan BKN No. 7 Tahun 2022 — Pemisahan Hak PNS &amp; PPPK)
                                 </th>
                                 <th rowspan="2" class="py-3 px-3 text-center border-r border-gray-200 min-w-[160px] bg-gray-100/70">Tgl Pengajuan</th>
                                 <th rowspan="2" class="py-3 px-2 text-center w-24 bg-gray-100/70">Aksi</th>
@@ -158,17 +169,18 @@
                                 <th class="py-2 px-2 text-center border-r border-gray-200 bg-amber-50/40 text-amber-900" title="Sisa Cuti Tahun {{ $tahun - 1 }}">{{ $tahun - 1 }} (N-1)</th>
                                 <th class="py-2 px-2 text-center border-r border-gray-200 bg-emerald-50/50 text-emerald-900 font-bold" title="Cuti Tahunan Terpakai Tahun {{ $tahun }}">{{ $tahun }} (N)</th>
                                 <th class="py-2 px-2 text-center border-r border-gray-200 bg-teal-100/60 text-teal-900 font-black">Sisa</th>
-                                <th class="py-2 px-2 text-center border-r border-gray-200">Cuti Besar</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200" title="Khusus PNS (Masa Kerja ≥ 5 Tahun)">Cuti Besar <span class="block text-[8px] font-normal text-blue-700">(PNS)</span></th>
                                 <th class="py-2 px-2 text-center border-r border-gray-200">Cuti Sakit</th>
                                 <th class="py-2 px-2 text-center border-r border-gray-200">Cuti Melahirkan</th>
-                                <th class="py-2 px-2 text-center border-r border-gray-200">CAP</th>
-                                <th class="py-2 px-2 text-center border-r border-gray-200">CLTN</th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200" title="Khusus PNS (PPPK menggunakan Cuti Tahunan Pasal 9)">CAP <span class="block text-[8px] font-normal text-blue-700">(PNS)</span></th>
+                                <th class="py-2 px-2 text-center border-r border-gray-200" title="Khusus PNS (Masa Kerja ≥ 5 Tahun)">CLTN <span class="block text-[8px] font-normal text-blue-700">(PNS)</span></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse($pegawaiList as $p)
                                 @php
                                     $rekap = $p->getCutiRekapBkn($tahun);
+                                    $isPppkRow = $rekap['is_pppk'];
 
                                     $recN  = $p->kuotaCuti->firstWhere('tahun', $tahun);
                                     $recN1 = $p->kuotaCuti->firstWhere('tahun', $tahun - 1);
@@ -179,9 +191,15 @@
                                     <td class="py-2.5 px-2 text-center font-mono text-gray-400 border-r border-gray-100">
                                         {{ ($pegawaiList->currentPage() - 1) * $pegawaiList->perPage() + $loop->iteration }}
                                     </td>
-                                    {{-- Nama & NIP --}}
+                                    {{-- Nama, NIP & Badge Status ASN --}}
                                     <td class="py-2.5 px-3 border-r border-gray-100">
-                                        <div class="font-bold text-gray-900 leading-tight">{{ $p->nama_lengkap ?? $p->nama }}</div>
+                                        <div class="flex items-center justify-between gap-1.5">
+                                            <span class="font-bold text-gray-900 leading-tight">{{ $p->nama_lengkap ?? $p->nama }}</span>
+                                            <span class="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase {{ $isPppkRow ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-200' }}"
+                                                  title="{{ $rekap['regulasi_acuan'] }}">
+                                                {{ $rekap['status_asn_cuti'] }}
+                                            </span>
+                                        </div>
                                         <div class="text-[10px] text-gray-500 font-mono mt-0.5">NIP. {{ $p->nip ?? '-' }}</div>
                                     </td>
                                     {{-- Unit Kerja & Jabatan --}}
@@ -235,9 +253,11 @@
                                         </span>
                                     </td>
                                     {{-- Cuti Besar --}}
-                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono">
+                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono {{ $isPppkRow ? 'bg-slate-50/80' : '' }}">
                                         @if($rekap['cuti_besar'] !== null)
                                             <span class="font-semibold text-purple-700">{{ $rekap['cuti_besar'] }}</span>
+                                        @elseif($isPppkRow)
+                                            <span class="text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded cursor-help" title="Tidak berlaku bagi PPPK sesuai Pasal 4 Peraturan BKN No. 7 Tahun 2022">N/A</span>
                                         @else
                                             <span class="text-slate-300">-</span>
                                         @endif
@@ -259,17 +279,21 @@
                                         @endif
                                     </td>
                                     {{-- CAP --}}
-                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono">
+                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono {{ $isPppkRow ? 'bg-slate-50/80' : '' }}">
                                         @if($rekap['cuti_cap'] !== null)
                                             <span class="font-semibold text-cyan-700">{{ $rekap['cuti_cap'] }}</span>
+                                        @elseif($isPppkRow)
+                                            <span class="text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded cursor-help" title="PPPK tidak memiliki CAP tersendiri; alasan penting mengikuti Cuti Tahunan Pasal 9 (maks. 6 hk)">N/A</span>
                                         @else
                                             <span class="text-slate-300">-</span>
                                         @endif
                                     </td>
                                     {{-- CLTN --}}
-                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono">
+                                    <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono {{ $isPppkRow ? 'bg-slate-50/80' : '' }}">
                                         @if($rekap['cuti_cltn'] !== null)
                                             <span class="font-semibold text-slate-700">{{ $rekap['cuti_cltn'] }}</span>
+                                        @elseif($isPppkRow)
+                                            <span class="text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded cursor-help" title="Tidak berlaku bagi PPPK sesuai Pasal 4 Peraturan BKN No. 7 Tahun 2022">N/A</span>
                                         @else
                                             <span class="text-slate-300">-</span>
                                         @endif
@@ -299,6 +323,24 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+
+                {{-- Keterangan Legenda Pemisahan Hak Cuti PNS vs PPPK --}}
+                <div class="px-4 py-2.5 bg-slate-50 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-100 text-blue-800 border border-blue-200">PNS</span>
+                            <span>Berhak atas seluruh jenis cuti (Tahunan, Besar, Sakit, Melahirkan, CAP, CLTN, Bersama)</span>
+                        </span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300">PPPK</span>
+                            <span>Hanya berhak Cuti Tahunan, Sakit, Melahirkan &amp; Bersama (Pasal 4 Perbkn No. 7 Tahun 2022)</span>
+                        </span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="text-[9px] font-semibold text-slate-400 bg-slate-200/70 px-1.5 py-0.5 rounded">N/A</span>
+                            <span>Jenis cuti tidak berlaku bagi skema PPPK</span>
+                        </span>
+                    </div>
                 </div>
 
                 @if($pegawaiList->hasPages())

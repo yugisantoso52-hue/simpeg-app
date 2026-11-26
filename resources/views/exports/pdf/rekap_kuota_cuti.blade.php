@@ -54,9 +54,10 @@
         <h3>REKAPITULASI REALISASI & KUOTA CUTI PEGAWAI</h3>
         <h4>FAKULTAS KEPERAWATAN UNIVERSITAS RIAU — TAHUN ANGGARAN {{ $tahun }}</h4>
         <div style="font-size: 8pt; color: #444; margin-top: 2px;">
-            Dasar Hukum: Peraturan Badan Kepegawaian Negara Republik Indonesia Nomor 7 Tahun 2022
+            Dasar Hukum: Peraturan Badan Kepegawaian Negara Republik Indonesia Nomor 7 Tahun 2022 (Pemisahan Hak Cuti PNS &amp; PPPK)
             @if($unitKerja) | Unit Kerja: {{ $unitKerja->nama_unit }} @endif
             @if($jenisPegawai) | Kategori: {{ $jenisPegawai }} @endif
+            @if(!empty($statusAsn)) | Status ASN: {{ $statusAsn }} @endif
         </div>
     </div>
 
@@ -64,8 +65,8 @@
         <thead>
             <tr>
                 <th rowspan="2" style="width: 3%;">NO</th>
-                <th rowspan="2" style="width: 17%;">NAMA PEGAWAI & NIP</th>
-                <th rowspan="2" style="width: 16%;">JABATAN & UNIT KERJA</th>
+                <th rowspan="2" style="width: 18%;">NAMA PEGAWAI, NIP &amp; STATUS</th>
+                <th rowspan="2" style="width: 15%;">JABATAN &amp; UNIT KERJA</th>
                 <th colspan="9" style="background-color: #e6edf5;">JENIS CUTI (PERATURAN BKN NO. 7 TAHUN 2022)</th>
                 <th rowspan="2" style="width: 16%;">TGL PENGAJUAN</th>
             </tr>
@@ -74,22 +75,24 @@
                 <th style="width: 5%;">{{ $tahun - 1 }}<br>(N-1)</th>
                 <th style="width: 5%;">{{ $tahun }}<br>(N)</th>
                 <th style="width: 5%; background-color: #e0f2fe; font-weight: bold;">SISA</th>
-                <th style="width: 5%;">BESAR</th>
+                <th style="width: 5%;">BESAR<br><span style="font-size: 6.5pt; font-weight: normal;">(PNS)</span></th>
                 <th style="width: 5%;">SAKIT</th>
                 <th style="width: 6%;">LAHIR</th>
-                <th style="width: 4%;">CAP</th>
-                <th style="width: 4%;">CLTN</th>
+                <th style="width: 4%;">CAP<br><span style="font-size: 6.5pt; font-weight: normal;">(PNS)</span></th>
+                <th style="width: 4%;">CLTN<br><span style="font-size: 6.5pt; font-weight: normal;">(PNS)</span></th>
             </tr>
         </thead>
         <tbody>
             @forelse($pegawaiList as $p)
                 @php
                     $rekap = $p->getCutiRekapBkn($tahun);
+                    $isPppkPdf = $rekap['is_pppk'];
                 @endphp
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
                     <td>
-                        <strong>{{ $p->nama_lengkap ?? $p->nama }}</strong><br>
+                        <strong>{{ $p->nama_lengkap ?? $p->nama }}</strong>
+                        <span style="font-size: 7pt; font-weight: bold; color: {{ $isPppkPdf ? '#92400e' : '#1e40af' }};">[{{ $rekap['status_asn_cuti'] }}]</span><br>
                         <span style="font-size: 7.5pt; color: #444;">NIP. {{ $p->nip ?? '-' }}</span>
                     </td>
                     <td style="font-size: 7.5pt;">
@@ -100,11 +103,17 @@
                     <td class="text-center">{{ $rekap['n1'] ?? '-' }}</td>
                     <td class="text-center font-bold">{{ $rekap['n_terpakai'] ?? '-' }}</td>
                     <td class="text-center font-bold" style="background-color: #f0f9ff;">{{ $rekap['sisa'] }}</td>
-                    <td class="text-center">{{ $rekap['cuti_besar'] ?? '-' }}</td>
+                    <td class="text-center" style="{{ $isPppkPdf ? 'color: #888; font-size: 7pt;' : '' }}">
+                        {{ $rekap['cuti_besar'] ?? ($isPppkPdf ? 'N/A' : '-') }}
+                    </td>
                     <td class="text-center">{{ $rekap['cuti_sakit'] ?? '-' }}</td>
                     <td class="text-center font-bold">{{ $rekap['cuti_melahirkan'] ? $rekap['cuti_melahirkan'] . ' Bln' : '-' }}</td>
-                    <td class="text-center">{{ $rekap['cuti_cap'] ?? '-' }}</td>
-                    <td class="text-center">{{ $rekap['cuti_cltn'] ?? '-' }}</td>
+                    <td class="text-center" style="{{ $isPppkPdf ? 'color: #888; font-size: 7pt;' : '' }}">
+                        {{ $rekap['cuti_cap'] ?? ($isPppkPdf ? 'N/A' : '-') }}
+                    </td>
+                    <td class="text-center" style="{{ $isPppkPdf ? 'color: #888; font-size: 7pt;' : '' }}">
+                        {{ $rekap['cuti_cltn'] ?? ($isPppkPdf ? 'N/A' : '-') }}
+                    </td>
                     <td style="font-size: 7.5pt;">{{ $rekap['tgl_pengajuan'] }}</td>
                 </tr>
             @empty
@@ -114,6 +123,12 @@
             @endforelse
         </tbody>
     </table>
+
+    <div style="font-size: 7.5pt; color: #333; margin-top: 6px;">
+        <strong>Keterangan Pemisahan Hak Cuti (Peraturan BKN Nomor 7 Tahun 2022):</strong>
+        <strong>[PNS]</strong> Berhak atas 7 jenis cuti (Tahunan, Besar, Sakit, Melahirkan, CAP, CLTN, Bersama). |
+        <strong>[PPPK]</strong> Berdasarkan Pasal 4 Perbkn No. 7 Tahun 2022 hanya berhak atas 4 jenis cuti (Tahunan, Sakit, Melahirkan, Bersama); kolom bertanda <strong>N/A</strong> tidak berlaku bagi PPPK (alasan penting bagi PPPK mengikuti ketentuan Cuti Tahunan Pasal 9 maks. 6 hari kerja).
+    </div>
 
     <table style="border: none; margin-top: 20px;">
         <tr style="border: none;">

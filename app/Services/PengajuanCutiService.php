@@ -75,6 +75,13 @@ class PengajuanCutiService
             // Hitung durasi hari kerja
             $jumlahHari = $this->hitungHariKerja($data['tanggal_mulai'], $data['tanggal_selesai']);
 
+            // Validasi Pemisahan Hak Cuti PNS vs PPPK (Pasal 4 Peraturan BKN Nomor 7 Tahun 2022)
+            if ($pegawai->isPppk() && !$pegawai->isEntitledToLeaveType($data['jenis_cuti'])) {
+                throw ValidationException::withMessages([
+                    'jenis_cuti' => "Pegawai berstatus PPPK tidak berhak atas {$data['jenis_cuti']}. Sesuai Pasal 4 Peraturan BKN Nomor 7 Tahun 2022, hak cuti PPPK terdiri atas Cuti Tahunan, Cuti Sakit, Cuti Melahirkan, dan Cuti Bersama (alasan mendesak keluarga/pernikahan bagi PPPK diajukan melalui Cuti Tahunan Pasal 9 maks. 6 hari kerja).",
+                ]);
+            }
+
             // Validasi Kuota Cuti Tahunan
             if ($data['jenis_cuti'] === 'Cuti Tahunan') {
                 $sisaKuota = $pegawai->sisa_cuti_tahunan;

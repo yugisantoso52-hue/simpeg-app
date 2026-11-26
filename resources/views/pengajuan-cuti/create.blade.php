@@ -17,7 +17,11 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
+
+            {{-- Panel Ringkasan Pemisahan Hak, Syarat & Ketentuan Cuti PNS vs PPPK --}}
+            @include('pengajuan-cuti._ringkasan_regulasi_bkn', ['defaultOpen' => false])
+
             <div class="bg-white shadow-sm rounded-xl border border-gray-200 p-6 md:p-8">
 
                 @if($errors->any())
@@ -33,6 +37,8 @@
 
                 @php
                     $tahunBerjalan = (int) now()->year;
+                    $isPemohonPppk = $pegawai ? $pegawai->isPppk() : false;
+                    $statusAsnLabel = $pegawai ? $pegawai->status_asn_cuti : 'PNS';
                     $catatanCutiPemohon = $pegawai
                         ? $pegawai->getCatatanCutiTahunan($tahunBerjalan)
                         : [
@@ -47,6 +53,8 @@
                           jenisCuti: '{{ old('jenis_cuti', 'Cuti Tahunan') }}',
                           tglMulai: '{{ old('tanggal_mulai') }}',
                           tglSelesai: '{{ old('tanggal_selesai') }}',
+                          isPppk: {{ $isPemohonPppk ? 'true' : 'false' }},
+                          statusAsnLabel: '{{ $statusAsnLabel }}',
                           sisaCuti: {{ $catatanCutiPemohon['N']['sisa'] ?? 12 }},
                           sisaNFormatted: '{{ $catatanCutiPemohon['N']['sisa_formatted'] }}',
                           sisaN1Formatted: '{{ $catatanCutiPemohon['N-1']['sisa_formatted'] }}',
@@ -58,6 +66,11 @@
                                   this.sisaNFormatted = opt.dataset.sisaNFormatted || (this.sisaCuti + ' Hari');
                                   this.sisaN1Formatted = opt.dataset.sisaN1Formatted || '-';
                                   this.sisaN2Formatted = opt.dataset.sisaN2Formatted || '-';
+                                  this.isPppk = opt.dataset.isPppk === '1';
+                                  this.statusAsnLabel = opt.dataset.statusAsn || (this.isPppk ? 'PPPK' : 'PNS');
+                                  if (this.isPppk && ['Cuti Alasan Penting', 'Cuti Besar', 'Cuti di Luar Tanggungan Negara'].includes(this.jenisCuti)) {
+                                      this.jenisCuti = 'Cuti Tahunan';
+                                  }
                               }
                           },
                           get durasiHari() {
@@ -80,9 +93,15 @@
                     {{-- Jika Admin: Bisa memilih pegawai --}}
                     @if(Auth::user()->hasRole('admin'))
                         <div>
-                            <label for="pegawai_id" class="block text-sm font-semibold text-gray-700 mb-1">
-                                Pilih Pegawai yang Mengajukan Cuti <span class="text-red-500">*</span>
-                            </label>
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="pegawai_id" class="block text-sm font-semibold text-gray-700">
+                                    Pilih Pegawai yang Mengajukan Cuti <span class="text-red-500">*</span>
+                                </label>
+                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold"
+                                      :class="isPppk ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-200'"
+                                      x-text="isPppk ? 'Status: PPPK (4 Hak Cuti - Perbkn No. 7/2022)' : 'Status: PNS (7 Hak Cuti ASN)'">
+                                </span>
+                            </div>
                             <select name="pegawai_id" id="pegawai_id" required
                                     @change="updatePegawaiQuota($event)"
                                     class="w-full rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500">
@@ -96,18 +115,25 @@
                                             data-sisa-n-formatted="{{ $catatanP['N']['sisa_formatted'] }}"
                                             data-sisa-n1-formatted="{{ $catatanP['N-1']['sisa_formatted'] }}"
                                             data-sisa-n2-formatted="{{ $catatanP['N-2']['sisa_formatted'] }}"
+                                            data-is-pppk="{{ $p->isPppk() ? '1' : '0' }}"
+                                            data-status-asn="{{ $p->status_asn_cuti }}"
                                             @selected(old('pegawai_id') == $p->id)>
-                                        {{ $p->nama_lengkap ?? $p->nama }} (NIP: {{ $p->nip ?? '-' }}) - Sisa Cuti: {{ $p->sisa_cuti_tahunan }} Hari
+                                        [{{ $p->status_asn_cuti }}] {{ $p->nama_lengkap ?? $p->nama }} (NIP: {{ $p->nip ?? '-' }}) - Sisa Cuti: {{ $p->sisa_cuti_tahunan }} Hari
                                     </option>
                                 @endforeach
                             </select>
                         </div>
                     @else
                         {{-- Info Pemohon --}}
-                        <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between">
+                        <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg flex flex-wrap items-center justify-between gap-4">
                             <div>
-                                <div class="text-xs text-gray-500 uppercase font-semibold">Nama Pemohon Cuti</div>
-                                <div class="text-base font-bold text-gray-900">{{ optional($pegawai)->nama_lengkap ?? optional($pegawai)->nama ?? Auth::user()->name }}</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs text-gray-500 uppercase font-semibold">Nama Pemohon Cuti</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase {{ $isPemohonPppk ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-200' }}">
+                                        {{ $statusAsnLabel }} — {{ $isPemohonPppk ? 'Peraturan BKN No. 7 Tahun 2022' : 'Skema Hak Cuti PNS' }}
+                                    </span>
+                                </div>
+                                <div class="text-base font-bold text-gray-900 mt-0.5">{{ optional($pegawai)->nama_lengkap ?? optional($pegawai)->nama ?? Auth::user()->name }}</div>
                                 <div class="text-xs text-gray-500 font-mono">NIP. {{ optional($pegawai)->nip ?? '-' }}</div>
                             </div>
                             <div class="text-right">
@@ -153,20 +179,111 @@
                         </table>
                     </div>
 
-                    {{-- Jenis Cuti --}}
-                    <div>
-                        <label for="jenis_cuti" class="block text-sm font-semibold text-gray-700 mb-1">
-                            Jenis Cuti <span class="text-red-500">*</span>
-                        </label>
+                    {{-- Jenis Cuti (Dipisahkan antara Hak Cuti PNS dan PPPK) --}}
+                    <div class="space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <label for="jenis_cuti" class="block text-sm font-semibold text-gray-700">
+                                Jenis Cuti <span class="text-red-500">*</span>
+                            </label>
+                            <span x-show="isPppk" class="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded">
+                                ⚖️ Pemohon PPPK: Hanya Cuti Tahunan, Cuti Sakit &amp; Cuti Melahirkan (Pasal 4 Perbkn No. 7/2022)
+                            </span>
+                        </div>
                         <select name="jenis_cuti" id="jenis_cuti" x-model="jenisCuti" required
                                 class="w-full rounded-lg border-gray-300 text-sm focus:ring-emerald-500 focus:border-emerald-500">
-                            <option value="Cuti Tahunan">1. Cuti Tahunan (Maks 12 Hari Kerja)</option>
-                            <option value="Cuti Sakit">2. Cuti Sakit (Wajib Surat Dokter jika > 1 hari)</option>
-                            <option value="Cuti Melahirkan">3. Cuti Melahirkan (Maks 3 Bulan)</option>
-                            <option value="Cuti Alasan Penting">4. Cuti Karena Alasan Penting</option>
-                            <option value="Cuti Besar">5. Cuti Besar (Masa Kerja > 5 Tahun)</option>
-                            <option value="Cuti di Luar Tanggungan Negara">6. Cuti di Luar Tanggungan Negara (CLTN)</option>
+                            <option value="Cuti Tahunan">1. Cuti Tahunan (Maks. 12 Hari Kerja / Pasal 9 PPPK Maks. 6 Hari Kerja)</option>
+                            <option value="Cuti Sakit">2. Cuti Sakit (Wajib Surat Dokter jika &gt; 1 hari)</option>
+                            <option value="Cuti Melahirkan">3. Cuti Melahirkan (Maks. 3 Bulan — Anak ke-1 s.d. ke-3)</option>
+                            <option value="Cuti Alasan Penting" :disabled="isPppk" x-text="isPppk ? '4. Cuti Karena Alasan Penting (Khusus PNS — PPPK gunakan Cuti Tahunan Pasal 9)' : '4. Cuti Karena Alasan Penting (CAP - Khusus PNS)'">4. Cuti Karena Alasan Penting</option>
+                            <option value="Cuti Besar" :disabled="isPppk" x-text="isPppk ? '5. Cuti Besar (Khusus PNS — Tidak berlaku bagi PPPK)' : '5. Cuti Besar (Khusus PNS — Masa Kerja ≥ 5 Tahun)'">5. Cuti Besar (Masa Kerja &gt; 5 Tahun)</option>
+                            <option value="Cuti di Luar Tanggungan Negara" :disabled="isPppk" x-text="isPppk ? '6. Cuti di Luar Tanggungan Negara / CLTN (Khusus PNS — Tidak berlaku bagi PPPK)' : '6. Cuti di Luar Tanggungan Negara (CLTN - Khusus PNS)'">6. Cuti di Luar Tanggungan Negara (CLTN)</option>
                         </select>
+
+                        {{-- Kotak Panduan Syarat & Ketentuan Dinamis Sesuai Jenis Cuti Terpilih --}}
+                        <div class="p-3.5 rounded-xl border text-xs leading-relaxed"
+                             :class="isPppk ? 'bg-amber-50/70 border-amber-200 text-amber-950' : 'bg-blue-50/60 border-blue-200 text-blue-950'">
+                            <template x-if="jenisCuti === 'Cuti Tahunan'">
+                                <div>
+                                    <div class="font-bold mb-1 flex items-center gap-1.5">
+                                        <span>📌</span>
+                                        <span x-text="isPppk ? 'Syarat & Ketentuan Cuti Tahunan PPPK (Pasal 5 s.d. Pasal 11 Perbkn No. 7 Tahun 2022):' : 'Syarat & Ketentuan Cuti Tahunan PNS:'"></span>
+                                    </div>
+                                    <ul class="list-disc list-inside space-y-0.5 text-[11px]">
+                                        <li>Hak kuota dasar <strong>12 hari kerja</strong> setelah bekerja paling sedikit 1 tahun secara terus-menerus.</li>
+                                        <li>Akumulasi sisa cuti: maksimal <strong>18 hari kerja</strong> (1 tahun tidak diambil) atau <strong>24 hari kerja</strong> (2 tahun berturut-turut tidak diambil; bagi PPPK wajib masa perjanjian kerja &gt; 2 atau &gt; 3 tahun).</li>
+                                        <li x-show="isPppk"><strong>Ketentuan Khusus PPPK (Pasal 9)</strong>: Bagi PPPK yang masa kerjanya belum 1 tahun atau mengalami alasan mendesak (ibu/bapak/istri/suami/anak/mertua sakit keras atau meninggal dunia, atau melangsungkan perkawinan pertama), diberikan Cuti Tahunan paling lama <strong>6 hari kerja</strong> (wajib lampirkan Surat Rawat Inap jika sakit keras).</li>
+                                    </ul>
+                                </div>
+                            </template>
+
+                            <template x-if="jenisCuti === 'Cuti Sakit'">
+                                <div>
+                                    <div class="font-bold mb-1 flex items-center gap-1.5">
+                                        <span>🏥</span>
+                                        <span x-text="isPppk ? 'Syarat & Ketentuan Cuti Sakit PPPK (Pasal 12 s.d. Pasal 17 Perbkn No. 7 Tahun 2022):' : 'Syarat & Ketentuan Cuti Sakit PNS:'"></span>
+                                    </div>
+                                    <ul class="list-disc list-inside space-y-0.5 text-[11px]">
+                                        <li>Sakit 1 hari: menyampaikan surat keterangan sakit tertulis kepada atasan langsung dengan surat dokter.</li>
+                                        <li x-show="isPppk">Sakit 2 s.d. 14 hari: permohonan tertulis kepada PYBMC dengan melampirkan surat keterangan dokter.</li>
+                                        <li x-show="isPppk">Sakit &gt; 14 hari: diberikan paling lama <strong>1 (satu) bulan</strong> dan wajib melampirkan <strong>Surat Keterangan Dokter Pemerintah (Dokter PNS / Faskes Pemerintah)</strong> (Pasal 13).</li>
+                                        <li x-show="!isPppk">Bagi PNS: Sakit &gt; 14 hari diberikan s.d. 1 tahun dan dapat ditambah maks. 6 bulan berdasarkan surat Tim Penguji Kesehatan.</li>
+                                        <li>Mengalami gugur kandungan: berhak atas cuti sakit paling lama <strong>1,5 (satu setengah) bulan</strong> dengan surat keterangan dokter/bidan.</li>
+                                    </ul>
+                                </div>
+                            </template>
+
+                            <template x-if="jenisCuti === 'Cuti Melahirkan'">
+                                <div>
+                                    <div class="font-bold mb-1 flex items-center gap-1.5">
+                                        <span>👶</span>
+                                        <span x-text="isPppk ? 'Syarat & Ketentuan Cuti Melahirkan PPPK (Pasal 18 s.d. Pasal 19 Perbkn No. 7 Tahun 2022):' : 'Syarat & Ketentuan Cuti Melahirkan PNS:'"></span>
+                                    </div>
+                                    <ul class="list-disc list-inside space-y-0.5 text-[11px]">
+                                        <li>Berlaku untuk kelahiran <strong>anak pertama sampai dengan anak ketiga</strong> (bagi PPPK dihitung sejak saat berstatus PPPK).</li>
+                                        <li>Lamanya hak atas cuti melahirkan diberikan paling lama <strong>3 (tiga) bulan</strong> dengan tetap menerima penghasilan sesuai ketentuan.</li>
+                                        <li>Melampirkan Surat Keterangan HPL / Rujukan Persalinan dari Dokter Spesialis atau Bidan.</li>
+                                    </ul>
+                                </div>
+                            </template>
+
+                            <template x-if="jenisCuti === 'Cuti Alasan Penting'">
+                                <div>
+                                    <div class="font-bold mb-1 flex items-center gap-1.5">
+                                        <span>⚡</span>
+                                        <span>Syarat &amp; Ketentuan Cuti Karena Alasan Penting (CAP — Khusus PNS):</span>
+                                    </div>
+                                    <ul class="list-disc list-inside space-y-0.5 text-[11px]">
+                                        <li>Hanya berlaku bagi <strong>PNS</strong> (paling lama 1 bulan) untuk: keluarga inti sakit keras/meninggal dunia, perkawinan, istri melahirkan/operasi caesar, atau mengalami musibah kebakaran/bencana alam.</li>
+                                        <li>Bagi <strong>PPPK</strong>, alasan tersebut diajukan melalui <strong>Cuti Tahunan Pasal 9 (maks. 6 hari kerja)</strong>.</li>
+                                    </ul>
+                                </div>
+                            </template>
+
+                            <template x-if="jenisCuti === 'Cuti Besar'">
+                                <div>
+                                    <div class="font-bold mb-1 flex items-center gap-1.5">
+                                        <span>🕋</span>
+                                        <span>Syarat &amp; Ketentuan Cuti Besar (Khusus PNS):</span>
+                                    </div>
+                                    <ul class="list-disc list-inside space-y-0.5 text-[11px]">
+                                        <li>Hanya berlaku bagi <strong>PNS</strong> yang telah bekerja paling singkat <strong>5 tahun secara terus-menerus</strong>, diberikan paling lama <strong>3 bulan</strong> (atau untuk ibadah haji pertama / kelahiran anak ke-4).</li>
+                                        <li>PNS yang menggunakan Cuti Besar tidak berhak lagi atas Cuti Tahunan dalam tahun yang bersangkutan.</li>
+                                    </ul>
+                                </div>
+                            </template>
+
+                            <template x-if="jenisCuti === 'Cuti di Luar Tanggungan Negara'">
+                                <div>
+                                    <div class="font-bold mb-1 flex items-center gap-1.5">
+                                        <span>🏛️</span>
+                                        <span>Syarat &amp; Ketentuan Cuti di Luar Tanggungan Negara (CLTN — Khusus PNS):</span>
+                                    </div>
+                                    <ul class="list-disc list-inside space-y-0.5 text-[11px]">
+                                        <li>Hanya berlaku bagi <strong>PNS</strong> yang telah bekerja paling singkat <strong>5 tahun terus-menerus</strong> karena alasan pribadi dan mendesak (paling lama 3 tahun), dengan persetujuan teknis Kepala BKN.</li>
+                                    </ul>
+                                </div>
+                            </template>
+                        </div>
                     </div>
 
                     {{-- Tanggal Mulai & Tanggal Selesai --}}

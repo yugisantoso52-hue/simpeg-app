@@ -510,6 +510,8 @@ class Pegawai extends Model
         }
         $tglPengajuanStr = !empty($tglPengajuanList) ? implode(', ', array_unique($tglPengajuanList)) : '-';
 
+        $isPppk = $this->isPppk();
+
         return [
             'tahun_n'          => $tahunN,
             'tahun_n1'         => $tahunN1,
@@ -525,7 +527,90 @@ class Pegawai extends Model
             'cuti_cltn'        => $cutiCltn > 0 ? $cutiCltn : null,
             'tgl_pengajuan'    => $tglPengajuanStr,
             'total_transaksi'  => $pengajuansTahunN->count(),
+            'is_pppk'          => $isPppk,
+            'status_asn_cuti'  => $isPppk ? 'PPPK' : 'PNS',
+            'regulasi_acuan'   => $isPppk ? 'Peraturan BKN Nomor 7 Tahun 2022' : 'Peraturan BKN No. 24/2017 jo. No. 7/2021',
+            'hak_cuti_besar'   => !$isPppk,
+            'hak_cuti_cap'     => !$isPppk,
+            'hak_cuti_cltn'    => !$isPppk,
         ];
+    }
+
+    /**
+     * Cek apakah pegawai berstatus PPPK (Pegawai Pemerintah dengan Perjanjian Kerja)
+     */
+    public function isPppk(): bool
+    {
+        $statusAsn = strtoupper(trim((string) $this->status_asn));
+        $jenisPeg  = strtoupper(trim((string) $this->jenis_pegawai));
+        $nipClean  = preg_replace('/[^0-9]/', '', (string) $this->nip);
+
+        if ($statusAsn === 'PPPK' || str_contains($jenisPeg, 'PPPK')) {
+            return true;
+        }
+
+        // Pada standar BKN, digit ke-13 dan 14 NIP PPPK (18 digit) bernilai '21' (misal: 199101272025212049)
+        if (strlen($nipClean) === 18 && substr($nipClean, 12, 2) === '21') {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Cek apakah pegawai berstatus PNS
+     */
+    public function isPns(): bool
+    {
+        return !$this->isPppk();
+    }
+
+    /**
+     * Accessor label status ASN untuk regulasi cuti ('PPPK' atau 'PNS')
+     */
+    public function getStatusAsnCutiAttribute(): string
+    {
+        return $this->isPppk() ? 'PPPK' : 'PNS';
+    }
+
+    /**
+     * Daftar jenis cuti yang berhak diajukan pegawai berdasarkan status PNS vs PPPK
+     * Mengacu pada Peraturan BKN Nomor 7 Tahun 2022 (Pasal 4).
+     */
+    public function getAllowedJenisCuti(): array
+    {
+        if ($this->isPppk()) {
+            return [
+                'Cuti Tahunan',
+                'Cuti Sakit',
+                'Cuti Melahirkan',
+            ];
+        }
+
+        return [
+            'Cuti Tahunan',
+            'Cuti Besar',
+            'Cuti Sakit',
+            'Cuti Melahirkan',
+            'Cuti Alasan Penting',
+            'Cuti di Luar Tanggungan Negara',
+        ];
+    }
+
+    /**
+     * Cek apakah pegawai berhak atas jenis cuti tertentu sesuai Peraturan BKN Nomor 7 Tahun 2022
+     */
+    public function isEntitledToLeaveType(string $jenisCuti): bool
+    {
+        $normalized = strtolower(trim($jenisCuti));
+        if ($this->isPppk()) {
+            return str_contains($normalized, 'tahunan')
+                || str_contains($normalized, 'sakit')
+                || str_contains($normalized, 'melahirkan')
+                || str_contains($normalized, 'bersama');
+        }
+
+        return true;
     }
 
     /* --- ACCESSORS --- */

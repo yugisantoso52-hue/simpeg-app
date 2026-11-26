@@ -714,7 +714,7 @@ class PengajuanCutiTest extends TestCase
         $response = $this->actingAs($this->adminUser)->get(route('pengajuan-cuti.rekap-kuota', ['tahun' => 2026, 'jenis_pegawai' => 'Tendik']));
         $response->assertStatus(200);
         $response->assertSee('Peraturan BKN Nomor 7 Tahun 2022');
-        $response->assertSee('JENIS CUTI (Peraturan BKN No. 7 Tahun 2022)');
+        $response->assertSee('Pemisahan Hak PNS');
 
         // Periksa data pegawai jika data seeding ada di DB lokal
         $dolli = Pegawai::where('nip', '197605212014092001')->first();
@@ -735,5 +735,56 @@ class PengajuanCutiTest extends TestCase
             $this->assertStringContainsString('23 Des 2025', $rRahayu['tgl_pengajuan']);
             $this->assertStringContainsString('2 Nov 2026', $rRahayu['tgl_pengajuan']);
         }
+    }
+
+    public function test_pemisahan_hak_cuti_pns_dan_pppk_serta_ringkasan_regulasi(): void
+    {
+        // 1. Buat pegawai PPPK
+        $pegawaiPppk = Pegawai::create([
+            'nip'            => '199209072025211099',
+            'nama'           => 'Pegawai Uji PPPK',
+            'jenis_pegawai'  => 'PPPK',
+            'status_asn'     => 'PPPK',
+            'status_pegawai' => 'Aktif',
+        ]);
+
+        $this->assertTrue($pegawaiPppk->isPppk());
+        $this->assertFalse($pegawaiPppk->isPns());
+        $this->assertEquals('PPPK', $pegawaiPppk->status_asn_cuti);
+        $this->assertTrue($pegawaiPppk->isEntitledToLeaveType('Cuti Tahunan'));
+        $this->assertTrue($pegawaiPppk->isEntitledToLeaveType('Cuti Sakit'));
+        $this->assertTrue($pegawaiPppk->isEntitledToLeaveType('Cuti Melahirkan'));
+        $this->assertFalse($pegawaiPppk->isEntitledToLeaveType('Cuti Besar'));
+        $this->assertFalse($pegawaiPppk->isEntitledToLeaveType('Cuti Alasan Penting'));
+        $this->assertFalse($pegawaiPppk->isEntitledToLeaveType('Cuti di Luar Tanggungan Negara'));
+
+        // 2. Pastikan pengajuan Cuti Besar untuk PPPK ditolak oleh validasi Pasal 4 Perbkn No. 7 Tahun 2022
+        $responseReject = $this->actingAs($this->adminUser)->post(route('pengajuan-cuti.store'), [
+            'pegawai_id'      => $pegawaiPppk->id,
+            'jenis_cuti'      => 'Cuti Besar',
+            'tanggal_mulai'   => '2026-07-01',
+            'tanggal_selesai' => '2026-07-10',
+            'alasan'          => 'Mengajukan cuti besar',
+        ]);
+        $responseReject->assertSessionHasErrors('jenis_cuti');
+
+        // 3. Pastikan pengajuan Cuti Tahunan untuk PPPK berhasil
+        $responseValid = $this->actingAs($this->adminUser)->post(route('pengajuan-cuti.store'), [
+            'pegawai_id'      => $pegawaiPppk->id,
+            'jenis_cuti'      => 'Cuti Tahunan',
+            'tanggal_mulai'   => '2026-07-06',
+            'tanggal_selesai' => '2026-07-08',
+            'alasan'          => 'Keperluan keluarga sesuai Pasal 5 Perbkn No. 7/2022',
+        ]);
+        $responseValid->assertRedirect(route('pengajuan-cuti.index'));
+
+        // 4. Pastikan ringkasan syarat & ketentuan tampil di halaman utama E-Cuti dan Form Create
+        $indexRes = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.index'));
+        $indexRes->assertStatus(200);
+        $indexRes->assertSee('Ringkasan Syarat, Ketentuan & Pemisahan Hak Cuti ASN (PNS vs PPPK)');
+
+        $createRes = $this->actingAs($this->pegawaiUser)->get(route('pengajuan-cuti.create'));
+        $createRes->assertStatus(200);
+        $createRes->assertSee('Ringkasan Syarat, Ketentuan & Pemisahan Hak Cuti ASN (PNS vs PPPK)');
     }
 }

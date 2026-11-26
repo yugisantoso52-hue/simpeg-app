@@ -27,14 +27,22 @@
         <div class="w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 space-y-6">
 
             {{-- KARTU PROFIL PEGAWAI & PILIHAN TAHUN --}}
+            @php
+                $isBukuPppk = $pegawai->isPppk();
+            @endphp
             <div class="bg-white rounded-xl shadow-xs border border-gray-200 p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
                     <img class="h-14 w-14 rounded-full object-cover border-2 border-emerald-500 shadow-xs"
                          src="{{ $pegawai->foto_url }}" alt="{{ $pegawai->nama }}">
                     <div>
-                        <h3 class="text-base font-bold text-gray-900">{{ $pegawai->nama_lengkap ?? $pegawai->nama }}</h3>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h3 class="text-base font-bold text-gray-900">{{ $pegawai->nama_lengkap ?? $pegawai->nama }}</h3>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase {{ $isBukuPppk ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-200' }}">
+                                {{ $pegawai->status_asn_cuti }} — {{ $isBukuPppk ? '4 Jenis Hak Cuti (Perbkn No. 7 Tahun 2022)' : '7 Jenis Hak Cuti ASN' }}
+                            </span>
+                        </div>
                         <p class="text-xs text-gray-500 font-mono">NIP. {{ $pegawai->nip ?? '-' }}</p>
-                        <p class="text-xs text-gray-600 mt-0.5">{{ $pegawai->jabatan?->nama_jabatan ?? '-' }} — {{ $pegawai->unitKerja?->nama_unit ?? '-' }}</p>
+                        <p class="text-xs text-gray-600 mt-0.5">{{ $pegawai->jabatan_tampil }} — {{ $pegawai->unit_kerja_tampil }}</p>
                     </div>
                 </div>
 
@@ -51,6 +59,9 @@
                     </select>
                 </form>
             </div>
+
+            {{-- PANEL RINGKASAN SYARAT, KETENTUAN & PEMISAHAN HAK CUTI PNS vs PPPK --}}
+            @include('pengajuan-cuti._ringkasan_regulasi_bkn', ['defaultOpen' => false])
 
             {{-- KARTU SALDO 3 TAHUN (N, N-1, N-2) --}}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

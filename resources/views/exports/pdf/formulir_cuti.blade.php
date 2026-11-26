@@ -174,9 +174,12 @@
     </div>
 
     {{-- I. DATA PEGAWAI --}}
+    @php
+        $isPemohonPppkPdf = $cuti->pegawai ? $cuti->pegawai->isPppk() : false;
+    @endphp
     <table class="bkn-table">
         <tr class="section-title">
-            <td colspan="4">I. DATA PEGAWAI</td>
+            <td colspan="4">I. DATA PEGAWAI ({{ $isPemohonPppkPdf ? 'PPPK — LAMPIRAN II PERATURAN BKN NOMOR 7 TAHUN 2022' : 'PNS' }})</td>
         </tr>
         <tr>
             <td style="width: 18%;">Nama</td>
@@ -186,41 +189,64 @@
         </tr>
         <tr>
             <td>Jabatan</td>
-            <td>{{ $cuti->pegawai?->jabatan?->nama_jabatan ?? '-' }}</td>
-            <td>Masa Kerja Golongan</td>
+            <td>{{ $cuti->pegawai?->jabatan_tampil ?? ($cuti->pegawai?->jabatan?->nama_jabatan ?? '-') }}</td>
+            <td>Masa Kerja</td>
             <td>{{ $cuti->pegawai?->mkg_tahun ?? 0 }} Thn {{ $cuti->pegawai?->mkg_bulan ?? 0 }} Bln</td>
         </tr>
         <tr>
             <td>Unit Kerja</td>
-            <td>{{ $cuti->pegawai?->unitKerja?->nama_unit ?? 'Fakultas Keperawatan' }}</td>
-            <td>Golongan / Pangkat</td>
-            <td>{{ $cuti->pegawai?->golongan?->nama_golongan ?? '-' }} ({{ $cuti->pegawai?->golongan?->nama_pangkat ?? '-' }})</td>
+            <td>{{ $cuti->pegawai?->unit_kerja_tampil ?? ($cuti->pegawai?->unitKerja?->nama_unit ?? 'Fakultas Keperawatan') }}</td>
+            <td>Status / Golongan</td>
+            <td>
+                @if($isPemohonPppkPdf)
+                    PPPK {{ $cuti->pegawai?->golongan?->nama_golongan ? '(' . $cuti->pegawai->golongan->nama_golongan . ')' : '' }}
+                @else
+                    {{ $cuti->pegawai?->golongan?->nama_golongan ?? '-' }} ({{ $cuti->pegawai?->golongan?->nama_pangkat ?? '-' }})
+                @endif
+            </td>
         </tr>
     </table>
 
     {{-- II. JENIS CUTI YANG DIAMBIL --}}
     <table class="bkn-table">
         <tr class="section-title">
-            <td colspan="4">II. JENIS CUTI YANG DIAMBIL</td>
+            <td colspan="4">II. JENIS CUTI YANG DIAMBIL**</td>
         </tr>
-        <tr>
-            <td style="width: 40%;">1. Cuti Tahunan</td>
-            <td style="width: 10%;" class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti Tahunan' ? '✓' : '' }}</td>
-            <td style="width: 40%;">2. Cuti Besar</td>
-            <td style="width: 10%;" class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti Besar' ? '✓' : '' }}</td>
-        </tr>
-        <tr>
-            <td>3. Cuti Sakit</td>
-            <td class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti Sakit' ? '✓' : '' }}</td>
-            <td>4. Cuti Melahirkan</td>
-            <td class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti Melahirkan' ? '✓' : '' }}</td>
-        </tr>
-        <tr>
-            <td>5. Cuti Karena Alasan Penting</td>
-            <td class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti Alasan Penting' ? '✓' : '' }}</td>
-            <td>6. Cuti di Luar Tanggungan Negara</td>
-            <td class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti di Luar Tanggungan Negara' ? '✓' : '' }}</td>
-        </tr>
+        @if($isPemohonPppkPdf)
+            {{-- Format Lampiran II Peraturan BKN Nomor 7 Tahun 2022 khusus PPPK --}}
+            <tr>
+                <td colspan="3" style="width: 85%;">1. Cuti Tahunan</td>
+                <td style="width: 15%;" class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti Tahunan' ? '✓' : '' }}</td>
+            </tr>
+            <tr>
+                <td colspan="3">2. Cuti Sakit</td>
+                <td class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti Sakit' ? '✓' : '' }}</td>
+            </tr>
+            <tr>
+                <td colspan="3">3. Cuti Melahirkan</td>
+                <td class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti Melahirkan' ? '✓' : '' }}</td>
+            </tr>
+        @else
+            {{-- Format PNS (6 Jenis Cuti) --}}
+            <tr>
+                <td style="width: 40%;">1. Cuti Tahunan</td>
+                <td style="width: 10%;" class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti Tahunan' ? '✓' : '' }}</td>
+                <td style="width: 40%;">2. Cuti Besar</td>
+                <td style="width: 10%;" class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti Besar' ? '✓' : '' }}</td>
+            </tr>
+            <tr>
+                <td>3. Cuti Sakit</td>
+                <td class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti Sakit' ? '✓' : '' }}</td>
+                <td>4. Cuti Melahirkan</td>
+                <td class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti Melahirkan' ? '✓' : '' }}</td>
+            </tr>
+            <tr>
+                <td>5. Cuti Karena Alasan Penting</td>
+                <td class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti Alasan Penting' ? '✓' : '' }}</td>
+                <td>6. Cuti di Luar Tanggungan Negara</td>
+                <td class="text-center checkbox-mark">{{ $cuti->jenis_cuti === 'Cuti di Luar Tanggungan Negara' ? '✓' : '' }}</td>
+            </tr>
+        @endif
     </table>
 
     {{-- III. ALASAN CUTI --}}
