@@ -214,4 +214,71 @@ class DashboardTest extends TestCase
     {
         $this->get('/dashboard')->assertRedirect('/login');
     }
+
+    public function test_executive_action_center_renders_stage_lists_and_modal(): void
+    {
+        $response = $this->actingAs($this->adminUser)->get('/dashboard');
+
+        $response->assertStatus(200);
+        $response->assertSee('Executive Action Center &amp; Meja Pengesahan Berjenjang', false);
+        $response->assertSee('SOP Tata Naskah 4 Tahap');
+        $response->assertSee('Buka Meja Screening');
+        $response->assertSee('Paraf Koordinasi Pokja');
+        $response->assertSee('Telaah Tata Naskah');
+        $response->assertSee('Meja Pengesahan TTE');
+        $response->assertSee('activeStageModal');
+        $response->assertSee('Filter Modul:');
+        $response->assertSee('Tidak Ada Antrean Berkas');
+        $response->assertViewHas('workflowStageLists');
+    }
+
+    public function test_executive_action_center_displays_pending_documents_and_metode_ttd(): void
+    {
+        $unit = UnitKerja::create(['nama_unit' => 'Bagian Tata Usaha', 'kode_unit' => 'TU']);
+        $jabatan = Jabatan::create(['kode_jabatan' => 'JAB-002', 'nama_jabatan' => 'Analis Kepegawaian']);
+        $golongan = Golongan::create(['nama_golongan' => 'III/b', 'nama_pangkat' => 'Penata Muda Tk. I']);
+
+        $pegawai = Pegawai::create([
+            'nip'                 => '199501012020011005',
+            'nama'                => 'Siti Pegawai Test',
+            'status_asn'          => 'ASN',
+            'jenis_pegawai'       => 'PNS',
+            'status_pegawai'      => 'Aktif',
+            'unit_kerja_id'       => $unit->id,
+            'jabatan_id'          => $jabatan->id,
+            'golongan_id'         => $golongan->id,
+            'pendidikan_terakhir' => 'S1 Manajemen',
+        ]);
+
+        \App\Models\LayananSurat::create([
+            'pegawai_id'          => $pegawai->id,
+            'jenis_surat'         => 'surat_aktif',
+            'nomor_surat'         => 'B/0001/UN19.5.1.1/KP/2026',
+            'keperluan'           => 'Pengurusan Administrasi',
+            'tanggal_surat'       => now()->toDateString(),
+            'status'              => 'diajukan',
+            'metode_ttd'          => 'elektronik',
+            'verifikasi_admin_at' => null,
+        ]);
+
+        \App\Models\PengajuanKarir::create([
+            'pegawai_id'          => $pegawai->id,
+            'jenis_pengajuan'     => 'KGB',
+            'status'              => 'diajukan',
+            'metode_ttd'          => 'manual',
+            'verifikasi_admin_at' => null,
+        ]);
+
+        // Clear dashboard workflow cache
+        Cache::forget('dashboard_workflow_stats');
+        Cache::forget('dashboard_workflow_stage_lists');
+
+        $response = $this->actingAs($this->adminUser)->get('/dashboard');
+
+        $response->assertStatus(200);
+        $response->assertSee('Siti Pegawai Test');
+        $response->assertSee('⚡ Elektronik');
+        $response->assertSee('✍️ Manual');
+        $response->assertSee('Metode Tanda Tangan');
+    }
 }

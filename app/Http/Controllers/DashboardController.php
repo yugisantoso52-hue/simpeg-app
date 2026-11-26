@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Pegawai;
 use App\Models\PengajuanCuti;
+use App\Models\LayananSurat;
+use App\Models\PengajuanKarir;
+use App\Models\UsulanSatyalancana;
 use App\Models\Logbook;
 use App\Models\Attendance;
 use App\Models\AnalisisJabatan;
@@ -446,12 +449,209 @@ class DashboardController extends Controller
                         'dekan_pending_karir'   => $dekanPendingKarir,
                     ];
                 });
+                $data['workflowStageLists'] = Cache::remember('dashboard_workflow_stage_lists', 60, function() {
+                    return $this->getWorkflowStageLists();
+                });
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning('Dashboard workflow stats error: ' . $e->getMessage());
                 $data['workflowStats'] = $defaultWorkflowStats;
+                $data['workflowStageLists'] = [1 => [], 2 => [], 3 => [], 4 => []];
             }
+        } else {
+            $data['workflowStageLists'] = [1 => [], 2 => [], 3 => [], 4 => []];
         }
 
         return view('dashboard', $data);
+    }
+
+    /**
+     * Mengumpulkan daftar berkas riil yang sedang menunggu tindakan di 4 tahapan SOP Pengesahan Berjenjang:
+     * 1. Screening Admin
+     * 2. Paraf Ka Pokja
+     * 3. Paraf / Telaah Kabag Umum
+     * 4. TTE Pimpinan (WD II / Dekan / PYBMC)
+     */
+    private function getWorkflowStageLists(): array
+    {
+        $stages = [
+            1 => [],
+            2 => [],
+            3 => [],
+            4 => [],
+        ];
+
+        $formatNama = function ($pegawai) {
+            if (!$pegawai) return 'Pegawai SIKAP';
+            return trim(($pegawai->gelar_depan ? $pegawai->gelar_depan . ' ' : '') . $pegawai->nama . ($pegawai->gelar_belakang ? ', ' . $pegawai->gelar_belakang : ''));
+        };
+
+        // 1. Layanan Surat (E-Surat Mandiri)
+        try {
+            $suratList = LayananSurat::with(['pegawai.unitKerja'])
+                ->whereNotIn('status', ['ditolak', 'selesai', 'dibatalkan'])
+                ->latest('id')
+                ->take(50)
+                ->get();
+
+            foreach ($suratList as $s) {
+                $namaJenis = ucwords(str_replace('_', ' ', $s->jenis_surat ?? 'Surat Keterangan'));
+                $item = [
+                    'id'           => $s->id,
+                    'modul'        => 'surat',
+                    'modul_label'  => 'E-Surat Mandiri',
+                    'modul_icon'   => '📄',
+                    'judul'        => $namaJenis,
+                    'nomor'        => $s->nomor_surat ?: 'Belum bernomor',
+                    'pegawai_nama' => $formatNama($s->pegawai),
+                    'pegawai_nip'  => $s->pegawai?->nip ?? '-',
+                    'unit_kerja'   => $s->pegawai?->unitKerja?->nama_unit ?? 'Fakultas Keperawatan',
+                    'metode_ttd'   => $s->metode_ttd ?: 'elektronik',
+                    'tanggal'      => $s->created_at ? $s->created_at->translatedFormat('d M Y') : '-',
+                    'status'       => $s->status,
+                    'url'          => route('layanan-surat.index'),
+                    'url_modul'    => route('layanan-surat.index'),
+                ];
+
+                if (is_null($s->verifikasi_admin_at) && $s->status === 'diajukan') {
+                    $stages[1][] = $item;
+                } elseif (!is_null($s->verifikasi_admin_at) && is_null($s->paraf_kapokja_at)) {
+                    $stages[2][] = $item;
+                } elseif (!is_null($s->paraf_kapokja_at) && is_null($s->paraf_kabag_at)) {
+                    $stages[3][] = $item;
+                } elseif (!is_null($s->paraf_kabag_at) && is_null($s->ttd_pimpinan_at)) {
+                    $stages[4][] = $item;
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Dashboard stage list surat error: ' . $e->getMessage());
+        }
+
+        // 2. Pengajuan Karir (KP & KGB)
+        try {
+            $karirList = PengajuanKarir::with(['pegawai.unitKerja', 'golonganTujuan'])
+                ->whereNotIn('status', ['ditolak', 'selesai', 'dibatalkan'])
+                ->latest('id')
+                ->take(50)
+                ->get();
+
+            foreach ($karirList as $k) {
+                $judul = 'Usulan ' . ($k->jenis_pengajuan ?: 'Karir');
+                if ($k->golonganTujuan) {
+                    $judul .= ' (' . $k->golonganTujuan->nama_golongan . ')';
+                }
+                $item = [
+                    'id'           => $k->id,
+                    'modul'        => 'karir',
+                    'modul_label'  => 'Usulan ' . ($k->jenis_pengajuan ?: 'KP & KGB'),
+                    'modul_icon'   => '🎖️',
+                    'judul'        => $judul,
+                    'nomor'        => $k->nomor_surat ?: 'Belum bernomor',
+                    'pegawai_nama' => $formatNama($k->pegawai),
+                    'pegawai_nip'  => $k->pegawai?->nip ?? '-',
+                    'unit_kerja'   => $k->pegawai?->unitKerja?->nama_unit ?? 'Fakultas Keperawatan',
+                    'metode_ttd'   => $k->metode_ttd ?: 'elektronik',
+                    'tanggal'      => $k->created_at ? $k->created_at->translatedFormat('d M Y') : '-',
+                    'status'       => $k->status,
+                    'url'          => route('pengajuan-karir.show', $k->id),
+                    'url_modul'    => route('pengajuan-karir.index'),
+                ];
+
+                if (is_null($k->verifikasi_admin_at) && $k->status === 'diajukan') {
+                    $stages[1][] = $item;
+                } elseif (!is_null($k->verifikasi_admin_at) && is_null($k->paraf_kapokja_at)) {
+                    $stages[2][] = $item;
+                } elseif (!is_null($k->paraf_kapokja_at) && is_null($k->paraf_kabag_at)) {
+                    $stages[3][] = $item;
+                } elseif (!is_null($k->paraf_kabag_at) && (is_null($k->paraf_wd2_at) || is_null($k->ttd_dekan_at))) {
+                    $stages[4][] = $item;
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Dashboard stage list karir error: ' . $e->getMessage());
+        }
+
+        // 3. Usulan Satyalancana
+        try {
+            $satyaList = UsulanSatyalancana::with(['pegawai.unitKerja'])
+                ->whereNotIn('status', ['ditolak', 'selesai', 'dibatalkan'])
+                ->latest('id')
+                ->take(50)
+                ->get();
+
+            foreach ($satyaList as $st) {
+                $judul = 'Satyalancana ' . ($st->kategori ? $st->kategori . ' Tahun' : 'Karya Satya');
+                $item = [
+                    'id'           => $st->id,
+                    'modul'        => 'satya',
+                    'modul_label'  => 'Usulan Satyalancana',
+                    'modul_icon'   => '🏅',
+                    'judul'        => $judul,
+                    'nomor'        => $st->nomor_surat_usulan ?: 'Belum bernomor',
+                    'pegawai_nama' => $formatNama($st->pegawai),
+                    'pegawai_nip'  => $st->pegawai?->nip ?? '-',
+                    'unit_kerja'   => $st->pegawai?->unitKerja?->nama_unit ?? 'Fakultas Keperawatan',
+                    'metode_ttd'   => $st->metode_ttd ?: 'elektronik',
+                    'tanggal'      => $st->created_at ? $st->created_at->translatedFormat('d M Y') : '-',
+                    'status'       => $st->status,
+                    'url'          => route('satyalancana.show', $st->id),
+                    'url_modul'    => route('satyalancana.index'),
+                ];
+
+                if (is_null($st->verifikasi_admin_at) && in_array($st->status, ['diajukan', 'draft'])) {
+                    $stages[1][] = $item;
+                } elseif (!is_null($st->verifikasi_admin_at) && is_null($st->paraf_kapokja_at)) {
+                    $stages[2][] = $item;
+                } elseif (!is_null($st->paraf_kapokja_at) && is_null($st->paraf_kabag_at)) {
+                    $stages[3][] = $item;
+                } elseif (!is_null($st->paraf_kabag_at) && is_null($st->ttd_wd2_at)) {
+                    $stages[4][] = $item;
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Dashboard stage list satya error: ' . $e->getMessage());
+        }
+
+        // 4. Pengajuan Cuti (E-Cuti Pegawai)
+        try {
+            $cutiList = PengajuanCuti::with(['pegawai.unitKerja'])
+                ->whereNotIn('status', ['Disetujui', 'Ditolak', 'Dibatalkan', 'disetujui', 'ditolak', 'dibatalkan'])
+                ->latest('id')
+                ->take(50)
+                ->get();
+
+            foreach ($cutiList as $c) {
+                $judul = ($c->jenis_cuti ?: 'Pengajuan Cuti') . ' (' . ($c->jumlah_hari ?: 1) . ' Hari)';
+                $item = [
+                    'id'           => $c->id,
+                    'modul'        => 'cuti',
+                    'modul_label'  => 'E-Cuti Pegawai',
+                    'modul_icon'   => '🏖️',
+                    'judul'        => $judul,
+                    'nomor'        => $c->nomor_surat ?: 'Belum bernomor',
+                    'pegawai_nama' => $formatNama($c->pegawai),
+                    'pegawai_nip'  => $c->pegawai?->nip ?? '-',
+                    'unit_kerja'   => $c->pegawai?->unitKerja?->nama_unit ?? 'Fakultas Keperawatan',
+                    'metode_ttd'   => $c->metode_ttd ?: 'elektronik',
+                    'tanggal'      => $c->created_at ? $c->created_at->translatedFormat('d M Y') : '-',
+                    'status'       => $c->status,
+                    'url'          => route('pengajuan-cuti.show', $c->id),
+                    'url_modul'    => route('pengajuan-cuti.index'),
+                ];
+
+                if (is_null($c->verifikasi_admin_at) && in_array($c->status, ['Menunggu Persetujuan', 'Menunggu Pertimbangan Atasan', 'Menunggu Persetujuan Atasan'])) {
+                    $stages[1][] = $item;
+                } elseif (!is_null($c->verifikasi_admin_at) && is_null($c->paraf_kapokja_at)) {
+                    $stages[2][] = $item;
+                } elseif (!is_null($c->paraf_kapokja_at) && (is_null($c->pertimbangan_atasan) || $c->pertimbangan_atasan === '' || $c->pertimbangan_atasan === 'Menunggu Persetujuan')) {
+                    $stages[3][] = $item;
+                } elseif ($c->status === PengajuanCuti::STATUS_DISETUJUI_ATASAN || ($c->pertimbangan_atasan === 'Disetujui' && is_null($c->approved_at))) {
+                    $stages[4][] = $item;
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Dashboard stage list cuti error: ' . $e->getMessage());
+        }
+
+        return $stages;
     }
 }

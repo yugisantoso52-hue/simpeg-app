@@ -1080,7 +1080,31 @@
                 @endif
 
                 {{-- 🏛️ EXECUTIVE ACTION CENTER: MEJA VERIFIKASI & PENGESAHAN TATA NASKAH (URUTAN 4 TAHAP BERJENJANG) --}}
-                <div id="section-action-center" class="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-5 sm:p-6 mb-6 scroll-mt-20">
+                @php
+                    $stage1Items = $workflowStageLists[1] ?? [];
+                    $stage2Items = $workflowStageLists[2] ?? [];
+                    $stage3Items = $workflowStageLists[3] ?? [];
+                    $stage4Items = $workflowStageLists[4] ?? [];
+
+                    $stage1Count = !empty($stage1Items) ? count($stage1Items) : ($workflowStats['admin_screening_total'] ?? 0);
+                    $stage2Count = !empty($stage2Items) ? count($stage2Items) : ($workflowStats['pokja_pending_total'] ?? 0);
+                    $stage3Count = !empty($stage3Items) ? count($stage3Items) : ($workflowStats['kabag_pending_total'] ?? 0);
+                    $stage4Count = !empty($stage4Items) ? count($stage4Items) : (($workflowStats['wd2_pending_total'] ?? 0) + ($workflowStats['dekan_pending_total'] ?? 0) + ($pendingCutiCount ?? 0));
+                @endphp
+                <div id="section-action-center" 
+                     x-data="{ 
+                         activeStageModal: null, 
+                         filterModul: 'all',
+                         openStageModal(stage) {
+                             this.activeStageModal = stage;
+                             this.filterModul = 'all';
+                         },
+                         closeModal() {
+                             this.activeStageModal = null;
+                         }
+                     }"
+                     @keydown.escape.window="closeModal()"
+                     class="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-5 sm:p-6 mb-6 scroll-mt-20 relative">
                     <div class="flex flex-col md:flex-row md:items-center justify-between pb-4 mb-5 border-b border-slate-100 gap-3">
                         <div class="flex items-center gap-3">
                             <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-slate-900 via-indigo-900 to-blue-900 text-white flex items-center justify-center text-xl shadow-xs shrink-0">
@@ -1094,7 +1118,7 @@
                                     </span>
                                 </div>
                                 <p class="text-xs text-slate-500 mt-0.5">
-                                    Alur Bertingkat: Admin Screening &rarr; Paraf Ka Pokja &rarr; Paraf Kabag Umum &rarr; TTE Pimpinan (WD II / Dekan).
+                                    Alur Bertingkat: 1. Admin Screening &rarr; 2. Paraf Ka Pokja &rarr; 3. Paraf Kabag Umum &rarr; 4. TTE Pimpinan (WD II / Dekan / PYBMC).
                                 </p>
                             </div>
                         </div>
@@ -1144,16 +1168,6 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         
                         {{-- 1. TAHAP 1: SCREENING ADMIN & NOMOR SURAT --}}
-                        @php
-                            $targetStage1 = route('layanan-surat.index');
-                            if (($workflowStats['admin_screening_karir'] ?? 0) > 0) {
-                                $targetStage1 = route('pengajuan-karir.index');
-                            } elseif (($workflowStats['admin_screening_satya'] ?? 0) > 0) {
-                                $targetStage1 = route('satyalancana.index');
-                            } elseif (($workflowStats['admin_screening_cuti'] ?? 0) > 0) {
-                                $targetStage1 = route('pengajuan-cuti.index');
-                            }
-                        @endphp
                         <div class="p-4 rounded-xl border {{ $isAdmin ? 'border-amber-400 bg-amber-50/70 shadow-sm ring-1 ring-amber-300' : 'border-slate-200 bg-slate-50/60' }} flex flex-col justify-between transition hover:shadow-md">
                             <div>
                                 <div class="flex items-center justify-between mb-2">
@@ -1166,9 +1180,11 @@
                                     @endif
                                 </div>
                                 <div class="mt-2 flex items-baseline gap-2">
-                                    <span class="text-3xl font-black text-slate-900">{{ $workflowStats['admin_screening_total'] ?? 0 }}</span>
+                                    <span class="text-3xl font-black text-slate-900">{{ $stage1Count }}</span>
                                     <span class="text-xs font-bold text-amber-800">Berkas Menunggu</span>
                                 </div>
+                                
+                                {{-- Ringkasan Kategori --}}
                                 <div class="text-[11px] text-slate-600 mt-2 space-y-1">
                                     <a href="{{ route('layanan-surat.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-amber-100/80 transition group" title="Buka Meja E-Surat Aktif Bekerja">
                                         <span class="group-hover:text-amber-950 group-hover:font-semibold flex items-center gap-1">
@@ -1216,25 +1232,60 @@
                                         </div>
                                     @endif
                                 </div>
+
+                                {{-- 📋 Preview Dokumen Menunggu Tahap 1 --}}
+                                <div class="mt-3 pt-2.5 border-t border-amber-200/60">
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-600">Antrean Dokumen:</span>
+                                        @if(count($stage1Items) > 0)
+                                            <span class="text-[9px] font-bold text-amber-800 bg-amber-200/80 px-1.5 py-0.2 rounded">{{ count($stage1Items) }} Dokumen</span>
+                                        @endif
+                                    </div>
+                                    @if(empty($stage1Items))
+                                        <div class="text-[11px] text-slate-400 italic py-1 flex items-center gap-1">
+                                            <span class="text-emerald-600 font-bold">✓</span> Tidak ada antrean berkas
+                                        </div>
+                                    @else
+                                        <div class="space-y-1.5">
+                                            @foreach(array_slice($stage1Items, 0, 2) as $doc)
+                                                <div class="p-2 rounded-lg bg-white/95 border border-amber-200 shadow-2xs hover:border-amber-400 transition text-[11px]">
+                                                    <div class="flex items-start justify-between gap-1">
+                                                        <span class="font-bold text-slate-800 line-clamp-1" title="{{ $doc['judul'] }}">
+                                                            {{ $doc['modul_icon'] }} {{ $doc['judul'] }}
+                                                        </span>
+                                                        @if(($doc['metode_ttd'] ?? 'elektronik') === 'manual')
+                                                            <span class="shrink-0 px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-300">✍️ Manual</span>
+                                                        @else
+                                                            <span class="shrink-0 px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">⚡ Elektronik</span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="flex items-center justify-between mt-1 text-[10px] text-slate-600">
+                                                        <span class="truncate max-w-[125px]" title="{{ $doc['pegawai_nama'] }} (NIP: {{ $doc['pegawai_nip'] }})">
+                                                            👤 {{ $doc['pegawai_nama'] }}
+                                                        </span>
+                                                        <a href="{{ $doc['url'] }}" class="font-bold text-amber-700 hover:text-amber-900 underline ml-1 shrink-0">
+                                                            Buka &rarr;
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                            @if(count($stage1Items) > 2)
+                                                <p class="text-[10px] text-center text-slate-500 font-medium">
+                                                    + {{ count($stage1Items) - 2 }} dokumen lainnya...
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                             <div class="mt-3 pt-2.5 border-t border-slate-200/80">
-                                <a href="{{ $targetStage1 }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isAdmin ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
-                                    Buka Meja Screening &rarr;
-                                </a>
+                                <button type="button" @click="openStageModal(1)" class="w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isAdmin ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
+                                    Buka Meja Screening ({{ $stage1Count }}) &rarr;
+                                </button>
                             </div>
                         </div>
 
                         {{-- 2. TAHAP 2: PARAF KA POKJA KEU-KEPEG --}}
-                        @php
-                            $targetStage2 = route('layanan-surat.index');
-                            if (($workflowStats['pokja_pending_cuti'] ?? 0) > 0) {
-                                $targetStage2 = route('pengajuan-cuti.index');
-                            } elseif (($workflowStats['pokja_pending_satya'] ?? 0) > 0) {
-                                $targetStage2 = route('satyalancana.index');
-                            } elseif (($workflowStats['pokja_pending_karir'] ?? 0) > 0) {
-                                $targetStage2 = route('pengajuan-karir.index');
-                            }
-                        @endphp
                         <div class="p-4 rounded-xl border {{ $isPokja ? 'border-sky-400 bg-sky-50/70 shadow-sm ring-1 ring-sky-300' : 'border-slate-200 bg-slate-50/60' }} flex flex-col justify-between transition hover:shadow-md">
                             <div>
                                 <div class="flex items-center justify-between mb-2">
@@ -1247,9 +1298,11 @@
                                     @endif
                                 </div>
                                 <div class="mt-2 flex items-baseline gap-2">
-                                    <span class="text-3xl font-black text-slate-900">{{ $workflowStats['pokja_pending_total'] ?? 0 }}</span>
+                                    <span class="text-3xl font-black text-slate-900">{{ $stage2Count }}</span>
                                     <span class="text-xs font-bold text-sky-800">Menunggu Paraf</span>
                                 </div>
+                                
+                                {{-- Ringkasan Kategori --}}
                                 <div class="text-[11px] text-slate-600 mt-2 space-y-1">
                                     <a href="{{ route('layanan-surat.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-sky-100/80 transition group" title="Buka Paraf E-Surat Mandiri">
                                         <span class="group-hover:text-sky-950 group-hover:font-semibold flex items-center gap-1">
@@ -1279,25 +1332,60 @@
                                         Pemeriksaan keaktifan dinas &amp; kelayakan berkas.
                                     </p>
                                 </div>
+
+                                {{-- 📋 Preview Dokumen Menunggu Tahap 2 --}}
+                                <div class="mt-3 pt-2.5 border-t border-sky-200/60">
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-600">Antrean Dokumen:</span>
+                                        @if(count($stage2Items) > 0)
+                                            <span class="text-[9px] font-bold text-sky-800 bg-sky-200/80 px-1.5 py-0.2 rounded">{{ count($stage2Items) }} Dokumen</span>
+                                        @endif
+                                    </div>
+                                    @if(empty($stage2Items))
+                                        <div class="text-[11px] text-slate-400 italic py-1 flex items-center gap-1">
+                                            <span class="text-emerald-600 font-bold">✓</span> Tidak ada antrean berkas
+                                        </div>
+                                    @else
+                                        <div class="space-y-1.5">
+                                            @foreach(array_slice($stage2Items, 0, 2) as $doc)
+                                                <div class="p-2 rounded-lg bg-white/95 border border-sky-200 shadow-2xs hover:border-sky-400 transition text-[11px]">
+                                                    <div class="flex items-start justify-between gap-1">
+                                                        <span class="font-bold text-slate-800 line-clamp-1" title="{{ $doc['judul'] }}">
+                                                            {{ $doc['modul_icon'] }} {{ $doc['judul'] }}
+                                                        </span>
+                                                        @if(($doc['metode_ttd'] ?? 'elektronik') === 'manual')
+                                                            <span class="shrink-0 px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-300">✍️ Manual</span>
+                                                        @else
+                                                            <span class="shrink-0 px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">⚡ Elektronik</span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="flex items-center justify-between mt-1 text-[10px] text-slate-600">
+                                                        <span class="truncate max-w-[125px]" title="{{ $doc['pegawai_nama'] }} (NIP: {{ $doc['pegawai_nip'] }})">
+                                                            👤 {{ $doc['pegawai_nama'] }}
+                                                        </span>
+                                                        <a href="{{ $doc['url'] }}" class="font-bold text-sky-700 hover:text-sky-900 underline ml-1 shrink-0">
+                                                            Buka &rarr;
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                            @if(count($stage2Items) > 2)
+                                                <p class="text-[10px] text-center text-slate-500 font-medium">
+                                                    + {{ count($stage2Items) - 2 }} dokumen lainnya...
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                             <div class="mt-3 pt-2.5 border-t border-slate-200/80">
-                                <a href="{{ $targetStage2 }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isPokja ? 'bg-sky-600 hover:bg-sky-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
-                                    Paraf Koordinasi Pokja &rarr;
-                                </a>
+                                <button type="button" @click="openStageModal(2)" class="w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isPokja ? 'bg-sky-600 hover:bg-sky-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
+                                    Paraf Koordinasi Pokja ({{ $stage2Count }}) &rarr;
+                                </button>
                             </div>
                         </div>
 
                         {{-- 3. TAHAP 3: TELAAH, PARAF & TTE KABAG UMUM --}}
-                        @php
-                            $targetStage3 = route('layanan-surat.index');
-                            if (($workflowStats['kabag_pending_cuti'] ?? 0) > 0) {
-                                $targetStage3 = route('pengajuan-cuti.index');
-                            } elseif (($workflowStats['kabag_pending_satya'] ?? 0) > 0) {
-                                $targetStage3 = route('satyalancana.index');
-                            } elseif (($workflowStats['kabag_pending_karir'] ?? 0) > 0) {
-                                $targetStage3 = route('pengajuan-karir.index');
-                            }
-                        @endphp
                         <div class="p-4 rounded-xl border {{ $isKabag ? 'border-purple-400 bg-purple-50/70 shadow-sm ring-1 ring-purple-300' : 'border-slate-200 bg-slate-50/60' }} flex flex-col justify-between transition hover:shadow-md">
                             <div>
                                 <div class="flex items-center justify-between mb-2">
@@ -1310,9 +1398,11 @@
                                     @endif
                                 </div>
                                 <div class="mt-2 flex items-baseline gap-2">
-                                    <span class="text-3xl font-black text-slate-900">{{ $workflowStats['kabag_pending_total'] ?? 0 }}</span>
+                                    <span class="text-3xl font-black text-slate-900">{{ $stage3Count }}</span>
                                     <span class="text-xs font-bold text-purple-800">Menunggu Telaah</span>
                                 </div>
+                                
+                                {{-- Ringkasan Kategori --}}
                                 <div class="text-[11px] text-slate-600 mt-2 space-y-1">
                                     <a href="{{ route('layanan-surat.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-purple-100/80 transition group" title="Buka Telaah E-Surat Mandiri">
                                         <span class="group-hover:text-purple-950 group-hover:font-semibold flex items-center gap-1">
@@ -1342,25 +1432,60 @@
                                         Telaah tata naskah, paraf dinas &amp; TTE pertimbangan cuti.
                                     </p>
                                 </div>
+
+                                {{-- 📋 Preview Dokumen Menunggu Tahap 3 --}}
+                                <div class="mt-3 pt-2.5 border-t border-purple-200/60">
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-600">Antrean Dokumen:</span>
+                                        @if(count($stage3Items) > 0)
+                                            <span class="text-[9px] font-bold text-purple-800 bg-purple-200/80 px-1.5 py-0.2 rounded">{{ count($stage3Items) }} Dokumen</span>
+                                        @endif
+                                    </div>
+                                    @if(empty($stage3Items))
+                                        <div class="text-[11px] text-slate-400 italic py-1 flex items-center gap-1">
+                                            <span class="text-emerald-600 font-bold">✓</span> Tidak ada antrean berkas
+                                        </div>
+                                    @else
+                                        <div class="space-y-1.5">
+                                            @foreach(array_slice($stage3Items, 0, 2) as $doc)
+                                                <div class="p-2 rounded-lg bg-white/95 border border-purple-200 shadow-2xs hover:border-purple-400 transition text-[11px]">
+                                                    <div class="flex items-start justify-between gap-1">
+                                                        <span class="font-bold text-slate-800 line-clamp-1" title="{{ $doc['judul'] }}">
+                                                            {{ $doc['modul_icon'] }} {{ $doc['judul'] }}
+                                                        </span>
+                                                        @if(($doc['metode_ttd'] ?? 'elektronik') === 'manual')
+                                                            <span class="shrink-0 px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-300">✍️ Manual</span>
+                                                        @else
+                                                            <span class="shrink-0 px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">⚡ Elektronik</span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="flex items-center justify-between mt-1 text-[10px] text-slate-600">
+                                                        <span class="truncate max-w-[125px]" title="{{ $doc['pegawai_nama'] }} (NIP: {{ $doc['pegawai_nip'] }})">
+                                                            👤 {{ $doc['pegawai_nama'] }}
+                                                        </span>
+                                                        <a href="{{ $doc['url'] }}" class="font-bold text-purple-700 hover:text-purple-900 underline ml-1 shrink-0">
+                                                            Buka &rarr;
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                            @if(count($stage3Items) > 2)
+                                                <p class="text-[10px] text-center text-slate-500 font-medium">
+                                                    + {{ count($stage3Items) - 2 }} dokumen lainnya...
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                             <div class="mt-3 pt-2.5 border-t border-slate-200/80">
-                                <a href="{{ $targetStage3 }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isKabag ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
-                                    Telaah Tata Naskah &rarr;
-                                </a>
+                                <button type="button" @click="openStageModal(3)" class="w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ $isKabag ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
+                                    Telaah Tata Naskah ({{ $stage3Count }}) &rarr;
+                                </button>
                             </div>
                         </div>
 
-                        {{-- 4. TAHAP 4: TTE PIMPINAN (WD II / DEKAN) --}}
-                        @php
-                            $targetStage4 = route('layanan-surat.index');
-                            if (($pendingCutiCount ?? 0) > 0) {
-                                $targetStage4 = route('pengajuan-cuti.index');
-                            } elseif (($workflowStats['wd2_pending_total'] ?? 0) > 0) {
-                                $targetStage4 = route('pengajuan-karir.index');
-                            } elseif (($workflowStats['dekan_pending_total'] ?? 0) > 0) {
-                                $targetStage4 = route('layanan-surat.index');
-                            }
-                        @endphp
+                        {{-- 4. TAHAP 4: TTE PIMPINAN (WD II / DEKAN / PYBMC) --}}
                         <div class="p-4 rounded-xl border {{ ($isWadek2 || $isDekan) ? 'border-emerald-400 bg-emerald-50/70 shadow-sm ring-1 ring-emerald-300' : 'border-slate-200 bg-slate-50/60' }} flex flex-col justify-between transition hover:shadow-md">
                             <div>
                                 <div class="flex items-center justify-between mb-2">
@@ -1373,9 +1498,11 @@
                                     @endif
                                 </div>
                                 <div class="mt-2 flex items-baseline gap-2">
-                                    <span class="text-3xl font-black text-slate-900">{{ ($workflowStats['wd2_pending_total'] ?? 0) + ($workflowStats['dekan_pending_total'] ?? 0) + ($pendingCutiCount ?? 0) }}</span>
+                                    <span class="text-3xl font-black text-slate-900">{{ $stage4Count }}</span>
                                     <span class="text-xs font-bold text-emerald-800">Siap Sah TTE</span>
                                 </div>
+                                
+                                {{-- Ringkasan Kategori --}}
                                 <div class="text-[11px] text-slate-600 mt-2 space-y-1">
                                     <a href="{{ route('pengajuan-karir.index') }}" class="flex items-center justify-between px-1.5 py-1 rounded hover:bg-emerald-100/80 transition group" title="Buka Pengesahan TTE Usulan Karir WD II">
                                         <span class="group-hover:text-emerald-950 group-hover:font-semibold flex items-center gap-1">
@@ -1396,17 +1523,260 @@
                                         <strong class="font-mono text-slate-800 group-hover:text-emerald-900">{{ $pendingCutiCount ?? 0 }}</strong>
                                     </a>
                                     <p class="text-[10px] text-emerald-700 italic pt-1 border-t border-emerald-200/50">
-                                        Penandatanganan elektronik resmi bersertifikat.
+                                        Penandatanganan elektronik resmi atau manual basah.
                                     </p>
+                                </div>
+
+                                {{-- 📋 Preview Dokumen Menunggu Tahap 4 --}}
+                                <div class="mt-3 pt-2.5 border-t border-emerald-200/60">
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-600">Antrean Dokumen:</span>
+                                        @if(count($stage4Items) > 0)
+                                            <span class="text-[9px] font-bold text-emerald-800 bg-emerald-200/80 px-1.5 py-0.2 rounded">{{ count($stage4Items) }} Dokumen</span>
+                                        @endif
+                                    </div>
+                                    @if(empty($stage4Items))
+                                        <div class="text-[11px] text-slate-400 italic py-1 flex items-center gap-1">
+                                            <span class="text-emerald-600 font-bold">✓</span> Tidak ada antrean berkas
+                                        </div>
+                                    @else
+                                        <div class="space-y-1.5">
+                                            @foreach(array_slice($stage4Items, 0, 2) as $doc)
+                                                <div class="p-2 rounded-lg bg-white/95 border border-emerald-200 shadow-2xs hover:border-emerald-400 transition text-[11px]">
+                                                    <div class="flex items-start justify-between gap-1">
+                                                        <span class="font-bold text-slate-800 line-clamp-1" title="{{ $doc['judul'] }}">
+                                                            {{ $doc['modul_icon'] }} {{ $doc['judul'] }}
+                                                        </span>
+                                                        @if(($doc['metode_ttd'] ?? 'elektronik') === 'manual')
+                                                            <span class="shrink-0 px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-300">✍️ Manual</span>
+                                                        @else
+                                                            <span class="shrink-0 px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">⚡ Elektronik</span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="flex items-center justify-between mt-1 text-[10px] text-slate-600">
+                                                        <span class="truncate max-w-[125px]" title="{{ $doc['pegawai_nama'] }} (NIP: {{ $doc['pegawai_nip'] }})">
+                                                            👤 {{ $doc['pegawai_nama'] }}
+                                                        </span>
+                                                        <a href="{{ $doc['url'] }}" class="font-bold text-emerald-700 hover:text-emerald-900 underline ml-1 shrink-0">
+                                                            Buka &rarr;
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                            @if(count($stage4Items) > 2)
+                                                <p class="text-[10px] text-center text-slate-500 font-medium">
+                                                    + {{ count($stage4Items) - 2 }} dokumen lainnya...
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                             <div class="mt-3 pt-2.5 border-t border-slate-200/80">
-                                <a href="{{ $targetStage4 }}" class="block w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ ($isWadek2 || $isDekan) ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
-                                    Meja Pengesahan TTE &rarr;
-                                </a>
+                                <button type="button" @click="openStageModal(4)" class="w-full py-2 px-3 text-center rounded-lg text-xs font-bold transition shadow-2xs {{ ($isWadek2 || $isDekan) ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300' }}">
+                                    Meja Pengesahan TTE ({{ $stage4Count }}) &rarr;
+                                </button>
                             </div>
                         </div>
 
+                    </div>
+
+                    {{-- 🌟 MODAL INTERAKTIF: MEJA KERJA PENGESAHAN DOKUMEN BERJENJANG 🌟 --}}
+                    <div x-cloak x-show="activeStageModal !== null" 
+                         class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0"
+                         x-transition:enter-end="opacity-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0">
+                         
+                         <div @click.away="closeModal()" 
+                              class="relative w-full max-w-5xl bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[90vh] overflow-hidden"
+                              x-transition:enter="transition ease-out duration-200"
+                              x-transition:enter-start="opacity-0 scale-95"
+                              x-transition:enter-end="opacity-100 scale-100"
+                              x-transition:leave="transition ease-in duration-150"
+                              x-transition:leave-start="opacity-100 scale-100"
+                              x-transition:leave-end="opacity-0 scale-95">
+                              
+                              <!-- Modal Header -->
+                              <div class="px-6 py-4 border-b border-slate-100 flex items-start justify-between bg-slate-50/80">
+                                  <div class="flex items-center gap-3">
+                                      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-black text-white shrink-0 shadow-xs"
+                                           :class="{
+                                               'bg-amber-500': activeStageModal === 1,
+                                               'bg-sky-600': activeStageModal === 2,
+                                               'bg-purple-600': activeStageModal === 3,
+                                               'bg-emerald-600': activeStageModal === 4
+                                           }">
+                                          <span x-text="activeStageModal"></span>
+                                      </div>
+                                      <div>
+                                          <div class="flex items-center gap-2">
+                                              <h4 class="text-base sm:text-lg font-bold text-slate-900"
+                                                  x-text="activeStageModal === 1 ? 'Meja Screening & Registrasi Dokumen (Tahap 1)' :
+                                                         (activeStageModal === 2 ? 'Meja Paraf Koordinasi Pokja Kepegawaian (Tahap 2)' :
+                                                         (activeStageModal === 3 ? 'Meja Telaah Tata Naskah & Paraf Kabag Umum (Tahap 3)' :
+                                                         'Meja Pengesahan & TTE Pimpinan Fakultas (Tahap 4)'))">
+                                              </h4>
+                                              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                                                    :class="{
+                                                        'bg-amber-100 text-amber-800 border border-amber-300': activeStageModal === 1,
+                                                        'bg-sky-100 text-sky-800 border border-sky-300': activeStageModal === 2,
+                                                        'bg-purple-100 text-purple-800 border border-purple-300': activeStageModal === 3,
+                                                        'bg-emerald-100 text-emerald-800 border border-emerald-300': activeStageModal === 4
+                                                    }">
+                                                  SOP Berjenjang
+                                              </span>
+                                          </div>
+                                          <p class="text-xs text-slate-500 mt-0.5"
+                                             x-text="activeStageModal === 1 ? 'Tugas Admin: Screening kelengkapan berkas fisik/digital & registrasi penomoran sebelum diajukan ke Ka Pokja.' :
+                                                    (activeStageModal === 2 ? 'Tugas Ka Pokja: Pemeriksaan keaktifan dinas, kelayakan berkas, dan pembubuhan paraf koordinasi.' :
+                                                    (activeStageModal === 3 ? 'Tugas Kabag Umum: Telaah tata naskah dinas resmi, paraf persuratan/usulan karir, & TTE pertimbangan cuti.' :
+                                                    'Tugas Pimpinan (WD II / Dekan / PYBMC): Pengesahan akhir dan penandatanganan resmi (Elektronik / Manual).'))">
+                                          </p>
+                                      </div>
+                                  </div>
+                                  <button type="button" @click="closeModal()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200/60 transition" title="Tutup Meja Kerja">
+                                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                  </button>
+                              </div>
+
+                              <!-- Filter Bar by Document Type -->
+                              <div class="px-6 py-2.5 bg-slate-100/70 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                                  <div class="flex items-center gap-1.5 text-xs">
+                                      <span class="font-bold text-slate-600 mr-1">Filter Modul:</span>
+                                      <button type="button" @click="filterModul = 'all'" 
+                                              :class="filterModul === 'all' ? 'bg-slate-800 text-white shadow-xs' : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-300'"
+                                              class="px-2.5 py-1 rounded-md text-xs font-semibold transition">
+                                          Semua
+                                      </button>
+                                      <button type="button" @click="filterModul = 'surat'" 
+                                              :class="filterModul === 'surat' ? 'bg-slate-800 text-white shadow-xs' : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-300'"
+                                              class="px-2.5 py-1 rounded-md text-xs font-semibold transition">
+                                          📄 E-Surat
+                                      </button>
+                                      <button type="button" @click="filterModul = 'karir'" 
+                                              :class="filterModul === 'karir' ? 'bg-slate-800 text-white shadow-xs' : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-300'"
+                                              class="px-2.5 py-1 rounded-md text-xs font-semibold transition">
+                                          🎖️ KP &amp; KGB
+                                      </button>
+                                      <button type="button" @click="filterModul = 'satya'" 
+                                              :class="filterModul === 'satya' ? 'bg-slate-800 text-white shadow-xs' : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-300'"
+                                              class="px-2.5 py-1 rounded-md text-xs font-semibold transition">
+                                          🏅 Satyalancana
+                                      </button>
+                                      <button type="button" @click="filterModul = 'cuti'" 
+                                              :class="filterModul === 'cuti' ? 'bg-slate-800 text-white shadow-xs' : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-300'"
+                                              class="px-2.5 py-1 rounded-md text-xs font-semibold transition">
+                                          🏖️ E-Cuti
+                                      </button>
+                                  </div>
+                                  <div class="text-[11px] text-slate-500">
+                                      Tekan <kbd class="px-1.5 py-0.5 bg-white border border-slate-300 rounded font-mono shadow-2xs">ESC</kbd> untuk menutup
+                                  </div>
+                              </div>
+
+                              <!-- Document List Table -->
+                              <div class="flex-1 overflow-y-auto p-4 sm:p-6">
+                                  @foreach([1, 2, 3, 4] as $stageNum)
+                                      <div x-show="activeStageModal === {{ $stageNum }}">
+                                          @php
+                                              $currentItems = $workflowStageLists[$stageNum] ?? [];
+                                          @endphp
+                                          @if(empty($currentItems))
+                                              <div class="py-12 text-center">
+                                                  <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 text-2xl flex items-center justify-center mx-auto mb-3">
+                                                      ✓
+                                                  </div>
+                                                  <h5 class="text-sm font-bold text-slate-800">Tidak Ada Antrean Berkas</h5>
+                                                  <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                                                      Semua naskah dinas dan usulan pada tahapan ini telah selesai diproses.
+                                                  </p>
+                                              </div>
+                                          @else
+                                              <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-2xs">
+                                                  <table class="w-full text-left text-xs text-slate-700">
+                                                      <thead class="bg-slate-50 text-slate-600 uppercase tracking-wider text-[10px] font-bold border-b border-slate-200">
+                                                          <tr>
+                                                              <th class="px-3.5 py-3">Jenis Dokumen / Naskah</th>
+                                                              <th class="px-3.5 py-3">Pemohon &amp; Unit</th>
+                                                              <th class="px-3.5 py-3">Metode Tanda Tangan</th>
+                                                              <th class="px-3.5 py-3">Tgl Pengajuan &amp; Nomor</th>
+                                                              <th class="px-3.5 py-3 text-center">Tindakan</th>
+                                                          </tr>
+                                                      </thead>
+                                                      <tbody class="divide-y divide-slate-100 bg-white">
+                                                          @foreach($currentItems as $item)
+                                                              <tr x-show="filterModul === 'all' || filterModul === '{{ $item['modul'] }}'" 
+                                                                  class="hover:bg-slate-50/90 transition">
+                                                                  <td class="px-3.5 py-3">
+                                                                      <div class="flex items-center gap-2.5">
+                                                                          <span class="text-xl shrink-0">{{ $item['modul_icon'] }}</span>
+                                                                          <div>
+                                                                              <div class="font-bold text-slate-900">{{ $item['judul'] }}</div>
+                                                                              <span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200 mt-0.5">
+                                                                                  {{ $item['modul_label'] }}
+                                                                              </span>
+                                                                          </div>
+                                                                      </div>
+                                                                  </td>
+                                                                  <td class="px-3.5 py-3">
+                                                                      <div class="font-bold text-slate-900">{{ $item['pegawai_nama'] }}</div>
+                                                                      <div class="text-[11px] text-slate-500 font-mono">NIP: {{ $item['pegawai_nip'] }}</div>
+                                                                      <div class="text-[10px] text-slate-400">{{ $item['unit_kerja'] }}</div>
+                                                                  </td>
+                                                                  <td class="px-3.5 py-3">
+                                                                      @if(($item['metode_ttd'] ?? 'elektronik') === 'manual')
+                                                                          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs">
+                                                                              ✍️ Manual (Basah)
+                                                                          </span>
+                                                                          <div class="text-[10px] text-slate-500 mt-0.5">Area TTD dikosongkan</div>
+                                                                      @else
+                                                                          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
+                                                                              ⚡ Elektronik (TTE)
+                                                                          </span>
+                                                                          <div class="text-[10px] text-slate-500 mt-0.5">QR Code / Sertifikat Digital</div>
+                                                                      @endif
+                                                                  </td>
+                                                                  <td class="px-3.5 py-3">
+                                                                      <div class="text-slate-800 font-medium">{{ $item['tanggal'] }}</div>
+                                                                      <div class="text-[10px] font-mono text-slate-500">{{ $item['nomor'] }}</div>
+                                                                  </td>
+                                                                  <td class="px-3.5 py-3 text-center whitespace-nowrap">
+                                                                      <a href="{{ $item['url'] }}" 
+                                                                         class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition shadow-xs {{ $stageNum === 1 ? 'bg-amber-600 hover:bg-amber-700' : ($stageNum === 2 ? 'bg-sky-600 hover:bg-sky-700' : ($stageNum === 3 ? 'bg-purple-600 hover:bg-purple-700' : 'bg-emerald-600 hover:bg-emerald-700')) }}">
+                                                                          Proses Dokumen &rarr;
+                                                                      </a>
+                                                                  </td>
+                                                              </tr>
+                                                          @endforeach
+                                                      </tbody>
+                                                  </table>
+                                              </div>
+                                          @endif
+                                      </div>
+                                  @endforeach
+                              </div>
+
+                              <!-- Modal Footer -->
+                              <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                                  <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-slate-600">
+                                      <span class="font-bold">Akses Cepat Modul:</span>
+                                      <a href="{{ route('layanan-surat.index') }}" class="text-indigo-600 hover:underline">📄 E-Surat</a>
+                                      <span>&bull;</span>
+                                      <a href="{{ route('pengajuan-karir.index') }}" class="text-indigo-600 hover:underline">🎖️ Usulan Karir</a>
+                                      <span>&bull;</span>
+                                      <a href="{{ route('satyalancana.index') }}" class="text-indigo-600 hover:underline">🏅 Satyalancana</a>
+                                      <span>&bull;</span>
+                                      <a href="{{ route('pengajuan-cuti.index') }}" class="text-indigo-600 hover:underline">🏖️ E-Cuti</a>
+                                  </div>
+                                  <button type="button" @click="closeModal()" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 transition shadow-2xs">
+                                      Tutup Meja Kerja
+                                  </button>
+                              </div>
+                         </div>
                     </div>
                 </div>
 
