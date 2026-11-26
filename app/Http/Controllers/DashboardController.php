@@ -508,7 +508,7 @@ class DashboardController extends Controller
                     'metode_ttd'   => $s->metode_ttd ?: 'elektronik',
                     'tanggal'      => $s->created_at ? $s->created_at->translatedFormat('d M Y') : '-',
                     'status'       => $s->status,
-                    'url'          => route('layanan-surat.index'),
+                    'url'          => route('layanan-surat.index', array_filter(['search' => $s->pegawai?->nip ?: $s->pegawai?->nama])),
                     'url_modul'    => route('layanan-surat.index'),
                 ];
 

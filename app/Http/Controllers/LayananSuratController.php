@@ -18,7 +18,7 @@ class LayananSuratController extends Controller
     /**
      * Halaman Utama Layanan Mandiri Surat Keterangan Pegawai
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $isExecutiveOrAdmin = $user->canAccessExecutiveKepegawaianMenus();
@@ -28,16 +28,38 @@ class LayananSuratController extends Controller
         $isDekan   = $user->isDekan();
         $isAdmin   = $user->isScreeningAdmin();
 
+        $search = trim((string) $request->input('search', ''));
+
         if ($isExecutiveOrAdmin) {
-            $surats = LayananSurat::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])
-                ->orderByDesc('id')
-                ->paginate(15)->withQueryString();
+            $query = LayananSurat::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])
+                ->orderByDesc('id');
+
+            if ($search !== '') {
+                $query->where(function($q) use ($search) {
+                    $q->where('nomor_surat', 'like', "%{$search}%")
+                      ->orWhere('keperluan', 'like', "%{$search}%")
+                      ->orWhereHas('pegawai', function($pq) use ($search) {
+                          $pq->where('nama', 'like', "%{$search}%")
+                             ->orWhere('nip', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            $surats = $query->paginate(15)->withQueryString();
         } else {
             $pegawaiId = $user->pegawai_id ?? $user->pegawai?->id;
-            $surats = LayananSurat::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])
+            $query = LayananSurat::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])
                 ->where('pegawai_id', $pegawaiId)
-                ->orderByDesc('id')
-                ->paginate(15)->withQueryString();
+                ->orderByDesc('id');
+
+            if ($search !== '') {
+                $query->where(function($q) use ($search) {
+                    $q->where('nomor_surat', 'like', "%{$search}%")
+                      ->orWhere('keperluan', 'like', "%{$search}%");
+                });
+            }
+
+            $surats = $query->paginate(15)->withQueryString();
         }
 
         $myPegawai = $user->pegawai ?? ($user->pegawai_id ? Pegawai::find($user->pegawai_id) : null);
