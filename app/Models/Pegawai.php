@@ -635,6 +635,50 @@ class Pegawai extends Model
         );
     }
 
+    /**
+     * Accessor: Mengambil Nama Unit Kerja secara aman & tersinkronisasi
+     */
+    protected function unitKerjaTampil(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if ($this->unitKerja?->nama_unit) {
+                    return $this->unitKerja->nama_unit;
+                }
+                if ($this->relationLoaded('riwayatJabatan') && $this->riwayatJabatan->isNotEmpty()) {
+                    $rjUnit = $this->riwayatJabatan->first()->unitKerja?->nama_unit;
+                    if ($rjUnit) return $rjUnit;
+                }
+                if ($this->isDosen() || $this->jenis_pegawai === 'Dosen') {
+                    return 'Fakultas Keperawatan';
+                }
+                return '-';
+            }
+        );
+    }
+
+    /**
+     * Accessor: Mengambil Nama Jabatan secara aman & tersinkronisasi
+     */
+    protected function jabatanTampil(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if ($this->jabatan?->nama_jabatan) {
+                    return $this->jabatan->nama_jabatan;
+                }
+                if ($this->relationLoaded('riwayatJabatan') && $this->riwayatJabatan->isNotEmpty()) {
+                    $rjJab = $this->riwayatJabatan->first()->jabatan?->nama_jabatan;
+                    if ($rjJab) return $rjJab;
+                }
+                if ($this->isDosen() || $this->jenis_pegawai === 'Dosen') {
+                    return 'Dosen';
+                }
+                return '-';
+            }
+        );
+    }
+
     protected function fotoUrl(): Attribute
     {
         return Attribute::make(

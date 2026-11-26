@@ -93,8 +93,8 @@
                         <span style="font-size: 7.5pt; color: #444;">NIP. {{ $p->nip ?? '-' }}</span>
                     </td>
                     <td style="font-size: 7.5pt;">
-                        {{ $p->jabatan?->nama_jabatan ?? '-' }}<br>
-                        <span style="color: #555;">{{ $p->unitKerja?->nama_unit ?? '-' }}</span>
+                        {{ $p->jabatan_tampil }}<br>
+                        <span style="color: #555;">{{ $p->unit_kerja_tampil }}</span>
                     </td>
                     <td class="text-center">{{ $rekap['n2'] ?? '-' }}</td>
                     <td class="text-center">{{ $rekap['n1'] ?? '-' }}</td>

@@ -186,8 +186,8 @@
                                     </td>
                                     {{-- Unit Kerja & Jabatan --}}
                                     <td class="py-2.5 px-3 border-r border-gray-100">
-                                        <div class="text-gray-800 leading-tight">{{ $p->unitKerja?->nama_unit ?? '-' }}</div>
-                                        <div class="text-[10px] text-gray-500 mt-0.5">{{ $p->jabatan?->nama_jabatan ?? '-' }}</div>
+                                        <div class="text-gray-900 font-medium leading-tight">{{ $p->unit_kerja_tampil }}</div>
+                                        <div class="text-[10px] text-gray-500 mt-0.5">{{ $p->jabatan_tampil }}</div>
                                     </td>
                                     {{-- N-2 --}}
                                     <td class="py-2.5 px-2 text-center border-r border-gray-100 font-mono">
