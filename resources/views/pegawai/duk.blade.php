@@ -21,7 +21,17 @@
                 </x-enterprise.alert>
             @endif
 
-            {{-- Ringkasan Statistik DUK Interaktif (Desain Enterprise Seragam) --}}
+            @php
+                $isExecutiveView = isset($isExecutive) ? (bool) $isExecutive : Auth::user()->canAccessExecutiveKepegawaianMenus();
+                $cntDosenPns   = method_exists($dosenPnsList, 'total') ? $dosenPnsList->total() : count($dosenPnsList);
+                $cntDosenPppk  = method_exists($dosenPppkList, 'total') ? $dosenPppkList->total() : count($dosenPppkList);
+                $cntTendikPns  = method_exists($tendikPnsList, 'total') ? $tendikPnsList->total() : count($tendikPnsList);
+                $cntTendikPppk = method_exists($tendikPppkList, 'total') ? $tendikPppkList->total() : count($tendikPppkList);
+                $cntPhl        = method_exists($phlList, 'total') ? $phlList->total() : count($phlList);
+            @endphp
+
+            {{-- Ringkasan Statistik DUK Interaktif (Khusus Admin & Pimpinan / Eksekutif) --}}
+            @if($isExecutiveView)
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                 <x-enterprise.stat-card
                     title="DOSEN PNS"
@@ -68,106 +78,95 @@
                     :active="$filter === 'phl'"
                 />
             </div>
+            @endif
 
             {{-- Card Utama DUK --}}
             <x-enterprise.card>
-                <div class="p-6 space-y-8">
+                <div class="p-6 space-y-6">
                     
-                    {{-- Action Header & Tombol Export --}}
-                    <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200">
-                        <div>
-                            <h3 class="text-lg font-bold text-slate-800">
-                                @if(isset($isExecutive) && !$isExecutive)
-                                    Daftar Urut Kepangkatan (DUK) Pegawai
-                                @else
-                                    Laporan Resmi DUK Terpisah (Dosen & Tendik: PNS vs PPPK, PHL)
+                    @if($isExecutiveView)
+                        {{-- Toolbar Pencarian & Tombol Export (Tanpa Judul Dobel) --}}
+                        <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200">
+                            <form method="GET" action="{{ route('duk.index') }}" class="flex-1 min-w-[280px]">
+                                @if(request('filter'))
+                                    <input type="hidden" name="filter" value="{{ request('filter') }}" />
                                 @endif
-                            </h3>
-                            <p class="text-xs text-slate-500">Urutan hierarki otomatis berdasarkan Golongan (Tertinggi), TMT Pangkat, dan Usia.</p>
-                        </div>
-                        @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
-                        <div class="flex flex-wrap items-center gap-2">
-                            <a href="{{ route('reports.duk.pdf', request()->query()) }}" target="_blank"
-                               class="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                </svg>
-                                Cetak DUK (PDF)
-                            </a>
+                                <div class="flex items-center gap-2">
+                                    <input type="text" name="search" value="{{ request('search') }}" 
+                                           placeholder="Cari NIP, NIDN, atau Nama Pegawai..." 
+                                           class="w-full max-w-md rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-800 focus:border-blue-500 focus:ring-blue-500" />
+                                    
+                                    <button type="submit" 
+                                            class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 active:bg-blue-800 transition">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                        <span class="text-white font-medium">Cari</span>
+                                    </button>
 
-                            <a href="{{ route('reports.duk.excel', request()->query()) }}"
-                               class="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-700 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                </svg>
-                                Export DUK (Excel)
-                            </a>
-                        </div>
-                        @endif
-                    </div>
+                                    @if(request('search') || request('filter'))
+                                        <a href="{{ route('duk.index') }}" 
+                                           class="inline-flex items-center rounded-lg bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-300 transition">
+                                            Reset Filter
+                                        </a>
+                                    @endif
+                                </div>
+                            </form>
 
-                    @if(isset($isExecutive) && !$isExecutive)
-                    <div class="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50/70 p-4 text-blue-900">
-                        <svg class="h-5 w-5 text-blue-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div class="text-xs space-y-1">
-                            <p class="font-bold text-sm text-blue-800">Pemberitahuan Privasi Data ASN</p>
-                            <p class="text-slate-600">
-                                Sesuai regulasi perlindungan data pribadi ASN, Anda hanya dapat melihat data dan urutan hierarki DUK pribadi Anda. Nomor urut yang tertera merupakan peringkat resmi Anda di dalam daftar hierarki kepangkatan fakultas.
-                            </p>
-                        </div>
-                    </div>
-                    @endif
-
-                    {{-- Form Pencarian DUK --}}
-                    <form method="GET" action="{{ route('duk.index') }}">
-                        @if(request('filter'))
-                            <input type="hidden" name="filter" value="{{ request('filter') }}" />
-                        @endif
-                        <div class="flex items-center gap-2">
-                            <input type="text" name="search" value="{{ request('search') }}" 
-                                   placeholder="Cari NIP, NIDN, atau Nama Pegawai..." 
-                                   class="w-full max-w-md rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-800 focus:border-blue-500 focus:ring-blue-500" />
-                            
-                            <button type="submit" 
-                                    class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 active:bg-blue-800 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                                <span class="text-white font-medium">Cari</span>
-                            </button>
-
-                            @if(request('search') || request('filter'))
-                                <a href="{{ route('duk.index') }}" 
-                                   class="inline-flex items-center rounded-lg bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-300 transition">
-                                    Reset Filter
+                            <div class="flex flex-wrap items-center gap-2">
+                                <a href="{{ route('reports.duk.pdf', request()->query()) }}" target="_blank"
+                                   class="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    Cetak DUK (PDF)
                                 </a>
-                            @endif
-                        </div>
-                    </form>
 
-                    {{-- Indikator Filter Aktif --}}
-                    @if($filter)
-                        <div class="flex items-center justify-between bg-blue-50 border border-blue-200 px-4 py-2 rounded-lg text-xs text-blue-800 font-medium">
-                            <div>
-                                Menampilkan DUK untuk kategori: <strong>{{ strtoupper(str_replace('_', ' ', $filter)) }}</strong>
+                                <a href="{{ route('reports.duk.excel', request()->query()) }}"
+                                   class="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-700 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    Export DUK (Excel)
+                                </a>
                             </div>
-                            <a href="{{ route('duk.index', request()->except('filter')) }}" class="text-blue-600 underline font-bold hover:text-blue-800">
-                                Tampilkan Semua Kategori
-                            </a>
+                        </div>
+
+                        {{-- Indikator Filter Aktif --}}
+                        @if($filter)
+                            <div class="flex items-center justify-between bg-blue-50 border border-blue-200 px-4 py-2 rounded-lg text-xs text-blue-800 font-medium">
+                                <div>
+                                    Menampilkan DUK untuk kategori: <strong>{{ strtoupper(str_replace('_', ' ', $filter)) }}</strong>
+                                </div>
+                                <a href="{{ route('duk.index', request()->except('filter')) }}" class="text-blue-600 underline font-bold hover:text-blue-800">
+                                    Tampilkan Semua Kategori
+                                </a>
+                            </div>
+                        @endif
+                    @else
+                        {{-- Pemberitahuan Privasi Data ASN untuk Akun Pegawai --}}
+                        <div class="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50/70 p-4 text-blue-900">
+                            <svg class="h-5 w-5 text-blue-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div class="text-xs space-y-1">
+                                <p class="font-bold text-sm text-blue-800">Pemberitahuan Privasi Data ASN</p>
+                                <p class="text-slate-600">
+                                    Sesuai regulasi perlindungan data pribadi ASN, Anda hanya dapat melihat data dan urutan hierarki DUK pada kelompok kepegawaian Anda. Nomor urut yang tertera pada kolom <strong>No</strong> merupakan peringkat resmi Anda di dalam daftar hierarki kepangkatan fakultas.
+                                </p>
+                            </div>
                         </div>
                     @endif
 
                     {{-- ========================================================================= --}}
                     {{-- 1. TABEL DUK DOSEN PNS                                                    --}}
                     {{-- ========================================================================= --}}
-                    @if(!$filter || $filter === 'dosen_pns')
+                    @if(($isExecutiveView && (!$filter || $filter === 'dosen_pns')) || (!$isExecutiveView && $cntDosenPns > 0))
                     <div class="space-y-3">
                         <div class="flex items-center justify-between bg-blue-50 border-l-4 border-blue-600 px-4 py-2.5 rounded-r-lg">
                             <div class="flex items-center gap-2">
-                                <span class="text-base font-bold text-blue-900">👨‍🏫 I. DAFTAR URUT KEPANGKATAN DOSEN PNS</span>
-                                <span class="px-2 py-0.5 text-xs font-bold bg-blue-600 text-white rounded-full">{{ method_exists($dosenPnsList, 'total') ? $dosenPnsList->total() : count($dosenPnsList) }} Orang</span>
+                                <span class="text-base font-bold text-blue-900">👨‍🏫 {{ $isExecutiveView ? 'I. ' : '' }}DAFTAR URUT KEPANGKATAN DOSEN PNS</span>
+                                <span class="px-2 py-0.5 text-xs font-bold bg-blue-600 text-white rounded-full">{{ $cntDosenPns }} Orang</span>
                             </div>
                             <span class="text-xs text-blue-700 font-medium">Tenaga Pendidik PNS</span>
                         </div>
@@ -251,12 +250,12 @@
                     {{-- ========================================================================= --}}
                     {{-- 2. TABEL DUK DOSEN PPPK                                                   --}}
                     {{-- ========================================================================= --}}
-                    @if(!$filter || $filter === 'dosen_pppk')
+                    @if(($isExecutiveView && (!$filter || $filter === 'dosen_pppk')) || (!$isExecutiveView && $cntDosenPppk > 0))
                     <div class="space-y-3">
                         <div class="flex items-center justify-between bg-indigo-50 border-l-4 border-indigo-600 px-4 py-2.5 rounded-r-lg">
                             <div class="flex items-center gap-2">
-                                <span class="text-base font-bold text-indigo-900">🎓 II. DAFTAR URUT KEPANGKATAN DOSEN PPPK</span>
-                                <span class="px-2 py-0.5 text-xs font-bold bg-indigo-600 text-white rounded-full">{{ method_exists($dosenPppkList, 'total') ? $dosenPppkList->total() : count($dosenPppkList) }} Orang</span>
+                                <span class="text-base font-bold text-indigo-900">🎓 {{ $isExecutiveView ? 'II. ' : '' }}DAFTAR URUT KEPANGKATAN DOSEN PPPK</span>
+                                <span class="px-2 py-0.5 text-xs font-bold bg-indigo-600 text-white rounded-full">{{ $cntDosenPppk }} Orang</span>
                             </div>
                             <span class="text-xs text-indigo-700 font-medium">Tenaga Pendidik PPPK</span>
                         </div>
@@ -340,12 +339,12 @@
                     {{-- ========================================================================= --}}
                     {{-- 3. TABEL DUK TENAGA KEPENDIDIKAN (TENDIK) PNS                             --}}
                     {{-- ========================================================================= --}}
-                    @if(!$filter || $filter === 'tendik_pns')
+                    @if(($isExecutiveView && (!$filter || $filter === 'tendik_pns')) || (!$isExecutiveView && $cntTendikPns > 0))
                     <div class="space-y-3">
                         <div class="flex items-center justify-between bg-emerald-50 border-l-4 border-emerald-600 px-4 py-2.5 rounded-r-lg">
                             <div class="flex items-center gap-2">
-                                <span class="text-base font-bold text-emerald-900">🧑‍💼 III. DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK) PNS</span>
-                                <span class="px-2 py-0.5 text-xs font-bold bg-emerald-600 text-white rounded-full">{{ method_exists($tendikPnsList, 'total') ? $tendikPnsList->total() : count($tendikPnsList) }} Orang</span>
+                                <span class="text-base font-bold text-emerald-900">🧑‍💼 {{ $isExecutiveView ? 'III. ' : '' }}DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK) PNS</span>
+                                <span class="px-2 py-0.5 text-xs font-bold bg-emerald-600 text-white rounded-full">{{ $cntTendikPns }} Orang</span>
                             </div>
                             <span class="text-xs text-emerald-700 font-medium">Staf Administrasi / Laboran PNS</span>
                         </div>
@@ -426,12 +425,12 @@
                     {{-- ========================================================================= --}}
                     {{-- 4. TABEL DUK TENAGA KEPENDIDIKAN (TENDIK) PPPK                            --}}
                     {{-- ========================================================================= --}}
-                    @if(!$filter || $filter === 'tendik_pppk')
+                    @if(($isExecutiveView && (!$filter || $filter === 'tendik_pppk')) || (!$isExecutiveView && $cntTendikPppk > 0))
                     <div class="space-y-3">
                         <div class="flex items-center justify-between bg-teal-50 border-l-4 border-teal-600 px-4 py-2.5 rounded-r-lg">
                             <div class="flex items-center gap-2">
-                                <span class="text-base font-bold text-teal-900">📑 IV. DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK) PPPK</span>
-                                <span class="px-2 py-0.5 text-xs font-bold bg-teal-600 text-white rounded-full">{{ method_exists($tendikPppkList, 'total') ? $tendikPppkList->total() : count($tendikPppkList) }} Orang</span>
+                                <span class="text-base font-bold text-teal-900">📑 {{ $isExecutiveView ? 'IV. ' : '' }}DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK) PPPK</span>
+                                <span class="px-2 py-0.5 text-xs font-bold bg-teal-600 text-white rounded-full">{{ $cntTendikPppk }} Orang</span>
                             </div>
                             <span class="text-xs text-teal-700 font-medium">Staf Administrasi / Laboran PPPK</span>
                         </div>
@@ -512,12 +511,12 @@
                     {{-- ========================================================================= --}}
                     {{-- 5. TABEL DUK PEGAWAI HARIAN LEPAS (PHL) & TENAGA KONTRAK                 --}}
                     {{-- ========================================================================= --}}
-                    @if(!$filter || $filter === 'phl')
+                    @if(($isExecutiveView && (!$filter || $filter === 'phl')) || (!$isExecutiveView && $cntPhl > 0))
                     <div class="space-y-3">
                         <div class="flex items-center justify-between bg-amber-50 border-l-4 border-amber-600 px-4 py-2.5 rounded-r-lg">
                             <div class="flex items-center gap-2">
-                                <span class="text-base font-bold text-amber-900">👷 V. DAFTAR URUT PEGAWAI HARIAN LEPAS (PHL) & TENAGA KONTRAK</span>
-                                <span class="px-2 py-0.5 text-xs font-bold bg-amber-600 text-white rounded-full">{{ method_exists($phlList, 'total') ? $phlList->total() : count($phlList) }} Orang</span>
+                                <span class="text-base font-bold text-amber-900">👷 {{ $isExecutiveView ? 'V. ' : '' }}DAFTAR URUT PEGAWAI HARIAN LEPAS (PHL) & TENAGA KONTRAK</span>
+                                <span class="px-2 py-0.5 text-xs font-bold bg-amber-600 text-white rounded-full">{{ $cntPhl }} Orang</span>
                             </div>
                             <span class="text-xs text-amber-700 font-medium">Non-ASN & Kontrak Kerja</span>
                         </div>
@@ -582,6 +581,12 @@
                             </div>
                         @endif
                     </div>
+                    @endif
+
+                    @if(!$isExecutiveView && ($cntDosenPns + $cntDosenPppk + $cntTendikPns + $cntTendikPppk + $cntPhl) === 0)
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-500 text-sm">
+                            Akun Anda belum terhubung dengan data kepegawaian pada Daftar Urut Kepangkatan (DUK).
+                        </div>
                     @endif
 
                 </div>

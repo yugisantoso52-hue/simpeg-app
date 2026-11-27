@@ -806,8 +806,39 @@ class PengajuanCutiTest extends TestCase
 
         $dukRes = $this->actingAs($this->adminUser)->get(route('duk.index'));
         $dukRes->assertStatus(200);
-        $dukRes->assertSee('Laporan Resmi DUK Terpisah');
+        $dukRes->assertSee('Daftar Urut Kepangkatan (DUK)');
+        $dukRes->assertDontSee('Daftar Urut Kepangkatan (DUK) Pegawai');
+        $dukRes->assertSee('I. DAFTAR URUT KEPANGKATAN DOSEN PNS', false);
+        $dukRes->assertSee('II. DAFTAR URUT KEPANGKATAN DOSEN PPPK', false);
+        $dukRes->assertSee('III. DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK) PNS', false);
+        $dukRes->assertSee('IV. DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK) PPPK', false);
+        $dukRes->assertSee('V. DAFTAR URUT PEGAWAI HARIAN LEPAS (PHL) & TENAGA KONTRAK', false);
         $dukRes->assertSee('Menampilkan');
+
+        // Akun Pegawai Biasa (PNS Dosen) hanya melihat tabel kategorinya sendiri (Dosen PNS) dan tidak melihat tabel kosong lainnya
+        $dukPegawaiPnsRes = $this->actingAs($this->pegawaiUser)->get(route('duk.index'));
+        $dukPegawaiPnsRes->assertStatus(200);
+        $dukPegawaiPnsRes->assertSee('Daftar Urut Kepangkatan (DUK)');
+        $dukPegawaiPnsRes->assertDontSee('Daftar Urut Kepangkatan (DUK) Pegawai');
+        $dukPegawaiPnsRes->assertSee('DAFTAR URUT KEPANGKATAN DOSEN PNS', false);
+        $dukPegawaiPnsRes->assertDontSee('DAFTAR URUT KEPANGKATAN DOSEN PPPK', false);
+        $dukPegawaiPnsRes->assertDontSee('DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK) PNS', false);
+        $dukPegawaiPnsRes->assertDontSee('DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK) PPPK', false);
+        $dukPegawaiPnsRes->assertDontSee('DAFTAR URUT PEGAWAI HARIAN LEPAS (PHL) & TENAGA KONTRAK', false);
+
+        // Akun Pegawai PPPK hanya melihat tabel kategorinya sendiri
+        $userPppk = User::factory()->create([
+            'role_id'              => $this->pegawaiUser->role_id,
+            'pegawai_id'           => $pegawaiPppk->id,
+            'must_change_password' => false,
+        ]);
+        $dukPegawaiPppkRes = $this->actingAs($userPppk)->get(route('duk.index'));
+        $dukPegawaiPppkRes->assertStatus(200);
+        $dukPegawaiPppkRes->assertSee('DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK) PPPK', false);
+        $dukPegawaiPppkRes->assertDontSee('DAFTAR URUT KEPANGKATAN DOSEN PNS', false);
+        $dukPegawaiPppkRes->assertDontSee('DAFTAR URUT KEPANGKATAN DOSEN PPPK', false);
+        $dukPegawaiPppkRes->assertDontSee('DAFTAR URUT KEPANGKATAN TENAGA KEPENDIDIKAN (TENDIK) PNS', false);
+        $dukPegawaiPppkRes->assertDontSee('DAFTAR URUT PEGAWAI HARIAN LEPAS (PHL) & TENAGA KONTRAK', false);
 
         // Verifikasi seluruh menu tabel lainnya juga merender dengan paginasi 10 baris tanpa error
         $menuRoutes = [
