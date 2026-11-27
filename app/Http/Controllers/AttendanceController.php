@@ -21,9 +21,12 @@ class AttendanceController extends Controller
     /**
      * Halaman Utama Presensi Karyawan
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|\Illuminate\Http\RedirectResponse
     {
         $user = $request->user();
+        if (!$user->pegawai_id && $user->hasRole('admin')) {
+            return redirect()->route('admin.presensi.index');
+        }
         $location = $this->service->getOrCreateLocation($user);
 
         $today = Carbon::now('Asia/Jakarta')->toDateString();
@@ -130,9 +133,12 @@ class AttendanceController extends Controller
     /**
      * Riwayat Presensi Saya (Pegawai)
      */
-    public function history(Request $request): View
+    public function history(Request $request): View|\Illuminate\Http\RedirectResponse
     {
         $user = $request->user();
+        if (!$user->pegawai_id && $user->hasRole('admin')) {
+            return redirect()->route('admin.presensi.index');
+        }
         $query = Attendance::where('user_id', $user->id)
             ->latest('attendance_date');
 

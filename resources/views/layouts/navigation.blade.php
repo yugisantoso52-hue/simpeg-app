@@ -168,8 +168,8 @@
     <div class="nav-bar-wrapper hidden md:block w-full max-w-[1920px] mx-auto px-2 sm:px-4 lg:px-6 xl:px-8 notranslate" translate="no">
         <div class="flex items-center justify-center min-h-[44px]">
 
-            <!-- Desktop Navigation Links (Layar Lebar >= 1024px / lg, overflow-visible, dropdown terbuka lancar) -->
-            <nav class="nav-desktop-bar items-center justify-center flex-wrap gap-1 sm:gap-1.5 md:gap-2 xl:gap-2.5 py-1.5 overflow-visible notranslate" translate="no">
+            <!-- Desktop Navigation Links (Layar Lebar >= 1024px / lg, 1 Baris Penuh Tanpa Turun ke Bawah, overflow-visible) -->
+            <nav class="nav-desktop-bar items-center justify-center flex-nowrap gap-0.5 lg:gap-1 xl:gap-1.5 2xl:gap-2.5 py-1.5 overflow-visible notranslate" translate="no">
                 @include('layouts.partials.nav-desktop')
             </nav>
 

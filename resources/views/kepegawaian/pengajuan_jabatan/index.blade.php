@@ -13,10 +13,12 @@
                 subtitle="Penetapan jabatan berbasis verifikasi berkas SK resmi oleh Administrator & Ka. Pokja Kepegawaian">
             </x-enterprise.page-header>
 
-            <button type="button" onclick="document.getElementById('modal-ajukan-jabatan').classList.remove('hidden')"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition">
-                <span>➕</span> Ajukan Jabatan Baru (SK)
-            </button>
+            @if(Auth::user()->pegawai_id)
+                <button type="button" onclick="document.getElementById('modal-ajukan-jabatan').classList.remove('hidden')"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+                    <span>➕</span> Ajukan Jabatan Baru (SK)
+                </button>
+            @endif
         </div>
     </x-slot>
 

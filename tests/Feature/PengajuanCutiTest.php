@@ -876,6 +876,24 @@ class PengajuanCutiTest extends TestCase
             $res->assertStatus(200);
         }
 
+        // Verifikasi navigasi akun Admin murni (tanpa pegawai_id) tidak menampilkan menu mandiri yang ambigu
+        $adminDashRes = $this->actingAs($this->adminUser)->get(route('dashboard'));
+        $adminDashRes->assertStatus(200);
+        $adminDashRes->assertDontSee('Profil & Karir Saya', false);
+        $adminDashRes->assertDontSee('Presensi Harian Saya', false);
+        $adminDashRes->assertDontSee('Riwayat Presensi Saya', false);
+        $adminDashRes->assertDontSee('Logbook Kinerja Saya', false);
+        $adminDashRes->assertDontSee('Permohonan Cuti Saya', false);
+        $adminDashRes->assertSee('flex-nowrap', false);
+
+        // Sedangkan akun Pegawai tetap melihat menu mandiri "Profil & Karir Saya"
+        $pegawaiDashRes = $this->actingAs($this->pegawaiUser)->get(route('dashboard'));
+        $pegawaiDashRes->assertStatus(200);
+        $pegawaiDashRes->assertSee('Profil & Karir Saya', false);
+        $pegawaiDashRes->assertSee('Presensi Harian Saya', false);
+        $pegawaiDashRes->assertSee('Logbook Kinerja Saya', false);
+        $pegawaiDashRes->assertSee('Permohonan Cuti Saya', false);
+
         $eksekutifRes = $this->actingAs($this->pimpinanUser)->get(route('pengajuan-cuti.monitoring-pimpinan'));
         $eksekutifRes->assertStatus(200);
         $eksekutifRes->assertSee('Ringkasan Syarat, Ketentuan & Pemisahan Hak Cuti ASN (PNS vs PPPK)');

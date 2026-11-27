@@ -83,13 +83,19 @@
                                     Pegawai Pemohon
                                 </label>
                                 @if($isExecutiveOrAdmin)
-                                    <select name="pegawai_id" class="w-full text-sm rounded-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="">-- Diri Sendiri ({{ Auth::user()->name }}) --</option>
+                                    <select name="pegawai_id" {{ !Auth::user()->pegawai_id ? 'required' : '' }} class="w-full text-sm rounded-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500">
+                                        @if(Auth::user()->pegawai_id)
+                                            <option value="">-- Diri Sendiri ({{ Auth::user()->name }}) --</option>
+                                        @else
+                                            <option value="">-- Pilih Pegawai Pemohon --</option>
+                                        @endif
                                         @foreach(\App\Models\Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->get() as $p)
-                                            <option value="{{ $p->id }}">{{ $p->nama }} (NIP. {{ $p->nip }})</option>
+                                            <option value="{{ $p->id }}">{{ $p->nama_lengkap ?? $p->nama }} (NIP. {{ $p->nip }})</option>
                                         @endforeach
                                     </select>
-                                    <p class="text-[11px] text-slate-400 mt-1">Sebagai Admin/Pimpinan, Anda dapat mencetak untuk diri sendiri atau pegawai lain.</p>
+                                    <p class="text-[11px] text-slate-400 mt-1">
+                                        {{ Auth::user()->pegawai_id ? 'Sebagai Pimpinan/Pejabat, Anda dapat mencetak untuk diri sendiri atau pegawai lain.' : 'Pilih pegawai aktif yang akan diterbitkan Surat Keterangan Aktif Bekerjanya.' }}
+                                    </p>
                                 @else
                                     <input type="text" disabled 
                                            value="{{ $myPegawai ? ($myPegawai->nama_lengkap ?? $myPegawai->nama) . ' (NIP: ' . $myPegawai->nip . ')' : Auth::user()->name }}"

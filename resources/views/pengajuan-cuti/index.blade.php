@@ -11,10 +11,10 @@
             </div>
 
             <div class="flex items-center gap-2">
-                {{-- Tombol Buku Cuti Mandiri --}}
+                {{-- Tombol Buku Cuti Mandiri / Pegawai --}}
                 <a href="{{ route('pengajuan-cuti.buku-cuti') }}"
                    class="inline-flex items-center gap-1.5 rounded-lg border border-teal-300 bg-teal-50 px-3.5 py-2.5 text-xs font-semibold text-teal-800 shadow-xs hover:bg-teal-100 transition">
-                    <span>📖</span> Buku Cuti Saya
+                    <span>📖</span> {{ Auth::user()->pegawai_id ? 'Buku Cuti Saya' : 'Buku Kendali Cuti' }}
                 </a>
 
                 {{-- Khusus Admin & Pimpinan --}}
