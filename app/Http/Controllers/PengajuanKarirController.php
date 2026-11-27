@@ -184,7 +184,16 @@ class PengajuanKarirController extends Controller
     public function create(Request $request)
     {
         $user = Auth::user();
+        $canSelectPegawai = $user->hasRole('admin') || $user->canAccessExecutiveKepegawaianMenus();
         $pegawai = $user->pegawai;
+
+        if ($canSelectPegawai && $request->filled('pegawai_id')) {
+            $pegawai = Pegawai::find((int) $request->input('pegawai_id'));
+        }
+
+        if (!$pegawai && $canSelectPegawai) {
+            $pegawai = Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->first();
+        }
 
         if (!$pegawai) {
             return redirect()->route('dashboard')->with('error', 'Akun Anda belum ditautkan dengan data induk Pegawai.');
@@ -227,7 +236,11 @@ class PengajuanKarirController extends Controller
             'Desember'  => 'Desember (Pengusulan: 1 s.d. 31 Okt)',
         ];
 
-        return view('pengajuan-karir.create', compact('pegawai', 'jenis', 'golongans', 'syaratKp', 'periodeKpList', 'isPns'));
+        $pegawaiList = $canSelectPegawai
+            ? Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->get(['id', 'nama', 'nip', 'gelar_depan', 'gelar_belakang', 'jenis_pegawai', 'status_asn'])
+            : collect();
+
+        return view('pengajuan-karir.create', compact('pegawai', 'jenis', 'golongans', 'syaratKp', 'periodeKpList', 'isPns', 'canSelectPegawai', 'pegawaiList'));
     }
 
     /**
@@ -236,7 +249,10 @@ class PengajuanKarirController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        $pegawai = $user->pegawai;
+        $canSelectPegawai = $user->hasRole('admin') || $user->canAccessExecutiveKepegawaianMenus();
+        $pegawai = ($canSelectPegawai && $request->filled('pegawai_id'))
+            ? Pegawai::find((int) $request->input('pegawai_id'))
+            : $user->pegawai;
 
         if (!$pegawai) {
             abort(403, 'Akses ditolak.');

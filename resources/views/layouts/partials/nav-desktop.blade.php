@@ -2,8 +2,8 @@
 {{-- 1. DASHBOARD UTAMA (Akses Seluruh Pengguna)                    --}}
 {{-- ============================================================== --}}
 <a href="{{ route('dashboard') }}" 
-   class="inline-flex items-center gap-1 xl:gap-1.5 px-2 lg:px-2.5 xl:px-3 py-1.5 rounded-lg text-[11.5px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('dashboard') ? 'bg-[#007a3d]/10 text-[#007a3d] font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-    <x-icon name="dashboard" class="w-4 h-4 {{ request()->routeIs('dashboard') ? 'text-[#007a3d]' : 'text-slate-500' }}" />
+   class="inline-flex items-center gap-1 xl:gap-1.5 px-1.5 lg:px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-lg text-[11px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('dashboard') ? 'bg-[#007a3d]/10 text-[#007a3d] font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+    <x-icon name="dashboard" class="w-3.5 h-3.5 xl:w-4 xl:h-4 {{ request()->routeIs('dashboard') ? 'text-[#007a3d]' : 'text-slate-500' }}" />
     <span>Dashboard</span>
 </a>
 
@@ -12,19 +12,19 @@
 {{-- ============================================================== --}}
 @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
     <a href="{{ route('pimpinan.analytics') }}" 
-       class="inline-flex items-center gap-1 xl:gap-1.5 px-2 lg:px-2.5 xl:px-3 py-1.5 rounded-lg text-[11.5px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('pimpinan.analytics*') ? 'bg-indigo-50 text-indigo-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-        <x-icon name="chart" class="w-4 h-4 {{ request()->routeIs('pimpinan.analytics*') ? 'text-indigo-600' : 'text-slate-500' }}" />
+       class="inline-flex items-center gap-1 xl:gap-1.5 px-1.5 lg:px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-lg text-[11px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('pimpinan.analytics*') ? 'bg-indigo-50 text-indigo-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+        <x-icon name="chart" class="w-3.5 h-3.5 xl:w-4 xl:h-4 {{ request()->routeIs('pimpinan.analytics*') ? 'text-indigo-600' : 'text-slate-500' }}" />
         <span>Analitik Eksekutif</span>
     </a>
 @endif
 
 {{-- ============================================================== --}}
-{{-- 3. PROFIL & KARIR SAYA (Khusus Akun yang Memiliki Profil Pegawai) --}}
+{{-- 3. PROFIL & KARIR SAYA (Pegawai Mandiri, Pimpinan & Admin)     --}}
 {{-- ============================================================== --}}
 @php
     $hasPersonalPegawaiProfile = (bool) (Auth::user()->pegawai_id ?? Auth::user()->pegawai?->id);
 @endphp
-@if($hasPersonalPegawaiProfile)
+@if(Auth::user()->hasRole(['pegawai', 'pimpinan', 'admin']) || $hasPersonalPegawaiProfile)
     @php
         $routePegawaiParam = request()->route('pegawai');
         $routePegawaiId = is_object($routePegawaiParam) ? $routePegawaiParam->id : $routePegawaiParam;
@@ -36,10 +36,10 @@
     @endphp
     <x-dropdown align="left" width="w-64">
         <x-slot name="trigger">
-            <button class="inline-flex items-center gap-1 xl:gap-1.5 px-2 lg:px-2.5 xl:px-3 py-1.5 rounded-lg text-[11.5px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ $isProfilKarirActive ? 'bg-blue-50 text-blue-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-                <x-icon name="user" class="w-4 h-4 {{ $isProfilKarirActive ? 'text-blue-600' : 'text-slate-500' }}" />
+            <button class="inline-flex items-center gap-1 xl:gap-1.5 px-1.5 lg:px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-lg text-[11px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ $isProfilKarirActive ? 'bg-blue-50 text-blue-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                <x-icon name="user" class="w-3.5 h-3.5 xl:w-4 xl:h-4 {{ $isProfilKarirActive ? 'text-blue-600' : 'text-slate-500' }}" />
                 <span>Profil & Karir Saya</span>
-                <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
+                <x-icon name="chevron-down" class="w-3 h-3 xl:w-3.5 xl:h-3.5 text-slate-400" />
             </button>
         </x-slot>
         <x-slot name="content">
@@ -71,7 +71,7 @@
                 <x-icon name="award" class="w-4 h-4 text-indigo-600 shrink-0" />
                 <span>Satyalancana Karya Satya</span>
             </x-dropdown-link>
-            <x-dropdown-link :href="route('pengajuan-karir.index', Auth::user()->canAccessExecutiveKepegawaianMenus() ? ['scope' => 'saya'] : [])" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') && !request()->has('tab') ? 'bg-teal-50 text-teal-700 font-semibold' : '' }}">
+            <x-dropdown-link :href="route('pengajuan-karir.index', (Auth::user()->canAccessExecutiveKepegawaianMenus() && $hasPersonalPegawaiProfile) ? ['scope' => 'saya'] : [])" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-karir.*') && !request()->has('tab') ? 'bg-teal-50 text-teal-700 font-semibold' : '' }}">
                 <x-icon name="clipboard-check" class="w-4 h-4 text-teal-600 shrink-0" />
                 <span>Riwayat Usulan Karir Saya</span>
             </x-dropdown-link>
@@ -100,10 +100,10 @@
     @endphp
     <x-dropdown align="left" width="w-72">
         <x-slot name="trigger">
-            <button class="inline-flex items-center gap-1 xl:gap-1.5 px-2 lg:px-2.5 xl:px-3 py-1.5 rounded-lg text-[11.5px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ $isKepegawaianActive ? 'bg-emerald-50 text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-                <x-icon name="users" class="w-4 h-4 {{ $isKepegawaianActive ? 'text-emerald-600' : 'text-slate-500' }}" />
+            <button class="inline-flex items-center gap-1 xl:gap-1.5 px-1.5 lg:px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-lg text-[11px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ $isKepegawaianActive ? 'bg-emerald-50 text-emerald-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                <x-icon name="users" class="w-3.5 h-3.5 xl:w-4 xl:h-4 {{ $isKepegawaianActive ? 'text-emerald-600' : 'text-slate-500' }}" />
                 <span>Data Kepegawaian</span>
-                <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
+                <x-icon name="chevron-down" class="w-3 h-3 xl:w-3.5 xl:h-3.5 text-slate-400" />
             </button>
         </x-slot>
         <x-slot name="content">
@@ -183,10 +183,10 @@
 @if(Auth::user()->canAccessExecutiveKepegawaianMenus())
     <x-dropdown align="left" width="w-68">
         <x-slot name="trigger">
-            <button class="inline-flex items-center gap-1 xl:gap-1.5 px-2 lg:px-2.5 xl:px-3 py-1.5 rounded-lg text-[11.5px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('kp.*', 'kgb.*', 'satyalancana.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'pengajuan-karir.*', 'pengajuan-jabatan.*') ? 'bg-amber-50 text-amber-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-                <x-icon name="award" class="w-4 h-4 {{ request()->routeIs('kp.*', 'kgb.*', 'satyalancana.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'pengajuan-karir.*', 'pengajuan-jabatan.*') ? 'text-amber-600' : 'text-slate-500' }}" />
+            <button class="inline-flex items-center gap-1 xl:gap-1.5 px-1.5 lg:px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-lg text-[11px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('kp.*', 'kgb.*', 'satyalancana.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'pengajuan-karir.*', 'pengajuan-jabatan.*') ? 'bg-amber-50 text-amber-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                <x-icon name="award" class="w-3.5 h-3.5 xl:w-4 xl:h-4 {{ request()->routeIs('kp.*', 'kgb.*', 'satyalancana.*', 'mutasi-pegawai.*', 'tugas-belajar.*', 'pengajuan-karir.*', 'pengajuan-jabatan.*') ? 'text-amber-600' : 'text-slate-500' }}" />
                 <span>Layanan Karir</span>
-                <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
+                <x-icon name="chevron-down" class="w-3 h-3 xl:w-3.5 xl:h-3.5 text-slate-400" />
             </button>
         </x-slot>
         <x-slot name="content">
@@ -239,10 +239,10 @@
 {{-- ============================================================== --}}
 <x-dropdown align="left" width="w-68">
     <x-slot name="trigger">
-        <button class="inline-flex items-center gap-1 xl:gap-1.5 px-2 lg:px-2.5 xl:px-3 py-1.5 rounded-lg text-[11.5px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('presensi.*', 'admin.presensi.*', 'logbook.*', 'admin.logbook.*') ? 'bg-blue-50 text-blue-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-            <x-icon name="clock" class="w-4 h-4 {{ request()->routeIs('presensi.*', 'admin.presensi.*', 'logbook.*', 'admin.logbook.*') ? 'text-blue-600' : 'text-slate-500' }}" />
+        <button class="inline-flex items-center gap-1 xl:gap-1.5 px-1.5 lg:px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-lg text-[11px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('presensi.*', 'admin.presensi.*', 'logbook.*', 'admin.logbook.*') ? 'bg-blue-50 text-blue-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+            <x-icon name="clock" class="w-3.5 h-3.5 xl:w-4 xl:h-4 {{ request()->routeIs('presensi.*', 'admin.presensi.*', 'logbook.*', 'admin.logbook.*') ? 'text-blue-600' : 'text-slate-500' }}" />
             <span>Presensi & Kinerja</span>
-            <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
+            <x-icon name="chevron-down" class="w-3 h-3 xl:w-3.5 xl:h-3.5 text-slate-400" />
         </button>
     </x-slot>
     <x-slot name="content">
@@ -262,16 +262,14 @@
                 </x-dropdown-link>
             @endif
         @endif
-        @if($hasPersonalPegawaiProfile)
-            <x-dropdown-link :href="route('presensi.index')" class="flex items-center gap-2 {{ request()->routeIs('presensi.index') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                <x-icon name="clock" class="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Presensi Harian Saya</span>
-            </x-dropdown-link>
-            <x-dropdown-link :href="route('presensi.history')" class="flex items-center gap-2 {{ request()->routeIs('presensi.history') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
-                <x-icon name="history" class="w-4 h-4 text-slate-500 shrink-0" />
-                <span>Riwayat Presensi Saya</span>
-            </x-dropdown-link>
-        @endif
+        <x-dropdown-link :href="route('presensi.index')" class="flex items-center gap-2 {{ request()->routeIs('presensi.index') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+            <x-icon name="clock" class="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>Presensi Harian Saya</span>
+        </x-dropdown-link>
+        <x-dropdown-link :href="route('presensi.history')" class="flex items-center gap-2 {{ request()->routeIs('presensi.history') ? 'bg-blue-50 text-blue-700 font-semibold' : '' }}">
+            <x-icon name="history" class="w-4 h-4 text-slate-500 shrink-0" />
+            <span>Riwayat Presensi Saya</span>
+        </x-dropdown-link>
 
         {{-- BAGIAN LOGBOOK --}}
         <div class="border-t border-slate-100 my-1"></div>
@@ -284,16 +282,14 @@
                 <span>Verifikasi Logbook {{ Auth::user()->hasRole('admin') ? 'Pegawai' : 'Bawahan' }}</span>
             </x-dropdown-link>
         @endif
-        @if($hasPersonalPegawaiProfile)
-            <x-dropdown-link :href="route('logbook.index')" class="flex items-center gap-2 {{ request()->routeIs('logbook.index') ? 'bg-violet-50 text-violet-700 font-semibold' : '' }}">
-                <x-icon name="clipboard-list" class="w-4 h-4 text-blue-600 shrink-0" />
-                <span>Logbook Kinerja Saya</span>
-            </x-dropdown-link>
-            <x-dropdown-link :href="route('logbook.create')" class="flex items-center gap-2 {{ request()->routeIs('logbook.create') ? 'bg-violet-50 text-violet-700 font-semibold' : '' }}">
-                <x-icon name="plus" class="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>+ Catat Aktivitas Baru</span>
-            </x-dropdown-link>
-        @endif
+        <x-dropdown-link :href="route('logbook.index')" class="flex items-center gap-2 {{ request()->routeIs('logbook.index') ? 'bg-violet-50 text-violet-700 font-semibold' : '' }}">
+            <x-icon name="clipboard-list" class="w-4 h-4 text-blue-600 shrink-0" />
+            <span>Logbook Kinerja Saya</span>
+        </x-dropdown-link>
+        <x-dropdown-link :href="route('logbook.create')" class="flex items-center gap-2 {{ request()->routeIs('logbook.create') ? 'bg-violet-50 text-violet-700 font-semibold' : '' }}">
+            <x-icon name="plus" class="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>+ Catat Aktivitas Baru</span>
+        </x-dropdown-link>
     </x-slot>
 </x-dropdown>
 
@@ -302,10 +298,10 @@
 {{-- ============================================================== --}}
 <x-dropdown align="left" width="w-72">
     <x-slot name="trigger">
-        <button class="inline-flex items-center gap-1 xl:gap-1.5 px-2 lg:px-2.5 xl:px-3 py-1.5 rounded-lg text-[11.5px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('pengajuan-cuti.*', 'layanan-surat.*', 'regulasi-tata-naskah.*', 'pengajuan-karir.*') ? 'bg-purple-50 text-purple-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-            <x-icon name="file-text" class="w-4 h-4 {{ request()->routeIs('pengajuan-cuti.*', 'layanan-surat.*', 'regulasi-tata-naskah.*', 'pengajuan-karir.*') ? 'text-purple-600' : 'text-slate-500' }}" />
+        <button class="inline-flex items-center gap-1 xl:gap-1.5 px-1.5 lg:px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-lg text-[11px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('pengajuan-cuti.*', 'layanan-surat.*', 'regulasi-tata-naskah.*', 'pengajuan-karir.*') ? 'bg-purple-50 text-purple-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+            <x-icon name="file-text" class="w-3.5 h-3.5 xl:w-4 xl:h-4 {{ request()->routeIs('pengajuan-cuti.*', 'layanan-surat.*', 'regulasi-tata-naskah.*', 'pengajuan-karir.*') ? 'text-purple-600' : 'text-slate-500' }}" />
             <span>Tata Naskah & E-Layanan</span>
-            <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
+            <x-icon name="chevron-down" class="w-3 h-3 xl:w-3.5 xl:h-3.5 text-slate-400" />
         </button>
     </x-slot>
     <x-slot name="content">
@@ -350,19 +346,17 @@
                 <span>{{ Auth::user()->hasRole('admin') ? 'Monitoring Seluruh Cuti' : 'Persetujuan Cuti Bawahan' }}</span>
             </x-dropdown-link>
         @endif
-        @if($hasPersonalPegawaiProfile)
-            <x-dropdown-link :href="route('pengajuan-cuti.index', (Auth::user()->isAtasan() || Auth::user()->hasRole('admin')) ? ['mine' => 1] : [])" class="flex items-center gap-2 {{ (request()->routeIs('pengajuan-cuti.index') && (request()->has('mine') || (!Auth::user()->isAtasan() && !Auth::user()->hasRole('admin')))) ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
-                <x-icon name="calendar-off" class="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Permohonan Cuti Saya</span>
-            </x-dropdown-link>
-        @endif
+        <x-dropdown-link :href="route('pengajuan-cuti.index', (Auth::user()->isAtasan() || Auth::user()->hasRole('admin')) ? ['mine' => 1] : [])" class="flex items-center gap-2 {{ (request()->routeIs('pengajuan-cuti.index') && (request()->has('mine') || (!Auth::user()->isAtasan() && !Auth::user()->hasRole('admin')))) ? 'bg-emerald-50 text-emerald-700 font-semibold' : '' }}">
+            <x-icon name="calendar-off" class="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>Permohonan Cuti Saya</span>
+        </x-dropdown-link>
         <x-dropdown-link :href="route('pengajuan-cuti.create')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-cuti.create') ? 'bg-amber-50 text-amber-700 font-semibold' : '' }}">
             <x-icon name="plus" class="w-4 h-4 text-blue-600 shrink-0" />
-            <span>{{ $hasPersonalPegawaiProfile ? 'Buat Permohonan Cuti Baru' : 'Input Permohonan Cuti Pegawai' }}</span>
+            <span>Buat Permohonan Cuti Baru</span>
         </x-dropdown-link>
         <x-dropdown-link :href="route('pengajuan-cuti.buku-cuti')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-cuti.buku-cuti*') ? 'bg-teal-50 text-teal-700 font-semibold' : '' }}">
             <x-icon name="book-open" class="w-4 h-4 text-teal-600 shrink-0" />
-            <span>{{ $hasPersonalPegawaiProfile ? 'Buku Kendali Cuti Saya' : 'Buku Kendali Cuti Pegawai' }}</span>
+            <span>Buku Kendali Cuti Saya</span>
         </x-dropdown-link>
         @if(Auth::user()->hasRole('admin'))
             <x-dropdown-link :href="route('pengajuan-cuti.rekap-kuota')" class="flex items-center gap-2 {{ request()->routeIs('pengajuan-cuti.rekap-kuota*') ? 'bg-indigo-50 text-indigo-700 font-semibold' : '' }}">
@@ -395,10 +389,10 @@
 @if(Auth::user()->canAccessAnjabAbk() || Auth::user()->canAccessTalentManagement())
     <x-dropdown align="right" width="w-72">
         <x-slot name="trigger">
-            <button class="inline-flex items-center gap-1 xl:gap-1.5 px-2 lg:px-2.5 xl:px-3 py-1.5 rounded-lg text-[11.5px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('anjab.*', 'abk.*', 'manajemen-talenta.*') ? 'bg-rose-50 text-rose-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-                <x-icon name="target" class="w-4 h-4 {{ request()->routeIs('anjab.*', 'abk.*', 'manajemen-talenta.*') ? 'text-rose-600' : 'text-slate-500' }}" />
+            <button class="inline-flex items-center gap-1 xl:gap-1.5 px-1.5 lg:px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-lg text-[11px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('anjab.*', 'abk.*', 'manajemen-talenta.*') ? 'bg-rose-50 text-rose-700 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                <x-icon name="target" class="w-3.5 h-3.5 xl:w-4 xl:h-4 {{ request()->routeIs('anjab.*', 'abk.*', 'manajemen-talenta.*') ? 'text-rose-600' : 'text-slate-500' }}" />
                 <span>Perencanaan & Talenta</span>
-                <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
+                <x-icon name="chevron-down" class="w-3 h-3 xl:w-3.5 xl:h-3.5 text-slate-400" />
             </button>
         </x-slot>
         <x-slot name="content">
@@ -472,10 +466,10 @@
 @if(Auth::user()->hasRole('admin'))
     <x-dropdown align="right" width="w-60">
         <x-slot name="trigger">
-            <button class="inline-flex items-center gap-1 xl:gap-1.5 px-2 lg:px-2.5 xl:px-3 py-1.5 rounded-lg text-[11.5px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('unit-kerja.*', 'jabatan.*', 'golongan.*', 'jenis-jabatan.*', 'audit-logs.*', 'backup.*') ? 'bg-slate-800 text-white font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
-                <x-icon name="database" class="w-4 h-4 {{ request()->routeIs('unit-kerja.*', 'jabatan.*', 'golongan.*', 'jenis-jabatan.*', 'audit-logs.*', 'backup.*') ? 'text-white' : 'text-slate-500' }}" />
+            <button class="inline-flex items-center gap-1 xl:gap-1.5 px-1.5 lg:px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-lg text-[11px] xl:text-xs 2xl:text-[13px] font-semibold transition whitespace-nowrap {{ request()->routeIs('unit-kerja.*', 'jabatan.*', 'golongan.*', 'jenis-jabatan.*', 'audit-logs.*', 'backup.*') ? 'bg-slate-800 text-white font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }}">
+                <x-icon name="database" class="w-3.5 h-3.5 xl:w-4 xl:h-4 {{ request()->routeIs('unit-kerja.*', 'jabatan.*', 'golongan.*', 'jenis-jabatan.*', 'audit-logs.*', 'backup.*') ? 'text-white' : 'text-slate-500' }}" />
                 <span>Master & Sistem</span>
-                <x-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400" />
+                <x-icon name="chevron-down" class="w-3 h-3 xl:w-3.5 xl:h-3.5 text-slate-400" />
             </button>
         </x-slot>
         <x-slot name="content">

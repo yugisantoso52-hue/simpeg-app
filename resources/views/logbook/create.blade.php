@@ -63,6 +63,21 @@
                 <form id="logbook-form" method="POST" action="{{ route('logbook.store') }}" enctype="multipart/form-data" class="space-y-6">
                     @csrf
 
+                    @if(($canSelectPegawai ?? false) && isset($pegawaiList) && $pegawaiList->isNotEmpty())
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                                Pilih Pegawai <span class="text-rose-500">*</span>
+                            </label>
+                            <select name="pegawai_id" required class="w-full rounded-xl border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                @foreach($pegawaiList as $pItem)
+                                    <option value="{{ $pItem->id }}" {{ $pegawai->id == $pItem->id ? 'selected' : '' }}>
+                                        {{ $pItem->nama_lengkap ?? $pItem->nama }} (NIP: {{ $pItem->nip ?? '-' }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
                         {{-- TANGGAL --}}
                         <div>

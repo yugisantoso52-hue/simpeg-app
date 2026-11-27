@@ -240,6 +240,9 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
             }
 
             if (!$pegawaiId) {
+                if ($user->hasRole('admin')) {
+                    return redirect()->route('profile.edit');
+                }
                 return redirect()->route('dashboard')->with('error', 'Akun Anda belum terhubung dengan data pegawai.');
             }
             return redirect()->route('pegawai.show', $pegawaiId);

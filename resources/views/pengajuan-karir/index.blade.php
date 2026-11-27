@@ -92,12 +92,10 @@
                             </div>
 
                             <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-                                @if($userPegawai)
-                                    <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KP']) }}" 
-                                       class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition transform active:scale-95">
-                                        <span>🎖️ Ajukan Kenaikan Pangkat (PNS)</span>
-                                    </a>
-                                @endif
+                                <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KP']) }}" 
+                                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition transform active:scale-95">
+                                    <span>🎖️ Ajukan Kenaikan Pangkat (PNS)</span>
+                                </a>
                                 @if($isExecutive ?? false)
                                     <a href="{{ route('kp.index') }}" 
                                        class="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition">
@@ -162,12 +160,10 @@
                             </div>
 
                             <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-                                @if($userPegawai)
-                                    <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KGB']) }}" 
-                                       class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition transform active:scale-95">
-                                        <span>⚡ Ajukan KGB (PNS / PPPK)</span>
-                                    </a>
-                                @endif
+                                <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KGB']) }}" 
+                                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition transform active:scale-95">
+                                    <span>⚡ Ajukan KGB (PNS / PPPK)</span>
+                                </a>
                                 @if($isExecutive ?? false)
                                     <a href="{{ route('kgb.index') }}" 
                                        class="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition">
@@ -218,33 +214,16 @@
                             </p>
                         </div>
 
-                        @if($userPegawai)
-                            <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-                                <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KGB']) }}" 
-                                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition transform active:scale-95">
-                                    <span>⚡ Ajukan KGB (PNS / PPPK)</span>
-                                </a>
-                                <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KP']) }}" 
-                                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition transform active:scale-95">
-                                    <span>🎖️ Ajukan Kenaikan Pangkat (PNS)</span>
-                                </a>
-                            </div>
-                        @elseif($isExecutive ?? false)
-                            <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-                                <a href="{{ route('kp.index') }}" 
-                                   class="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition">
-                                    <span>🎖️ Modul KP</span>
-                                </a>
-                                <a href="{{ route('kgb.index') }}" 
-                                   class="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition">
-                                    <span>💰 Modul KGB</span>
-                                </a>
-                                <a href="{{ route('satyalancana.index') }}" 
-                                   class="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition">
-                                    <span>🏆 Modul Satyalancana</span>
-                                </a>
-                            </div>
-                        @endif
+                        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+                            <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KGB']) }}" 
+                               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition transform active:scale-95">
+                                <span>⚡ Ajukan KGB (PNS / PPPK)</span>
+                            </a>
+                            <a href="{{ route('pengajuan-karir.create', ['jenis' => 'KP']) }}" 
+                               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition transform active:scale-95">
+                                <span>🎖️ Ajukan Kenaikan Pangkat (PNS)</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
 

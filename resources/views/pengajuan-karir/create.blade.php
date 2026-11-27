@@ -11,13 +11,27 @@
 
             {{-- Kartu Identitas Pegawai Pengusul --}}
             <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 mb-4 gap-3">
                     <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
                         <span>👤</span> Data Identitas Pegawai Pengusul
                     </h3>
-                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold {{ $jenis === 'KP' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">
-                        Usulan {{ $jenis }}
-                    </span>
+                    <div class="flex items-center gap-2">
+                        @if(($canSelectPegawai ?? false) && isset($pegawaiList) && $pegawaiList->isNotEmpty())
+                            <form method="GET" action="{{ route('pengajuan-karir.create') }}" class="flex items-center gap-2">
+                                <input type="hidden" name="jenis" value="{{ $jenis }}">
+                                <select name="pegawai_id" onchange="this.form.submit()" class="text-xs rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 py-1 font-semibold max-w-xs">
+                                    @foreach($pegawaiList as $pItem)
+                                        <option value="{{ $pItem->id }}" {{ $pegawai->id == $pItem->id ? 'selected' : '' }}>
+                                            {{ $pItem->nama_lengkap ?? $pItem->nama }} ({{ $pItem->nip ?? '-' }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </form>
+                        @endif
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold {{ $jenis === 'KP' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">
+                            Usulan {{ $jenis }}
+                        </span>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -44,6 +58,7 @@
             <form action="{{ route('pengajuan-karir.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
                 <input type="hidden" name="jenis_pengajuan" value="{{ $jenis }}">
+                <input type="hidden" name="pegawai_id" value="{{ $pegawai->id }}">
 
                 <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
 

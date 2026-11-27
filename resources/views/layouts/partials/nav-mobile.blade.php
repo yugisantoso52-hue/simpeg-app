@@ -38,11 +38,11 @@
         </x-responsive-nav-link>
     @endif
 
-    {{-- 3. PROFIL & KARIR SAYA (KHUSUS AKUN YANG MEMILIKI PROFIL PEGAWAI) --}}
+    {{-- 3. PROFIL & KARIR SAYA (PEGAWAI MANDIRI, PIMPINAN & ADMIN) --}}
     @php
         $hasPersonalPegawaiProfile = (bool) (Auth::user()->pegawai_id ?? Auth::user()->pegawai?->id);
     @endphp
-    @if($hasPersonalPegawaiProfile)
+    @if(Auth::user()->hasRole(['pegawai', 'pimpinan', 'admin']) || $hasPersonalPegawaiProfile)
         <div class="rounded-xl border border-slate-200/80 bg-white overflow-hidden transition">
             <button @click="openSection = openSection === 'profil-karir' ? '' : 'profil-karir'" 
                     type="button" 
@@ -79,7 +79,7 @@
                     <x-icon name="award" class="w-3.5 h-3.5 text-indigo-600" />
                     <span>Satyalancana Karya Satya</span>
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('pengajuan-karir.index', Auth::user()->canAccessExecutiveKepegawaianMenus() ? ['scope' => 'saya'] : [])" :active="request()->routeIs('pengajuan-karir.*') && !request()->has('tab')" class="flex items-center gap-2 text-xs rounded-lg">
+                <x-responsive-nav-link :href="route('pengajuan-karir.index', (Auth::user()->canAccessExecutiveKepegawaianMenus() && $hasPersonalPegawaiProfile) ? ['scope' => 'saya'] : [])" :active="request()->routeIs('pengajuan-karir.*') && !request()->has('tab')" class="flex items-center gap-2 text-xs rounded-lg">
                     <x-icon name="clipboard-check" class="w-3.5 h-3.5 text-teal-600" />
                     <span>Riwayat Usulan Karir Saya</span>
                 </x-responsive-nav-link>
@@ -258,16 +258,14 @@
                     </x-responsive-nav-link>
                 @endif
             @endif
-            @if($hasPersonalPegawaiProfile)
-                <x-responsive-nav-link :href="route('presensi.index')" :active="request()->routeIs('presensi.index')" class="flex items-center gap-2 text-xs rounded-lg">
-                    <x-icon name="clock" class="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Presensi Harian Saya</span>
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('presensi.history')" :active="request()->routeIs('presensi.history')" class="flex items-center gap-2 text-xs rounded-lg">
-                    <x-icon name="history" class="w-3.5 h-3.5 text-slate-500" />
-                    <span>Riwayat Presensi Saya</span>
-                </x-responsive-nav-link>
-            @endif
+            <x-responsive-nav-link :href="route('presensi.index')" :active="request()->routeIs('presensi.index')" class="flex items-center gap-2 text-xs rounded-lg">
+                <x-icon name="clock" class="w-3.5 h-3.5 text-emerald-600" />
+                <span>Presensi Harian Saya</span>
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('presensi.history')" :active="request()->routeIs('presensi.history')" class="flex items-center gap-2 text-xs rounded-lg">
+                <x-icon name="history" class="w-3.5 h-3.5 text-slate-500" />
+                <span>Riwayat Presensi Saya</span>
+            </x-responsive-nav-link>
 
             <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Logbook Aktivitas Kinerja</div>
             @if(Auth::user()->hasRole('admin') || Auth::user()->isAtasan())
@@ -276,16 +274,14 @@
                     <span>Verifikasi Logbook {{ Auth::user()->hasRole('admin') ? 'Pegawai' : 'Bawahan' }}</span>
                 </x-responsive-nav-link>
             @endif
-            @if($hasPersonalPegawaiProfile)
-                <x-responsive-nav-link :href="route('logbook.index')" :active="request()->routeIs('logbook.index')" class="flex items-center gap-2 text-xs rounded-lg">
-                    <x-icon name="clipboard-list" class="w-3.5 h-3.5 text-blue-600" />
-                    <span>Logbook Kinerja Saya</span>
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('logbook.create')" :active="request()->routeIs('logbook.create')" class="flex items-center gap-2 text-xs rounded-lg">
-                    <x-icon name="plus" class="w-3.5 h-3.5 text-emerald-600" />
-                    <span>+ Catat Aktivitas Baru</span>
-                </x-responsive-nav-link>
-            @endif
+            <x-responsive-nav-link :href="route('logbook.index')" :active="request()->routeIs('logbook.index')" class="flex items-center gap-2 text-xs rounded-lg">
+                <x-icon name="clipboard-list" class="w-3.5 h-3.5 text-blue-600" />
+                <span>Logbook Kinerja Saya</span>
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('logbook.create')" :active="request()->routeIs('logbook.create')" class="flex items-center gap-2 text-xs rounded-lg">
+                <x-icon name="plus" class="w-3.5 h-3.5 text-emerald-600" />
+                <span>+ Catat Aktivitas Baru</span>
+            </x-responsive-nav-link>
         </div>
     </div>
 
@@ -336,19 +332,17 @@
                     <span>{{ Auth::user()->hasRole('admin') ? 'Monitoring Seluruh Cuti' : 'Persetujuan Cuti Bawahan' }}</span>
                 </x-responsive-nav-link>
             @endif
-            @if($hasPersonalPegawaiProfile)
-                <x-responsive-nav-link :href="route('pengajuan-cuti.index', (Auth::user()->isAtasan() || Auth::user()->hasRole('admin')) ? ['mine' => 1] : [])" :active="request()->routeIs('pengajuan-cuti.index') && (request()->has('mine') || (!Auth::user()->isAtasan() && !Auth::user()->hasRole('admin')))" class="flex items-center gap-2 text-xs rounded-lg">
-                    <x-icon name="calendar-off" class="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Permohonan Cuti Saya</span>
-                </x-responsive-nav-link>
-            @endif
+            <x-responsive-nav-link :href="route('pengajuan-cuti.index', (Auth::user()->isAtasan() || Auth::user()->hasRole('admin')) ? ['mine' => 1] : [])" :active="request()->routeIs('pengajuan-cuti.index') && (request()->has('mine') || (!Auth::user()->isAtasan() && !Auth::user()->hasRole('admin')))" class="flex items-center gap-2 text-xs rounded-lg">
+                <x-icon name="calendar-off" class="w-3.5 h-3.5 text-emerald-600" />
+                <span>Permohonan Cuti Saya</span>
+            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('pengajuan-cuti.create')" :active="request()->routeIs('pengajuan-cuti.create')" class="flex items-center gap-2 text-xs rounded-lg">
                 <x-icon name="plus" class="w-3.5 h-3.5 text-blue-600" />
-                <span>{{ $hasPersonalPegawaiProfile ? 'Buat Permohonan Cuti Baru' : 'Input Permohonan Cuti Pegawai' }}</span>
+                <span>Buat Permohonan Cuti Baru</span>
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('pengajuan-cuti.buku-cuti')" :active="request()->routeIs('pengajuan-cuti.buku-cuti*')" class="flex items-center gap-2 text-xs rounded-lg">
                 <x-icon name="book-open" class="w-3.5 h-3.5 text-teal-600" />
-                <span>{{ $hasPersonalPegawaiProfile ? 'Buku Kendali Cuti Saya' : 'Buku Kendali Cuti Pegawai' }}</span>
+                <span>Buku Kendali Cuti Saya</span>
             </x-responsive-nav-link>
             @if(Auth::user()->hasRole('admin'))
                 <x-responsive-nav-link :href="route('pengajuan-cuti.rekap-kuota')" :active="request()->routeIs('pengajuan-cuti.rekap-kuota*')" class="flex items-center gap-2 text-xs rounded-lg">

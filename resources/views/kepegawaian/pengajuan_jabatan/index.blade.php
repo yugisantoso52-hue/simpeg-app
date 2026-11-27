@@ -13,7 +13,7 @@
                 subtitle="Penetapan jabatan berbasis verifikasi berkas SK resmi oleh Administrator & Ka. Pokja Kepegawaian">
             </x-enterprise.page-header>
 
-            @if(Auth::user()->pegawai_id)
+            @if(Auth::user()->pegawai_id || Auth::user()->hasRole('admin'))
                 <button type="button" onclick="document.getElementById('modal-ajukan-jabatan').classList.remove('hidden')"
                     class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition">
                     <span>➕</span> Ajukan Jabatan Baru (SK)
@@ -188,6 +188,20 @@
 
             <form action="{{ route('pengajuan-jabatan.store') }}" method="POST" enctype="multipart/form-data" class="space-y-3.5 text-xs">
                 @csrf
+
+                @if(Auth::user()->hasRole('admin') && isset($pegawaiList) && $pegawaiList->isNotEmpty())
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Pilih Pegawai *</label>
+                        <select name="pegawai_id" required class="w-full rounded-xl border border-gray-300 p-2.5 text-xs">
+                            <option value="">-- Pilih Pegawai --</option>
+                            @foreach($pegawaiList as $pItem)
+                                <option value="{{ $pItem->id }}" {{ Auth::user()->pegawai_id == $pItem->id ? 'selected' : '' }}>
+                                    {{ $pItem->nama_lengkap ?? $pItem->nama }} (NIP: {{ $pItem->nip ?? '-' }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
 
                 <div>
                     <label class="block font-bold text-gray-700 mb-1">Pilih Jabatan Struktural *</label>

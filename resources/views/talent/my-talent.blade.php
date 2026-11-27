@@ -81,7 +81,16 @@
                     </div>
                 </x-sop-modal>
 
-                <form method="GET" action="{{ route('manajemen-talenta.my-talent') }}">
+                <form method="GET" action="{{ route('manajemen-talenta.my-talent') }}" class="flex flex-wrap items-center gap-2">
+                    @if(($canSelectPegawai ?? false) && isset($pegawaiList) && $pegawaiList->isNotEmpty())
+                        <select name="pegawai_id" onchange="this.form.submit()" class="text-xs rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 py-1.5 font-semibold max-w-xs">
+                            @foreach($pegawaiList as $pItem)
+                                <option value="{{ $pItem->id }}" {{ $pegawai->id == $pItem->id ? 'selected' : '' }}>
+                                    {{ $pItem->nama_lengkap ?? $pItem->nama }} ({{ $pItem->nip ?? '-' }})
+                                </option>
+                            @endforeach
+                        </select>
+                    @endif
                     <select name="tahun" onchange="this.form.submit()" class="text-xs rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 py-1.5 font-semibold">
                         @foreach(range(date('Y'), date('Y') - 4) as $y)
                             <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>Tahun {{ $y }}</option>

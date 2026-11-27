@@ -72,15 +72,28 @@ class LogbookController extends Controller
     public function create(Request $request)
     {
         $user = $request->user();
-        if (!$user->pegawai_id) {
+        $canSelectPegawai = $user->hasRole('admin');
+        $pegawai = $user->pegawai_id ? Pegawai::find($user->pegawai_id) : null;
+
+        if ($canSelectPegawai && $request->filled('pegawai_id')) {
+            $pegawai = Pegawai::find((int) $request->input('pegawai_id'));
+        }
+
+        if (!$pegawai && $canSelectPegawai) {
+            $pegawai = Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->first();
+        }
+
+        if (!$pegawai) {
             return redirect()->route('dashboard')->with('error', 'Akun Anda belum terhubung dengan data pegawai.');
         }
 
-        $pegawai = Pegawai::find($user->pegawai_id);
         $kategoriList = Logbook::KATEGORI_LIST;
         $defaultDate = Carbon::now()->toDateString();
+        $pegawaiList = $canSelectPegawai
+            ? Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->get(['id', 'nama', 'nip', 'gelar_depan', 'gelar_belakang'])
+            : collect();
 
-        return view('logbook.create', compact('pegawai', 'kategoriList', 'defaultDate'));
+        return view('logbook.create', compact('pegawai', 'kategoriList', 'defaultDate', 'canSelectPegawai', 'pegawaiList'));
     }
 
     /**
@@ -89,7 +102,9 @@ class LogbookController extends Controller
     public function store(StoreLogbookRequest $request)
     {
         $user = $request->user();
-        $pegawaiId = (int) $user->pegawai_id;
+        $pegawaiId = $user->hasRole('admin')
+            ? (int) ($request->input('pegawai_id') ?: $user->pegawai_id)
+            : (int) $user->pegawai_id;
 
         if (!$pegawaiId) {
             return redirect()->back()->with('error', 'Akun belum terhubung dengan data pegawai.');

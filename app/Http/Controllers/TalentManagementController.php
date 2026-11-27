@@ -191,16 +191,26 @@ class TalentManagementController extends Controller
     }
 
     /**
-     * Transparansi Profil Talenta Mandiri untuk Pegawai yang Sedang Login
+     * Transparansi Profil Talenta Mandiri untuk Pegawai yang Sedang Login (atau Inspeksi Admin/Pimpinan)
      */
     public function myTalent(Request $request)
     {
         $user = Auth::user();
-        if (!$user->pegawai_id) {
+        $canSelectPegawai = $user->hasRole('admin') || $user->canAccessTalentManagement();
+        $pegawai = $user->pegawai;
+
+        if ($canSelectPegawai && $request->filled('pegawai_id')) {
+            $pegawai = Pegawai::findOrFail((int) $request->input('pegawai_id'));
+        }
+
+        if (!$pegawai && $canSelectPegawai) {
+            $pegawai = Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->first();
+        }
+
+        if (!$pegawai) {
             return redirect()->route('dashboard')->with('error', 'Akun Anda belum terhubung dengan data pegawai ASN.');
         }
 
-        $pegawai = $user->pegawai;
         $tahun = (int) ($request->input('tahun', date('Y')));
 
         $mapping = TalentMapping::where('pegawai_id', $pegawai->id)
@@ -222,7 +232,11 @@ class TalentManagementController extends Controller
         $skpRecords = $pegawai->riwayatSkp()->orderBy('tahun', 'desc')->take(3)->get();
         $diklatRecords = $pegawai->riwayatDiklat()->orderBy('tanggal_selesai', 'desc')->take(5)->get();
 
-        return view('talent.my-talent', compact('pegawai', 'mapping', 'tahun', 'historyMappings', 'assessments', 'skpRecords', 'diklatRecords'));
+        $pegawaiList = $canSelectPegawai
+            ? Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->get(['id', 'nama', 'nip', 'gelar_depan', 'gelar_belakang'])
+            : collect();
+
+        return view('talent.my-talent', compact('pegawai', 'mapping', 'tahun', 'historyMappings', 'assessments', 'skpRecords', 'diklatRecords', 'canSelectPegawai', 'pegawaiList'));
     }
 
     /**

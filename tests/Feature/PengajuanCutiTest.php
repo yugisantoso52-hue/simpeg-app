@@ -876,23 +876,36 @@ class PengajuanCutiTest extends TestCase
             $res->assertStatus(200);
         }
 
-        // Verifikasi navigasi akun Admin murni (tanpa pegawai_id) tidak menampilkan menu mandiri yang ambigu
+        // Verifikasi navigasi akun Admin menampilkan 9 menu utama dalam 1 baris (flex-nowrap)
+        // dan seluruh sub-menu di dalamnya tidak ada yang mental ke Dashboard
         $adminDashRes = $this->actingAs($this->adminUser)->get(route('dashboard'));
         $adminDashRes->assertStatus(200);
-        $adminDashRes->assertDontSee('Profil & Karir Saya', false);
-        $adminDashRes->assertDontSee('Presensi Harian Saya', false);
-        $adminDashRes->assertDontSee('Riwayat Presensi Saya', false);
-        $adminDashRes->assertDontSee('Logbook Kinerja Saya', false);
-        $adminDashRes->assertDontSee('Permohonan Cuti Saya', false);
+        $adminDashRes->assertSee('Profil & Karir Saya', false);
         $adminDashRes->assertSee('flex-nowrap', false);
 
-        // Sedangkan akun Pegawai tetap melihat menu mandiri "Profil & Karir Saya"
+        // 1. Sub-menu "Profil Saya" bagi Admin murni mengarah ke halaman Pengaturan Profil Akun Admin (bukan mental ke Dashboard)
+        $adminMyProfileRes = $this->actingAs($this->adminUser)->get(route('pegawai.my-profile'));
+        $adminMyProfileRes->assertRedirect(route('profile.edit'));
+
+        // 2. Sub-menu "Portofolio Talenta Saya" bagi Admin murni terbuka normal (HTTP 200) lengkap dengan pemilih pegawai
+        $adminMyTalentRes = $this->actingAs($this->adminUser)->get(route('manajemen-talenta.my-talent'));
+        $adminMyTalentRes->assertStatus(200);
+        $adminMyTalentRes->assertSee('Transparansi Profil Talenta Mandiri');
+
+        // 3. Sub-menu "Presensi Harian Saya" & "Riwayat Presensi Saya" terbuka normal (HTTP 200) bagi Admin
+        $this->actingAs($this->adminUser)->get(route('presensi.index'))->assertStatus(200);
+        $this->actingAs($this->adminUser)->get(route('presensi.history'))->assertStatus(200);
+
+        // 4. Sub-menu "+ Catat Aktivitas Baru" & "Buat Usulan Karir (KP/KGB)" terbuka normal (HTTP 200) bagi Admin
+        $this->actingAs($this->adminUser)->get(route('logbook.create'))->assertStatus(200);
+        $this->actingAs($this->adminUser)->get(route('pengajuan-karir.create', ['jenis' => 'KGB']))->assertStatus(200);
+        $this->actingAs($this->adminUser)->get(route('pengajuan-karir.create', ['jenis' => 'KP']))->assertStatus(200);
+
+        // Sedangkan akun Pegawai tetap melihat menu mandiri "Profil & Karir Saya" dan "Profil Saya" mengarah ke profil pegawainya
         $pegawaiDashRes = $this->actingAs($this->pegawaiUser)->get(route('dashboard'));
         $pegawaiDashRes->assertStatus(200);
         $pegawaiDashRes->assertSee('Profil & Karir Saya', false);
-        $pegawaiDashRes->assertSee('Presensi Harian Saya', false);
-        $pegawaiDashRes->assertSee('Logbook Kinerja Saya', false);
-        $pegawaiDashRes->assertSee('Permohonan Cuti Saya', false);
+        $this->actingAs($this->pegawaiUser)->get(route('pegawai.my-profile'))->assertRedirect(route('pegawai.show', $this->pegawai->id));
 
         $eksekutifRes = $this->actingAs($this->pimpinanUser)->get(route('pengajuan-cuti.monitoring-pimpinan'));
         $eksekutifRes->assertStatus(200);

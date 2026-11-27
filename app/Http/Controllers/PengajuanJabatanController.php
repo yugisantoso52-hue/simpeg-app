@@ -40,12 +40,16 @@ class PengajuanJabatanController extends Controller
 
         $jabatanList = Jabatan::orderBy('nama_jabatan')->get();
         $unitKerjaList = UnitKerja::orderBy('urutan')->get();
+        $pegawaiList = $user->hasRole('admin')
+            ? Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->get(['id', 'nama', 'nip', 'gelar_depan', 'gelar_belakang'])
+            : collect();
 
         return view('kepegawaian.pengajuan_jabatan.index', compact(
             'pengajuans',
             'canVerify',
             'jabatanList',
-            'unitKerjaList'
+            'unitKerjaList',
+            'pegawaiList'
         ));
     }
 
