@@ -74,31 +74,43 @@
         @endif
 
         {{-- 4 Kartu Status Validasi Komite --}}
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm">
-                <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Kandidat Talent Pool (Kotak 7,8,9)</div>
-                <div class="text-3xl font-black text-gray-900 mt-1">{{ $totalKandidat }} <span class="text-sm font-normal text-gray-500">Pegawai</span></div>
-                <div class="text-[10px] text-gray-400 mt-1">Eligible Masuk Talent Pool</div>
-            </div>
+        <x-enterprise.stat-grid :cols="4">
+            <x-enterprise.stat-card
+                title="Kandidat Talent Pool (Kotak 7,8,9)"
+                :value="$totalKandidat"
+                suffix="Pegawai"
+                icon="users"
+                color="slate"
+                subtitle="Eligible Masuk Talent Pool"
+            />
 
-            <div class="bg-white rounded-2xl p-5 border border-emerald-200 bg-emerald-50/30 shadow-sm">
-                <div class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Ditetapkan PPK / Dekan</div>
-                <div class="text-3xl font-black text-emerald-600 mt-1">{{ $totalDitetapkan }} <span class="text-sm font-normal text-emerald-400">Pegawai</span></div>
-                <div class="text-[10px] text-emerald-700 mt-1">Sah Melalui Berita Acara Sidang</div>
-            </div>
+            <x-enterprise.stat-card
+                title="Ditetapkan PPK / Dekan"
+                :value="$totalDitetapkan"
+                suffix="Pegawai"
+                icon="check-circle"
+                color="emerald"
+                subtitle="Sah Melalui Berita Acara Sidang"
+            />
 
-            <div class="bg-white rounded-2xl p-5 border border-blue-200 bg-blue-50/30 shadow-sm">
-                <div class="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Sedang Ditinjau Komite</div>
-                <div class="text-3xl font-black text-blue-600 mt-1">{{ $totalDitinjau }} <span class="text-sm font-normal text-blue-400">Pegawai</span></div>
-                <div class="text-[10px] text-blue-700 mt-1">Dalam Tahap Verifikasi Dokumen</div>
-            </div>
+            <x-enterprise.stat-card
+                title="Sedang Ditinjau Komite"
+                :value="$totalDitinjau"
+                suffix="Pegawai"
+                icon="scale"
+                color="blue"
+                subtitle="Dalam Tahap Verifikasi Dokumen"
+            />
 
-            <div class="bg-white rounded-2xl p-5 border border-amber-200 bg-amber-50/30 shadow-sm">
-                <div class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Status Draft Awal</div>
-                <div class="text-3xl font-black text-amber-600 mt-1">{{ $totalDraft }} <span class="text-sm font-normal text-amber-400">Pegawai</span></div>
-                <div class="text-[10px] text-amber-700 mt-1">Hasil Perhitungan Algoritma SIKAP</div>
-            </div>
-        </div>
+            <x-enterprise.stat-card
+                title="Status Draft Awal"
+                :value="$totalDraft"
+                suffix="Pegawai"
+                icon="file-text"
+                color="amber"
+                subtitle="Hasil Perhitungan Algoritma SIKAP"
+            />
+        </x-enterprise.stat-grid>
 
         {{-- Susunan Dewan Komite Talenta --}}
         <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-6 shadow-md space-y-3">

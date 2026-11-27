@@ -117,6 +117,36 @@
         @endif
 
         {{-- Filter & Summary Cards --}}
+        @php
+            $coreCount = ($distribution['boxes'][5]['count'] ?? 0) + ($distribution['boxes'][4]['count'] ?? 0) + ($distribution['boxes'][7]['count'] ?? 0);
+        @endphp
+        <x-enterprise.stat-grid :cols="3">
+            <x-enterprise.stat-card
+                title="Total ASN Dinilai"
+                :value="$distribution['total']"
+                suffix="ASN"
+                icon="users"
+                color="slate"
+                :subtitle="'Evaluasi Tahun ' . $tahun"
+            />
+            <x-enterprise.stat-card
+                title="Talent Pool Suksesi"
+                :value="$distribution['eligible_suksesi']"
+                suffix="ASN"
+                icon="crown"
+                color="emerald"
+                subtitle="Kotak 8 & 9 (Siap Promosi)"
+            />
+            <x-enterprise.stat-card
+                title="Pekerja Inti / Efektif"
+                :value="$coreCount"
+                suffix="ASN"
+                icon="user-check"
+                color="blue"
+                subtitle="Kotak 4, 5 & 7 (Dipertahankan)"
+            />
+        </x-enterprise.stat-grid>
+
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
             <form method="GET" action="{{ route('manajemen-talenta.index') }}" class="flex flex-wrap items-end justify-between gap-4">
                 <div class="flex flex-wrap items-center gap-4">
@@ -137,25 +167,6 @@
                                 <option value="{{ $uk->id }}" {{ $unitKerjaId == $uk->id ? 'selected' : '' }}>{{ $uk->nama_unit }}</option>
                             @endforeach
                         </select>
-                    </div>
-                </div>
-
-                {{-- Indikator Statistik --}}
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-center">
-                        <span class="block text-[10px] uppercase font-bold text-slate-500">Total ASN Dinilai</span>
-                        <span class="text-lg font-black text-slate-800">{{ $distribution['total'] }}</span>
-                    </div>
-                    <div class="px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
-                        <span class="block text-[10px] uppercase font-bold text-emerald-600">Talent Pool Suksesi</span>
-                        <span class="text-lg font-black text-emerald-700">{{ $distribution['eligible_suksesi'] }}</span>
-                    </div>
-                    <div class="px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl text-center">
-                        <span class="block text-[10px] uppercase font-bold text-blue-600">Pekerja Inti / Efektif</span>
-                        @php
-                            $coreCount = ($distribution['boxes'][5]['count'] ?? 0) + ($distribution['boxes'][4]['count'] ?? 0) + ($distribution['boxes'][7]['count'] ?? 0);
-                        @endphp
-                        <span class="text-lg font-black text-blue-700">{{ $coreCount }}</span>
                     </div>
                 </div>
             </form>

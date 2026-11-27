@@ -48,11 +48,11 @@
             @endif
 
             {{-- Card Statistik (Perbaikan Filter Case-Insensitive) --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <x-enterprise.stat-grid :cols="3">
                 <x-enterprise.stat-card title="Total Riwayat" :value="$data->total()" color="blue" icon="briefcase" />
                 <x-enterprise.stat-card title="Data Aktif" :value="$data->filter(fn($i) => strtolower($i->status) === 'aktif')->count()" color="green" icon="check-circle" />
                 <x-enterprise.stat-card title="Tidak Aktif" :value="$data->filter(fn($i) => strtolower($i->status) !== 'aktif')->count()" color="red" icon="user-group" />
-            </div>
+            </x-enterprise.stat-grid>
 
             {{-- Card & Form Search --}}
             <x-enterprise.card>

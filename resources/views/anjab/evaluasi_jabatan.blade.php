@@ -83,18 +83,24 @@
         </div>
 
         {{-- Live Score Card --}}
-        <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 rounded-2xl p-6 text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-                <span class="text-xs font-black uppercase tracking-wider text-amber-100">Simulasi Real-Time Poin Evaluasi</span>
-                <div class="text-4xl font-black mt-1" x-text="totalNilai.toLocaleString('id-ID') + ' Poin'">1.550 Poin</div>
-                <p class="text-xs text-amber-100 mt-1">Total akumulasi 9 faktor penimbang tuntutan jabatan</p>
-            </div>
-            <div class="bg-white/20 backdrop-blur-sm px-6 py-4 rounded-xl border border-white/30 text-center">
-                <span class="text-xs font-bold text-white uppercase tracking-wider">Rekomendasi Kelas Jabatan</span>
-                <div class="text-3xl font-black text-white mt-0.5" x-text="'Kelas ' + calculatedGrade">Kelas 9</div>
-                <span class="text-[10px] text-amber-100">Standar BKN RI</span>
-            </div>
-        </div>
+        <x-enterprise.stat-grid :cols="2">
+            <x-enterprise.stat-card
+                title="Simulasi Real-Time Poin Evaluasi"
+                value="1.550 Poin"
+                valueText="totalNilai.toLocaleString('id-ID') + ' Poin'"
+                subtitle="Total akumulasi 9 faktor penimbang tuntutan jabatan"
+                icon="scale"
+                color="amber"
+            />
+            <x-enterprise.stat-card
+                title="Rekomendasi Kelas Jabatan"
+                value="Kelas 9"
+                valueText="'Kelas ' + calculatedGrade"
+                subtitle="Standar BKN RI"
+                icon="award"
+                color="orange"
+            />
+        </x-enterprise.stat-grid>
 
         {{-- Formulir Evaluasi 9 Faktor FES --}}
         <form method="POST" action="{{ route('anjab.evaluasi-jabatan.update', $anjab) }}" class="space-y-6">

@@ -76,31 +76,43 @@
     <div class="py-6 w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 space-y-6">
 
         {{-- 4 Kartu Statistik Pemenuhan 20 JP --}}
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm">
-                <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Total Pegawai Dinilai</div>
-                <div class="text-3xl font-black text-gray-900 mt-1">{{ $totalPegawai }} <span class="text-sm font-normal text-gray-500">ASN</span></div>
-                <div class="text-[10px] text-gray-400 mt-1">Dosen &amp; Tenaga Kependidikan</div>
-            </div>
+        <x-enterprise.stat-grid :cols="4">
+            <x-enterprise.stat-card
+                title="Total Pegawai Dinilai"
+                :value="$totalPegawai"
+                suffix="ASN"
+                icon="users"
+                color="slate"
+                subtitle="Dosen & Tenaga Kependidikan"
+            />
 
-            <div class="bg-white rounded-2xl p-5 border border-emerald-200 bg-emerald-50/30 shadow-sm">
-                <div class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Memenuhi Standar (&ge; 20 JP)</div>
-                <div class="text-3xl font-black text-emerald-600 mt-1">{{ $totalMemenuhi }} <span class="text-sm font-normal text-emerald-400">Pegawai</span></div>
-                <div class="text-[10px] text-emerald-700 mt-1">{{ $totalPegawai > 0 ? round(($totalMemenuhi / $totalPegawai) * 100, 1) : 0 }}% Tingkat Pemenuhan</div>
-            </div>
+            <x-enterprise.stat-card
+                title="Memenuhi Standar (≥ 20 JP)"
+                :value="$totalMemenuhi"
+                suffix="Pegawai"
+                icon="check-circle"
+                color="emerald"
+                :subtitle="($totalPegawai > 0 ? round(($totalMemenuhi / $totalPegawai) * 100, 1) : 0) . '% Tingkat Pemenuhan'"
+            />
 
-            <div class="bg-white rounded-2xl p-5 border border-rose-200 bg-rose-50/30 shadow-sm">
-                <div class="text-[11px] font-bold text-rose-600 uppercase tracking-wider">Kurang Jam Pelajaran (&lt; 20 JP)</div>
-                <div class="text-3xl font-black text-rose-600 mt-1">{{ $totalKurang }} <span class="text-sm font-normal text-rose-400">Pegawai</span></div>
-                <div class="text-[10px] text-rose-500 mt-1">Memerlukan Penugasan Pelatihan</div>
-            </div>
+            <x-enterprise.stat-card
+                title="Kurang Jam Pelajaran (< 20 JP)"
+                :value="$totalKurang"
+                suffix="Pegawai"
+                icon="alert-triangle"
+                color="rose"
+                subtitle="Memerlukan Penugasan Pelatihan"
+            />
 
-            <div class="bg-white rounded-2xl p-5 border border-blue-200 bg-blue-50/30 shadow-sm">
-                <div class="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Rata-Rata Capaian JP</div>
-                <div class="text-3xl font-black text-blue-600 mt-1">{{ $rataRataJp }} <span class="text-sm font-normal text-blue-400">JP / Pegawai</span></div>
-                <div class="text-[10px] text-blue-700 mt-1">Target Minimum: 20 JP / Tahun</div>
-            </div>
-        </div>
+            <x-enterprise.stat-card
+                title="Rata-Rata Capaian JP"
+                :value="$rataRataJp"
+                suffix="JP / Pegawai"
+                icon="graduation-cap"
+                color="blue"
+                subtitle="Target Minimum: 20 JP / Tahun"
+            />
+        </x-enterprise.stat-grid>
 
         {{-- Filter & Pencarian --}}
         <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">

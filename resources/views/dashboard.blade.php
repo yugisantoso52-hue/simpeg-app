@@ -484,29 +484,25 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <a href="{{ route('admin.logbook.index', ['status' => 'diajukan']) }}" class="p-4 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition flex items-center justify-between group">
-                                <div>
-                                    <div class="text-xs font-semibold text-blue-200 uppercase tracking-wider">Logbook Bawahan Menunggu</div>
-                                    <div class="text-2xl font-black text-white mt-1">{{ $pendingLogbookCount ?? 0 }}</div>
-                                    <div class="text-xs text-blue-300 mt-0.5 group-hover:underline">Periksa & Berikan Pengesahan →</div>
-                                </div>
-                                <div class="w-11 h-11 rounded-xl bg-indigo-500/30 text-white flex items-center justify-center text-xl">
-                                    <x-icon name="clipboard-check" class="w-6 h-6 stroke-[1.75]" />
-                                </div>
-                            </a>
+                        <x-enterprise.stat-grid :cols="2">
+                            <x-enterprise.stat-card
+                                title="Logbook Bawahan Menunggu"
+                                :value="$pendingLogbookCount ?? 0"
+                                icon="clipboard-check"
+                                color="indigo"
+                                subtitle="Periksa & Berikan Pengesahan →"
+                                :href="route('admin.logbook.index', ['status' => 'diajukan'])"
+                            />
 
-                            <a href="{{ route('pengajuan-cuti.index', ['status' => 'Menunggu Persetujuan']) }}" class="p-4 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 transition flex items-center justify-between group">
-                                <div>
-                                    <div class="text-xs font-semibold text-blue-200 uppercase tracking-wider">Permohonan Cuti Bawahan</div>
-                                    <div class="text-2xl font-black text-white mt-1">{{ $pendingCutiCount ?? 0 }}</div>
-                                    <div class="text-xs text-blue-300 mt-0.5 group-hover:underline">Tinjau & Berikan Keputusan →</div>
-                                </div>
-                                <div class="w-11 h-11 rounded-xl bg-amber-500/30 text-white flex items-center justify-center text-xl">
-                                    <x-icon name="calendar-off" class="w-6 h-6 stroke-[1.75]" />
-                                </div>
-                            </a>
-                        </div>
+                            <x-enterprise.stat-card
+                                title="Permohonan Cuti Bawahan"
+                                :value="$pendingCutiCount ?? 0"
+                                icon="calendar-off"
+                                color="amber"
+                                subtitle="Tinjau & Berikan Keputusan →"
+                                :href="route('pengajuan-cuti.index', ['status' => 'Menunggu Persetujuan'])"
+                            />
+                        </x-enterprise.stat-grid>
                     </div>
                 @endif
 
@@ -570,57 +566,44 @@
                 @endif
 
                 {{-- 4 KARTU STATISTIK PROFIL SAYA --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                    
+                <x-enterprise.stat-grid :cols="4">
                     {{-- Kartu 1: Status Kepegawaian --}}
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-                        <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Status Kepegawaian</span>
-                            <h4 class="text-lg font-bold text-slate-800 mt-1">{{ $p->jenis_pegawai ?? 'Pegawai' }}</h4>
-                            <p class="text-xs text-blue-600 font-semibold mt-0.5">{{ $p->status_asn ?? 'ASN' }} ({{ $p->status_pegawai ?? 'Aktif' }})</p>
-                        </div>
-                        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
-                            <x-icon name="user-check" class="w-6 h-6 stroke-[1.75]" />
-                        </div>
-                    </div>
+                    <x-enterprise.stat-card
+                        title="Status Kepegawaian"
+                        :value="$p->jenis_pegawai ?? 'Pegawai'"
+                        icon="user-check"
+                        color="blue"
+                        :subtitle="($p->status_asn ?? 'ASN') . ' (' . ($p->status_pegawai ?? 'Aktif') . ')'"
+                    />
 
                     {{-- Kartu 2: Jabatan Aktif --}}
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-                        <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Jabatan Terkini</span>
-                            <h4 class="text-base font-bold text-slate-800 mt-1 line-clamp-1" title="{{ $p->jabatan?->nama_jabatan ?? '-' }}">{{ $p->jabatan?->nama_jabatan ?? '-' }}</h4>
-                            <p class="text-xs text-slate-500 truncate mt-0.5" title="{{ $p->unitKerja?->nama_unit ?? '-' }}">{{ $p->unitKerja?->nama_unit ?? '-' }}</p>
-                        </div>
-                        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0">
-                            <x-icon name="briefcase" class="w-6 h-6 stroke-[1.75]" />
-                        </div>
-                    </div>
+                    <x-enterprise.stat-card
+                        title="Jabatan Terkini"
+                        :value="$p->jabatan?->nama_jabatan ?? '-'"
+                        icon="briefcase"
+                        color="emerald"
+                        :subtitle="$p->unitKerja?->nama_unit ?? '-'"
+                    />
 
                     {{-- Kartu 3: Pangkat / Golongan --}}
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-                        <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Pangkat / Golongan</span>
-                            <h4 class="text-base font-bold text-slate-800 mt-1">{{ $p->golongan?->nama_golongan ?? '-' }}</h4>
-                            <p class="text-xs text-slate-500 font-mono mt-0.5">TMT: {{ isset($p->tmt_pangkat_terakhir) ? \Carbon\Carbon::parse($p->tmt_pangkat_terakhir)->format('d-m-Y') : '-' }}</p>
-                        </div>
-                        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0">
-                            <x-icon name="award" class="w-6 h-6 stroke-[1.75]" />
-                        </div>
-                    </div>
+                    <x-enterprise.stat-card
+                        title="Pangkat / Golongan"
+                        :value="$p->golongan?->nama_golongan ?? '-'"
+                        icon="award"
+                        color="amber"
+                        :subtitle="'TMT: ' . (isset($p->tmt_pangkat_terakhir) ? \Carbon\Carbon::parse($p->tmt_pangkat_terakhir)->format('d-m-Y') : '-')"
+                    />
 
                     {{-- Kartu 4: Sisa Cuti Tahunan --}}
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-                        <div>
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Sisa Cuti Tahunan</span>
-                            <h4 class="text-2xl font-black text-indigo-600 mt-1">{{ $p->sisa_cuti_tahunan ?? 12 }} Hari</h4>
-                            <p class="text-xs text-slate-500 mt-0.5">Kuota Tahun {{ date('Y') }}</p>
-                        </div>
-                        <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center shrink-0">
-                            <x-icon name="calendar-off" class="w-6 h-6 stroke-[1.75]" />
-                        </div>
-                    </div>
-
-                </div>
+                    <x-enterprise.stat-card
+                        title="Sisa Cuti Tahunan"
+                        :value="$p->sisa_cuti_tahunan ?? 12"
+                        suffix="Hari"
+                        icon="calendar-off"
+                        color="indigo"
+                        :subtitle="'Kuota Tahun ' . date('Y')"
+                    />
+                </x-enterprise.stat-grid>
 
                 {{-- 🎯 STATUS PEMETAAN TALENTA ASN SAYA (PERMENPAN-RB NO. 3/2020) --}}
                 @if(isset($myTalentMapping) && $myTalentMapping)
@@ -1805,28 +1788,40 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
-                            <div class="text-[11px] font-bold uppercase tracking-wider text-sky-200">Total Dosen Aktif</div>
-                            <div class="text-2xl font-black text-white mt-1">{{ $akademikStats['totalDosen'] ?? 0 }} <span class="text-xs font-normal text-sky-200">Orang</span></div>
-                            <div class="text-[10px] text-sky-300/80 mt-1">Dosen Fakultas Keperawatan</div>
-                        </div>
-                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
-                            <div class="text-[11px] font-bold uppercase tracking-wider text-sky-200">Kepemilikan NIDN</div>
-                            <div class="text-2xl font-black text-emerald-300 mt-1">{{ $akademikStats['withNidn'] ?? 0 }} <span class="text-xs font-normal text-sky-200">/ {{ $akademikStats['totalDosen'] ?? 0 }}</span></div>
-                            <div class="text-[10px] text-emerald-300/90 mt-1">{{ $akademikStats['withoutNidn'] ?? 0 }} dosen belum NIDN/NUPTK</div>
-                        </div>
-                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
-                            <div class="text-[11px] font-bold uppercase tracking-wider text-sky-200">Tugas Belajar Aktif</div>
-                            <div class="text-2xl font-black text-amber-300 mt-1">{{ $akademikStats['tubelAktif'] ?? 0 }} <span class="text-xs font-normal text-sky-200">Dosen</span></div>
-                            <div class="text-[10px] text-amber-200/80 mt-1">Studi Lanjut S2/S3/Spesialis</div>
-                        </div>
-                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
-                            <div class="text-[11px] font-bold uppercase tracking-wider text-sky-200">STR Expiring (&le; 6 Bln)</div>
-                            <div class="text-2xl font-black {{ ($akademikStats['strExpiring'] ?? 0) > 0 ? 'text-rose-300' : 'text-slate-300' }} mt-1">{{ $akademikStats['strExpiring'] ?? 0 }} <span class="text-xs font-normal text-sky-200">Berkas</span></div>
-                            <div class="text-[10px] {{ ($akademikStats['strExpiring'] ?? 0) > 0 ? 'text-rose-200 font-bold' : 'text-sky-300/80' }} mt-1">Perlu perpanjangan izin profesi</div>
-                        </div>
-                    </div>
+                    <x-enterprise.stat-grid :cols="4">
+                        <x-enterprise.stat-card
+                            title="Total Dosen Aktif"
+                            :value="$akademikStats['totalDosen'] ?? 0"
+                            suffix="Orang"
+                            icon="graduation-cap"
+                            color="sky"
+                            subtitle="Dosen Fakultas Keperawatan"
+                        />
+                        <x-enterprise.stat-card
+                            title="Kepemilikan NIDN"
+                            :value="$akademikStats['withNidn'] ?? 0"
+                            :suffix="'/ ' . ($akademikStats['totalDosen'] ?? 0)"
+                            icon="shield-check"
+                            color="emerald"
+                            :subtitle="($akademikStats['withoutNidn'] ?? 0) . ' dosen belum NIDN/NUPTK'"
+                        />
+                        <x-enterprise.stat-card
+                            title="Tugas Belajar Aktif"
+                            :value="$akademikStats['tubelAktif'] ?? 0"
+                            suffix="Dosen"
+                            icon="book-open"
+                            color="amber"
+                            subtitle="Studi Lanjut S2/S3/Spesialis"
+                        />
+                        <x-enterprise.stat-card
+                            title="STR Expiring (≤ 6 Bln)"
+                            :value="$akademikStats['strExpiring'] ?? 0"
+                            suffix="Berkas"
+                            icon="stethoscope"
+                            :color="($akademikStats['strExpiring'] ?? 0) > 0 ? 'rose' : 'slate'"
+                            subtitle="Perlu perpanjangan izin profesi"
+                        />
+                    </x-enterprise.stat-grid>
                 </div>
                 @endif
 
@@ -1855,28 +1850,40 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 {{ (!empty($jurusanStats['recentPendingCuti']) && count($jurusanStats['recentPendingCuti']) > 0) ? 'mb-4' : '' }}">
-                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
-                            <div class="text-[11px] font-bold uppercase tracking-wider text-teal-200">Dosen Jurusan</div>
-                            <div class="text-2xl font-black text-white mt-1">{{ $jurusanStats['totalDosen'] ?? 0 }} <span class="text-xs font-normal text-teal-200">Orang</span></div>
-                            <div class="text-[10px] text-teal-300/80 mt-1">Dosen binaan di unit ini</div>
-                        </div>
-                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
-                            <div class="text-[11px] font-bold uppercase tracking-wider text-teal-200">Logbook Bulan Ini</div>
-                            <div class="text-2xl font-black {{ ($jurusanStats['belumLogbookCount'] ?? 0) > 0 ? 'text-amber-300' : 'text-emerald-300' }} mt-1">{{ $jurusanStats['sudahLogbookCount'] ?? 0 }} <span class="text-xs font-normal text-teal-200">/ {{ $jurusanStats['totalDosen'] ?? 0 }}</span></div>
-                            <div class="text-[10px] {{ ($jurusanStats['belumLogbookCount'] ?? 0) > 0 ? 'text-amber-200 font-semibold' : 'text-emerald-200' }} mt-1">{{ $jurusanStats['belumLogbookCount'] ?? 0 }} dosen belum isi logbook</div>
-                        </div>
-                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
-                            <div class="text-[11px] font-bold uppercase tracking-wider text-teal-200">Cuti Menunggu Pertimbangan</div>
-                            <div class="text-2xl font-black {{ ($jurusanStats['pendingCuti'] ?? 0) > 0 ? 'text-amber-300' : 'text-slate-300' }} mt-1">{{ $jurusanStats['pendingCuti'] ?? 0 }} <span class="text-xs font-normal text-teal-200">Usulan</span></div>
-                            <div class="text-[10px] {{ ($jurusanStats['pendingCuti'] ?? 0) > 0 ? 'text-amber-200 font-bold' : 'text-teal-300/80' }} mt-1">Memerlukan tanda tangan atasan</div>
-                        </div>
-                        <div class="p-3.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/10 hover:bg-white/15 transition">
-                            <div class="text-[11px] font-bold uppercase tracking-wider text-teal-200">STR Dosen Expiring</div>
-                            <div class="text-2xl font-black {{ ($jurusanStats['strExpiringCount'] ?? 0) > 0 ? 'text-rose-300' : 'text-slate-300' }} mt-1">{{ $jurusanStats['strExpiringCount'] ?? 0 }} <span class="text-xs font-normal text-teal-200">Berkas</span></div>
-                            <div class="text-[10px] {{ ($jurusanStats['strExpiringCount'] ?? 0) > 0 ? 'text-rose-200 font-bold' : 'text-teal-300/80' }} mt-1">&le; 6 bulan kedaluwarsa</div>
-                        </div>
-                    </div>
+                    <x-enterprise.stat-grid :cols="4" class="{{ (!empty($jurusanStats['recentPendingCuti']) && count($jurusanStats['recentPendingCuti']) > 0) ? 'mb-4' : '' }}">
+                        <x-enterprise.stat-card
+                            title="Dosen Jurusan"
+                            :value="$jurusanStats['totalDosen'] ?? 0"
+                            suffix="Orang"
+                            icon="users"
+                            color="teal"
+                            subtitle="Dosen binaan di unit ini"
+                        />
+                        <x-enterprise.stat-card
+                            title="Logbook Bulan Ini"
+                            :value="$jurusanStats['sudahLogbookCount'] ?? 0"
+                            :suffix="'/ ' . ($jurusanStats['totalDosen'] ?? 0)"
+                            icon="clipboard-check"
+                            :color="($jurusanStats['belumLogbookCount'] ?? 0) > 0 ? 'amber' : 'emerald'"
+                            :subtitle="($jurusanStats['belumLogbookCount'] ?? 0) . ' dosen belum isi logbook'"
+                        />
+                        <x-enterprise.stat-card
+                            title="Cuti Menunggu Pertimbangan"
+                            :value="$jurusanStats['pendingCuti'] ?? 0"
+                            suffix="Usulan"
+                            icon="calendar-off"
+                            :color="($jurusanStats['pendingCuti'] ?? 0) > 0 ? 'amber' : 'slate'"
+                            subtitle="Memerlukan tanda tangan atasan"
+                        />
+                        <x-enterprise.stat-card
+                            title="STR Dosen Expiring"
+                            :value="$jurusanStats['strExpiringCount'] ?? 0"
+                            suffix="Berkas"
+                            icon="stethoscope"
+                            :color="($jurusanStats['strExpiringCount'] ?? 0) > 0 ? 'rose' : 'slate'"
+                            subtitle="≤ 6 bulan kedaluwarsa"
+                        />
+                    </x-enterprise.stat-grid>
 
                     @if(!empty($jurusanStats['recentPendingCuti']) && count($jurusanStats['recentPendingCuti']) > 0)
                     <div class="bg-black/20 rounded-xl p-3 border border-white/10">
@@ -1905,62 +1912,42 @@
                 @endif
 
                 {{-- 🚨 PUSAT TINDAKAN & OPERASIONAL HARIAN (ACTION ITEMS) --}}
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <x-enterprise.stat-grid :cols="3" class="mb-6">
                     {{-- 1. Pending Logbook --}}
-                    <a href="{{ route('admin.logbook.index', ['status' => 'diajukan']) }}" class="p-4 rounded-2xl bg-indigo-50/90 border border-indigo-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition duration-150 flex items-center justify-between group">
-                        <div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-xs font-bold text-indigo-800 uppercase tracking-wider">Logbook Menunggu</span>
-                                @if(($pendingLogbookCount ?? 0) > 0)
-                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-indigo-200 text-indigo-900 animate-pulse">Review</span>
-                                @endif
-                            </div>
-                            <div class="text-2xl font-black text-indigo-950 mt-1">{{ $pendingLogbookCount ?? 0 }}</div>
-                            <div class="text-[11px] font-medium text-indigo-700 mt-0.5 group-hover:underline flex items-center gap-1">
-                                <span>{{ ($pendingLogbookCount ?? 0) > 0 ? 'Verifikasi Kinerja' : 'Semua Logbook Terverifikasi' }}</span>
-                                <span class="transition-transform group-hover:translate-x-0.5">&rarr;</span>
-                            </div>
-                        </div>
-                        <div class="w-12 h-12 rounded-xl bg-indigo-100 border border-indigo-200/80 text-indigo-800 flex items-center justify-center shadow-2xs group-hover:scale-105 transition">
-                            <x-icon name="clipboard-check" class="w-6 h-6 text-indigo-700" />
-                        </div>
-                    </a>
+                    <x-enterprise.stat-card
+                        title="Logbook Menunggu"
+                        :value="$pendingLogbookCount ?? 0"
+                        icon="clipboard-check"
+                        color="indigo"
+                        :trend="($pendingLogbookCount ?? 0) > 0 ? 'Review' : null"
+                        trendDirection="neutral"
+                        :subtitle="(($pendingLogbookCount ?? 0) > 0 ? 'Verifikasi Kinerja' : 'Semua Logbook Terverifikasi') . ' →'"
+                        :href="route('admin.logbook.index', ['status' => 'diajukan'])"
+                    />
 
                     {{-- 2. Presensi Hari Ini --}}
-                    <a href="{{ route('admin.presensi.index') }}" class="p-4 rounded-2xl bg-emerald-50/90 border border-emerald-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition duration-150 flex items-center justify-between group">
-                        <div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider">Presensi Hari Ini</span>
-                                <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-emerald-200 text-emerald-900">Live</span>
-                            </div>
-                            <div class="text-2xl font-black text-emerald-950 mt-1">{{ $todayPresentCount ?? 0 }}</div>
-                            <div class="text-[11px] font-medium text-emerald-700 mt-0.5 group-hover:underline flex items-center gap-1">
-                                <span>Pegawai Hadir Hari Ini</span>
-                                <span class="transition-transform group-hover:translate-x-0.5">&rarr;</span>
-                            </div>
-                        </div>
-                        <div class="w-12 h-12 rounded-xl bg-emerald-100 border border-emerald-200/80 text-emerald-800 flex items-center justify-center shadow-2xs group-hover:scale-105 transition">
-                            <x-icon name="clock" class="w-6 h-6 text-emerald-700" />
-                        </div>
-                    </a>
+                    <x-enterprise.stat-card
+                        title="Presensi Hari Ini"
+                        :value="$todayPresentCount ?? 0"
+                        icon="clock"
+                        color="emerald"
+                        trend="Live"
+                        trendDirection="up"
+                        subtitle="Pegawai Hadir Hari Ini →"
+                        :href="route('admin.presensi.index')"
+                    />
 
                     {{-- 3. Total Jam Logbook Bulan Ini --}}
-                    <a href="{{ route('admin.logbook.index') }}" class="p-4 rounded-2xl bg-blue-50/90 border border-blue-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition duration-150 flex items-center justify-between group">
-                        <div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-xs font-bold text-blue-800 uppercase tracking-wider">Kinerja Bulan Ini</span>
-                            </div>
-                            <div class="text-2xl font-black text-blue-950 mt-1">{{ $adminLogbookStats['total_jam'] ?? 0 }} Jam</div>
-                            <div class="text-[11px] font-medium text-blue-700 mt-0.5 group-hover:underline flex items-center gap-1">
-                                <span>{{ $adminLogbookStats['total'] ?? 0 }} Aktivitas Terdata</span>
-                                <span class="transition-transform group-hover:translate-x-0.5">&rarr;</span>
-                            </div>
-                        </div>
-                        <div class="w-12 h-12 rounded-xl bg-blue-100 border border-blue-200/80 text-blue-800 flex items-center justify-center shadow-2xs group-hover:scale-105 transition">
-                            <x-icon name="timer" class="w-6 h-6 text-blue-700" />
-                        </div>
-                    </a>
-                </div>
+                    <x-enterprise.stat-card
+                        title="Kinerja Bulan Ini"
+                        :value="$adminLogbookStats['total_jam'] ?? 0"
+                        suffix="Jam"
+                        icon="timer"
+                        color="blue"
+                        :subtitle="($adminLogbookStats['total'] ?? 0) . ' Aktivitas Terdata →'"
+                        :href="route('admin.logbook.index')"
+                    />
+                </x-enterprise.stat-grid>
 
                 {{-- ⚡ PINTASAN CEPAT MODUL POPULER (QUICK ACTIONS) --}}
                 <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 mb-6">
@@ -2092,100 +2079,82 @@
                 </div>
 
                 {{-- BARIS 1: STATISTIK UTAMA PEGAWAI --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                    <a href="{{ route('pegawai.index') }}" class="p-6 rounded-2xl shadow-xs text-white flex items-center justify-between transition transform hover:scale-[1.01] hover:shadow-md cursor-pointer group" style="background-color: #1d4ed8;">
-                        <div>
-                            <h3 class="text-xs font-bold uppercase tracking-wider opacity-90 group-hover:underline">Total Pegawai</h3>
-                            <p class="text-3xl font-black mt-2">{{ $statistik['total'] ?? 0 }}</p>
-                        </div>
-                        <div class="w-13 h-13 bg-white/20 rounded-2xl flex items-center justify-center group-hover:bg-white/30 transition">
-                            <x-icon name="users" class="w-7 h-7 text-white" />
-                        </div>
-                    </a>
+                <x-enterprise.stat-grid :cols="4" class="mb-6">
+                    <x-enterprise.stat-card
+                        title="Total Pegawai"
+                        :value="$statistik['total'] ?? 0"
+                        icon="users"
+                        color="blue"
+                        :href="route('pegawai.index')"
+                    />
 
-                    <a href="{{ route('pegawai.index', ['filter' => 'aktif']) }}" class="p-6 rounded-2xl shadow-xs text-white flex items-center justify-between transition transform hover:scale-[1.01] hover:shadow-md cursor-pointer group" style="background-color: #15803d;">
-                        <div>
-                            <h3 class="text-xs font-bold uppercase tracking-wider opacity-90 group-hover:underline">Pegawai Aktif</h3>
-                            <p class="text-3xl font-black mt-2">{{ $statistik['aktif'] ?? 0 }}</p>
-                        </div>
-                        <div class="w-13 h-13 bg-white/20 rounded-2xl flex items-center justify-center group-hover:bg-white/30 transition">
-                            <x-icon name="user-check" class="w-7 h-7 text-white" />
-                        </div>
-                    </a>
+                    <x-enterprise.stat-card
+                        title="Pegawai Aktif"
+                        :value="$statistik['aktif'] ?? 0"
+                        icon="user-check"
+                        color="emerald"
+                        :href="route('pegawai.index', ['filter' => 'aktif'])"
+                    />
 
-                    <a href="{{ route('pegawai.index', ['filter' => 'pns']) }}" class="p-6 rounded-2xl shadow-xs text-white flex items-center justify-between transition transform hover:scale-[1.01] hover:shadow-md cursor-pointer group" style="background-color: #0284c7;">
-                        <div>
-                            <h3 class="text-xs font-bold uppercase tracking-wider opacity-90 group-hover:underline">Status ASN</h3>
-                            <p class="text-3xl font-black mt-2">{{ $statistik['asn'] ?? 0 }}</p>
-                        </div>
-                        <div class="w-13 h-13 bg-white/20 rounded-2xl flex items-center justify-center group-hover:bg-white/30 transition">
-                            <x-icon name="shield-check" class="w-7 h-7 text-white" />
-                        </div>
-                    </a>
+                    <x-enterprise.stat-card
+                        title="Status ASN"
+                        :value="$statistik['asn'] ?? 0"
+                        icon="shield-check"
+                        color="sky"
+                        :href="route('pegawai.index', ['filter' => 'pns'])"
+                    />
 
-                    <a href="{{ route('pegawai.index', ['filter' => 'pensiun']) }}" class="p-6 rounded-2xl shadow-xs text-white flex items-center justify-between transition transform hover:scale-[1.01] hover:shadow-md cursor-pointer group" style="background-color: #b45309;">
-                        <div>
-                            <h3 class="text-xs font-bold uppercase tracking-wider opacity-90 group-hover:underline">Pegawai Pensiun</h3>
-                            <p class="text-3xl font-black mt-2">{{ $statistik['pensiun'] ?? 0 }}</p>
-                        </div>
-                        <div class="w-13 h-13 bg-white/20 rounded-2xl flex items-center justify-center group-hover:bg-white/30 transition">
-                            <x-icon name="building" class="w-7 h-7 text-white" />
-                        </div>
-                    </a>
-                </div>
+                    <x-enterprise.stat-card
+                        title="Pegawai Pensiun"
+                        :value="$statistik['pensiun'] ?? 0"
+                        icon="building"
+                        color="amber"
+                        :href="route('pegawai.index', ['filter' => 'pensiun'])"
+                    />
+                </x-enterprise.stat-grid>
 
                 {{-- BARIS 2: SUB-STATISTIK KLASIFIKASI KEPEGAWAIAN (INTERAKTIF) --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-                    <a href="{{ route('kepegawaian.dosen.index', ['filter' => 'pns']) }}" class="bg-white p-4.5 rounded-2xl shadow-xs border border-slate-200/80 flex items-center justify-between transition transform hover:scale-[1.01] hover:shadow-md cursor-pointer group">
-                        <div>
-                            <h3 class="font-bold text-slate-500 text-xs uppercase tracking-wider group-hover:text-indigo-600">Dosen PNS</h3>
-                            <p class="text-2xl sm:text-3xl font-black mt-1 text-indigo-600">{{ $statistik['dosen_pns'] ?? $statistik['dosen'] ?? 0 }}</p>
-                        </div>
-                        <div class="w-12 h-12 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition duration-200">
-                            <x-icon name="graduation-cap" class="w-6 h-6" />
-                        </div>
-                    </a>
+                <x-enterprise.stat-grid :cols="5" class="mb-6">
+                    <x-enterprise.stat-card
+                        title="Dosen PNS"
+                        :value="$statistik['dosen_pns'] ?? $statistik['dosen'] ?? 0"
+                        icon="graduation-cap"
+                        color="indigo"
+                        :href="route('kepegawaian.dosen.index', ['filter' => 'pns'])"
+                    />
 
-                    <a href="{{ route('kepegawaian.dosen.index', ['filter' => 'pppk']) }}" class="bg-white p-4.5 rounded-2xl shadow-xs border border-slate-200/80 flex items-center justify-between transition transform hover:scale-[1.01] hover:shadow-md cursor-pointer group">
-                        <div>
-                            <h3 class="font-bold text-slate-500 text-xs uppercase tracking-wider group-hover:text-purple-600">Dosen PPPK</h3>
-                            <p class="text-2xl sm:text-3xl font-black mt-1 text-purple-600">{{ $statistik['dosen_pppk'] ?? 0 }}</p>
-                        </div>
-                        <div class="w-12 h-12 bg-purple-50 border border-purple-100 text-purple-600 rounded-xl flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition duration-200">
-                            <x-icon name="graduation-cap" class="w-6 h-6" />
-                        </div>
-                    </a>
+                    <x-enterprise.stat-card
+                        title="Dosen PPPK"
+                        :value="$statistik['dosen_pppk'] ?? 0"
+                        icon="graduation-cap"
+                        color="purple"
+                        :href="route('kepegawaian.dosen.index', ['filter' => 'pppk'])"
+                    />
 
-                    <a href="{{ route('kepegawaian.tendik.index', ['filter' => 'pns']) }}" class="bg-white p-4.5 rounded-2xl shadow-xs border border-slate-200/80 flex items-center justify-between transition transform hover:scale-[1.01] hover:shadow-md cursor-pointer group">
-                        <div>
-                            <h3 class="font-bold text-slate-500 text-xs uppercase tracking-wider group-hover:text-blue-600">Tendik PNS</h3>
-                            <p class="text-2xl sm:text-3xl font-black mt-1 text-blue-600">{{ $statistik['tendik_pns'] ?? $statistik['tendik'] ?? 0 }}</p>
-                        </div>
-                        <div class="w-12 h-12 bg-blue-50 border border-blue-100 text-blue-600 rounded-xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition duration-200">
-                            <x-icon name="briefcase" class="w-6 h-6" />
-                        </div>
-                    </a>
+                    <x-enterprise.stat-card
+                        title="Tendik PNS"
+                        :value="$statistik['tendik_pns'] ?? $statistik['tendik'] ?? 0"
+                        icon="briefcase"
+                        color="blue"
+                        :href="route('kepegawaian.tendik.index', ['filter' => 'pns'])"
+                    />
 
-                    <a href="{{ route('kepegawaian.tendik.index', ['filter' => 'pppk']) }}" class="bg-white p-4.5 rounded-2xl shadow-xs border border-slate-200/80 flex items-center justify-between transition transform hover:scale-[1.01] hover:shadow-md cursor-pointer group">
-                        <div>
-                            <h3 class="font-bold text-slate-500 text-xs uppercase tracking-wider group-hover:text-emerald-600">Tendik PPPK</h3>
-                            <p class="text-2xl sm:text-3xl font-black mt-1 text-emerald-600">{{ $statistik['tendik_pppk'] ?? 0 }}</p>
-                        </div>
-                        <div class="w-12 h-12 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition duration-200">
-                            <x-icon name="briefcase" class="w-6 h-6" />
-                        </div>
-                    </a>
+                    <x-enterprise.stat-card
+                        title="Tendik PPPK"
+                        :value="$statistik['tendik_pppk'] ?? 0"
+                        icon="briefcase"
+                        color="emerald"
+                        :href="route('kepegawaian.tendik.index', ['filter' => 'pppk'])"
+                    />
 
-                    <a href="{{ route('kepegawaian.phl.index') }}" class="bg-white p-4.5 rounded-2xl shadow-xs border border-slate-200/80 flex items-center justify-between transition transform hover:scale-[1.01] hover:shadow-md cursor-pointer group">
-                        <div>
-                            <h3 class="font-bold text-slate-500 text-xs uppercase tracking-wider group-hover:text-amber-600">Pegawai PHL</h3>
-                            <p class="text-2xl sm:text-3xl font-black mt-1 text-amber-600">{{ $statistik['phl'] ?? $statistik['honorer'] ?? 0 }}</p>
-                        </div>
-                        <div class="w-12 h-12 bg-amber-50 border border-amber-100 text-amber-600 rounded-xl flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition duration-200">
-                            <x-icon name="user" class="w-6 h-6" />
-                        </div>
-                    </a>
-                </div>
+                    <x-enterprise.stat-card
+                        title="Pegawai PHL"
+                        :value="$statistik['phl'] ?? $statistik['honorer'] ?? 0"
+                        icon="user"
+                        color="amber"
+                        :href="route('kepegawaian.phl.index')"
+                    />
+                </x-enterprise.stat-grid>
 
                 {{-- BARIS 3: PUSAT REMINDER TRANSAKSI KEPEGAWAIAN --}}
                 <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 sm:p-6 mb-6">
@@ -2500,73 +2469,67 @@
                         </div>
 
                         {{-- 4 Kartu KPI Indikator Talenta ASN --}}
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                            
+                        <x-enterprise.stat-grid :cols="4" class="mb-6">
                             {{-- KPI 1: Talent Pool Siap Promosi (Kotak 7, 8, 9) --}}
-                            <a href="{{ route('manajemen-talenta.rekap', ['only_suksesi' => 1]) }}" class="group block p-4 rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-teal-50/50 hover:shadow-md transition">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-800">Talent Pool Siap Promosi</span>
-                                    <span class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-sm font-black shadow-xs">👑</span>
+                            <x-enterprise.stat-card
+                                title="Talent Pool Siap Promosi"
+                                :value="$countPromosi"
+                                :suffix="'ASN (' . $pctPromosi . '%)'"
+                                icon="crown"
+                                color="emerald"
+                                subtitle="Kotak VII, VIII & IX (Prioritas Suksesi) →"
+                                :href="route('manajemen-talenta.rekap', ['only_suksesi' => 1])"
+                            >
+                                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-emerald-500 h-1.5 rounded-full" style="width: {{ $pctPromosi }}%"></div>
                                 </div>
-                                <div class="mt-2 flex items-baseline gap-2">
-                                    <span class="text-3xl font-black text-emerald-950">{{ $countPromosi }}</span>
-                                    <span class="text-xs font-bold text-emerald-700">ASN ({{ $pctPromosi }}%)</span>
-                                </div>
-                                <div class="w-full bg-emerald-200/70 rounded-full h-1.5 mt-2 overflow-hidden">
-                                    <div class="bg-emerald-600 h-1.5 rounded-full" style="width: {{ $pctPromosi }}%"></div>
-                                </div>
-                                <p class="text-[11px] text-emerald-700 mt-2 line-clamp-1 group-hover:underline">Kotak VII, VIII & IX (Prioritas Suksesi) →</p>
-                            </a>
+                            </x-enterprise.stat-card>
 
                             {{-- KPI 2: Kelompok Dipertahankan / Pengembangan (Kotak 4, 5, 6) --}}
-                            <a href="{{ route('manajemen-talenta.rekap') }}" class="group block p-4 rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50/80 to-indigo-50/50 hover:shadow-md transition">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[11px] font-bold uppercase tracking-wider text-blue-800">Kelompok Pengembangan</span>
-                                    <span class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm font-black shadow-xs">📈</span>
+                            <x-enterprise.stat-card
+                                title="Kelompok Pengembangan"
+                                :value="$countMid"
+                                :suffix="'ASN (' . $pctMid . '%)'"
+                                icon="trending-up"
+                                color="blue"
+                                subtitle="Kotak IV, V & VI (Fokus Diklat 20 JP) →"
+                                :href="route('manajemen-talenta.rekap')"
+                            >
+                                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-blue-500 h-1.5 rounded-full" style="width: {{ $pctMid }}%"></div>
                                 </div>
-                                <div class="mt-2 flex items-baseline gap-2">
-                                    <span class="text-3xl font-black text-blue-950">{{ $countMid }}</span>
-                                    <span class="text-xs font-bold text-blue-700">ASN ({{ $pctMid }}%)</span>
-                                </div>
-                                <div class="w-full bg-blue-200/70 rounded-full h-1.5 mt-2 overflow-hidden">
-                                    <div class="bg-blue-600 h-1.5 rounded-full" style="width: {{ $pctMid }}%"></div>
-                                </div>
-                                <p class="text-[11px] text-blue-700 mt-2 line-clamp-1 group-hover:underline">Kotak IV, V & VI (Fokus Diklat 20 JP) →</p>
-                            </a>
+                            </x-enterprise.stat-card>
 
                             {{-- KPI 3: Bimbingan & Konseling (Kotak 1, 2, 3) --}}
-                            <a href="{{ route('manajemen-talenta.rekap') }}" class="group block p-4 rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50/80 to-orange-50/50 hover:shadow-md transition">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[11px] font-bold uppercase tracking-wider text-amber-900">Bimbingan & Konseling</span>
-                                    <span class="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center text-sm font-black shadow-xs">⚠️</span>
+                            <x-enterprise.stat-card
+                                title="Bimbingan & Konseling"
+                                :value="$countLow"
+                                :suffix="'ASN (' . $pctLow . '%)'"
+                                icon="alert-triangle"
+                                color="amber"
+                                subtitle="Kotak I, II & III (Penataan & Pembinaan) →"
+                                :href="route('manajemen-talenta.rekap')"
+                            >
+                                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-amber-500 h-1.5 rounded-full" style="width: {{ $pctLow }}%"></div>
                                 </div>
-                                <div class="mt-2 flex items-baseline gap-2">
-                                    <span class="text-3xl font-black text-amber-950">{{ $countLow }}</span>
-                                    <span class="text-xs font-bold text-amber-800">ASN ({{ $pctLow }}%)</span>
-                                </div>
-                                <div class="w-full bg-amber-200/70 rounded-full h-1.5 mt-2 overflow-hidden">
-                                    <div class="bg-amber-600 h-1.5 rounded-full" style="width: {{ $pctLow }}%"></div>
-                                </div>
-                                <p class="text-[11px] text-amber-800 mt-2 line-clamp-1 group-hover:underline">Kotak I, II & III (Penataan & Pembinaan) →</p>
-                            </a>
+                            </x-enterprise.stat-card>
 
                             {{-- KPI 4: Target Suksesi Jabatan Aktif --}}
-                            <a href="{{ route('manajemen-talenta.suksesi.index') }}" class="group block p-4 rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50/80 to-fuchsia-50/50 hover:shadow-md transition">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[11px] font-bold uppercase tracking-wider text-purple-900">Rencana Suksesi Jabatan</span>
-                                    <span class="w-8 h-8 rounded-lg bg-purple-600 text-white flex items-center justify-center text-sm font-black shadow-xs">🏛️</span>
-                                </div>
-                                <div class="mt-2 flex items-baseline gap-2">
-                                    <span class="text-3xl font-black text-purple-950">{{ $totalSuccessionPlans ?? 0 }}</span>
-                                    <span class="text-xs font-bold text-purple-700">Jabatan Target</span>
-                                </div>
-                                <div class="text-[11px] text-slate-500 mt-2">
+                            <x-enterprise.stat-card
+                                title="Rencana Suksesi Jabatan"
+                                :value="$totalSuccessionPlans ?? 0"
+                                suffix="Jabatan Target"
+                                icon="building"
+                                color="purple"
+                                subtitle="Buka Pemetaan Suksesi Struktural →"
+                                :href="route('manajemen-talenta.suksesi.index')"
+                            >
+                                <div class="text-[11px] text-slate-500">
                                     Total ASN Terpetakan: <strong class="text-slate-800">{{ $totalMapped }} ASN</strong>
                                 </div>
-                                <p class="text-[11px] text-purple-700 mt-1 line-clamp-1 group-hover:underline">Buka Pemetaan Suksesi Struktural →</p>
-                            </a>
-
-                        </div>
+                            </x-enterprise.stat-card>
+                        </x-enterprise.stat-grid>
 
                         {{-- Layout Dua Kolom: Mini Matriks 9-Kotak & Highlight Top Talent Pool --}}
                         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -2834,105 +2797,67 @@
                         </div>
 
                         {{-- 4 Kartu Metrik Formasi (INTERAKTIF & BISA DIKLIK) --}}
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <x-enterprise.stat-grid :cols="4" class="mb-6">
                             {{-- Kartu 1: Rasio Keterisian Formasi (Semua) --}}
-                            <div @click="setFilter('all')"
-                                 :class="filter === 'all' ? 'ring-2 ring-indigo-500 shadow-md bg-indigo-100/90 border-indigo-400 scale-[1.01]' : 'border-indigo-200/80 bg-gradient-to-br from-indigo-50/70 to-blue-50/50 hover:shadow-xs hover:border-indigo-300'"
-                                 class="p-4 rounded-xl border flex flex-col justify-between cursor-pointer transition-all duration-200 select-none group"
-                                 title="Klik untuk melihat seluruh formasi jabatan teranalisis">
-                                <div>
-                                    <div class="flex items-center justify-between mb-1.5">
-                                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-900">Keterisian Formasi</span>
-                                        <span class="text-xs font-black text-indigo-700">{{ $abkSummary['rasioKeterisian'] }}%</span>
-                                    </div>
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="text-2xl font-black text-indigo-950">{{ $abkSummary['totalBezetting'] }}</span>
-                                        <span class="text-xs font-bold text-indigo-700">/ {{ $abkSummary['totalKebutuhan'] }} Formasi ABK</span>
-                                    </div>
-                                    <div class="w-full bg-indigo-200/60 rounded-full h-2 mt-2 overflow-hidden">
-                                        <div class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: {{ min(100, $abkSummary['rasioKeterisian']) }}%"></div>
-                                    </div>
+                            <x-enterprise.stat-card
+                                title="Keterisian Formasi"
+                                :value="$abkSummary['totalBezetting']"
+                                :suffix="'/ ' . $abkSummary['totalKebutuhan'] . ' Formasi ABK'"
+                                icon="scale"
+                                color="indigo"
+                                :trend="$abkSummary['rasioKeterisian'] . '%'"
+                                trendDirection="neutral"
+                                :subtitle="'Pegawai Aktif: ' . ($statistik['aktif'] ?? 83)"
+                                @click="setFilter('all')"
+                                activeWhen="filter === 'all'"
+                            >
+                                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: {{ min(100, $abkSummary['rasioKeterisian']) }}%"></div>
                                 </div>
-                                <div class="mt-3 pt-2 border-t border-indigo-200/50 flex items-center justify-between text-[11px] text-indigo-800">
-                                    <span>Pegawai Aktif: <strong>{{ $statistik['aktif'] ?? 83 }}</strong></span>
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold transition" :class="filter === 'all' ? 'bg-indigo-600 text-white' : 'bg-white/80 text-indigo-700 border border-indigo-200'">
-                                        <span x-text="filter === 'all' ? '● Aktif' : 'Lihat Rincian &rarr;'"></span>
-                                    </span>
-                                </div>
-                            </div>
+                            </x-enterprise.stat-card>
 
                             {{-- Kartu 2: Defisit Pegawai (Perlu Rekrutmen / Formasi Kurang) --}}
-                            <div @click="setFilter('defisit')"
-                                 :class="filter === 'defisit' ? 'ring-2 ring-rose-500 shadow-md bg-rose-100 border-rose-400 scale-[1.01]' : 'border-rose-200 bg-rose-50/60 hover:shadow-xs hover:border-rose-300'"
-                                 class="p-4 rounded-xl border flex flex-col justify-between cursor-pointer transition-all duration-200 select-none group"
-                                 title="Klik untuk melihat daftar jabatan yang defisit / kurang pegawai">
-                                <div>
-                                    <div class="flex items-center justify-between mb-1.5">
-                                        <span class="text-xs font-bold uppercase tracking-wider text-rose-900">Defisit Formasi</span>
-                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-200 text-rose-900">⚠️ Butuh SDM</span>
-                                    </div>
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="text-2xl font-black text-rose-700">{{ $abkSummary['totalDefisit'] }}</span>
-                                        <span class="text-xs font-bold text-rose-800">Orang Kurang</span>
-                                    </div>
-                                    <p class="text-[11px] text-rose-600 mt-1.5">Kekurangan riil berdasarkan jam beban kerja standar (WKE 1.250 jam/thn)</p>
-                                </div>
-                                <div class="mt-3 pt-2 border-t border-rose-200/60 flex items-center justify-between text-[11px]">
-                                    <span class="text-rose-700 font-bold">Prioritas Usulan CASN</span>
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold transition" :class="filter === 'defisit' ? 'bg-rose-600 text-white' : 'bg-white/80 text-rose-700 border border-rose-200'">
-                                        <span x-text="filter === 'defisit' ? '● Aktif' : 'Lihat Rincian &rarr;'"></span>
-                                    </span>
-                                </div>
-                            </div>
+                            <x-enterprise.stat-card
+                                title="Defisit Formasi"
+                                :value="$abkSummary['totalDefisit']"
+                                suffix="Orang Kurang"
+                                icon="alert-triangle"
+                                color="rose"
+                                trend="Butuh SDM"
+                                trendDirection="down"
+                                subtitle="Prioritas Usulan CASN (WKE 1.250 jam/thn)"
+                                @click="setFilter('defisit')"
+                                activeWhen="filter === 'defisit'"
+                            />
 
                             {{-- Kartu 3: Formasi Ideal / Cukup --}}
-                            <div @click="setFilter('ideal')"
-                                 :class="filter === 'ideal' ? 'ring-2 ring-emerald-500 shadow-md bg-emerald-100 border-emerald-400 scale-[1.01]' : 'border-emerald-200 bg-emerald-50/60 hover:shadow-xs hover:border-emerald-300'"
-                                 class="p-4 rounded-xl border flex flex-col justify-between cursor-pointer transition-all duration-200 select-none group"
-                                 title="Klik untuk melihat formasi yang sudah terpenuhi / ideal">
-                                <div>
-                                    <div class="flex items-center justify-between mb-1.5">
-                                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-900">Formasi Ideal</span>
-                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 text-emerald-900">✓ Cukup</span>
-                                    </div>
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="text-2xl font-black text-emerald-700">{{ $abkSummary['totalIdeal'] }}</span>
-                                        <span class="text-xs font-bold text-emerald-800">Jabatan Terpenuhi</span>
-                                    </div>
-                                    <p class="text-[11px] text-emerald-600 mt-1.5">Jumlah pegawai aktif saat ini seimbang dengan beban kerja jabatan</p>
-                                </div>
-                                <div class="mt-3 pt-2 border-t border-emerald-200/60 flex items-center justify-between text-[11px]">
-                                    <span class="text-emerald-700 font-semibold">Beban Kerja Seimbang</span>
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold transition" :class="filter === 'ideal' ? 'bg-emerald-600 text-white' : 'bg-white/80 text-emerald-700 border border-emerald-200'">
-                                        <span x-text="filter === 'ideal' ? '● Aktif' : 'Lihat Rincian &rarr;'"></span>
-                                    </span>
-                                </div>
-                            </div>
+                            <x-enterprise.stat-card
+                                title="Formasi Ideal"
+                                :value="$abkSummary['totalIdeal']"
+                                suffix="Jabatan Terpenuhi"
+                                icon="check-circle"
+                                color="emerald"
+                                trend="Cukup"
+                                trendDirection="up"
+                                subtitle="Beban Kerja Seimbang"
+                                @click="setFilter('ideal')"
+                                activeWhen="filter === 'ideal'"
+                            />
 
                             {{-- Kartu 4: Dokumen & Standar Anjab Terisi --}}
-                            <div @click="setFilter('dokumen')"
-                                 :class="filter === 'dokumen' ? 'ring-2 ring-blue-500 shadow-md bg-blue-100 border-blue-400 scale-[1.01]' : 'border-blue-200 bg-blue-50/60 hover:shadow-xs hover:border-blue-300'"
-                                 class="p-4 rounded-xl border flex flex-col justify-between cursor-pointer transition-all duration-200 select-none group"
-                                 title="Klik untuk melihat katalog dokumen analisis jabatan baku">
-                                <div>
-                                    <div class="flex items-center justify-between mb-1.5">
-                                        <span class="text-xs font-bold uppercase tracking-wider text-blue-900">Dokumen Anjab Baku</span>
-                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-200 text-blue-900">17 Butir</span>
-                                    </div>
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="text-2xl font-black text-blue-700">{{ $abkSummary['totalDokumen'] }}</span>
-                                        <span class="text-xs font-bold text-blue-800">Jabatan Teranalisis</span>
-                                    </div>
-                                    <p class="text-[11px] text-blue-600 mt-1.5">Lengkap dengan rincian uraian tugas, kualifikasi, syarat jabatan, & kelas</p>
-                                </div>
-                                <div class="mt-3 pt-2 border-t border-blue-200/60 flex items-center justify-between text-[11px]">
-                                    <span class="text-blue-700 font-semibold">Standar KemenPAN-RB</span>
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold transition" :class="filter === 'dokumen' ? 'bg-blue-600 text-white' : 'bg-white/80 text-blue-700 border border-blue-200'">
-                                        <span x-text="filter === 'dokumen' ? '● Aktif' : 'Lihat Rincian &rarr;'"></span>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                            <x-enterprise.stat-card
+                                title="Dokumen Anjab Baku"
+                                :value="$abkSummary['totalDokumen']"
+                                suffix="Jabatan Teranalisis"
+                                icon="file-text"
+                                color="blue"
+                                trend="17 Butir"
+                                trendDirection="neutral"
+                                subtitle="Standar KemenPAN-RB"
+                                @click="setFilter('dokumen')"
+                                activeWhen="filter === 'dokumen'"
+                            />
+                        </x-enterprise.stat-grid>
 
                         {{-- Sub-Grid: Tabel Dinamis Interaktif & Panel Alur Struktur Organisasi --}}
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -3203,63 +3128,43 @@
                         </div>
 
                         {{-- Ringkasan 3 Kategori yang Dapat Diklik (Interactive Filter Cards) --}}
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-                            
+                        <x-enterprise.stat-grid :cols="3" class="mb-5">
                             {{-- Kartu 1: 100% Lengkap --}}
-                            <div @click="setFilter(filter === 'complete' ? 'all' : 'complete')"
-                                 :class="filter === 'complete' ? 'ring-2 ring-emerald-500 shadow-md bg-emerald-100 border-emerald-400 scale-[1.01]' : 'bg-emerald-50 hover:bg-emerald-100/70 border-emerald-200 hover:shadow-xs'"
-                                 class="border rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all duration-200 select-none group"
-                                 title="Klik untuk memfilter pegawai dengan data 100% Lengkap">
-                                <div>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-800">100% Lengkap (Sempurna)</span>
-                                        <span x-show="filter === 'complete'" class="text-[9px] font-black bg-emerald-600 text-white px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">Aktif</span>
-                                    </div>
-                                    <h4 class="text-2xl font-black text-emerald-700 mt-1">{{ $facultyCompleteness['total_complete'] }} Pegawai</h4>
-                                    <span class="text-[11px] text-emerald-600 font-semibold group-hover:underline flex items-center gap-1 mt-1">
-                                        <span x-text="filter === 'complete' ? '✕ Reset / Tampilkan Semua' : '🔍 Klik untuk filter tabel'"></span>
-                                    </span>
-                                </div>
-                                <div class="w-11 h-11 rounded-xl bg-emerald-200/80 text-emerald-800 flex items-center justify-center text-xl font-bold group-hover:scale-110 transition-transform shadow-xs">💎</div>
-                            </div>
+                            <x-enterprise.stat-card
+                                title="100% Lengkap (Sempurna)"
+                                :value="$facultyCompleteness['total_complete']"
+                                suffix="Pegawai"
+                                icon="check-circle"
+                                color="emerald"
+                                subtitle="Klik untuk filter tabel"
+                                @click="setFilter(filter === 'complete' ? 'all' : 'complete')"
+                                activeWhen="filter === 'complete'"
+                            />
 
                             {{-- Kartu 2: Cukup Lengkap (50% - 99%) --}}
-                            <div @click="setFilter(filter === 'moderate' ? 'all' : 'moderate')"
-                                 :class="filter === 'moderate' ? 'ring-2 ring-amber-500 shadow-md bg-amber-100 border-amber-400 scale-[1.01]' : 'bg-amber-50 hover:bg-amber-100/70 border-amber-200 hover:shadow-xs'"
-                                 class="border rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all duration-200 select-none group"
-                                 title="Klik untuk memfilter pegawai dengan data Cukup Lengkap (50% - 99%)">
-                                <div>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="text-xs font-bold uppercase tracking-wider text-amber-800">Cukup Lengkap (50% - 99%)</span>
-                                        <span x-show="filter === 'moderate'" class="text-[9px] font-black bg-amber-600 text-white px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">Aktif</span>
-                                    </div>
-                                    <h4 class="text-2xl font-black text-amber-700 mt-1">{{ $facultyCompleteness['total_moderate'] }} Pegawai</h4>
-                                    <span class="text-[11px] text-amber-700 font-semibold group-hover:underline flex items-center gap-1 mt-1">
-                                        <span x-text="filter === 'moderate' ? '✕ Reset / Tampilkan Semua' : '🔍 Klik untuk filter tabel'"></span>
-                                    </span>
-                                </div>
-                                <div class="w-11 h-11 rounded-xl bg-amber-200/80 text-amber-800 flex items-center justify-center text-xl font-bold group-hover:scale-110 transition-transform shadow-xs">🟡</div>
-                            </div>
+                            <x-enterprise.stat-card
+                                title="Cukup Lengkap (50% - 99%)"
+                                :value="$facultyCompleteness['total_moderate']"
+                                suffix="Pegawai"
+                                icon="clock"
+                                color="amber"
+                                subtitle="Klik untuk filter tabel"
+                                @click="setFilter(filter === 'moderate' ? 'all' : 'moderate')"
+                                activeWhen="filter === 'moderate'"
+                            />
 
                             {{-- Kartu 3: Perlu Dilengkapi (< 50%) --}}
-                            <div @click="setFilter(filter === 'low' ? 'all' : 'low')"
-                                 :class="filter === 'low' ? 'ring-2 ring-rose-500 shadow-md bg-rose-100 border-rose-400 scale-[1.01]' : 'bg-rose-50 hover:bg-rose-100/70 border-rose-200 hover:shadow-xs'"
-                                 class="border rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all duration-200 select-none group"
-                                 title="Klik untuk memfilter pegawai yang Perlu Dilengkapi (< 50%)">
-                                <div>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="text-xs font-bold uppercase tracking-wider text-rose-800">Perlu Dilengkapi (&lt; 50%)</span>
-                                        <span x-show="filter === 'low'" class="text-[9px] font-black bg-rose-600 text-white px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">Aktif</span>
-                                    </div>
-                                    <h4 class="text-2xl font-black text-rose-700 mt-1">{{ $facultyCompleteness['total_low'] }} Pegawai</h4>
-                                    <span class="text-[11px] text-rose-700 font-semibold group-hover:underline flex items-center gap-1 mt-1">
-                                        <span x-text="filter === 'low' ? '✕ Reset / Tampilkan Semua' : '🔍 Klik untuk filter tabel'"></span>
-                                    </span>
-                                </div>
-                                <div class="w-11 h-11 rounded-xl bg-rose-200/80 text-rose-800 flex items-center justify-center text-xl font-bold group-hover:scale-110 transition-transform shadow-xs">🔴</div>
-                            </div>
-
-                        </div>
+                            <x-enterprise.stat-card
+                                title="Perlu Dilengkapi (< 50%)"
+                                :value="$facultyCompleteness['total_low']"
+                                suffix="Pegawai"
+                                icon="alert-triangle"
+                                color="rose"
+                                subtitle="Klik untuk filter tabel"
+                                @click="setFilter(filter === 'low' ? 'all' : 'low')"
+                                activeWhen="filter === 'low'"
+                            />
+                        </x-enterprise.stat-grid>
 
                         {{-- Konten Tabel (Collapsible) --}}
                         <div x-show="showTable" x-transition.duration.200ms>

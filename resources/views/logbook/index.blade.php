@@ -134,69 +134,79 @@
             @endif
 
             {{-- KARTU RINGKASAN KINERJA BULANAN --}}
-            <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-indigo-800 rounded-2xl shadow-lg p-6 text-white">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div>
-                        <div class="text-blue-200 text-xs uppercase tracking-wider font-bold">
-                            Rekap Capaian Kinerja • {{ \Carbon\Carbon::createFromDate($year, $month, 1)->locale('id')->isoFormat('MMMM Y') }}
-                        </div>
-                        <div class="text-2xl md:text-3xl font-extrabold mt-1">
-                            {{ $pegawai->nama }}
-                        </div>
-                        <p class="text-xs text-blue-200 mt-1 flex items-center gap-2">
-                            <span>NIP: {{ $pegawai->nip ?? '-' }}</span>
-                            <span>•</span>
-                            <span>{{ $pegawai->unitKerja?->nama_unit ?? 'FKP UNRI' }}</span>
-                            <span>•</span>
-                            <span>{{ $pegawai->jabatan?->nama_jabatan ?? '-' }}</span>
-                        </p>
-                    </div>
-
-                    {{-- STATS GRID --}}
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full md:w-auto">
-                        <div class="bg-white/10 backdrop-blur-md rounded-xl p-3 text-center border border-white/10">
-                            <div class="text-[11px] text-blue-200 font-medium">Total Aktivitas</div>
-                            <div class="text-2xl font-black mt-0.5">{{ $statistics['total_aktivitas'] }}</div>
-                            <div class="text-[10px] text-blue-200">{{ $statistics['total_output'] }} output</div>
-                        </div>
-
-                        <div class="bg-white/10 backdrop-blur-md rounded-xl p-3 text-center border border-white/10">
-                            <div class="text-[11px] text-blue-200 font-medium">Total Jam Kerja</div>
-                            <div class="text-2xl font-black mt-0.5">{{ $statistics['total_jam'] }}</div>
-                            <div class="text-[10px] text-blue-200">Jam tercatat</div>
-                        </div>
-
-                        <div class="bg-emerald-500/20 backdrop-blur-md rounded-xl p-3 text-center border border-emerald-400/30">
-                            <div class="text-[11px] text-emerald-200 font-medium">Disetujui</div>
-                            <div class="text-2xl font-black text-emerald-300 mt-0.5">{{ $statistics['disetujui'] }}</div>
-                            <div class="text-[10px] text-emerald-200">Terverifikasi</div>
-                        </div>
-
-                        <div class="bg-amber-500/20 backdrop-blur-md rounded-xl p-3 text-center border border-amber-400/30">
-                            <div class="text-[11px] text-amber-200 font-medium">Menunggu</div>
-                            <div class="text-2xl font-black text-amber-300 mt-0.5">{{ $statistics['diajukan'] }}</div>
-                            <div class="text-[10px] text-amber-200">Verifikasi</div>
+            <div class="space-y-4">
+                <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-indigo-800 rounded-2xl shadow-lg p-6 text-white">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <div class="text-blue-200 text-xs uppercase tracking-wider font-bold">
+                                Rekap Capaian Kinerja • {{ \Carbon\Carbon::createFromDate($year, $month, 1)->locale('id')->isoFormat('MMMM Y') }}
+                            </div>
+                            <div class="text-2xl md:text-3xl font-extrabold mt-1">
+                                {{ $pegawai->nama }}
+                            </div>
+                            <p class="text-xs text-blue-200 mt-1 flex flex-wrap items-center gap-2">
+                                <span>NIP: {{ $pegawai->nip ?? '-' }}</span>
+                                <span>•</span>
+                                <span>{{ $pegawai->unitKerja?->nama_unit ?? 'FKP UNRI' }}</span>
+                                <span>•</span>
+                                <span>{{ $pegawai->jabatan?->nama_jabatan ?? '-' }}</span>
+                            </p>
                         </div>
                     </div>
+
+                    {{-- ACTION BULK SUBMIT JIKA ADA DRAFT ATAU REVISI --}}
+                    @if($statistics['draft'] > 0 || $statistics['perlu_revisi'] > 0)
+                        <div class="mt-5 pt-4 border-t border-white/15 flex flex-col sm:flex-row justify-between items-center gap-3">
+                            <div class="text-xs text-blue-100 flex items-center gap-2">
+                                <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                                <span>Terdapat <strong>{{ $statistics['draft'] }} draft</strong> dan <strong>{{ $statistics['perlu_revisi'] }} perlu revisi</strong> yang belum diajukan untuk periode ini.</span>
+                            </div>
+                            <form method="POST" action="{{ route('logbook.submit-bulk') }}" onsubmit="return confirm('Apakah Anda yakin ingin mengajukan seluruh aktivitas draft/revisi periode {{ \Carbon\Carbon::createFromDate($year, $month, 1)->locale('id')->isoFormat('MMMM Y') }} ke atasan?')">
+                                @csrf
+                                <input type="hidden" name="bulan" value="{{ $month }}">
+                                <input type="hidden" name="tahun" value="{{ $year }}">
+                                <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 text-xs transition shadow">
+                                    🚀 Ajukan Semua Draft Bulan Ini ke Atasan
+                                </button>
+                            </form>
+                        </div>
+                    @endif
                 </div>
 
-                {{-- ACTION BULK SUBMIT JIKA ADA DRAFT ATAU REVISI --}}
-                @if($statistics['draft'] > 0 || $statistics['perlu_revisi'] > 0)
-                    <div class="mt-5 pt-4 border-t border-white/15 flex flex-col sm:flex-row justify-between items-center gap-3">
-                        <div class="text-xs text-blue-100 flex items-center gap-2">
-                            <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                            <span>Terdapat <strong>{{ $statistics['draft'] }} draft</strong> dan <strong>{{ $statistics['perlu_revisi'] }} perlu revisi</strong> yang belum diajukan untuk periode ini.</span>
-                        </div>
-                        <form method="POST" action="{{ route('logbook.submit-bulk') }}" onsubmit="return confirm('Apakah Anda yakin ingin mengajukan seluruh aktivitas draft/revisi periode {{ \Carbon\Carbon::createFromDate($year, $month, 1)->locale('id')->isoFormat('MMMM Y') }} ke atasan?')">
-                            @csrf
-                            <input type="hidden" name="bulan" value="{{ $month }}">
-                            <input type="hidden" name="tahun" value="{{ $year }}">
-                            <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 text-xs transition shadow">
-                                🚀 Ajukan Semua Draft Bulan Ini ke Atasan
-                            </button>
-                        </form>
-                    </div>
-                @endif
+                {{-- STATS GRID --}}
+                <x-enterprise.stat-grid :cols="4">
+                    <x-enterprise.stat-card
+                        title="Total Aktivitas"
+                        :value="$statistics['total_aktivitas']"
+                        icon="clipboard-list"
+                        color="blue"
+                        :subtitle="$statistics['total_output'] . ' output'"
+                    />
+
+                    <x-enterprise.stat-card
+                        title="Total Jam Kerja"
+                        :value="$statistics['total_jam']"
+                        icon="clock"
+                        color="indigo"
+                        subtitle="Jam tercatat"
+                    />
+
+                    <x-enterprise.stat-card
+                        title="Disetujui"
+                        :value="$statistics['disetujui']"
+                        icon="check-circle"
+                        color="emerald"
+                        subtitle="Terverifikasi"
+                    />
+
+                    <x-enterprise.stat-card
+                        title="Menunggu"
+                        :value="$statistics['diajukan']"
+                        icon="hourglass"
+                        color="amber"
+                        subtitle="Verifikasi"
+                    />
+                </x-enterprise.stat-grid>
             </div>
 
             {{-- FILTER & PENCARIAN --}}

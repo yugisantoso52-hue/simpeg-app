@@ -33,32 +33,42 @@
             @endif
 
             {{-- KARTU STATISTIK --}}
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
-                    <div class="text-xs font-semibold text-gray-500 uppercase">Total Arsip SKP</div>
-                    <div class="mt-1 text-2xl font-bold text-gray-900">{{ $statistics['total'] ?? 0 }}</div>
-                </div>
+            <x-enterprise.stat-grid :cols="5">
+                <x-enterprise.stat-card
+                    title="Total Arsip SKP"
+                    :value="$statistics['total'] ?? 0"
+                    color="slate"
+                    icon="file-text"
+                />
 
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-blue-200 bg-blue-50/50">
-                    <div class="text-xs font-semibold text-blue-700 uppercase">SKP Tahun Ini ({{ now()->year }})</div>
-                    <div class="mt-1 text-2xl font-bold text-blue-600">{{ $statistics['tahun_n'] ?? 0 }}</div>
-                </div>
+                <x-enterprise.stat-card
+                    :title="'SKP Tahun Ini (' . now()->year . ')'"
+                    :value="$statistics['tahun_n'] ?? 0"
+                    color="blue"
+                    icon="calendar-check"
+                />
 
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-indigo-200 bg-indigo-50/50">
-                    <div class="text-xs font-semibold text-indigo-700 uppercase">SKP 1 Thn Lalu ({{ now()->year - 1 }})</div>
-                    <div class="mt-1 text-2xl font-bold text-indigo-600">{{ $statistics['tahun_n1'] ?? 0 }}</div>
-                </div>
+                <x-enterprise.stat-card
+                    :title="'SKP 1 Thn Lalu (' . (now()->year - 1) . ')'"
+                    :value="$statistics['tahun_n1'] ?? 0"
+                    color="indigo"
+                    icon="history"
+                />
 
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-emerald-200 bg-emerald-50/50">
-                    <div class="text-xs font-semibold text-emerald-700 uppercase">Predikat Sangat Baik</div>
-                    <div class="mt-1 text-2xl font-bold text-emerald-600">{{ $statistics['sangat_baik'] ?? 0 }}</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Predikat Sangat Baik"
+                    :value="$statistics['sangat_baik'] ?? 0"
+                    color="emerald"
+                    icon="award"
+                />
 
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-teal-200 bg-teal-50/50">
-                    <div class="text-xs font-semibold text-teal-700 uppercase">Berkas Lengkap (2 File)</div>
-                    <div class="mt-1 text-2xl font-bold text-teal-600">{{ $statistics['berkas_lengkap'] ?? 0 }}</div>
-                </div>
-            </div>
+                <x-enterprise.stat-card
+                    title="Berkas Lengkap (2 File)"
+                    :value="$statistics['berkas_lengkap'] ?? 0"
+                    color="teal"
+                    icon="clipboard-check"
+                />
+            </x-enterprise.stat-grid>
 
             {{-- FILTER & PENCARIAN --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200">

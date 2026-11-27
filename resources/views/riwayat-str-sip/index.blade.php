@@ -54,32 +54,42 @@
             @endif
 
             {{-- KARTU STATISTIK --}}
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
-                    <div class="text-xs font-semibold text-gray-500 uppercase">Total Dokumen</div>
-                    <div class="mt-1 text-2xl font-bold text-gray-900">{{ $statistics['total'] ?? 0 }}</div>
-                </div>
+            <x-enterprise.stat-grid :cols="5">
+                <x-enterprise.stat-card
+                    title="Total Dokumen"
+                    :value="$statistics['total'] ?? 0"
+                    color="slate"
+                    icon="file-text"
+                />
 
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
-                    <div class="text-xs font-semibold text-blue-600 uppercase">Dokumen STR</div>
-                    <div class="mt-1 text-2xl font-bold text-blue-600">{{ $statistics['str'] ?? 0 }}</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Dokumen STR"
+                    :value="$statistics['str'] ?? 0"
+                    color="blue"
+                    icon="shield-check"
+                />
 
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
-                    <div class="text-xs font-semibold text-indigo-600 uppercase">Dokumen SIP / SIKP</div>
-                    <div class="mt-1 text-2xl font-bold text-indigo-600">{{ $statistics['sip'] ?? 0 }}</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Dokumen SIP / SIKP"
+                    :value="$statistics['sip'] ?? 0"
+                    color="indigo"
+                    icon="stethoscope"
+                />
 
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-amber-200 bg-amber-50/50">
-                    <div class="text-xs font-semibold text-amber-700 uppercase">Segera Berakhir (6 Bln)</div>
-                    <div class="mt-1 text-2xl font-bold text-amber-600">{{ $statistics['segera_berakhir'] ?? 0 }}</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Segera Berakhir (6 Bln)"
+                    :value="$statistics['segera_berakhir'] ?? 0"
+                    color="amber"
+                    icon="alert-triangle"
+                />
 
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-red-200 bg-red-50/50">
-                    <div class="text-xs font-semibold text-red-700 uppercase">Kedaluwarsa</div>
-                    <div class="mt-1 text-2xl font-bold text-red-600">{{ $statistics['kedaluwarsa'] ?? 0 }}</div>
-                </div>
-            </div>
+                <x-enterprise.stat-card
+                    title="Kedaluwarsa"
+                    :value="$statistics['kedaluwarsa'] ?? 0"
+                    color="red"
+                    icon="x-circle"
+                />
+            </x-enterprise.stat-grid>
 
             {{-- FILTER & PENCARIAN --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200">

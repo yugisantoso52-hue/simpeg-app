@@ -32,7 +32,7 @@
 
             {{-- Ringkasan Statistik DUK Interaktif (Khusus Admin & Pimpinan / Eksekutif) --}}
             @if($isExecutiveView)
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            <x-enterprise.stat-grid :cols="5">
                 <x-enterprise.stat-card
                     title="DOSEN PNS"
                     :value="$statistics['dosen_pns']"
@@ -77,7 +77,7 @@
                     :href="route('duk.index', array_merge(request()->except('filter'), ['filter' => $filter === 'phl' ? '' : 'phl']))"
                     :active="$filter === 'phl'"
                 />
-            </div>
+            </x-enterprise.stat-grid>
             @endif
 
             {{-- Card Utama DUK --}}

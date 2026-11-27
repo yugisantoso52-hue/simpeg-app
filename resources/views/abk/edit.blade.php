@@ -35,41 +35,42 @@
             @endif
 
             {{-- Kartu Ringkasan Formasi Jabatan --}}
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-                    <div class="text-xs font-semibold text-gray-500 uppercase">Total Beban Waktu</div>
-                    <div class="text-2xl font-black text-blue-600 mt-1">
-                        {{ number_format($anjab->total_waktu_beban_menit) }} <span class="text-xs font-normal text-gray-500">Menit</span>
-                    </div>
-                    <div class="text-xs text-gray-600 mt-0.5">{{ $anjab->total_jam_beban }} Jam Kerja Efektif</div>
-                </div>
+            <x-enterprise.stat-grid :cols="4">
+                <x-enterprise.stat-card
+                    title="Total Beban Waktu"
+                    :value="$anjab->total_waktu_beban_menit"
+                    suffix="Menit"
+                    :subtitle="$anjab->total_jam_beban . ' Jam Kerja Efektif'"
+                    icon="clock"
+                    color="blue"
+                />
 
-                <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-                    <div class="text-xs font-semibold text-gray-500 uppercase">Kebutuhan Pegawai (ABK)</div>
-                    <div class="text-2xl font-black text-indigo-600 mt-1">
-                        {{ $anjab->kebutuhan_pegawai }} <span class="text-xs font-normal text-gray-500">Orang</span>
-                    </div>
-                    <div class="text-xs font-bold text-indigo-700 mt-0.5">Formasi Pembulatan: {{ $anjab->formasi_pembulatan }} Orang</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Kebutuhan Pegawai (ABK)"
+                    :value="$anjab->kebutuhan_pegawai"
+                    suffix="Orang"
+                    :subtitle="'Formasi Pembulatan: ' . $anjab->formasi_pembulatan . ' Orang'"
+                    icon="users"
+                    color="indigo"
+                />
 
-                <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-                    <div class="text-xs font-semibold text-gray-500 uppercase">Bezetting (Pegawai Riil)</div>
-                    <div class="text-2xl font-black text-gray-900 mt-1">
-                        {{ $anjab->bezetting }} <span class="text-xs font-normal text-gray-500">Pegawai Aktif</span>
-                    </div>
-                    <div class="text-xs text-gray-500 mt-0.5">{{ $anjab->unitKerja?->nama_unit ?? 'FKP UNRI' }}</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Bezetting (Pegawai Riil)"
+                    :value="$anjab->bezetting"
+                    suffix="Pegawai Aktif"
+                    :subtitle="$anjab->unitKerja?->nama_unit ?? 'FKP UNRI'"
+                    icon="user-check"
+                    color="slate"
+                />
 
-                <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-                    <div class="text-xs font-semibold text-gray-500 uppercase">Status Formasi</div>
-                    <div class="text-xl font-bold mt-1">
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black {{ $anjab->selisih_formasi < 0 ? 'bg-rose-100 text-rose-800' : ($anjab->selisih_formasi > 0 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800') }}">
-                            {{ $anjab->status_formasi }}
-                        </span>
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1 font-mono">Selisih: {{ $anjab->selisih_formasi > 0 ? '+' : '' }}{{ $anjab->selisih_formasi }}</div>
-                </div>
-            </div>
+                <x-enterprise.stat-card
+                    title="Status Formasi"
+                    :value="$anjab->status_formasi"
+                    :subtitle="'Selisih: ' . ($anjab->selisih_formasi > 0 ? '+' : '') . $anjab->selisih_formasi"
+                    :icon="$anjab->selisih_formasi < 0 ? 'alert-triangle' : ($anjab->selisih_formasi > 0 ? 'info' : 'check-circle')"
+                    :color="$anjab->selisih_formasi < 0 ? 'rose' : ($anjab->selisih_formasi > 0 ? 'amber' : 'emerald')"
+                />
+            </x-enterprise.stat-grid>
 
             @if(Auth::user()->canManageAnjabAbk())
                 {{-- Form Tambah Butir Tugas Baru --}}

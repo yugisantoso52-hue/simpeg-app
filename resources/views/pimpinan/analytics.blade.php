@@ -90,78 +90,69 @@
         <div class="w-full max-w-[1920px] mx-auto space-y-6 px-3 sm:px-6 lg:px-8 xl:px-10">
 
             <!-- 1. KARTU KPI EKSEKUTIF UTAMA (INTERAKTIF & DAPAT DIKLIK) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <x-enterprise.stat-grid :cols="4">
                 <!-- Total SDM Aktif (Klik untuk menuju Master Pegawai) -->
-                <a href="{{ route('pegawai.index') }}" class="group bg-white rounded-2xl border border-slate-200 hover:border-blue-500 p-5 shadow-2xs hover:shadow-md transition-all flex items-center justify-between block cursor-pointer" title="Klik untuk membuka Master Seluruh Pegawai">
-                    <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-blue-600 transition">Total SDM Aktif</span>
-                        <h3 class="text-2xl font-black text-slate-800 mt-1">{{ $kpis['total_aktif'] }} <span class="text-xs font-normal text-slate-500">Orang</span></h3>
-                        <p class="text-[11px] text-blue-600 font-semibold mt-1">
-                            👨‍🏫 {{ $kpis['total_dosen'] }} Dosen • 🧑‍💼 {{ $kpis['total_tendik'] }} Tendik
-                            @if(($kpis['total_phl'] ?? 0) > 0)
-                                • 👷 {{ $kpis['total_phl'] }} PHL
-                            @endif
-                        </p>
-                        <span class="text-[10px] text-blue-500 font-semibold group-hover:underline flex items-center gap-1 mt-1.5">
-                            Buka Data Pegawai →
-                        </span>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center text-2xl transition-colors">
-                        👥
-                    </div>
-                </a>
+                <x-enterprise.stat-card
+                    title="Total SDM Aktif"
+                    :value="$kpis['total_aktif']"
+                    suffix="Orang"
+                    icon="users"
+                    color="blue"
+                    :href="route('pegawai.index')"
+                    title-attr="Klik untuk membuka Master Seluruh Pegawai"
+                    :subtitle="'👨‍🏫 ' . $kpis['total_dosen'] . ' Dosen • 🧑‍💼 ' . $kpis['total_tendik'] . ' Tendik' . ((($kpis['total_phl'] ?? 0) > 0) ? ' • 👷 ' . $kpis['total_phl'] . ' PHL' : '')"
+                >
+                    <span class="text-[11px] text-blue-600 font-semibold group-hover:underline flex items-center gap-1">
+                        Buka Data Pegawai →
+                    </span>
+                </x-enterprise.stat-card>
 
                 <!-- Capaian Logbook Bulanan (Klik untuk menuju Verifikasi Logbook) -->
-                <a href="{{ route('admin.logbook.index') }}" class="group bg-white rounded-2xl border border-slate-200 hover:border-emerald-500 p-5 shadow-2xs hover:shadow-md transition-all flex items-center justify-between block cursor-pointer" title="Klik untuk membuka Halaman Verifikasi Logbook">
-                    <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-emerald-600 transition">Verifikasi Logbook</span>
-                        <h3 class="text-2xl font-black text-emerald-600 mt-1">{{ $kpis['logbook_rate'] }}%</h3>
-                        <p class="text-[11px] text-slate-500 mt-1">
-                            ✓ {{ $kpis['logbook_approved'] }} Selesai • ⏳ {{ $kpis['logbook_pending'] }} Menunggu
-                        </p>
-                        <span class="text-[10px] text-emerald-600 font-semibold group-hover:underline flex items-center gap-1 mt-1.5">
-                            Buka Verifikasi Logbook →
-                        </span>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center text-2xl transition-colors">
-                        📝
-                    </div>
-                </a>
+                <x-enterprise.stat-card
+                    title="Verifikasi Logbook"
+                    :value="$kpis['logbook_rate']"
+                    suffix="%"
+                    icon="logbook"
+                    color="emerald"
+                    :href="route('admin.logbook.index')"
+                    :subtitle="'✓ ' . $kpis['logbook_approved'] . ' Selesai • ⏳ ' . $kpis['logbook_pending'] . ' Menunggu'"
+                >
+                    <span class="text-[11px] text-emerald-600 font-semibold group-hover:underline flex items-center gap-1">
+                        Buka Verifikasi Logbook →
+                    </span>
+                </x-enterprise.stat-card>
 
                 <!-- Kepatuhan Presensi (Klik untuk menuju Rekap Presensi) -->
-                <a href="{{ route('admin.presensi.index') }}" class="group bg-white rounded-2xl border border-slate-200 hover:border-indigo-500 p-5 shadow-2xs hover:shadow-md transition-all flex items-center justify-between block cursor-pointer" title="Klik untuk membuka Rekapitulasi Presensi">
-                    <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-indigo-600 transition">Kepatuhan Presensi</span>
-                        <h3 class="text-2xl font-black text-indigo-600 mt-1">{{ $kpis['presensi_rate'] }}%</h3>
-                        <p class="text-[11px] text-slate-500 mt-1">
-                            Tepat: {{ $kpis['presensi_tepat'] }} • Telat: {{ $kpis['presensi_telat'] }}
-                        </p>
-                        <span class="text-[10px] text-indigo-600 font-semibold group-hover:underline flex items-center gap-1 mt-1.5">
-                            Buka Rekap Presensi →
-                        </span>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center text-2xl transition-colors">
-                        📍
-                    </div>
-                </a>
+                <x-enterprise.stat-card
+                    title="Kepatuhan Presensi"
+                    :value="$kpis['presensi_rate']"
+                    suffix="%"
+                    icon="map-pin"
+                    color="indigo"
+                    :href="route('admin.presensi.index')"
+                    :subtitle="'Tepat: ' . $kpis['presensi_tepat'] . ' • Telat: ' . $kpis['presensi_telat']"
+                >
+                    <span class="text-[11px] text-indigo-600 font-semibold group-hover:underline flex items-center gap-1">
+                        Buka Rekap Presensi →
+                    </span>
+                </x-enterprise.stat-card>
 
                 <!-- Radar Pensiun 5 Tahun (Klik untuk scroll ke Proyeksi Pensiun) -->
-                <a href="#proyeksi-pensiun" @click="window.dispatchEvent(new CustomEvent('open-retirement-cat', { detail: '{{ $retirementRadar['summary']['tahun_1'] > 0 ? 'tahun_1' : 'tahun_ini' }}' }))" class="group bg-white rounded-2xl border border-slate-200 hover:border-amber-500 p-5 shadow-2xs hover:shadow-md transition-all flex items-center justify-between block cursor-pointer" title="Klik untuk melihat Proyeksi dan Rincian Pegawai Mendekati Pensiun">
-                    <div>
-                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-amber-600 transition">Radar BUP Pensiun</span>
-                        <h3 class="text-2xl font-black text-amber-600 mt-1">{{ $kpis['pensiun_5_tahun'] }} <span class="text-xs font-normal text-slate-500">Pegawai</span></h3>
-                        <p class="text-[11px] text-amber-700 font-semibold mt-1">
-                            Mendekati BUP (Rentang 1-5 Thn)
-                        </p>
-                        <span class="text-[10px] text-amber-700 font-semibold group-hover:underline flex items-center gap-1 mt-1.5">
-                            Lihat Rincian Pegawai ↓
-                        </span>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center text-2xl transition-colors">
-                        ⏳
-                    </div>
-                </a>
-            </div>
+                <x-enterprise.stat-card
+                    title="Radar BUP Pensiun"
+                    :value="$kpis['pensiun_5_tahun']"
+                    suffix="Pegawai"
+                    icon="hourglass"
+                    color="amber"
+                    href="#proyeksi-pensiun"
+                    @click="window.dispatchEvent(new CustomEvent('open-retirement-cat', { detail: '{{ $retirementRadar['summary']['tahun_1'] > 0 ? 'tahun_1' : 'tahun_ini' }}' }))"
+                    subtitle="Mendekati BUP (Rentang 1-5 Thn)"
+                >
+                    <span class="text-[11px] text-amber-700 font-semibold group-hover:underline flex items-center gap-1">
+                        Lihat Rincian Pegawai ↓
+                    </span>
+                </x-enterprise.stat-card>
+            </x-enterprise.stat-grid>
 
             <!-- 2. GRID GRAFIK UTAMA: BEBAN KERJA LOGBOOK & TREN PRESENSI (2 KOLOM KOMPAK) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -272,79 +263,55 @@
                 </div>
 
                 <!-- 4 Kolom Periode Interaktif -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <x-enterprise.stat-grid :cols="4">
                     <!-- 1. Tahun Ini -->
-                    <button type="button" 
-                            @click="toggle('tahun_ini')"
-                            class="text-left p-4 rounded-xl border transition-all cursor-pointer relative"
-                            :class="activeCategory === 'tahun_ini' ? 'bg-rose-50 border-rose-400 ring-2 ring-rose-300 shadow-xs' : 'bg-rose-50/60 border-rose-200 hover:bg-rose-50 hover:border-rose-300'">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-semibold text-rose-800">Tahun Ini ({{ date('Y') }})</span>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                                  :class="activeCategory === 'tahun_ini' ? 'bg-rose-600 text-white' : 'bg-rose-200/80 text-rose-800'">
-                                <span x-show="activeCategory === 'tahun_ini'">Dipilih ▼</span>
-                                <span x-show="activeCategory !== 'tahun_ini'">Klik Lihat</span>
-                            </span>
-                        </div>
-                        <div class="mt-2 text-2xl font-black text-rose-900 font-mono">
-                            {{ $retirementRadar['summary']['tahun_ini'] }} <span class="text-xs font-normal text-rose-700">Pegawai</span>
-                        </div>
-                    </button>
+                    <x-enterprise.stat-card
+                        :title="'Tahun Ini (' . date('Y') . ')'"
+                        :value="$retirementRadar['summary']['tahun_ini']"
+                        suffix="Pegawai"
+                        icon="calendar-off"
+                        color="rose"
+                        @click="toggle('tahun_ini')"
+                        activeWhen="activeCategory === 'tahun_ini'"
+                        subtitle="Klik untuk melihat rincian"
+                    />
 
                     <!-- 2. 1 Tahun ke Depan -->
-                    <button type="button" 
-                            @click="toggle('tahun_1')"
-                            class="text-left p-4 rounded-xl border transition-all cursor-pointer relative"
-                            :class="activeCategory === 'tahun_1' ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-300 shadow-xs' : 'bg-amber-50/60 border-amber-200 hover:bg-amber-50 hover:border-amber-300'">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-semibold text-amber-800">1 Tahun ke Depan ({{ date('Y') + 1 }})</span>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                                  :class="activeCategory === 'tahun_1' ? 'bg-amber-600 text-white' : 'bg-amber-200/80 text-amber-800'">
-                                <span x-show="activeCategory === 'tahun_1'">Dipilih ▼</span>
-                                <span x-show="activeCategory !== 'tahun_1'">Klik Lihat</span>
-                            </span>
-                        </div>
-                        <div class="mt-2 text-2xl font-black text-amber-900 font-mono">
-                            {{ $retirementRadar['summary']['tahun_1'] }} <span class="text-xs font-normal text-amber-700">Pegawai</span>
-                        </div>
-                    </button>
+                    <x-enterprise.stat-card
+                        :title="'1 Tahun ke Depan (' . (date('Y') + 1) . ')'"
+                        :value="$retirementRadar['summary']['tahun_1']"
+                        suffix="Pegawai"
+                        icon="hourglass"
+                        color="amber"
+                        @click="toggle('tahun_1')"
+                        activeWhen="activeCategory === 'tahun_1'"
+                        subtitle="Klik untuk melihat rincian"
+                    />
 
                     <!-- 3. 2 Tahun ke Depan -->
-                    <button type="button" 
-                            @click="toggle('tahun_2')"
-                            class="text-left p-4 rounded-xl border transition-all cursor-pointer relative"
-                            :class="activeCategory === 'tahun_2' ? 'bg-blue-50 border-blue-400 ring-2 ring-blue-300 shadow-xs' : 'bg-blue-50/60 border-blue-200 hover:bg-blue-50 hover:border-blue-300'">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-semibold text-blue-800">2 Tahun ke Depan ({{ date('Y') + 2 }})</span>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                                  :class="activeCategory === 'tahun_2' ? 'bg-blue-600 text-white' : 'bg-blue-200/80 text-blue-800'">
-                                <span x-show="activeCategory === 'tahun_2'">Dipilih ▼</span>
-                                <span x-show="activeCategory !== 'tahun_2'">Klik Lihat</span>
-                            </span>
-                        </div>
-                        <div class="mt-2 text-2xl font-black text-blue-900 font-mono">
-                            {{ $retirementRadar['summary']['tahun_2'] }} <span class="text-xs font-normal text-blue-700">Pegawai</span>
-                        </div>
-                    </button>
+                    <x-enterprise.stat-card
+                        :title="'2 Tahun ke Depan (' . (date('Y') + 2) . ')'"
+                        :value="$retirementRadar['summary']['tahun_2']"
+                        suffix="Pegawai"
+                        icon="calendar-days"
+                        color="blue"
+                        @click="toggle('tahun_2')"
+                        activeWhen="activeCategory === 'tahun_2'"
+                        subtitle="Klik untuk melihat rincian"
+                    />
 
                     <!-- 4. 3 - 5 Tahun ke Depan -->
-                    <button type="button" 
-                            @click="toggle('tahun_3_sd_5')"
-                            class="text-left p-4 rounded-xl border transition-all cursor-pointer relative"
-                            :class="activeCategory === 'tahun_3_sd_5' ? 'bg-slate-100 border-slate-400 ring-2 ring-slate-300 shadow-xs' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300'">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-700">3 - 5 Tahun ke Depan</span>
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                                  :class="activeCategory === 'tahun_3_sd_5' ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-700'">
-                                <span x-show="activeCategory === 'tahun_3_sd_5'">Dipilih ▼</span>
-                                <span x-show="activeCategory !== 'tahun_3_sd_5'">Klik Lihat</span>
-                            </span>
-                        </div>
-                        <div class="mt-2 text-2xl font-black text-slate-800 font-mono">
-                            {{ $retirementRadar['summary']['tahun_3_sd_5'] }} <span class="text-xs font-normal text-slate-600">Pegawai</span>
-                        </div>
-                    </button>
-                </div>
+                    <x-enterprise.stat-card
+                        title="3 - 5 Tahun ke Depan"
+                        :value="$retirementRadar['summary']['tahun_3_sd_5']"
+                        suffix="Pegawai"
+                        icon="calendar"
+                        color="slate"
+                        @click="toggle('tahun_3_sd_5')"
+                        activeWhen="activeCategory === 'tahun_3_sd_5'"
+                        subtitle="Klik untuk melihat rincian"
+                    />
+                </x-enterprise.stat-grid>
 
                 <!-- Bagian Tabel Rincian Data Pegawai (Muncul Dinamis Saat Diklik) -->
                 <div x-show="activeCategory !== null" 

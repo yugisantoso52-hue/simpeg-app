@@ -66,51 +66,42 @@
         <div class="w-full max-w-[1920px] mx-auto space-y-6 px-3 sm:px-6 lg:px-8 xl:px-10">
 
             {{-- 4 Kartu Statistik Agregat Formasi --}}
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-gray-500 uppercase tracking-wider">Kebutuhan Formasi (ABK)</div>
-                        <div class="text-3xl font-black text-blue-600 mt-1">{{ $totalKebutuhan }} <span class="text-sm font-normal text-gray-500">Pegawai</span></div>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
-                        📋
-                    </div>
-                </div>
+            <x-enterprise.stat-grid :cols="4">
+                <x-enterprise.stat-card
+                    title="Kebutuhan Formasi (ABK)"
+                    :value="$totalKebutuhan"
+                    suffix="Pegawai"
+                    icon="clipboard-list"
+                    color="blue"
+                />
 
-                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-gray-500 uppercase tracking-wider">Bezetting (Pegawai Riil)</div>
-                        <div class="text-3xl font-black text-gray-900 mt-1">{{ $totalBezetting }} <span class="text-sm font-normal text-gray-500">Pegawai</span></div>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-gray-50 text-gray-700 flex items-center justify-center text-xl font-bold">
-                        👥
-                    </div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Bezetting (Pegawai Riil)"
+                    :value="$totalBezetting"
+                    suffix="Pegawai"
+                    icon="users"
+                    color="slate"
+                />
 
-                <div class="bg-white rounded-xl p-5 border border-rose-200/80 shadow-sm flex items-center justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-rose-600 uppercase tracking-wider flex items-center gap-1.5">
-                            <span>Defisit Formasi</span>
-                            <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-100 text-rose-800">CASN/PPPK</span>
-                        </div>
-                        <div class="text-3xl font-black text-rose-600 mt-1">{{ $totalKurang }} <span class="text-sm font-normal text-rose-400">Formasi</span></div>
-                        <div class="text-[11px] text-rose-600 font-semibold mt-0.5">Rekomendasi Pengadaan Riil</div>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl font-bold">
-                        📢
-                    </div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Defisit Formasi"
+                    :value="$totalKurang"
+                    suffix="Formasi"
+                    trend="CASN/PPPK"
+                    trendDirection="down"
+                    subtitle="Rekomendasi Pengadaan Riil"
+                    icon="alert-triangle"
+                    color="rose"
+                />
 
-                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-amber-600 uppercase tracking-wider">Kelebihan Pegawai</div>
-                        <div class="text-3xl font-black text-amber-600 mt-1">{{ $totalLebih }} <span class="text-sm font-normal text-amber-400">Posisi</span></div>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl font-bold">
-                        ℹ️
-                    </div>
-                </div>
-            </div>
+                <x-enterprise.stat-card
+                    title="Kelebihan Pegawai"
+                    :value="$totalLebih"
+                    suffix="Posisi"
+                    icon="info"
+                    color="amber"
+                />
+            </x-enterprise.stat-grid>
 
             {{-- Filter Unit Kerja --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">

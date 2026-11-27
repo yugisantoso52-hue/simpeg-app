@@ -33,32 +33,42 @@
             @endif
 
             {{-- KARTU STATISTIK --}}
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200">
-                    <div class="text-xs font-semibold text-gray-500 uppercase">Total Studi Lanjut</div>
-                    <div class="mt-1 text-2xl font-bold text-gray-900">{{ $statistics['total'] ?? 0 }}</div>
-                </div>
+            <x-enterprise.stat-grid :cols="5">
+                <x-enterprise.stat-card
+                    title="Total Studi Lanjut"
+                    :value="$statistics['total'] ?? 0"
+                    color="slate"
+                    icon="graduation-cap"
+                />
 
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-blue-200 bg-blue-50/50">
-                    <div class="text-xs font-semibold text-blue-700 uppercase">Sedang Studi</div>
-                    <div class="mt-1 text-2xl font-bold text-blue-600">{{ $statistics['sedang_studi'] ?? 0 }}</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Sedang Studi"
+                    :value="$statistics['sedang_studi'] ?? 0"
+                    color="blue"
+                    icon="book-open"
+                />
 
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-amber-200 bg-amber-50/50">
-                    <div class="text-xs font-semibold text-amber-700 uppercase">Masa Perpanjangan</div>
-                    <div class="mt-1 text-2xl font-bold text-amber-600">{{ $statistics['perpanjangan'] ?? 0 }}</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Masa Perpanjangan"
+                    :value="$statistics['perpanjangan'] ?? 0"
+                    color="amber"
+                    icon="hourglass"
+                />
 
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-emerald-200 bg-emerald-50/50">
-                    <div class="text-xs font-semibold text-emerald-700 uppercase">Lulus / Selesai</div>
-                    <div class="mt-1 text-2xl font-bold text-emerald-600">{{ $statistics['lulus'] ?? 0 }}</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Lulus / Selesai"
+                    :value="$statistics['lulus'] ?? 0"
+                    color="emerald"
+                    icon="check-circle"
+                />
 
-                <div class="bg-white rounded-xl shadow-sm p-4 border border-purple-200 bg-purple-50/50">
-                    <div class="text-xs font-semibold text-purple-700 uppercase">Studi Luar Negeri</div>
-                    <div class="mt-1 text-2xl font-bold text-purple-600">{{ $statistics['luar_negeri'] ?? 0 }}</div>
-                </div>
-            </div>
+                <x-enterprise.stat-card
+                    title="Studi Luar Negeri"
+                    :value="$statistics['luar_negeri'] ?? 0"
+                    color="purple"
+                    icon="award"
+                />
+            </x-enterprise.stat-grid>
 
             {{-- FILTER & PENCARIAN --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200">

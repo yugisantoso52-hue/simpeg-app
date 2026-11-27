@@ -113,43 +113,55 @@
             @endif
 
             <!-- KPI Cards Statistik Hari Ini -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
-                <div class="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
-                    <div class="text-[9.5px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Total Pegawai</div>
-                    <div class="text-lg sm:text-2xl font-black text-slate-900 mt-1 sm:mt-1.5">{{ $statistics['total_pegawai'] ?? $statistics['total_users'] }}</div>
-                    <div class="text-[9px] sm:text-[10px] text-slate-400 mt-0.5 truncate">Terdaftar dalam sistem</div>
-                </div>
+            <x-enterprise.stat-grid :cols="6">
+                <x-enterprise.stat-card
+                    title="Total Pegawai"
+                    :value="$statistics['total_pegawai'] ?? $statistics['total_users']"
+                    icon="users"
+                    color="slate"
+                    subtitle="Terdaftar dalam sistem"
+                />
 
-                <div class="bg-emerald-50/60 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-emerald-200 shadow-xs flex flex-col justify-between">
-                    <div class="text-[9.5px] sm:text-[11px] font-bold text-emerald-800 uppercase tracking-wider truncate">Hadir Hari Ini</div>
-                    <div class="text-lg sm:text-2xl font-black text-emerald-800 mt-1 sm:mt-1.5">{{ $statistics['total_present'] }}</div>
-                    <div class="text-[9px] sm:text-[10px] text-emerald-600 mt-0.5 truncate">{{ \Carbon\Carbon::today()->translatedFormat('d M Y') }}</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Hadir Hari Ini"
+                    :value="$statistics['total_present']"
+                    icon="user-check"
+                    color="emerald"
+                    :subtitle="\Carbon\Carbon::today()->translatedFormat('d M Y')"
+                />
 
-                <div class="bg-blue-50/60 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-blue-200 shadow-xs flex flex-col justify-between">
-                    <div class="text-[9.5px] sm:text-[11px] font-bold text-blue-800 uppercase tracking-wider truncate">WFO (Kantor)</div>
-                    <div class="text-lg sm:text-2xl font-black text-blue-800 mt-1 sm:mt-1.5">{{ $statistics['total_wfo'] }}</div>
-                    <div class="text-[9px] sm:text-[10px] text-blue-600 mt-0.5 truncate">Presensi di kantor</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="WFO (Kantor)"
+                    :value="$statistics['total_wfo']"
+                    icon="building-2"
+                    color="blue"
+                    subtitle="Presensi di kantor"
+                />
 
-                <div class="bg-indigo-50/60 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-indigo-200 shadow-xs flex flex-col justify-between">
-                    <div class="text-[9.5px] sm:text-[11px] font-bold text-indigo-800 uppercase tracking-wider truncate">WFH (Rumah)</div>
-                    <div class="text-lg sm:text-2xl font-black text-indigo-800 mt-1 sm:mt-1.5">{{ $statistics['total_wfh'] }}</div>
-                    <div class="text-[9px] sm:text-[10px] text-indigo-600 mt-0.5 truncate">Presensi WFH</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="WFH (Rumah)"
+                    :value="$statistics['total_wfh']"
+                    icon="map-pin"
+                    color="indigo"
+                    subtitle="Presensi WFH"
+                />
 
-                <div class="bg-amber-50/60 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-amber-200 shadow-xs flex flex-col justify-between">
-                    <div class="text-[9.5px] sm:text-[11px] font-bold text-amber-800 uppercase tracking-wider truncate">Terlambat</div>
-                    <div class="text-lg sm:text-2xl font-black text-amber-800 mt-1 sm:mt-1.5">{{ $statistics['total_late'] }}</div>
-                    <div class="text-[9px] sm:text-[10px] text-amber-600 mt-0.5 truncate">&gt; 07.30 WIB</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Terlambat"
+                    :value="$statistics['total_late']"
+                    icon="clock"
+                    color="amber"
+                    subtitle="> 07.30 WIB"
+                />
 
-                <div class="p-3 sm:p-4 rounded-xl sm:rounded-2xl border {{ ($statistics['total_suspicious'] ?? 0) > 0 ? 'border-rose-300 bg-rose-50/80' : 'border-slate-200 bg-white' }} shadow-xs flex flex-col justify-between">
-                    <div class="text-[9.5px] sm:text-[11px] font-bold {{ ($statistics['total_suspicious'] ?? 0) > 0 ? 'text-rose-700' : 'text-slate-500' }} uppercase tracking-wider truncate">Anomali / Titip</div>
-                    <div class="text-lg sm:text-2xl font-black {{ ($statistics['total_suspicious'] ?? 0) > 0 ? 'text-rose-700' : 'text-slate-900' }} mt-1 sm:mt-1.5">{{ $statistics['total_suspicious'] ?? 0 }}</div>
-                    <div class="text-[9px] sm:text-[10px] {{ ($statistics['total_suspicious'] ?? 0) > 0 ? 'text-rose-600' : 'text-slate-400' }} mt-0.5 truncate">Indikasi anomali</div>
-                </div>
-            </div>
+                <x-enterprise.stat-card
+                    title="Anomali / Titip"
+                    :value="$statistics['total_suspicious'] ?? 0"
+                    icon="alert-triangle"
+                    :color="($statistics['total_suspicious'] ?? 0) > 0 ? 'rose' : 'slate'"
+                    subtitle="Indikasi anomali"
+                />
+            </x-enterprise.stat-grid>
 
             <!-- Tab Switcher Mode Presensi -->
             <div class="bg-gray-100 p-1 rounded-xl border border-gray-200 flex items-center gap-1">

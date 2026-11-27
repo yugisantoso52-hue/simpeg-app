@@ -56,7 +56,7 @@
             @endif
 
             {{-- Kartu Statistik Kategori Interaktif (Klik untuk Memfilter Data) --}}
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <x-enterprise.stat-grid :cols="(isset($statistics['pns']) && isset($statistics['pppk'])) ? 4 : 3">
                 <x-enterprise.stat-card 
                     :title="'Total ' . $kategori" 
                     :value="$statistics['total'] ?? 0" 
@@ -103,7 +103,7 @@
                     :href="url()->current() . '?filter=aktif'"
                     :active="($filter ?? '') === 'aktif'"
                 />
-            </div>
+            </x-enterprise.stat-grid>
 
             {{-- Card & Tabel Kategori --}}
             <x-enterprise.card>

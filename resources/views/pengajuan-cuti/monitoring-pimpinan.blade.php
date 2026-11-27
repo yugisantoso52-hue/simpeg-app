@@ -35,27 +35,35 @@
             @include('pengajuan-cuti._ringkasan_regulasi_bkn', ['defaultOpen' => false])
 
             {{-- INDIKATOR KUNCI --}}
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-4">
-                    <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Pegawai Aktif</div>
-                    <div class="mt-1 text-2xl font-black text-slate-900">{{ $totalPegawaiAktif }}</div>
-                </div>
+            <x-enterprise.stat-grid :cols="4">
+                <x-enterprise.stat-card
+                    title="Total Pegawai Aktif"
+                    :value="$totalPegawaiAktif"
+                    icon="users"
+                    color="slate"
+                />
 
-                <div class="bg-indigo-50/70 rounded-xl shadow-xs border border-indigo-200 p-4">
-                    <div class="text-xs font-bold text-indigo-900 uppercase tracking-wider">Total Cuti Diajukan</div>
-                    <div class="mt-1 text-2xl font-black text-indigo-950">{{ $totalCutiTahunIni }}</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Total Cuti Diajukan"
+                    :value="$totalCutiTahunIni"
+                    icon="clipboard-list"
+                    color="indigo"
+                />
 
-                <div class="bg-amber-50/70 rounded-xl shadow-xs border border-amber-200 p-4">
-                    <div class="text-xs font-bold text-amber-900 uppercase tracking-wider">Menunggu Persetujuan</div>
-                    <div class="mt-1 text-2xl font-black text-amber-950">{{ $cutiMenunggu }}</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Menunggu Persetujuan"
+                    :value="$cutiMenunggu"
+                    icon="hourglass"
+                    color="amber"
+                />
 
-                <div class="bg-emerald-50/70 rounded-xl shadow-xs border border-emerald-200 p-4">
-                    <div class="text-xs font-bold text-emerald-900 uppercase tracking-wider">Cuti Disetujui</div>
-                    <div class="mt-1 text-2xl font-black text-emerald-950">{{ $cutiDisetujui }}</div>
-                </div>
-            </div>
+                <x-enterprise.stat-card
+                    title="Cuti Disetujui"
+                    :value="$cutiDisetujui"
+                    icon="check-circle"
+                    color="emerald"
+                />
+            </x-enterprise.stat-grid>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 

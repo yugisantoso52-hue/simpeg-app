@@ -36,22 +36,28 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
-                <div class="bg-white rounded-xl shadow p-5 border hover:shadow-lg transition">
-                    <div class="text-sm text-gray-500">Total Diklat</div>
-                    <div class="mt-2 text-3xl font-bold text-blue-600">{{ $statistics['total'] }}</div>
-                </div>
+            <x-enterprise.stat-grid :cols="3" class="mb-6">
+                <x-enterprise.stat-card
+                    title="Total Diklat"
+                    :value="$statistics['total']"
+                    color="blue"
+                    icon="graduation-cap"
+                />
 
-                <div class="bg-white rounded-xl shadow p-5 border hover:shadow-lg transition">
-                    <div class="text-sm text-gray-500">Diklat Aktif</div>
-                    <div class="mt-2 text-3xl font-bold text-green-600">{{ $statistics['aktif'] }}</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Diklat Aktif"
+                    :value="$statistics['aktif']"
+                    color="green"
+                    icon="check-circle"
+                />
 
-                <div class="bg-white rounded-xl shadow p-5 border hover:shadow-lg transition">
-                    <div class="text-sm text-gray-500">Tidak Aktif</div>
-                    <div class="mt-2 text-3xl font-bold text-red-600">{{ $statistics['nonaktif'] }}</div>
-                </div>
-            </div>
+                <x-enterprise.stat-card
+                    title="Tidak Aktif"
+                    :value="$statistics['nonaktif']"
+                    color="red"
+                    icon="x-circle"
+                />
+            </x-enterprise.stat-grid>
 
             <div class="bg-white rounded-xl shadow border">
                 <div class="p-5 border-b border-gray-100">

@@ -191,55 +191,71 @@
                     </p>
 
                     {{-- Highlight Angka Eksekutif Real-Time (Muncul 1 per 1) --}}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2 min-h-[110px]">
+                    <x-enterprise.stat-grid :cols="4" class="pt-2 min-h-[110px]">
                         {{-- KPI 1 --}}
-                        <div x-show="viewMode === 'all' || currentStep >= 1"
-                             x-transition:enter="transition ease-out duration-300"
-                             x-transition:enter-start="opacity-0 translate-y-3 scale-95"
-                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                             :class="viewMode === 'slides' && currentStep === 1 ? 'ring-2 ring-emerald-400 bg-white/15' : 'bg-white/10'"
-                             class="step-item p-4 rounded-2xl border border-white/15 backdrop-blur-xs transition">
-                            <div class="text-[11px] text-slate-300 uppercase font-bold">1. Total SDM Aktif</div>
-                            <div class="text-2xl font-black text-white mt-1">{{ $kpis['total_aktif'] ?? $kpis['total_pegawai'] ?? 83 }} <span class="text-xs font-semibold text-emerald-300">Pegawai</span></div>
-                            <div class="text-[11px] text-slate-300 mt-0.5">Dosen, Tendik &amp; PHL</div>
-                        </div>
+                        <x-enterprise.stat-card
+                            title="1. Total SDM Aktif"
+                            :value="$kpis['total_aktif'] ?? $kpis['total_pegawai'] ?? 83"
+                            suffix="Pegawai"
+                            icon="users"
+                            color="emerald"
+                            subtitle="Dosen, Tendik & PHL"
+                            x-show="viewMode === 'all' || currentStep >= 1"
+                            x-transition:enter="transition ease-out duration-300"
+                            x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            activeWhen="viewMode === 'slides' && currentStep === 1"
+                            class="step-item"
+                        />
 
                         {{-- KPI 2 --}}
-                        <div x-show="viewMode === 'all' || currentStep >= 2"
-                             x-transition:enter="transition ease-out duration-300"
-                             x-transition:enter-start="opacity-0 translate-y-3 scale-95"
-                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                             :class="viewMode === 'slides' && currentStep === 2 ? 'ring-2 ring-emerald-400 bg-white/15' : 'bg-white/10'"
-                             class="step-item p-4 rounded-2xl border border-white/15 backdrop-blur-xs transition">
-                            <div class="text-[11px] text-slate-300 uppercase font-bold">2. Bezetting vs Formasi ABK</div>
-                            <div class="text-2xl font-black text-white mt-1">{{ $totalBezetting }} <span class="text-xs font-semibold text-amber-300">/ {{ $totalKebutuhanFormasi }}</span></div>
-                            <div class="text-[11px] text-slate-300 mt-0.5">{{ $defisitJabatan->count() }} Jabatan Perlu Tambahan</div>
-                        </div>
+                        <x-enterprise.stat-card
+                            title="2. Bezetting vs Formasi ABK"
+                            :value="$totalBezetting"
+                            :suffix="'/ ' . $totalKebutuhanFormasi"
+                            icon="building-2"
+                            color="amber"
+                            :subtitle="$defisitJabatan->count() . ' Jabatan Perlu Tambahan'"
+                            x-show="viewMode === 'all' || currentStep >= 2"
+                            x-transition:enter="transition ease-out duration-300"
+                            x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            activeWhen="viewMode === 'slides' && currentStep === 2"
+                            class="step-item"
+                        />
 
                         {{-- KPI 3 --}}
-                        <div x-show="viewMode === 'all' || currentStep >= 3"
-                             x-transition:enter="transition ease-out duration-300"
-                             x-transition:enter-start="opacity-0 translate-y-3 scale-95"
-                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                             :class="viewMode === 'slides' && currentStep === 3 ? 'ring-2 ring-emerald-400 bg-white/15' : 'bg-white/10'"
-                             class="step-item p-4 rounded-2xl border border-white/15 backdrop-blur-xs transition">
-                            <div class="text-[11px] text-slate-300 uppercase font-bold">3. Talent Pool (Kotak 7–9)</div>
-                            <div class="text-2xl font-black text-emerald-400 mt-1">{{ $talentPoolCount }} <span class="text-xs font-semibold text-white">Kandidat</span></div>
-                            <div class="text-[11px] text-slate-300 mt-0.5">Siap Suksesi Kepemimpinan</div>
-                        </div>
+                        <x-enterprise.stat-card
+                            title="3. Talent Pool (Kotak 7–9)"
+                            :value="$talentPoolCount"
+                            suffix="Kandidat"
+                            icon="crown"
+                            color="emerald"
+                            subtitle="Siap Suksesi Kepemimpinan"
+                            x-show="viewMode === 'all' || currentStep >= 3"
+                            x-transition:enter="transition ease-out duration-300"
+                            x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            activeWhen="viewMode === 'slides' && currentStep === 3"
+                            class="step-item"
+                        />
 
                         {{-- KPI 4 --}}
-                        <div x-show="viewMode === 'all' || currentStep >= 4"
-                             x-transition:enter="transition ease-out duration-300"
-                             x-transition:enter-start="opacity-0 translate-y-3 scale-95"
-                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                             :class="viewMode === 'slides' && currentStep === 4 ? 'ring-2 ring-emerald-400 bg-white/15' : 'bg-white/10'"
-                             class="step-item p-4 rounded-2xl border border-white/15 backdrop-blur-xs transition">
-                            <div class="text-[11px] text-slate-300 uppercase font-bold">4. Radar Pensiun (1–5 Thn)</div>
-                            <div class="text-2xl font-black text-amber-300 mt-1">{{ $retirementRadar['summary']['total_5_tahun'] ?? (isset($retirementRadar['within_3_years']) ? count($retirementRadar['within_3_years']) : 0) }} <span class="text-xs font-semibold text-white">ASN</span></div>
-                            <div class="text-[11px] text-slate-300 mt-0.5">Perencanaan Regenerasi Dini</div>
-                        </div>
-                    </div>
+                        <x-enterprise.stat-card
+                            title="4. Radar Pensiun (1–5 Thn)"
+                            :value="$retirementRadar['summary']['total_5_tahun'] ?? (isset($retirementRadar['within_3_years']) ? count($retirementRadar['within_3_years']) : 0)"
+                            suffix="ASN"
+                            icon="hourglass"
+                            color="amber"
+                            subtitle="Perencanaan Regenerasi Dini"
+                            x-show="viewMode === 'all' || currentStep >= 4"
+                            x-transition:enter="transition ease-out duration-300"
+                            x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            activeWhen="viewMode === 'slides' && currentStep === 4"
+                            class="step-item"
+                        />
+                    </x-enterprise.stat-grid>
                 </div>
 
                 {{-- Footer Slide 1 --}}

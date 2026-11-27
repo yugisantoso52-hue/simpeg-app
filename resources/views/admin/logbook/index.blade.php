@@ -122,63 +122,52 @@
             @endif
 
             {{-- STATISTIK VERIFIKASI ADMIN (PROFESIONAL, RESPONSIF HP & DESKTOP) --}}
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
+            <x-enterprise.stat-grid :cols="5">
                 {{-- Total Entri --}}
-                <div class="col-span-2 sm:col-span-1 bg-white rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-slate-200 hover:border-slate-300 transition flex items-center sm:flex-col sm:items-start justify-between sm:justify-start gap-2">
-                    <div class="flex items-center gap-2 sm:block">
-                        <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 sm:hidden">
-                            📊
-                        </div>
-                        <div>
-                            <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Total Entri</div>
-                            <div class="text-lg sm:text-2xl font-black text-slate-900 mt-0.5">{{ $statistics['total'] }}</div>
-                        </div>
-                    </div>
-                    <div class="text-[10px] sm:text-[11px] font-semibold text-slate-500 bg-slate-100 sm:bg-transparent px-2 py-0.5 sm:p-0 rounded-md">
-                        {{ $statistics['total_jam'] }} Jam Kinerja
-                    </div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Total Entri"
+                    :value="$statistics['total']"
+                    icon="clipboard-list"
+                    color="slate"
+                    :subtitle="$statistics['total_jam'] . ' Jam Kinerja'"
+                />
 
                 {{-- Menunggu Verifikasi --}}
-                <div class="bg-amber-50/80 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-amber-200/90 hover:border-amber-300 transition flex flex-col justify-between">
-                    <div class="flex items-center justify-between gap-1">
-                        <span class="text-[10px] sm:text-xs font-bold text-amber-800 uppercase tracking-wider">Menunggu</span>
-                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                    </div>
-                    <div class="text-lg sm:text-2xl font-black text-amber-900 mt-1 sm:mt-1.5">{{ $statistics['menunggu'] }}</div>
-                    <div class="text-[9.5px] sm:text-[11px] font-semibold text-amber-700 mt-0.5 sm:mt-1 truncate">Perlu Disahkan</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Menunggu"
+                    :value="$statistics['menunggu']"
+                    icon="hourglass"
+                    color="amber"
+                    subtitle="Perlu Disahkan"
+                />
 
                 {{-- Telah Disetujui --}}
-                <div class="bg-emerald-50/80 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-emerald-200/90 hover:border-emerald-300 transition flex flex-col justify-between">
-                    <div class="flex items-center justify-between gap-1">
-                        <span class="text-[10px] sm:text-xs font-bold text-emerald-800 uppercase tracking-wider">Disetujui</span>
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    </div>
-                    <div class="text-lg sm:text-2xl font-black text-emerald-900 mt-1 sm:mt-1.5">{{ $statistics['disetujui'] }}</div>
-                    <div class="text-[9.5px] sm:text-[11px] font-semibold text-emerald-700 mt-0.5 sm:mt-1 truncate">Kinerja Valid</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Disetujui"
+                    :value="$statistics['disetujui']"
+                    icon="check-circle"
+                    color="emerald"
+                    subtitle="Kinerja Valid"
+                />
 
                 {{-- Perlu Revisi --}}
-                <div class="bg-orange-50/80 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-orange-200/90 hover:border-orange-300 transition flex flex-col justify-between">
-                    <div class="flex items-center justify-between gap-1">
-                        <span class="text-[10px] sm:text-xs font-bold text-orange-800 uppercase tracking-wider">Revisi</span>
-                        <span class="w-2 h-2 rounded-full bg-orange-500"></span>
-                    </div>
-                    <div class="text-lg sm:text-2xl font-black text-orange-900 mt-1 sm:mt-1.5">{{ $statistics['perlu_revisi'] }}</div>
-                    <div class="text-[9.5px] sm:text-[11px] font-semibold text-orange-700 mt-0.5 sm:mt-1 truncate">Dikembalikan</div>
-                </div>
+                <x-enterprise.stat-card
+                    title="Revisi"
+                    :value="$statistics['perlu_revisi']"
+                    icon="alert-triangle"
+                    color="orange"
+                    subtitle="Dikembalikan"
+                />
 
                 {{-- Ditolak --}}
-                <div class="bg-rose-50/80 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-rose-200/90 hover:border-rose-300 transition flex flex-col justify-between">
-                    <div class="flex items-center justify-between gap-1">
-                        <span class="text-[10px] sm:text-xs font-bold text-rose-800 uppercase tracking-wider">Ditolak</span>
-                        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-                    </div>
-                    <div class="text-lg sm:text-2xl font-black text-rose-900 mt-1 sm:mt-1.5">{{ $statistics['ditolak'] }}</div>
-                    <div class="text-[9.5px] sm:text-[11px] font-semibold text-rose-700 mt-0.5 sm:mt-1 truncate">Tidak Memenuhi</div>
-                </div>
-            </div>
+                <x-enterprise.stat-card
+                    title="Ditolak"
+                    :value="$statistics['ditolak']"
+                    icon="x-circle"
+                    color="rose"
+                    subtitle="Tidak Memenuhi"
+                />
+            </x-enterprise.stat-grid>
 
             {{-- FILTER & PENCARIAN --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">

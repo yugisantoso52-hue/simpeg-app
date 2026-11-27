@@ -102,29 +102,39 @@
             </div>
 
             {{-- Kartu Ringkasan Formasi & Beban Kerja --}}
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-                    <div class="text-xs font-semibold text-gray-500 uppercase">Total Butir Tugas</div>
-                    <div class="text-2xl font-black text-gray-900 mt-1">{{ $anjab->uraianTugas->count() }} <span class="text-sm font-normal text-gray-500">Tugas Pokok</span></div>
-                </div>
-                <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-                    <div class="text-xs font-semibold text-gray-500 uppercase">Jam Kerja Efektif (JKE)</div>
-                    <div class="text-2xl font-black text-blue-600 mt-1">{{ number_format($anjab->total_jam_beban, 1) }} <span class="text-sm font-normal text-gray-500">Jam/Tahun</span></div>
-                </div>
-                <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-                    <div class="text-xs font-semibold text-gray-500 uppercase">Kebutuhan Pegawai (ABK)</div>
-                    <div class="text-2xl font-black text-indigo-600 mt-1">{{ $anjab->kebutuhan_pegawai }} <span class="text-sm font-normal text-gray-500">≈ {{ $anjab->formasi_pembulatan }} Orang</span></div>
-                </div>
-                <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-                    <div class="text-xs font-semibold text-gray-500 uppercase">Bezetting (Pegawai Riil)</div>
-                    <div class="text-2xl font-black text-gray-900 mt-1 flex items-baseline justify-between">
-                        <span>{{ $anjab->bezetting }} <span class="text-sm font-normal text-gray-500">Orang</span></span>
-                        <span class="text-xs px-2 py-0.5 rounded-full font-bold {{ $anjab->selisih_formasi < 0 ? 'bg-rose-100 text-rose-700' : ($anjab->selisih_formasi > 0 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700') }}">
-                            {{ $anjab->status_formasi }}
-                        </span>
-                    </div>
-                </div>
-            </div>
+            <x-enterprise.stat-grid :cols="4">
+                <x-enterprise.stat-card
+                    title="Total Butir Tugas"
+                    :value="$anjab->uraianTugas->count()"
+                    suffix="Tugas Pokok"
+                    icon="clipboard-list"
+                    color="slate"
+                />
+                <x-enterprise.stat-card
+                    title="Jam Kerja Efektif (JKE)"
+                    :value="$anjab->total_jam_beban"
+                    :decimals="1"
+                    suffix="Jam/Tahun"
+                    icon="clock"
+                    color="blue"
+                />
+                <x-enterprise.stat-card
+                    title="Kebutuhan Pegawai (ABK)"
+                    :value="$anjab->kebutuhan_pegawai"
+                    :suffix="'≈ ' . $anjab->formasi_pembulatan . ' Orang'"
+                    icon="users"
+                    color="indigo"
+                />
+                <x-enterprise.stat-card
+                    title="Bezetting (Pegawai Riil)"
+                    :value="$anjab->bezetting"
+                    suffix="Orang"
+                    icon="user-check"
+                    :color="$anjab->selisih_formasi < 0 ? 'rose' : ($anjab->selisih_formasi > 0 ? 'amber' : 'emerald')"
+                    :trend="$anjab->status_formasi"
+                    :trendDirection="$anjab->selisih_formasi < 0 ? 'down' : ($anjab->selisih_formasi > 0 ? 'neutral' : 'up')"
+                />
+            </x-enterprise.stat-grid>
 
             {{-- Konten Formulir 17 Butir Standar PermenPAN-RB No. 1/2020 --}}
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">

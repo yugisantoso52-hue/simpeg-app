@@ -23,32 +23,44 @@
             @endif
 
             {{-- 6 KARTU STATISTIK LOG --}}
-            <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
-                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm text-center">
-                    <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Log</span>
-                    <h4 class="text-lg font-black text-slate-800 mt-1">{{ number_format($stats['total']) }}</h4>
-                </div>
-                <div class="bg-red-50/80 p-3.5 rounded-xl border border-red-200 shadow-sm text-center">
-                    <span class="text-[11px] text-red-600 font-bold uppercase tracking-wider">⚠️ Keamanan</span>
-                    <h4 class="text-lg font-black text-red-600 mt-1">{{ number_format($stats['security'] ?? 0) }}</h4>
-                </div>
-                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm text-center">
-                    <span class="text-[11px] text-blue-500 font-bold uppercase tracking-wider">Aktivitas Login</span>
-                    <h4 class="text-lg font-black text-blue-600 mt-1">{{ number_format($stats['login']) }}</h4>
-                </div>
-                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm text-center">
-                    <span class="text-[11px] text-emerald-500 font-bold uppercase tracking-wider">Tambah Data</span>
-                    <h4 class="text-lg font-black text-emerald-600 mt-1">{{ number_format($stats['create']) }}</h4>
-                </div>
-                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm text-center">
-                    <span class="text-[11px] text-amber-500 font-bold uppercase tracking-wider">Edit Data</span>
-                    <h4 class="text-lg font-black text-amber-600 mt-1">{{ number_format($stats['update']) }}</h4>
-                </div>
-                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm text-center">
-                    <span class="text-[11px] text-sky-500 font-bold uppercase tracking-wider">Upload Berkas</span>
-                    <h4 class="text-lg font-black text-sky-600 mt-1">{{ number_format($stats['upload']) }}</h4>
-                </div>
-            </div>
+            <x-enterprise.stat-grid :cols="6">
+                <x-enterprise.stat-card
+                    title="Total Log"
+                    :value="$stats['total'] ?? 0"
+                    icon="history"
+                    color="slate"
+                />
+                <x-enterprise.stat-card
+                    title="Keamanan"
+                    :value="$stats['security'] ?? 0"
+                    icon="shield-check"
+                    color="red"
+                />
+                <x-enterprise.stat-card
+                    title="Aktivitas Login"
+                    :value="$stats['login'] ?? 0"
+                    icon="user-check"
+                    color="blue"
+                />
+                <x-enterprise.stat-card
+                    title="Tambah Data"
+                    :value="$stats['create'] ?? 0"
+                    icon="user-plus"
+                    color="emerald"
+                />
+                <x-enterprise.stat-card
+                    title="Edit Data"
+                    :value="$stats['update'] ?? 0"
+                    icon="file-text"
+                    color="amber"
+                />
+                <x-enterprise.stat-card
+                    title="Upload Berkas"
+                    :value="$stats['upload'] ?? 0"
+                    icon="inbox"
+                    color="sky"
+                />
+            </x-enterprise.stat-grid>
 
             {{-- FILTER & PENCARIAN --}}
             <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">

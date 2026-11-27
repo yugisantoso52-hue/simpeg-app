@@ -87,6 +87,33 @@
         @endif
 
         {{-- Filter & Statistik --}}
+        <x-enterprise.stat-grid :cols="3">
+            <x-enterprise.stat-card
+                title="Jabatan Sasaran"
+                :value="method_exists($jabatans, 'total') ? $jabatans->total() : $jabatans->count()"
+                suffix="Jabatan"
+                icon="briefcase"
+                color="slate"
+                :subtitle="'Rencana Suksesi Tahun ' . $tahun"
+            />
+            <x-enterprise.stat-card
+                title="Total Nominasi Suksesi"
+                :value="$totalNominasi"
+                suffix="Kandidat"
+                icon="crown"
+                color="indigo"
+                subtitle="Terdaftar dalam Pipeline Suksesi"
+            />
+            <x-enterprise.stat-card
+                title="Siap Sekarang (Ready Now)"
+                :value="$readyNowCount"
+                suffix="Kandidat"
+                icon="check-circle"
+                color="emerald"
+                subtitle="Memenuhi Syarat Jabatan Target"
+            />
+        </x-enterprise.stat-grid>
+
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
             <form method="GET" action="{{ route('manajemen-talenta.suksesi.index') }}" class="flex flex-wrap items-end justify-between gap-4">
                 <div class="flex flex-wrap items-center gap-4">
@@ -107,21 +134,6 @@
                                 <option value="{{ $uk->id }}" {{ $unitKerjaId == $uk->id ? 'selected' : '' }}>{{ $uk->nama_unit }}</option>
                             @endforeach
                         </select>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <div class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-center">
-                        <span class="block text-[10px] uppercase font-bold text-slate-500">Jabatan Sasaran</span>
-                        <span class="text-lg font-black text-slate-800">{{ method_exists($jabatans, 'total') ? $jabatans->total() : $jabatans->count() }}</span>
-                    </div>
-                    <div class="px-4 py-2 bg-indigo-50 border border-indigo-200 rounded-xl text-center">
-                        <span class="block text-[10px] uppercase font-bold text-indigo-600">Total Nominasi Suksesi</span>
-                        <span class="text-lg font-black text-indigo-700">{{ $totalNominasi }}</span>
-                    </div>
-                    <div class="px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
-                        <span class="block text-[10px] uppercase font-bold text-emerald-600">Siap Sekarang (Ready Now)</span>
-                        <span class="text-lg font-black text-emerald-700">{{ $readyNowCount }}</span>
                     </div>
                 </div>
             </form>

@@ -74,49 +74,40 @@
             @include('pengajuan-cuti._ringkasan_regulasi_bkn', ['defaultOpen' => false])
 
             {{-- KARTU SALDO 3 TAHUN (N, N-1, N-2) --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <x-enterprise.stat-grid :cols="3">
                 {{-- N-2 --}}
-                <div class="bg-blue-50/70 rounded-xl shadow-xs border border-blue-200 p-4">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-blue-900 uppercase tracking-wider">Tahun {{ $tahun - 2 }} (N-2)</span>
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">2 Tahun Lalu</span>
-                    </div>
-                    <div class="mt-2 text-2xl font-black text-blue-950 font-mono">
-                        {{ $catatanCuti['N-2']['sisa_formatted'] }}
-                    </div>
-                    <p class="text-[11px] text-blue-700 mt-1 leading-relaxed">
-                        Sisa kuota cuti tahun {{ $tahun - 2 }} yang belum digunakan.
-                    </p>
-                </div>
+                <x-enterprise.stat-card
+                    :title="'Tahun ' . ($tahun - 2) . ' (N-2)'"
+                    :value="$catatanCuti['N-2']['sisa_formatted']"
+                    icon="calendar"
+                    color="blue"
+                    trend="2 Tahun Lalu"
+                    trendDirection="neutral"
+                    :subtitle="'Sisa kuota cuti tahun ' . ($tahun - 2) . ' yang belum digunakan.'"
+                />
 
                 {{-- N-1 --}}
-                <div class="bg-indigo-50/70 rounded-xl shadow-xs border border-indigo-200 p-4">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-indigo-900 uppercase tracking-wider">Tahun {{ $tahun - 1 }} (N-1)</span>
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800">1 Tahun Lalu</span>
-                    </div>
-                    <div class="mt-2 text-2xl font-black text-indigo-950 font-mono">
-                        {{ $catatanCuti['N-1']['sisa_formatted'] }}
-                    </div>
-                    <p class="text-[11px] text-indigo-700 mt-1 leading-relaxed">
-                        Sisa kuota cuti tahun {{ $tahun - 1 }} yang dapat diakumulasikan.
-                    </p>
-                </div>
+                <x-enterprise.stat-card
+                    :title="'Tahun ' . ($tahun - 1) . ' (N-1)'"
+                    :value="$catatanCuti['N-1']['sisa_formatted']"
+                    icon="calendar-days"
+                    color="indigo"
+                    trend="1 Tahun Lalu"
+                    trendDirection="neutral"
+                    :subtitle="'Sisa kuota cuti tahun ' . ($tahun - 1) . ' yang dapat diakumulasikan.'"
+                />
 
                 {{-- N --}}
-                <div class="bg-emerald-50/80 rounded-xl shadow-xs border border-emerald-300 p-4">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-emerald-900 uppercase tracking-wider">Tahun {{ $tahun }} (N)</span>
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-200 text-emerald-900">Tahun Berjalan</span>
-                    </div>
-                    <div class="mt-2 text-3xl font-black text-emerald-950 font-mono">
-                        {{ $catatanCuti['N']['sisa_formatted'] }}
-                    </div>
-                    <p class="text-[11px] text-emerald-700 mt-1 leading-relaxed">
-                        Sisa hak kuota cuti tahun berjalan (dari total 12 hari kerja).
-                    </p>
-                </div>
-            </div>
+                <x-enterprise.stat-card
+                    :title="'Tahun ' . $tahun . ' (N)'"
+                    :value="$catatanCuti['N']['sisa_formatted']"
+                    icon="calendar-check"
+                    color="emerald"
+                    trend="Tahun Berjalan"
+                    trendDirection="up"
+                    subtitle="Sisa hak kuota cuti tahun berjalan (dari total 12 hari kerja)."
+                />
+            </x-enterprise.stat-grid>
 
             {{-- BUKU KENDALI CUTI (LEAVE LEDGER) --}}
             <div class="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden">

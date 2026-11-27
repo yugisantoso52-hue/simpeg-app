@@ -123,75 +123,86 @@
                     $catatanCutiIndex = $pegawai->getCatatanCutiTahunan((int) now()->year);
                     $isPppkIndex = $pegawai->isPppk();
                 @endphp
-                <div class="bg-emerald-700 rounded-xl shadow-md p-6 text-white flex flex-col md:flex-row items-center justify-between gap-6" style="background: linear-gradient(135deg, #047857 0%, #0f766e 100%);">
-                    <div>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span class="text-emerald-100 text-xs uppercase tracking-wider font-semibold">Sisa Kuota Cuti Tahunan (Tahun {{ now()->year }})</span>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-white/20 text-white border border-white/30">
-                                Status: {{ $pegawai->status_asn_cuti }} ({{ $isPppkIndex ? '4 Jenis Hak Cuti — Perbkn No. 7/2022' : '7 Jenis Hak Cuti ASN' }})
-                            </span>
-                        </div>
-                        <div class="text-3xl md:text-4xl font-extrabold mt-1">
-                            {{ $pegawai->sisa_cuti_tahunan }} <span class="text-lg font-normal text-emerald-200">/ 12 Hari Kerja</span>
-                        </div>
-                        <p class="text-xs text-emerald-100 mt-2">
-                            @if($isPppkIndex)
-                                Hak Cuti PPPK (Pasal 4 Peraturan BKN Nomor 7 Tahun 2022): Cuti Tahunan (12 hk), Cuti Sakit, Cuti Melahirkan (3 bln), dan Cuti Bersama.
-                            @else
-                                Hak Cuti PNS: Cuti Tahunan (12 hk), Cuti Besar, Cuti Sakit, Cuti Melahirkan, Cuti Alasan Penting (CAP), CLTN, dan Cuti Bersama.
-                            @endif
-                        </p>
-                        <div class="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
-                            <span class="px-2.5 py-1 rounded-lg bg-white/15 border border-white/20 font-semibold">
+                <x-enterprise.stat-grid :cols="3">
+                    <x-enterprise.stat-card
+                        :title="'Sisa Kuota Cuti Tahunan (Tahun ' . now()->year . ')'"
+                        :value="$pegawai->sisa_cuti_tahunan"
+                        suffix="/ 12 Hari Kerja"
+                        icon="cuti"
+                        color="emerald"
+                        :trend="'Status: ' . $pegawai->status_asn_cuti"
+                        trendDirection="up"
+                        :subtitle="$isPppkIndex ? '4 Jenis Hak Cuti — Perbkn No. 7/2022' : '7 Jenis Hak Cuti ASN'"
+                    >
+                        <div class="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-600">
+                            <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200 font-semibold">
                                 {{ $catatanCutiIndex['N']['label_tahun'] }}: <strong>{{ $catatanCutiIndex['N']['sisa_formatted'] }}</strong>
                             </span>
-                            <span class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15">
+                            <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200">
                                 {{ $catatanCutiIndex['N-1']['label_tahun'] }}: <strong>{{ $catatanCutiIndex['N-1']['sisa_formatted'] }}</strong>
                             </span>
-                            <span class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15">
+                            <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200">
                                 {{ $catatanCutiIndex['N-2']['label_tahun'] }}: <strong>{{ $catatanCutiIndex['N-2']['sisa_formatted'] }}</strong>
                             </span>
                         </div>
-                    </div>
-                    <div class="flex items-center gap-4 border-t md:border-t-0 md:border-l border-emerald-400/40 pt-4 md:pt-0 md:ps-6 text-center">
-                        <div>
-                            <div class="text-xs text-emerald-200 uppercase font-semibold">Total Cuti Diajukan</div>
-                            <div class="text-2xl font-bold mt-0.5">{{ $statistics['total'] ?? 0 }}</div>
-                        </div>
-                        <div>
-                            <div class="text-xs text-emerald-200 uppercase font-semibold">Sedang Diproses</div>
-                            <div class="text-2xl font-bold mt-0.5">{{ $statistics['menunggu'] ?? 0 }}</div>
-                        </div>
-                    </div>
-                </div>
+                    </x-enterprise.stat-card>
+
+                    <x-enterprise.stat-card
+                        title="Total Cuti Diajukan"
+                        :value="$statistics['total'] ?? 0"
+                        suffix="Permohonan"
+                        icon="clipboard-list"
+                        color="blue"
+                        subtitle="Seluruh riwayat pengajuan cuti Anda"
+                    />
+
+                    <x-enterprise.stat-card
+                        title="Sedang Diproses"
+                        :value="$statistics['menunggu'] ?? 0"
+                        suffix="Permohonan"
+                        icon="hourglass"
+                        color="amber"
+                        subtitle="Menunggu verifikasi & persetujuan"
+                    />
+                </x-enterprise.stat-grid>
             @else
                 {{-- STATISTIK UNTUK ADMIN & PIMPINAN --}}
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
-                    <div class="col-span-2 sm:col-span-1 bg-white rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-slate-200">
-                        <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Total Pengajuan</div>
-                        <div class="mt-1 text-lg sm:text-2xl font-black text-slate-900">{{ $statistics['total'] ?? 0 }}</div>
-                    </div>
+                <x-enterprise.stat-grid :cols="5">
+                    <x-enterprise.stat-card
+                        title="Total Pengajuan"
+                        :value="$statistics['total'] ?? 0"
+                        icon="clipboard-list"
+                        color="slate"
+                    />
 
-                    <div class="bg-amber-50/70 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-amber-200">
-                        <div class="text-[10px] sm:text-xs font-bold text-amber-800 uppercase tracking-wider truncate">Menunggu</div>
-                        <div class="mt-1 text-lg sm:text-2xl font-black text-amber-900">{{ $statistics['menunggu'] ?? 0 }}</div>
-                    </div>
+                    <x-enterprise.stat-card
+                        title="Menunggu"
+                        :value="$statistics['menunggu'] ?? 0"
+                        icon="hourglass"
+                        color="amber"
+                    />
 
-                    <div class="bg-emerald-50/70 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-emerald-200">
-                        <div class="text-[10px] sm:text-xs font-bold text-emerald-800 uppercase tracking-wider truncate">Disetujui</div>
-                        <div class="mt-1 text-lg sm:text-2xl font-black text-emerald-900">{{ $statistics['disetujui'] ?? 0 }}</div>
-                    </div>
+                    <x-enterprise.stat-card
+                        title="Disetujui"
+                        :value="$statistics['disetujui'] ?? 0"
+                        icon="check-circle"
+                        color="emerald"
+                    />
 
-                    <div class="bg-rose-50/70 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-rose-200">
-                        <div class="text-[10px] sm:text-xs font-bold text-rose-800 uppercase tracking-wider truncate">Ditolak</div>
-                        <div class="mt-1 text-lg sm:text-2xl font-black text-rose-900">{{ $statistics['ditolak'] ?? 0 }}</div>
-                    </div>
+                    <x-enterprise.stat-card
+                        title="Ditolak"
+                        :value="$statistics['ditolak'] ?? 0"
+                        icon="x-circle"
+                        color="rose"
+                    />
 
-                    <div class="bg-blue-50/70 rounded-xl sm:rounded-2xl shadow-xs p-3 sm:p-4 border border-blue-200">
-                        <div class="text-[10px] sm:text-xs font-bold text-blue-800 uppercase tracking-wider truncate">Cuti Hari Ini</div>
-                        <div class="mt-1 text-lg sm:text-2xl font-black text-blue-900">{{ $statistics['hari_ini'] ?? 0 }}</div>
-                    </div>
-                </div>
+                    <x-enterprise.stat-card
+                        title="Cuti Hari Ini"
+                        :value="$statistics['hari_ini'] ?? 0"
+                        icon="calendar-off"
+                        color="blue"
+                    />
+                </x-enterprise.stat-grid>
             @endif
 
             {{-- PANEL RINGKASAN SYARAT, KETENTUAN & PEMISAHAN HAK CUTI PNS vs PPPK --}}

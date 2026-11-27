@@ -40,43 +40,37 @@
             @endif
 
             {{-- 3 Ringkasan Statistik Notifikasi --}}
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <a href="{{ route('notifications.index') }}" 
-                   class="p-4 rounded-2xl bg-white border {{ ($filter ?? 'all') === 'all' ? 'border-[#007a3d] ring-2 ring-[#007a3d]/20' : 'border-slate-200' }} shadow-xs hover:shadow-md transition flex items-center justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Notifikasi</div>
-                        <div class="text-2xl font-black text-slate-900 mt-1">{{ $totalCount ?? 0 }}</div>
-                        <div class="text-[11px] text-slate-500 mt-0.5">Semua riwayat pemberitahuan</div>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-xl font-bold">
-                        📋
-                    </div>
-                </a>
+            <x-enterprise.stat-grid :cols="3">
+                <x-enterprise.stat-card
+                    title="Total Notifikasi"
+                    :value="$totalCount ?? 0"
+                    icon="clipboard-list"
+                    color="emerald"
+                    subtitle="Semua riwayat pemberitahuan"
+                    :href="route('notifications.index')"
+                    :active="($filter ?? 'all') === 'all'"
+                />
 
-                <a href="{{ route('notifications.index', ['filter' => 'unread']) }}" 
-                   class="p-4 rounded-2xl bg-white border {{ ($filter ?? '') === 'unread' ? 'border-rose-500 ring-2 ring-rose-500/20' : 'border-slate-200' }} shadow-xs hover:shadow-md transition flex items-center justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-rose-600 uppercase tracking-wider">Belum Dibaca</div>
-                        <div class="text-2xl font-black text-rose-600 mt-1">{{ $unreadCount ?? 0 }}</div>
-                        <div class="text-[11px] text-rose-500 mt-0.5">Memerlukan perhatian Anda</div>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl font-bold">
-                        🔔
-                    </div>
-                </a>
+                <x-enterprise.stat-card
+                    title="Belum Dibaca"
+                    :value="$unreadCount ?? 0"
+                    icon="bell"
+                    color="rose"
+                    subtitle="Memerlukan perhatian Anda"
+                    :href="route('notifications.index', ['filter' => 'unread'])"
+                    :active="($filter ?? '') === 'unread'"
+                />
 
-                <a href="{{ route('notifications.index', ['filter' => 'read']) }}" 
-                   class="p-4 rounded-2xl bg-white border {{ ($filter ?? '') === 'read' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200' }} shadow-xs hover:shadow-md transition flex items-center justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Sudah Dibaca</div>
-                        <div class="text-2xl font-black text-emerald-600 mt-1">{{ max(0, ($totalCount ?? 0) - ($unreadCount ?? 0)) }}</div>
-                        <div class="text-[11px] text-emerald-500 mt-0.5">Arsip notifikasi terselesaikan</div>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
-                        ✓
-                    </div>
-                </a>
-            </div>
+                <x-enterprise.stat-card
+                    title="Sudah Dibaca"
+                    :value="max(0, ($totalCount ?? 0) - ($unreadCount ?? 0))"
+                    icon="check-circle"
+                    color="emerald"
+                    subtitle="Arsip notifikasi terselesaikan"
+                    :href="route('notifications.index', ['filter' => 'read'])"
+                    :active="($filter ?? '') === 'read'"
+                />
+            </x-enterprise.stat-grid>
 
             {{-- Filter Tabs & Toolbar --}}
             <div class="flex items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">

@@ -91,7 +91,7 @@
             @endif
 
             {{-- Kartu Statistik (7 Kartu Interaktif: Klik untuk Memfilter Data) --}}
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-2.5 sm:gap-3 xl:gap-3.5">
+            <x-enterprise.stat-grid :cols="4">
                 <x-enterprise.stat-card
                     title="Total Pegawai"
                     :value="$statistics['total']"
@@ -154,7 +154,7 @@
                     :href="route('pegawai.index', array_filter(['filter' => 'aktif', 'search' => request('search')]))"
                     :active="$filter === 'aktif'"
                 />
-            </div>
+            </x-enterprise.stat-grid>
 
             {{-- Card & Tabel Utama --}}
             <x-enterprise.card>

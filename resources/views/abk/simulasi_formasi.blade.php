@@ -76,37 +76,52 @@
     <div class="py-6 w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 space-y-6">
 
         {{-- 5 Kartu Statistik Agregat --}}
-        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
-            <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
-                <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Kebutuhan ABK</div>
-                <div class="text-2xl font-black text-blue-600 mt-1">{{ $totalKebutuhan }} <span class="text-xs font-normal text-gray-500">Formasi</span></div>
-                <div class="text-[10px] text-gray-400 mt-1">Standar WKE MenPAN</div>
-            </div>
+        <x-enterprise.stat-grid :cols="5">
+            <x-enterprise.stat-card
+                title="Kebutuhan ABK"
+                :value="$totalKebutuhan"
+                suffix="Formasi"
+                subtitle="Standar WKE MenPAN"
+                icon="clipboard-list"
+                color="blue"
+            />
 
-            <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
-                <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Bezetting Riil</div>
-                <div class="text-2xl font-black text-gray-900 mt-1">{{ $totalBezetting }} <span class="text-xs font-normal text-gray-500">Pegawai</span></div>
-                <div class="text-[10px] text-gray-400 mt-1">Pegawai Aktif Saat Ini</div>
-            </div>
+            <x-enterprise.stat-card
+                title="Bezetting Riil"
+                :value="$totalBezetting"
+                suffix="Pegawai"
+                subtitle="Pegawai Aktif Saat Ini"
+                icon="users"
+                color="slate"
+            />
 
-            <div class="bg-white rounded-2xl p-4 border border-rose-200 bg-rose-50/30 shadow-sm">
-                <div class="text-[11px] font-bold text-rose-600 uppercase tracking-wider">Defisit Formasi</div>
-                <div class="text-2xl font-black text-rose-600 mt-1">{{ $totalDefisit }} <span class="text-xs font-normal text-rose-400">Lowong</span></div>
-                <div class="text-[10px] text-rose-500 mt-1">Kekurangan Beban Kerja</div>
-            </div>
+            <x-enterprise.stat-card
+                title="Defisit Formasi"
+                :value="$totalDefisit"
+                suffix="Lowong"
+                subtitle="Kekurangan Beban Kerja"
+                icon="alert-triangle"
+                color="rose"
+            />
 
-            <div class="bg-white rounded-2xl p-4 border border-amber-200 bg-amber-50/30 shadow-sm">
-                <div class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Radar Pensiun BUP</div>
-                <div class="text-2xl font-black text-amber-600 mt-1">{{ $totalPensiun1Thn }} <span class="text-xs font-normal text-amber-700">1 Thn</span> &bull; <span class="text-lg text-gray-600">{{ $totalPensiun3Thn }}</span> <span class="text-xs font-normal text-gray-500">3 Thn</span></div>
-                <div class="text-[10px] text-amber-700 mt-1">Proyeksi BUP Dosen &amp; Tendik</div>
-            </div>
+            <x-enterprise.stat-card
+                title="Radar Pensiun BUP"
+                :value="$totalPensiun1Thn"
+                :suffix="'1 Thn • ' . $totalPensiun3Thn . ' (3 Thn)'"
+                subtitle="Proyeksi BUP Dosen & Tendik"
+                icon="hourglass"
+                color="amber"
+            />
 
-            <div class="bg-white rounded-2xl p-4 border border-purple-200 bg-purple-50/40 shadow-sm col-span-2 lg:col-span-1">
-                <div class="text-[11px] font-bold text-purple-700 uppercase tracking-wider">Usulan CASN Baru</div>
-                <div class="text-2xl font-black text-purple-700 mt-1">{{ $totalUsulanPns + $totalUsulanPppk }} <span class="text-xs font-normal text-purple-500">Formasi</span></div>
-                <div class="text-[10px] text-purple-600 mt-1">CPNS: <b>{{ $totalUsulanPns }}</b> | PPPK: <b>{{ $totalUsulanPppk }}</b></div>
-            </div>
-        </div>
+            <x-enterprise.stat-card
+                title="Usulan CASN Baru"
+                :value="$totalUsulanPns + $totalUsulanPppk"
+                suffix="Formasi"
+                :subtitle="'CPNS: ' . $totalUsulanPns . ' | PPPK: ' . $totalUsulanPppk"
+                icon="target"
+                color="purple"
+            />
+        </x-enterprise.stat-grid>
 
         {{-- Filter Unit Kerja --}}
         <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
