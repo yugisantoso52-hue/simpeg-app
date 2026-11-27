@@ -614,7 +614,7 @@ class PengajuanCutiController extends Controller
             });
         }
 
-        $perPage = (int) $request->input('per_page', 50);
+        $perPage = (int) $request->input('per_page', 10);
         $pegawaiList = $query->orderBy('nama')->paginate($perPage)->withQueryString();
         $unitKerjaList = \App\Models\UnitKerja::orderBy('nama_unit')->get();
 
@@ -782,7 +782,8 @@ class PengajuanCutiController extends Controller
                   ->orWhereYear('tanggal_selesai', $tahun);
             })
             ->orderBy('tanggal_mulai', 'asc')
-            ->get();
+            ->paginate(10)
+            ->withQueryString();
 
         $pegawaiList = $canSelectPegawai
             ? Pegawai::where('status_pegawai', 'Aktif')->orderBy('nama')->get(['id', 'nama', 'nip', 'gelar_depan', 'gelar_belakang', 'status_asn', 'jenis_pegawai'])

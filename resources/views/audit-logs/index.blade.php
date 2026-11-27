@@ -173,7 +173,7 @@
                     </table>
                 </div>
 
-                @if($logs->hasPages())
+                @if($logs->total() > 0)
                     <div class="p-4 border-t border-slate-100">
                         {{ $logs->links() }}
                     </div>

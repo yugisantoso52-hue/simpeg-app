@@ -1,6 +1,6 @@
-@if ($paginator->hasPages())
+@if ($paginator->total() > 0)
 
-<nav class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-5 py-4">
+<nav class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4">
 
     <div class="text-sm text-slate-600">
 

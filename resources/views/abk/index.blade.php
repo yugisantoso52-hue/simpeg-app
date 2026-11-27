@@ -426,36 +426,39 @@
                     </table>
                 </div>
 
-                {{-- Bar Paginasi Interaktif (Bawah Tabel) --}}
-                <div class="px-6 py-3.5 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs"
+                {{-- Bar Paginasi Interaktif (Bawah Tabel - Model Enterprise Seragam) --}}
+                <div class="px-6 py-3.5 bg-white border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs"
                      x-show="filteredItems.length > 0">
-                    <div class="text-gray-600">
-                        Menampilkan <span class="font-bold text-gray-900" x-text="pageStart"></span> - <span class="font-bold text-gray-900" x-text="pageEnd"></span> dari <span class="font-bold text-gray-900" x-text="filteredItems.length"></span> jabatan
-                        <template x-if="perPage !== 'all'">
-                            <span class="text-gray-400 font-normal">(Halaman <span x-text="currentPage"></span> dari <span x-text="totalPages"></span>)</span>
-                        </template>
+                    <div class="text-xs text-slate-600">
+                        Menampilkan
+                        <span class="font-semibold text-slate-800" x-text="pageStart"></span>
+                        -
+                        <span class="font-semibold text-slate-800" x-text="pageEnd"></span>
+                        dari
+                        <span class="font-semibold text-slate-800" x-text="filteredItems.length"></span>
+                        data
                     </div>
 
                     {{-- Tombol Navigasi Halaman --}}
-                    <div class="flex items-center gap-1.5" x-show="totalPages > 1 && perPage !== 'all'">
+                    <div class="flex items-center gap-1" x-show="perPage !== 'all'">
                         <button type="button" @click="prevPage()" :disabled="currentPage === 1"
-                                :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed bg-gray-100 text-gray-400' : 'bg-white text-gray-700 hover:bg-gray-100 hover:text-gray-900 border border-gray-300 shadow-2xs'"
-                                class="px-3 py-1.5 rounded-lg font-semibold transition">
-                            &laquo; Sebelumnya
+                                :class="currentPage === 1 ? 'text-slate-300 border-slate-200 bg-slate-50 cursor-not-allowed' : 'text-slate-700 border-slate-200 bg-white hover:bg-slate-50'"
+                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg border transition">
+                            ←
                         </button>
 
                         <template x-for="p in totalPages" :key="p">
                             <button type="button" @click="setPage(p)"
-                                    :class="currentPage === p ? 'bg-blue-600 text-white font-bold shadow-2xs' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 shadow-2xs'"
-                                    class="w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition"
+                                    :class="currentPage === p ? 'bg-blue-600 text-white font-semibold' : 'text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 font-medium'"
+                                    class="inline-flex items-center px-3 py-1.5 text-xs rounded-lg transition"
                                     x-text="p">
                             </button>
                         </template>
 
                         <button type="button" @click="nextPage()" :disabled="currentPage === totalPages"
-                                :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed bg-gray-100 text-gray-400' : 'bg-white text-gray-700 hover:bg-gray-100 hover:text-gray-900 border border-gray-300 shadow-2xs'"
-                                class="px-3 py-1.5 rounded-lg font-semibold transition">
-                            Selanjutnya &raquo;
+                                :class="currentPage === totalPages ? 'text-slate-300 border-slate-200 bg-slate-50 cursor-not-allowed' : 'text-slate-700 border-slate-200 bg-white hover:bg-slate-50'"
+                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg border transition">
+                            →
                         </button>
                     </div>
                 </div>

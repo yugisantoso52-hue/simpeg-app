@@ -310,7 +310,7 @@
                                         $badge = $item->status_badge;
                                     @endphp
                                     <tr class="hover:bg-slate-50/80 transition">
-                                        <td class="py-3 px-3 font-mono text-slate-400">{{ $loop->iteration }}</td>
+                                        <td class="py-3 px-3 font-mono text-slate-400">{{ (method_exists($pengajuans, 'firstItem') ? $pengajuans->firstItem() : 1) + $loop->index }}</td>
                                         <td class="py-3 px-3">
                                              <div class="font-bold text-slate-900 text-sm">{{ $item->pegawai?->nama_lengkap ?? $item->pegawai?->nama ?? '-' }}</div>
                                             <div class="text-[11px] text-slate-500 font-mono">NIP: {{ $item->pegawai?->nip ?? '-' }}</div>

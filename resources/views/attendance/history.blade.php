@@ -132,7 +132,7 @@
                     </table>
                 </div>
 
-                @if($attendances->hasPages())
+                @if($attendances->total() > 0)
                     <div class="p-4 border-t border-gray-100">
                         {{ $attendances->links() }}
                     </div>

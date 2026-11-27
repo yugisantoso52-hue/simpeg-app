@@ -108,7 +108,7 @@
                                 $syarat = $row->evaluasiSyaratKp();
                             @endphp
                             <tr class="hover:bg-slate-50/80 transition">
-                                <td class="px-3 py-3 text-center font-medium text-slate-600">{{ $loop->iteration }}</td>
+                                <td class="px-3 py-3 text-center font-medium text-slate-600">{{ (method_exists($layakKp, 'firstItem') ? $layakKp->firstItem() : 1) + $loop->index }}</td>
                                 <td class="px-4 py-3">
                                     <div class="font-bold text-slate-900">{{ $row->nama_lengkap ?? $row->nama }}</div>
                                     <div class="text-xs text-slate-500 font-mono">NIP: {{ $row->nip }}</div>
@@ -274,6 +274,12 @@
                             </tr>
                         @endforelse
                     </x-enterprise.data-table>
+
+                    @if(method_exists($layakKp, 'total') && $layakKp->total() > 0)
+                        <div class="mt-4">
+                            {{ $layakKp->links() }}
+                        </div>
+                    @endif
                 </div>
             </x-enterprise.card>
         </div>

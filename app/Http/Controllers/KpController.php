@@ -78,18 +78,18 @@ class KpController extends Controller
         $makeCountable = fn(int $n) => $n > 0 ? array_fill(0, $n, null) : [];
 
         if ($filter === 'reminder') {
-            $layakKp = (clone $reminderQuery)->with($relations)->orderBy('kp_berikutnya')->get();
-            $reminderKp = $layakKp;
+            $layakKp = (clone $reminderQuery)->with($relations)->orderBy('kp_berikutnya')->paginate(10)->withQueryString();
+            $reminderKp = $makeCountable($layakKp->total());
             $overdueKp = $makeCountable((clone $overdueQuery)->count());
             $allLayakKp = $makeCountable((clone $allLayakQuery)->count());
         } elseif ($filter === 'overdue') {
-            $layakKp = (clone $overdueQuery)->with($relations)->orderBy('kp_berikutnya')->get();
-            $overdueKp = $layakKp;
+            $layakKp = (clone $overdueQuery)->with($relations)->orderBy('kp_berikutnya')->paginate(10)->withQueryString();
+            $overdueKp = $makeCountable($layakKp->total());
             $reminderKp = $makeCountable((clone $reminderQuery)->count());
             $allLayakKp = $makeCountable((clone $allLayakQuery)->count());
         } else {
-            $layakKp = (clone $allLayakQuery)->with($relations)->orderByRaw('COALESCE(kp_berikutnya, "9999-12-31") ASC')->get();
-            $allLayakKp = $layakKp;
+            $layakKp = (clone $allLayakQuery)->with($relations)->orderByRaw('COALESCE(kp_berikutnya, "9999-12-31") ASC')->paginate(10)->withQueryString();
+            $allLayakKp = $makeCountable($layakKp->total());
             $reminderKp = $makeCountable((clone $reminderQuery)->count());
             $overdueKp = $makeCountable((clone $overdueQuery)->count());
         }

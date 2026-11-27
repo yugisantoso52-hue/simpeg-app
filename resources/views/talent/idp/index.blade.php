@@ -154,7 +154,7 @@
                     <p class="text-xs text-gray-500 mt-0.5">Penugasan pengembangan kompetensi diselaraskan dengan kuadran Matriks 9-Kotak ASN.</p>
                 </div>
                 <span class="text-xs font-mono bg-teal-100 text-teal-800 font-bold px-2.5 py-1 rounded-lg">
-                    {{ count($pegawaiList) }} Pegawai Ditampilkan
+                    {{ method_exists($pegawaiList, 'total') ? $pegawaiList->total() : count($pegawaiList) }} Pegawai Ditampilkan
                 </span>
             </div>
 
@@ -174,7 +174,7 @@
                     <tbody class="divide-y divide-gray-100 font-medium text-gray-800">
                         @forelse($pegawaiList as $idx => $item)
                             <tr class="hover:bg-teal-50/30 transition {{ !$item['is_memenuhi'] ? 'bg-rose-50/10' : '' }}">
-                                <td class="px-4 py-3 text-center text-gray-400 font-mono">{{ $idx + 1 }}</td>
+                                <td class="px-4 py-3 text-center text-gray-400 font-mono">{{ (method_exists($pegawaiList, 'firstItem') ? $pegawaiList->firstItem() : 1) + $idx }}</td>
                                 <td class="px-4 py-3">
                                     <div class="font-bold text-gray-900 text-xs">{{ $item['pegawai']->nama }}</div>
                                     <div class="text-[11px] text-gray-500 mt-0.5">
@@ -230,6 +230,12 @@
                     </tbody>
                 </table>
             </div>
+
+            @if(method_exists($pegawaiList, 'total') && $pegawaiList->total() > 0)
+                <div class="p-4 border-t border-gray-200">
+                    {{ $pegawaiList->links() }}
+                </div>
+            @endif
         </div>
 
         {{-- Edukasi Regulasi Mandatori 20 JP --}}

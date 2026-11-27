@@ -143,7 +143,7 @@ class AttendanceController extends Controller
             $query->whereYear('attendance_date', $request->get('year'));
         }
 
-        $attendances = $query->paginate(20)->withQueryString();
+        $attendances = $query->paginate(10)->withQueryString();
 
         return view('attendance.history', compact('attendances', 'user'));
     }

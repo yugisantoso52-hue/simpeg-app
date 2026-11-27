@@ -49,7 +49,7 @@ class LogbookController extends Controller
 
         $statistics = $this->service->getPegawaiStatistics($pegawaiId, $month, $year);
         $logbooks = $this->service->getPegawaiQuery($pegawaiId, $month, $year, $status, $kategori)
-            ->paginate(15)->withQueryString();
+            ->paginate(10)->withQueryString();
 
         $kategoriList = Logbook::KATEGORI_LIST;
 

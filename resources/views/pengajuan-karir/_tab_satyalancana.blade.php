@@ -250,7 +250,7 @@
                     <tbody class="divide-y divide-slate-100">
                         @forelse($daftarUsulanSatyalancana ?? [] as $usl)
                             <tr class="hover:bg-slate-50/70 transition">
-                                <td class="py-3 px-3 font-medium text-slate-500">{{ $loop->iteration }}</td>
+                                <td class="py-3 px-3 font-medium text-slate-500">{{ (method_exists($daftarUsulanSatyalancana, 'firstItem') ? $daftarUsulanSatyalancana->firstItem() : 1) + $loop->index }}</td>
                                 <td class="py-3 px-3">
                                     <div class="font-bold text-slate-900">{{ $usl->pegawai?->nama_lengkap ?? $usl->pegawai?->nama ?? '-' }}</div>
                                     <div class="text-[11px] text-slate-500 font-mono">{{ $usl->pegawai?->nip ?? '-' }}</div>
@@ -456,7 +456,7 @@
                 </table>
             </div>
 
-            @if(isset($daftarUsulanSatyalancana) && $daftarUsulanSatyalancana->hasPages())
+            @if(isset($daftarUsulanSatyalancana) && $daftarUsulanSatyalancana->total() > 0)
                 <div class="mt-4">
                     {{ $daftarUsulanSatyalancana->links() }}
                 </div>
@@ -472,7 +472,7 @@
                     <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                         <span>🎖️ Daftar Pegawai Memenuhi Kriteria Masa Kerja (Siap Diajukan)</span>
                         <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                            {{ count($layakSatyalancana ?? []) }} Pegawai
+                            {{ isset($layakSatyalancana) && method_exists($layakSatyalancana, 'total') ? $layakSatyalancana->total() : count($layakSatyalancana ?? []) }} Pegawai
                         </span>
                     </h3>
                     <p class="text-xs text-slate-500 mt-0.5">Pegawai aktif dengan masa kerja 10, 20, atau 30 tahun yang memenuhi kriteria pengusulan</p>
@@ -494,7 +494,7 @@
                     <tbody class="divide-y divide-slate-100">
                         @forelse($layakSatyalancana ?? [] as $peg)
                             <tr class="hover:bg-slate-50/70 transition">
-                                <td class="py-3 px-3 font-medium text-slate-500">{{ $loop->iteration }}</td>
+                                <td class="py-3 px-3 font-medium text-slate-500">{{ (method_exists($layakSatyalancana, 'firstItem') ? $layakSatyalancana->firstItem() : 1) + $loop->index }}</td>
                                 <td class="py-3 px-3">
                                     <div class="font-bold text-slate-900">{{ $peg->nama_lengkap ?? $peg->nama }}</div>
                                     <div class="text-[11px] text-slate-500 font-mono">{{ $peg->nip }}</div>
@@ -543,6 +543,12 @@
                     </tbody>
                 </table>
             </div>
+
+            @if(isset($layakSatyalancana) && method_exists($layakSatyalancana, 'total') && $layakSatyalancana->total() > 0)
+                <div class="mt-4">
+                    {{ $layakSatyalancana->links() }}
+                </div>
+            @endif
         </div>
     </x-enterprise.card>
 </div>

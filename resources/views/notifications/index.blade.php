@@ -204,7 +204,7 @@
             </div>
 
             {{-- Pagination Links --}}
-            @if($notifications->hasPages())
+            @if($notifications->total() > 0)
                 <div class="mt-4">
                     {{ $notifications->links() }}
                 </div>

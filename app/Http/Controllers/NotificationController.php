@@ -22,7 +22,7 @@ class NotificationController extends Controller
             $query = $user->readNotifications();
         }
 
-        $notifications = $query->latest()->paginate(15)->withQueryString();
+        $notifications = $query->latest()->paginate(10)->withQueryString();
         $unreadCount = $user->unreadNotifications()->count();
         $totalCount = $user->notifications()->count();
 

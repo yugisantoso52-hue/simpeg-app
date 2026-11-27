@@ -188,7 +188,7 @@
                     </table>
                 </div>
 
-                @if($users->hasPages())
+                @if($users->total() > 0)
                     <div class="p-4 border-t border-gray-100">
                         {{ $users->links() }}
                     </div>

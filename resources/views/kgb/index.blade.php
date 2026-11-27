@@ -74,7 +74,7 @@
 
                         @forelse($layakKgb as $row)
                             <tr class="hover:bg-slate-50 transition">
-                                <td class="px-4 py-3 text-center font-medium">{{ $loop->iteration }}</td>
+                                <td class="px-4 py-3 text-center font-medium">{{ (method_exists($layakKgb, 'firstItem') ? $layakKgb->firstItem() : 1) + $loop->index }}</td>
                                 <td class="px-4 py-3">
                                     <div class="font-semibold text-slate-900">{{ $row->nama_lengkap ?? $row->nama }}</div>
                                     <div class="text-xs text-slate-500">{{ $row->nip }}</div>
@@ -137,6 +137,12 @@
                             </tr>
                         @endforelse
                     </x-enterprise.data-table>
+
+                    @if(method_exists($layakKgb, 'total') && $layakKgb->total() > 0)
+                        <div class="mt-4">
+                            {{ $layakKgb->links() }}
+                        </div>
+                    @endif
                 </div>
             </x-enterprise.card>
         </div>

@@ -802,7 +802,48 @@ class PengajuanCutiTest extends TestCase
         $rekapRes = $this->actingAs($this->adminUser)->get(route('pengajuan-cuti.rekap-kuota'));
         $rekapRes->assertStatus(200);
         $rekapRes->assertSee('Ringkasan Syarat, Ketentuan & Pemisahan Hak Cuti ASN (PNS vs PPPK)');
-        $rekapRes->assertSee('max-height: 540px;', false);
+        $rekapRes->assertSee('Menampilkan');
+
+        $dukRes = $this->actingAs($this->adminUser)->get(route('duk.index'));
+        $dukRes->assertStatus(200);
+        $dukRes->assertSee('Laporan Resmi DUK Terpisah');
+        $dukRes->assertSee('Menampilkan');
+
+        // Verifikasi seluruh menu tabel lainnya juga merender dengan paginasi 10 baris tanpa error
+        $menuRoutes = [
+            route('pegawai.index'),
+            route('kepegawaian.dosen.index'),
+            route('kepegawaian.tendik.index'),
+            route('kepegawaian.phl.index'),
+            route('pengajuan-karir.index'),
+            route('pengajuan-karir.index', ['tab' => 'satyalancana']),
+            route('kp.index'),
+            route('kgb.index'),
+            route('satyalancana.index'),
+            route('anjab.index'),
+            route('abk.index'),
+            route('manajemen-talenta.rekap'),
+            route('manajemen-talenta.asesmen.index'),
+            route('manajemen-talenta.suksesi.index'),
+            route('manajemen-talenta.idp'),
+            route('admin.logbook.index', ['view_mode' => 'rekap']),
+            route('admin.logbook.index', ['view_mode' => 'detail']),
+            route('admin.presensi.index', ['mode' => 'daily']),
+            route('admin.presensi.index', ['mode' => 'monthly']),
+            route('admin.presensi.locations'),
+            route('layanan-surat.index'),
+            route('pengajuan-jabatan.index'),
+            route('unit-kerja.index'),
+            route('jabatan.index'),
+            route('golongan.index'),
+            route('audit-logs.index'),
+            route('notifications.index'),
+        ];
+
+        foreach ($menuRoutes as $url) {
+            $res = $this->actingAs($this->adminUser)->get($url);
+            $res->assertStatus(200);
+        }
 
         $eksekutifRes = $this->actingAs($this->pimpinanUser)->get(route('pengajuan-cuti.monitoring-pimpinan'));
         $eksekutifRes->assertStatus(200);

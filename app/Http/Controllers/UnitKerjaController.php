@@ -24,8 +24,8 @@ class UnitKerjaController extends Controller
      */
     public function index(Request $request): View
     {
-        // Paginate default 25 dengan pencarian (agar seluruh unit kerja terurut utuh)
-        $unitKerja = $this->service->paginate($request->search, 25)->withQueryString();
+        // Paginate default 10 dengan pencarian
+        $unitKerja = $this->service->paginate($request->search, 10)->withQueryString();
 
         return view('unitkerja.index', compact('unitKerja'));
     }

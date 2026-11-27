@@ -149,7 +149,7 @@
                 </form>
             </div>
 
-            {{-- TABEL REKAPITULASI RESMI SESUAI PERATURAN BKN NOMOR 7 TAHUN 2022 (DENGAN SCROLL VERTIKAL & HORIZONTAL) --}}
+            {{-- TABEL REKAPITULASI RESMI SESUAI PERATURAN BKN NOMOR 7 TAHUN 2022 (MODEL 10 BARIS PER HALAMAN) --}}
             <div class="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden">
                 <div class="px-4 py-2.5 bg-slate-50 border-b border-gray-200 flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div class="font-bold text-slate-800 flex items-center gap-2">
@@ -160,13 +160,13 @@
                         </span>
                     </div>
                     <span class="text-[11px] text-slate-500">
-                        💡 Tabel dilengkapi fitur gulir (scroll) otomatis agar tampilan halaman tetap ringkas
+                        Menampilkan 10 baris per halaman
                     </span>
                 </div>
 
-                <div class="overflow-x-auto overflow-y-auto" style="max-height: 540px;">
+                <div class="overflow-x-auto">
                     <table class="w-full text-xs text-left text-gray-700 border-collapse">
-                        <thead class="text-[11px] uppercase bg-slate-100 text-slate-800 font-bold border-b border-gray-300 sticky top-0 z-20 shadow-2xs">
+                        <thead class="text-[11px] uppercase bg-slate-100 text-slate-800 font-bold border-b border-gray-300">
                             <tr>
                                 <th rowspan="2" class="py-3 px-2 text-center w-10 border-r border-gray-200 bg-slate-100">No</th>
                                 <th rowspan="2" class="py-3 px-3 border-r border-gray-200 min-w-[210px] bg-slate-100">Pegawai, NIP &amp; Status ASN</th>
@@ -356,8 +356,8 @@
                     </div>
                 </div>
 
-                @if($pegawaiList->hasPages())
-                    <div class="p-3 border-t border-gray-100">
+                @if($pegawaiList->total() > 0)
+                    <div class="p-4 border-t border-gray-100">
                         {{ $pegawaiList->links() }}
                     </div>
                 @endif

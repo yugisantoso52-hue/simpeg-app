@@ -293,7 +293,7 @@
 
                 <div class="text-xs text-slate-500">
                     @if($viewMode === 'rekap')
-                        Menampilkan <strong>{{ count($pegawaiRecap) }} Pegawai Bawahan</strong>
+                        Menampilkan <strong>{{ method_exists($pegawaiRecap, 'total') ? $pegawaiRecap->total() : count($pegawaiRecap) }} Pegawai Bawahan</strong>
                     @else
                         Menampilkan <strong>{{ $logbooks->total() }} Baris Aktivitas</strong>
                     @endif
@@ -321,7 +321,7 @@
                                 <tbody x-data="{ expanded: false, showVerifyModal: false }" class="border-b border-gray-200 divide-y divide-gray-100">
                                     <tr class="hover:bg-blue-50/40 transition">
                                         {{-- No --}}
-                                        <td class="px-4 py-4 text-center text-gray-500 font-semibold">{{ $idx + 1 }}</td>
+                                        <td class="px-4 py-4 text-center text-gray-500 font-semibold">{{ (method_exists($pegawaiRecap, 'firstItem') ? $pegawaiRecap->firstItem() : 1) + $idx }}</td>
 
                                         {{-- Pegawai --}}
                                         <td class="px-4 py-4 whitespace-nowrap">
@@ -611,6 +611,12 @@
                             @endforelse
                         </table>
                     </div>
+
+                    @if(method_exists($pegawaiRecap, 'total') && $pegawaiRecap->total() > 0)
+                        <div class="px-6 py-4 border-t border-gray-200">
+                            {{ $pegawaiRecap->links() }}
+                        </div>
+                    @endif
                 </div>
             @else
                 {{-- ============================================================== --}}
@@ -780,7 +786,7 @@
                         </table>
                     </div>
 
-                    @if($logbooks->hasPages())
+                    @if($logbooks->total() > 0)
                         <div class="px-6 py-4 border-t border-gray-200">
                             {{ $logbooks->links() }}
                         </div>

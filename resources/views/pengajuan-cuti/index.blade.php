@@ -386,7 +386,7 @@
                     </table>
                 </div>
 
-                @if($data->hasPages())
+                @if($data->total() > 0)
                     <div class="p-4 border-t border-gray-100">
                         {{ $data->links() }}
                     </div>

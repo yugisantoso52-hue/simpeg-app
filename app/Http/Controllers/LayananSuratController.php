@@ -45,7 +45,7 @@ class LayananSuratController extends Controller
                 });
             }
 
-            $surats = $query->paginate(15)->withQueryString();
+            $surats = $query->paginate(10)->withQueryString();
         } else {
             $pegawaiId = $user->pegawai_id ?? $user->pegawai?->id;
             $query = LayananSurat::with(['pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan'])
@@ -59,7 +59,7 @@ class LayananSuratController extends Controller
                 });
             }
 
-            $surats = $query->paginate(15)->withQueryString();
+            $surats = $query->paginate(10)->withQueryString();
         }
 
         $myPegawai = $user->pegawai ?? ($user->pegawai_id ? Pegawai::find($user->pegawai_id) : null);

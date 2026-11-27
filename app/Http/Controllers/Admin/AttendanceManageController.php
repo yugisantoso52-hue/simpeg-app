@@ -41,7 +41,7 @@ class AttendanceManageController extends Controller
             $year = (int) $request->get('year', Carbon::now('Asia/Jakarta')->year);
             $search = $request->get('search');
 
-            $matrixData = $this->service->getMonthlyMatrix($month, $year, $search, 50, $bawahanIds);
+            $matrixData = $this->service->getMonthlyMatrix($month, $year, $search, 10, $bawahanIds);
 
             return view('attendance.admin.index', [
                 'mode' => 'monthly',
@@ -72,7 +72,7 @@ class AttendanceManageController extends Controller
             $kategori,
             $search,
             $bawahanIds,
-            20
+            10
         );
 
         return view('attendance.admin.index', [
@@ -159,7 +159,7 @@ class AttendanceManageController extends Controller
             });
         }
 
-        $users = $query->paginate(20)->withQueryString();
+        $users = $query->paginate(10)->withQueryString();
 
         return view('attendance.admin.locations', compact('users', 'search'));
     }

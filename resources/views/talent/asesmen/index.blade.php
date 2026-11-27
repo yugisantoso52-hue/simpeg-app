@@ -147,7 +147,7 @@
                 </table>
             </div>
 
-            @if($assessments->hasPages())
+            @if($assessments->total() > 0)
                 <div class="p-4 border-t border-gray-200">
                     {{ $assessments->links() }}
                 </div>

@@ -92,7 +92,7 @@ class TalentManagementController extends Controller
 
         $mappings = $query->orderBy('kuadran_box', 'desc')
                           ->orderBy('sumbu_kinerja_nilai', 'desc')
-                          ->paginate(20)->withQueryString();
+                          ->paginate(10)->withQueryString();
 
         $unitKerjas = UnitKerja::orderBy('nama_unit')->get();
         $availableYears = range(date('Y'), date('Y') - 4);
@@ -247,7 +247,7 @@ class TalentManagementController extends Controller
               ->orWhere('nomor_surat', 'like', "%{$search}%");
         }
 
-        $assessments = $query->orderBy('tanggal_asesmen', 'desc')->paginate(15)->withQueryString();
+        $assessments = $query->orderBy('tanggal_asesmen', 'desc')->paginate(10)->withQueryString();
 
         return view('talent.asesmen.index', compact('assessments', 'search'));
     }
@@ -365,9 +365,17 @@ class TalentManagementController extends Controller
             $queryJabatan->where('unit_kerja_id', $unitKerjaId);
         }
 
-        $jabatans = $queryJabatan->get()->sortBy(function ($j) {
+        $jabatansAll = $queryJabatan->get()->sortBy(function ($j) {
             return $j->hierarchy_order;
         })->values();
+        $page = max(1, (int) $request->input('page', 1));
+        $jabatans = new \Illuminate\Pagination\LengthAwarePaginator(
+            $jabatansAll->forPage($page, 10)->values(),
+            $jabatansAll->count(),
+            10,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         $unitKerjas = UnitKerja::orderBy('nama_unit')->get();
         $availableYears = range(date('Y'), date('Y') - 4);
@@ -594,6 +602,15 @@ class TalentManagementController extends Controller
         } elseif ($statusJp === 'kurang') {
             $pegawaiList = $pegawaiList->filter(fn($p) => !$p['is_memenuhi'])->values();
         }
+
+        $page = max(1, (int) $request->input('page', 1));
+        $pegawaiList = new \Illuminate\Pagination\LengthAwarePaginator(
+            $pegawaiList->forPage($page, 10)->values(),
+            $pegawaiList->count(),
+            10,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         // Agregasi Statistik
         $totalPegawai = $allPegawais->count();

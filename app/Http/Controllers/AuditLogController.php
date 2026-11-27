@@ -35,7 +35,7 @@ class AuditLogController extends Controller
             }
         }
 
-        $logs = $query->paginate(20)->withQueryString();
+        $logs = $query->paginate(10)->withQueryString();
 
         $stats = [
             'total'    => ActivityLog::count(),

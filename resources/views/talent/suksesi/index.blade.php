@@ -113,7 +113,7 @@
                 <div class="flex items-center gap-3">
                     <div class="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-center">
                         <span class="block text-[10px] uppercase font-bold text-slate-500">Jabatan Sasaran</span>
-                        <span class="text-lg font-black text-slate-800">{{ $jabatans->count() }}</span>
+                        <span class="text-lg font-black text-slate-800">{{ method_exists($jabatans, 'total') ? $jabatans->total() : $jabatans->count() }}</span>
                     </div>
                     <div class="px-4 py-2 bg-indigo-50 border border-indigo-200 rounded-xl text-center">
                         <span class="block text-[10px] uppercase font-bold text-indigo-600">Total Nominasi Suksesi</span>
@@ -153,7 +153,7 @@
                         @forelse($jabatans as $index => $jab)
                             <tr class="hover:bg-slate-50/80 transition">
                                 <td class="py-3 px-4 text-center font-mono text-gray-500">
-                                    {{ $index + 1 }}
+                                    {{ (method_exists($jabatans, 'firstItem') ? $jabatans->firstItem() : 1) + $index }}
                                 </td>
                                 <td class="py-3 px-4">
                                     <div class="font-bold text-gray-900 text-sm">
@@ -220,6 +220,12 @@
                     </tbody>
                 </table>
             </div>
+
+            @if(method_exists($jabatans, 'total') && $jabatans->total() > 0)
+                <div class="p-4 border-t border-gray-200">
+                    {{ $jabatans->links() }}
+                </div>
+            @endif
         </div>
 
     </div>

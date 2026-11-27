@@ -45,10 +45,18 @@ class LogbookManageController extends Controller
 
         $statistics = $this->service->getAdminStatistics($month, $year, $unitKerjaId, $bawahanIds);
 
-        $pegawaiRecap = $this->service->getAdminPegawaiRecap($month, $year, $unitKerjaId, $kategoriPegawai, $status, $search, $bawahanIds);
+        $pegawaiRecapAll = collect($this->service->getAdminPegawaiRecap($month, $year, $unitKerjaId, $kategoriPegawai, $status, $search, $bawahanIds));
+        $rekapPage = max(1, (int) $request->input('rekap_page', 1));
+        $pegawaiRecap = new \Illuminate\Pagination\LengthAwarePaginator(
+            $pegawaiRecapAll->forPage($rekapPage, 10)->values(),
+            $pegawaiRecapAll->count(),
+            10,
+            $rekapPage,
+            ['path' => $request->url(), 'pageName' => 'rekap_page', 'query' => $request->query()]
+        );
 
         $logbooks = $this->service->getAdminQuery($month, $year, $unitKerjaId, $kategoriPegawai, $status, $search, $bawahanIds)
-            ->paginate(20)->withQueryString();
+            ->paginate(10)->withQueryString();
 
         $unitKerjaList = UnitKerja::orderBy('nama_unit')->get();
 

@@ -187,7 +187,7 @@
                     </table>
                 </div>
 
-                @if($anjabs->hasPages())
+                @if($anjabs->total() > 0)
                     <div class="px-6 py-4 border-t border-gray-200">
                         {{ $anjabs->links() }}
                     </div>

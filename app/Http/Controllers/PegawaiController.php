@@ -53,6 +53,29 @@ class PegawaiController extends Controller
 
         $dukData = $this->pegawaiService->getDukData($search, auth()->user(), true);
 
+        $perPage = 10;
+        $paginateCollection = function ($items, string $pageName) use ($request, $perPage) {
+            $collection = collect($items)->values();
+            $currentPage = max(1, (int) $request->input($pageName, 1));
+            $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+                $collection->forPage($currentPage, $perPage)->values(),
+                $collection->count(),
+                $perPage,
+                $currentPage,
+                [
+                    'path'     => $request->url(),
+                    'pageName' => $pageName,
+                ]
+            );
+            return $paginator->appends($request->except($pageName));
+        };
+
+        $dukData['dosenPnsList']   = $paginateCollection($dukData['dosenPnsList'] ?? [], 'dosen_pns_page');
+        $dukData['dosenPppkList']  = $paginateCollection($dukData['dosenPppkList'] ?? [], 'dosen_pppk_page');
+        $dukData['tendikPnsList']  = $paginateCollection($dukData['tendikPnsList'] ?? [], 'tendik_pns_page');
+        $dukData['tendikPppkList'] = $paginateCollection($dukData['tendikPppkList'] ?? [], 'tendik_pppk_page');
+        $dukData['phlList']        = $paginateCollection($dukData['phlList'] ?? [], 'phl_page');
+
         return view('pegawai.duk', array_merge($dukData, [
             'search' => $search,
             'filter' => $filter,

@@ -30,12 +30,12 @@ class PengajuanJabatanController extends Controller
                 $query->where('status', $status);
             }
 
-            $pengajuans = $query->latest()->paginate(15)->withQueryString();
+            $pengajuans = $query->latest()->paginate(10)->withQueryString();
         } else {
             $pengajuans = PengajuanJabatan::with(['jabatan', 'unitKerja', 'verifikator'])
                 ->where('pegawai_id', $user->pegawai_id)
                 ->latest()
-                ->paginate(15)->withQueryString();
+                ->paginate(10)->withQueryString();
         }
 
         $jabatanList = Jabatan::orderBy('nama_jabatan')->get();

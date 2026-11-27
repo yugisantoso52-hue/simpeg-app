@@ -643,7 +643,7 @@
                 </div>
 
                 <!-- 5. Pagination Links -->
-                @if($accordionData['paginator']->hasPages())
+                @if($accordionData['paginator']->total() > 0)
                     <div class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
                         {{ $accordionData['paginator']->links() }}
                     </div>
@@ -877,7 +877,7 @@
                         </div>
                     </div>
 
-                    @if($matrixData['paginator']->hasPages())
+                    @if($matrixData['paginator']->total() > 0)
                         <div class="p-4 border-t border-gray-100">
                             {{ $matrixData['paginator']->links() }}
                         </div>

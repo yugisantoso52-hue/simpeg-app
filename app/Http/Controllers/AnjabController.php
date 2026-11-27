@@ -39,7 +39,7 @@ class AnjabController extends Controller
 
         $all = $query->get()->sortByDesc('hierarchy_order')->values();
         $page = (int) $request->input('page', 1);
-        $perPage = 15;
+        $perPage = 10;
         $anjabs = new \Illuminate\Pagination\LengthAwarePaginator(
             $all->forPage($page, $perPage),
             $all->count(),

@@ -468,7 +468,7 @@
                         </table>
                     </div>
 
-                    @if($surats->hasPages())
+                    @if($surats->total() > 0)
                         <div class="mt-4">
                             {{ $surats->links() }}
                         </div>

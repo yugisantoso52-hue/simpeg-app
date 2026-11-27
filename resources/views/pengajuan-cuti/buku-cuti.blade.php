@@ -124,7 +124,7 @@
                     <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
                         <span>📋</span> Riwayat Transaksi Cuti Tahun {{ $tahun }}
                     </h3>
-                    <span class="text-xs text-gray-500">Total Transaksi: <strong>{{ $riwayatCuti->count() }}</strong></span>
+                    <span class="text-xs text-gray-500">Total Transaksi: <strong>{{ method_exists($riwayatCuti, 'total') ? $riwayatCuti->total() : $riwayatCuti->count() }}</strong></span>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -143,7 +143,7 @@
                         <tbody class="divide-y divide-gray-100">
                             @forelse($riwayatCuti as $row)
                                 <tr class="hover:bg-gray-50/70 transition">
-                                    <td class="py-2.5 px-3 text-center font-mono text-gray-400">{{ $loop->iteration }}</td>
+                                    <td class="py-2.5 px-3 text-center font-mono text-gray-400">{{ method_exists($riwayatCuti, 'currentPage') ? (($riwayatCuti->currentPage() - 1) * $riwayatCuti->perPage() + $loop->iteration) : $loop->iteration }}</td>
                                     <td class="py-2.5 px-3">
                                         <div class="font-bold text-gray-900">{{ $row->jenis_cuti }}</div>
                                         <div class="text-[10px] text-gray-500 font-mono">{{ $row->nomor_surat ?: '[Belum Terbit]' }}</div>
@@ -180,6 +180,12 @@
                         </tbody>
                     </table>
                 </div>
+
+                @if(method_exists($riwayatCuti, 'links') && $riwayatCuti->total() > 0)
+                    <div class="p-4 border-t border-gray-100">
+                        {{ $riwayatCuti->links() }}
+                    </div>
+                @endif
             </div>
 
         </div>

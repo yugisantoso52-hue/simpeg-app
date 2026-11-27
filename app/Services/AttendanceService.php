@@ -759,7 +759,7 @@ class AttendanceService
         ?string $kategori = 'all',
         ?string $search = null,
         ?array $bawahanIds = null,
-        int $perPage = 20
+        int $perPage = 10
     ): array {
         $startOfMonth = Carbon::createFromDate($year, $month, 1, 'Asia/Jakarta')->startOfMonth();
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
@@ -982,7 +982,7 @@ class AttendanceService
     /**
      * Dapatkan data Matriks Presensi Bulanan (Kalender 1 - 31) untuk semua pegawai / bawahan
      */
-    public function getMonthlyMatrix(int $month, int $year, ?string $search = null, int $perPage = 50, ?array $bawahanIds = null): array
+    public function getMonthlyMatrix(int $month, int $year, ?string $search = null, int $perPage = 10, ?array $bawahanIds = null): array
     {
         $startOfMonth = Carbon::createFromDate($year, $month, 1, 'Asia/Jakarta')->startOfMonth();
         $endOfMonth = $startOfMonth->copy()->endOfMonth();

@@ -112,7 +112,7 @@
                             <p class="text-xs text-slate-500">Pegawai yang telah mengabdi tanpa cela selama 10, 20, atau 30 tahun dan berhak diusulkan.</p>
                         </div>
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
-                            {{ count($layakSatyalancana) }} Pegawai Memenuhi Syarat
+                            {{ method_exists($layakSatyalancana, 'total') ? $layakSatyalancana->total() : count($layakSatyalancana) }} Pegawai Memenuhi Syarat
                         </span>
                     </div>
 
@@ -224,7 +224,7 @@
                                 ];
                             @endphp
                             <tr class="hover:bg-slate-50 transition">
-                                <td class="px-4 py-3 text-center font-medium">{{ $loop->iteration }}</td>
+                                <td class="px-4 py-3 text-center font-medium">{{ (method_exists($layakSatyalancana, 'firstItem') ? $layakSatyalancana->firstItem() : 1) + $loop->index }}</td>
                                 <td class="px-4 py-3">
                                     <div class="font-semibold text-slate-900">{{ $row->nama_lengkap ?? $row->nama }}</div>
                                     <div class="text-xs text-slate-500">NIP: {{ $row->nip }}</div>
@@ -299,6 +299,12 @@
                             </tr>
                         @endforelse
                     </x-enterprise.data-table>
+
+                    @if(method_exists($layakSatyalancana, 'total') && $layakSatyalancana->total() > 0)
+                        <div class="mt-4">
+                            {{ $layakSatyalancana->links() }}
+                        </div>
+                    @endif
                 </div>
             </x-enterprise.card>
 
@@ -634,7 +640,7 @@
                         </table>
                     </div>
 
-                    @if($daftarUsulan->hasPages())
+                    @if($daftarUsulan->total() > 0)
                         <div class="mt-4">
                             {{ $daftarUsulan->links() }}
                         </div>

@@ -24,7 +24,7 @@ class SatyalancanaController extends Controller
         $this->satyalancanaService = $satyalancanaService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         if (!Auth::user()->canAccessExecutiveKepegawaianMenus()) {
             return redirect()->route('pengajuan-karir.index', ['tab' => 'satyalancana']);
@@ -38,7 +38,7 @@ class SatyalancanaController extends Controller
             'riwayatJabatan' => fn($q) => $q->orderBy('tmt_jabatan', 'desc'),
             'riwayatPenghargaan' => fn($q) => $q->orderBy('tanggal_terima', 'desc'),
         ])->get();
-        $layakSatyalancana = [];
+        $layakSlAll = collect();
 
         // Ambil usulan yang sudah diajukan untuk tahun berjalan
         $tahunIni = (int) date('Y');
@@ -52,15 +52,24 @@ class SatyalancanaController extends Controller
                 // Tempelkan informasi kategori penghargaan & status usulan
                 $pegawai->kategori_satyalancana = $kategori;
                 $pegawai->usulan_aktif = $usulanTerkini->get($pegawai->id);
-                $layakSatyalancana[] = $pegawai;
+                $layakSlAll->push($pegawai);
             }
         }
+
+        $layakPage = max(1, (int) $request->input('layak_page', 1));
+        $layakSatyalancana = new \Illuminate\Pagination\LengthAwarePaginator(
+            $layakSlAll->forPage($layakPage, 10)->values(),
+            $layakSlAll->count(),
+            10,
+            $layakPage,
+            ['path' => $request->url(), 'pageName' => 'layak_page', 'query' => $request->query()]
+        );
 
         $daftarUsulan = UsulanSatyalancana::with([
             'pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan',
             'pegawai.riwayatSkp', 'pegawai.riwayatPangkat.golongan', 'pegawai.riwayatJabatan.jabatan', 'pegawai.riwayatPenghargaan',
             'diajukanOleh', 'verifikasiAdminBy', 'parafKabagBy', 'parafKaPokjaBy', 'ttdWd2By'
-        ])->orderByDesc('id')->paginate(15)->withQueryString();
+        ])->orderByDesc('id')->paginate(10, ['*'], 'usulan_page')->withQueryString();
 
         // Jabatan login untuk otorisasi tombol paraf / tanda tangan
         $jabatan = strtoupper(trim((string)($user->pegawai?->jabatan->nama_jabatan ?? '')));

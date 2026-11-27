@@ -59,7 +59,7 @@ class PengajuanKarirController extends Controller
             $query->where('status', $request->status);
         }
 
-        $pengajuans = $query->latest()->paginate(15)->withQueryString();
+        $pengajuans = $query->latest()->paginate(10)->withQueryString();
         $userPegawai = $user->pegawai;
 
         $pegawaiId = $user->pegawai_id ?? $user->pegawai?->id;
@@ -99,14 +99,23 @@ class PengajuanKarirController extends Controller
 
             $allPegawaiSatyalancana = $pegawaiQuery->get();
 
+            $layakSlAll = collect();
             foreach ($allPegawaiSatyalancana as $p) {
                 $kat = $satyalancanaService->cekKelayakanSatyalancana($p);
                 if ($kat) {
                     $p->kategori_satyalancana = $kat;
                     $p->usulan_aktif = $usulanTerkini->get($p->id);
-                    $layakSatyalancana[] = $p;
+                    $layakSlAll->push($p);
                 }
             }
+            $layakSlPage = max(1, (int) $request->input('layak_sl_page', 1));
+            $layakSatyalancana = new \Illuminate\Pagination\LengthAwarePaginator(
+                $layakSlAll->forPage($layakSlPage, 10)->values(),
+                $layakSlAll->count(),
+                10,
+                $layakSlPage,
+                ['path' => $request->url(), 'pageName' => 'layak_sl_page', 'query' => $request->query()]
+            );
 
             $usulanQuery = UsulanSatyalancana::with([
                 'pegawai.unitKerja', 'pegawai.jabatan', 'pegawai.golongan',
@@ -118,7 +127,7 @@ class PengajuanKarirController extends Controller
                 $usulanQuery->where('pegawai_id', $pegawaiId);
             }
 
-            $daftarUsulanSatyalancana = $usulanQuery->orderByDesc('id')->paginate(15, ['*'], 'sl_page')->withQueryString();
+            $daftarUsulanSatyalancana = $usulanQuery->orderByDesc('id')->paginate(10, ['*'], 'sl_page')->withQueryString();
         }
 
         // Data Radar Jatuh Tempo (Monitoring KP & KGB)

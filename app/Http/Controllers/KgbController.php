@@ -67,12 +67,21 @@ class KgbController extends Controller
         })->values();
 
         if ($filter === 'reminder') {
-            $layakKgb = $reminderKgb;
+            $selectedKgb = $reminderKgb;
         } elseif ($filter === 'overdue') {
-            $layakKgb = $overdueKgb;
+            $selectedKgb = $overdueKgb;
         } else {
-            $layakKgb = $allLayakKgb;
+            $selectedKgb = $allLayakKgb;
         }
+
+        $page = max(1, (int) $request->input('page', 1));
+        $layakKgb = new \Illuminate\Pagination\LengthAwarePaginator(
+            $selectedKgb->forPage($page, 10)->values(),
+            $selectedKgb->count(),
+            10,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         return view('kgb.index', compact('layakKgb', 'filter', 'reminderKgb', 'overdueKgb', 'allLayakKgb'));
     }

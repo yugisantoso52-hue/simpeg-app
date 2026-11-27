@@ -181,7 +181,7 @@
                 </table>
             </div>
 
-            @if($mappings->hasPages())
+            @if($mappings->total() > 0)
                 <div class="p-4 border-t border-gray-200">
                     {{ $mappings->links() }}
                 </div>
